@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -24,8 +24,8 @@ func TestGenerateVPCObservation(t *testing.T) {
 		"AllFilled": {
 			in: ec2types.Vpc{
 				IsDefault: &boolFalse,
-				OwnerId:   aws.String(vpcOwner),
-				VpcId:     aws.String(vpcID),
+				OwnerId:   pointer.String(vpcOwner),
+				VpcId:     pointer.String(vpcID),
 				State:     ec2types.VpcStateAvailable,
 			},
 			out: v1beta1.VPCObservation{
@@ -38,7 +38,7 @@ func TestGenerateVPCObservation(t *testing.T) {
 		"NoOwner": {
 			in: ec2types.Vpc{
 				IsDefault: &boolFalse,
-				VpcId:     aws.String(vpcID),
+				VpcId:     pointer.String(vpcID),
 				State:     ec2types.VpcStateAvailable,
 			},
 			out: v1beta1.VPCObservation{

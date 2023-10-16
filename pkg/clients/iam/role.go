@@ -16,7 +16,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
@@ -114,13 +115,13 @@ func LateInitializeRole(in *v1beta1.RoleParameters, role *iamtypes.Role) {
 	if role == nil {
 		return
 	}
-	in.AssumeRolePolicyDocument = awsclients.LateInitializeString(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
-	in.Description = awsclients.LateInitializeStringPtr(in.Description, role.Description)
-	in.MaxSessionDuration = awsclients.LateInitializeInt32Ptr(in.MaxSessionDuration, role.MaxSessionDuration)
-	in.Path = awsclients.LateInitializeStringPtr(in.Path, role.Path)
+	in.AssumeRolePolicyDocument = pointer.LateInitializeString(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
+	in.Description = pointer.LateInitializeStringPtr(in.Description, role.Description)
+	in.MaxSessionDuration = pointer.LateInitializeInt32Ptr(in.MaxSessionDuration, role.MaxSessionDuration)
+	in.Path = pointer.LateInitializeStringPtr(in.Path, role.Path)
 
 	if role.PermissionsBoundary != nil {
-		in.PermissionsBoundary = awsclients.LateInitializeStringPtr(in.PermissionsBoundary, role.PermissionsBoundary.PermissionsBoundaryArn)
+		in.PermissionsBoundary = pointer.LateInitializeStringPtr(in.PermissionsBoundary, role.PermissionsBoundary.PermissionsBoundaryArn)
 	}
 
 	if in.Tags == nil && role.Tags != nil {
@@ -137,7 +138,7 @@ func CreatePatch(in *iamtypes.Role, target *v1beta1.RoleParameters) (*v1beta1.Ro
 	currentParams := &v1beta1.RoleParameters{}
 	LateInitializeRole(currentParams, in)
 
-	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}

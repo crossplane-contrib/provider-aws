@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 func igAttachments() []ec2types.InternetGatewayAttachment {
 	return []ec2types.InternetGatewayAttachment{
 		{
-			VpcId: aws.String(vpcID),
+			VpcId: pointer.String(vpcID),
 			State: ec2types.AttachmentStatusAttached,
 		},
 	}
@@ -47,10 +47,10 @@ func TestIsIGUpToDate(t *testing.T) {
 			args: args{
 				ig: ec2types.InternetGateway{
 					Attachments:       igAttachments(),
-					InternetGatewayId: aws.String(igID),
+					InternetGatewayId: pointer.String(igID),
 				},
 				p: v1beta1.InternetGatewayParameters{
-					VPCID: aws.String(vpcID),
+					VPCID: pointer.String(vpcID),
 				},
 			},
 			want: true,
@@ -59,7 +59,7 @@ func TestIsIGUpToDate(t *testing.T) {
 			args: args{
 				ig: ec2types.InternetGateway{
 					Attachments:       igAttachments(),
-					InternetGatewayId: aws.String(igID),
+					InternetGatewayId: pointer.String(igID),
 				},
 				p: v1beta1.InternetGatewayParameters{},
 			},
@@ -85,8 +85,8 @@ func TestGenerateIGObservation(t *testing.T) {
 		"AllFilled": {
 			in: ec2types.InternetGateway{
 				Attachments:       igAttachments(),
-				InternetGatewayId: aws.String(igID),
-				OwnerId:           aws.String(ownerID),
+				InternetGatewayId: pointer.String(igID),
+				OwnerId:           pointer.String(ownerID),
 			},
 			out: v1beta1.InternetGatewayObservation{
 				Attachments:       specAttachments(),
@@ -97,7 +97,7 @@ func TestGenerateIGObservation(t *testing.T) {
 		"NoOwnerId": {
 			in: ec2types.InternetGateway{
 				Attachments:       igAttachments(),
-				InternetGatewayId: aws.String(igID),
+				InternetGatewayId: pointer.String(igID),
 			},
 			out: v1beta1.InternetGatewayObservation{
 				Attachments:       specAttachments(),

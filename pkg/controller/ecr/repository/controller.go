@@ -40,6 +40,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -217,7 +218,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if patch.ImageTagMutability != nil {
 		_, err := e.client.PutImageTagMutability(ctx, &awsecr.PutImageTagMutabilityInput{
-			RepositoryName:     awsclient.String(meta.GetExternalName(cr)),
+			RepositoryName:     pointer.String(meta.GetExternalName(cr)),
 			ImageTagMutability: awsecrtypes.ImageTagMutability(aws.ToString(patch.ImageTagMutability)),
 		})
 		if err != nil {
@@ -227,7 +228,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if patch.ImageScanningConfiguration != nil {
 		_, err := e.client.PutImageScanningConfiguration(ctx, &awsecr.PutImageScanningConfigurationInput{
-			RepositoryName: awsclient.String(meta.GetExternalName(cr)),
+			RepositoryName: pointer.String(meta.GetExternalName(cr)),
 			ImageScanningConfiguration: &awsecrtypes.ImageScanningConfiguration{
 				ScanOnPush: patch.ImageScanningConfiguration.ScanOnPush,
 			},

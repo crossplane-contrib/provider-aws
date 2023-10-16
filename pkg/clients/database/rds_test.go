@@ -39,7 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -113,7 +113,7 @@ func TestCreatePatch(t *testing.T) {
 					DBName:           &dbName,
 				},
 				p: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(20)),
+					AllocatedStorage: pointer.IntAddress(pointer.Int64(20)),
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
@@ -131,7 +131,7 @@ func TestCreatePatch(t *testing.T) {
 					AvailabilityZone: ptr.To("az1"),
 				},
 				p: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+					AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 					AvailabilityZone: ptr.To("az2"),
@@ -139,7 +139,7 @@ func TestCreatePatch(t *testing.T) {
 			},
 			want: want{
 				patch: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+					AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
 					AvailabilityZone: ptr.To("az2"),
 				},
 			},
@@ -263,7 +263,7 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage: awsclient.IntAddress(awsclient.Int64(20)),
+							AllocatedStorage: pointer.IntAddress(pointer.Int64(20)),
 							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
 						},
@@ -282,12 +282,12 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage:                awsclient.IntAddress(awsclient.Int64(20)),
+							AllocatedStorage:                pointer.IntAddress(pointer.Int64(20)),
 							CharacterSetName:                &characterSetName,
 							DBName:                          &dbName,
-							DeleteAutomatedBackups:          awsclient.Bool(true),
-							SkipFinalSnapshotBeforeDeletion: awsclient.Bool(true),
-							FinalDBSnapshotIdentifier:       awsclient.String("final"),
+							DeleteAutomatedBackups:          pointer.Bool(true),
+							SkipFinalSnapshotBeforeDeletion: pointer.Bool(true),
+							FinalDBSnapshotIdentifier:       pointer.String("final"),
 						},
 					},
 				},
@@ -304,7 +304,7 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage: awsclient.IntAddress(awsclient.Int64(30)),
+							AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
 							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
 						},

@@ -31,10 +31,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/batch/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -90,7 +90,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesInput) error {
-	obj.JobQueues = []*string{awsclients.String(meta.GetExternalName(cr))} // we only want to observe our JQ
+	obj.JobQueues = []*string{pointer.String(meta.GetExternalName(cr))} // we only want to observe our JQ
 	return nil
 }
 
@@ -99,7 +99,7 @@ func postObserve(_ context.Context, cr *svcapitypes.JobQueue, resp *svcsdk.Descr
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclients.StringValue(resp.JobQueues[0].Status) {
+	switch pointer.StringValue(resp.JobQueues[0].Status) {
 	case svcsdk.JQStatusCreating:
 		cr.SetConditions(xpv1.Creating())
 	case svcsdk.JQStatusDeleting:
@@ -107,9 +107,9 @@ func postObserve(_ context.Context, cr *svcapitypes.JobQueue, resp *svcsdk.Descr
 	case svcsdk.JQStatusValid:
 		cr.SetConditions(xpv1.Available())
 	case svcsdk.JQStatusInvalid:
-		cr.SetConditions(xpv1.Unavailable().WithMessage(awsclients.StringValue(resp.JobQueues[0].StatusReason)))
+		cr.SetConditions(xpv1.Unavailable().WithMessage(pointer.StringValue(resp.JobQueues[0].StatusReason)))
 	case svcsdk.JQStatusUpdating:
-		cr.SetConditions(xpv1.Unavailable().WithMessage(svcsdk.JQStatusUpdating + " " + awsclients.StringValue(resp.JobQueues[0].StatusReason)))
+		cr.SetConditions(xpv1.Unavailable().WithMessage(svcsdk.JQStatusUpdating + " " + pointer.StringValue(resp.JobQueues[0].StatusReason)))
 		// Prevent Update() call during update status - which will fail.
 		obs.ResourceUpToDate = true
 	}
@@ -118,13 +118,13 @@ func postObserve(_ context.Context, cr *svcapitypes.JobQueue, resp *svcsdk.Descr
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.UpdateJobQueueInput) error {
-	obj.JobQueue = awsclients.String(meta.GetExternalName(cr))
+	obj.JobQueue = pointer.String(meta.GetExternalName(cr))
 	obj.State = cr.Spec.ForProvider.DesiredState
 
 	for i := range cr.Spec.ForProvider.ComputeEnvironmentOrder {
 		if awsarn.IsARN(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment) {
 			obj.ComputeEnvironmentOrder = append(obj.ComputeEnvironmentOrder, &svcsdk.ComputeEnvironmentOrder{
-				ComputeEnvironment: awsclients.String(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment),
+				ComputeEnvironment: pointer.String(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment),
 				Order:              &cr.Spec.ForProvider.ComputeEnvironmentOrder[i].Order,
 			})
 		} else {
@@ -144,13 +144,13 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.JobQueue, obj *s
 }
 
 func (e *hooks) preCreate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.CreateJobQueueInput) error {
-	obj.JobQueueName = awsclients.String(cr.Name)
+	obj.JobQueueName = pointer.String(cr.Name)
 	obj.State = cr.Spec.ForProvider.DesiredState
 
 	for i := range cr.Spec.ForProvider.ComputeEnvironmentOrder {
 		if awsarn.IsARN(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment) {
 			obj.ComputeEnvironmentOrder = append(obj.ComputeEnvironmentOrder, &svcsdk.ComputeEnvironmentOrder{
-				ComputeEnvironment: awsclients.String(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment),
+				ComputeEnvironment: pointer.String(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment),
 				Order:              &cr.Spec.ForProvider.ComputeEnvironmentOrder[i].Order,
 			})
 		} else {
@@ -161,34 +161,34 @@ func (e *hooks) preCreate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcs
 }
 
 func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.DeleteJobQueueInput) (bool, error) {
-	obj.JobQueue = awsclients.String(meta.GetExternalName(cr))
+	obj.JobQueue = pointer.String(meta.GetExternalName(cr))
 
 	// Skip Deletion if JQ is updating or already deleting
-	if awsclients.StringValue(cr.Status.AtProvider.Status) == svcsdk.JQStatusUpdating ||
-		awsclients.StringValue(cr.Status.AtProvider.Status) == svcsdk.JQStatusDeleting {
+	if pointer.StringValue(cr.Status.AtProvider.Status) == svcsdk.JQStatusUpdating ||
+		pointer.StringValue(cr.Status.AtProvider.Status) == svcsdk.JQStatusDeleting {
 		return true, nil
 	}
 	// JQ needs to be DISABLED to be able to be deleted
 	// If the JQ is already or finally DISABLED, we are done here and the controller can request the deletion of the JQ
-	if awsclients.StringValue(cr.Status.AtProvider.State) == svcsdk.JQStateDisabled {
+	if pointer.StringValue(cr.Status.AtProvider.State) == svcsdk.JQStateDisabled {
 		return false, nil
 	}
 	// Update the JQ to set the state to DISABLED
 	_, err := e.client.UpdateJobQueueWithContext(ctx, &svcsdk.UpdateJobQueueInput{
-		JobQueue: awsclients.String(meta.GetExternalName(cr)),
-		State:    awsclients.String(svcsdk.JQStateDisabled)})
+		JobQueue: pointer.String(meta.GetExternalName(cr)),
+		State:    pointer.String(svcsdk.JQStateDisabled)})
 	return true, errorutils.Wrap(err, errUpdate)
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesOutput) (bool, string, error) {
-	status := awsclients.StringValue(cr.Status.AtProvider.Status)
+	status := pointer.StringValue(cr.Status.AtProvider.Status)
 
 	// Skip when updating, deleting or creating
 	if status == svcsdk.JQStatusUpdating || status == svcsdk.JQStatusDeleting || status == svcsdk.JQStatusCreating {
 		return true, "", nil
 	}
 
-	if awsclients.StringValue(cr.Spec.ForProvider.DesiredState) != awsclients.StringValue(obj.JobQueues[0].State) {
+	if pointer.StringValue(cr.Spec.ForProvider.DesiredState) != pointer.StringValue(obj.JobQueues[0].State) {
 		return false, "", nil
 	}
 
@@ -198,8 +198,8 @@ func isUpToDate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.Describ
 	for i := range obj.JobQueues[0].ComputeEnvironmentOrder {
 		if obj.JobQueues[0].ComputeEnvironmentOrder[i].ComputeEnvironment != nil {
 			currentParams.ComputeEnvironmentOrder = append(currentParams.ComputeEnvironmentOrder, svcapitypes.CustomComputeEnvironmentOrder{
-				ComputeEnvironment: awsclients.StringValue(obj.JobQueues[0].ComputeEnvironmentOrder[i].ComputeEnvironment),
-				Order:              awsclients.Int64Value(obj.JobQueues[0].ComputeEnvironmentOrder[i].Order),
+				ComputeEnvironment: pointer.StringValue(obj.JobQueues[0].ComputeEnvironmentOrder[i].ComputeEnvironment),
+				Order:              pointer.Int64Value(obj.JobQueues[0].ComputeEnvironmentOrder[i].Order),
 			})
 		}
 	}
@@ -213,7 +213,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.Describ
 
 func lateInitialize(spec *svcapitypes.JobQueueParameters, resp *svcsdk.DescribeJobQueuesOutput) error {
 	jq := resp.JobQueues[0]
-	spec.DesiredState = awsclients.LateInitializeStringPtr(spec.DesiredState, jq.State)
+	spec.DesiredState = pointer.LateInitializeStringPtr(spec.DesiredState, jq.State)
 
 	return nil
 }

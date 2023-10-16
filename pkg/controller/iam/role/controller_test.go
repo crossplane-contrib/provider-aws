@@ -34,10 +34,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
@@ -143,7 +143,7 @@ func TestObserve(t *testing.T) {
 					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
 						return &awsiam.GetRoleOutput{
 							Role: &awsiamtypes.Role{
-								Arn: awsclient.String(arn),
+								Arn: pointer.String(arn),
 							},
 						}, nil
 					},

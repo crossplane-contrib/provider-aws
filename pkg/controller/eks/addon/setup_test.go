@@ -31,9 +31,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	mockeksiface "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/eksiface"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -115,7 +115,7 @@ func TestObserve(t *testing.T) {
 						).
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
-								Status: awsclient.String(awseks.AddonStatusActive),
+								Status: pointer.String(awseks.AddonStatusActive),
 							},
 						}, nil)
 				}),
@@ -128,7 +128,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testExternalName),
 					withConditions(xpv1.Available()),
 					withStatus(v1alpha1.AddonObservation{
-						Status: awsclient.String(awseks.AddonStatusActive),
+						Status: pointer.String(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -170,7 +170,7 @@ func TestObserve(t *testing.T) {
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
 								ServiceAccountRoleArn: &testServiceAccountRoleArn,
-								Status:                awsclient.String(awseks.AddonStatusActive),
+								Status:                pointer.String(awseks.AddonStatusActive),
 							},
 						}, nil)
 				}),
@@ -188,7 +188,7 @@ func TestObserve(t *testing.T) {
 						},
 					),
 					withStatus(v1alpha1.AddonObservation{
-						Status: awsclient.String(awseks.AddonStatusActive),
+						Status: pointer.String(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{

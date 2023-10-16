@@ -27,7 +27,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -64,11 +64,11 @@ func IsNotFound(err error) bool {
 func IsUpToDate(spec v1alpha1.HostedZoneParameters, obs route53types.HostedZone) bool {
 	s := ""
 	if spec.Config != nil {
-		s = awsclients.StringValue(spec.Config.Comment)
+		s = pointer.StringValue(spec.Config.Comment)
 	}
 	o := ""
 	if obs.Config != nil {
-		o = awsclients.StringValue(obs.Config.Comment)
+		o = pointer.StringValue(obs.Config.Comment)
 	}
 	return s == o
 }
@@ -77,14 +77,14 @@ func IsUpToDate(spec v1alpha1.HostedZoneParameters, obs route53types.HostedZone)
 func AreTagsUpToDate(spec map[string]string, obs []route53types.Tag) ([]route53types.Tag, []string, bool) {
 	obsMap := make(map[string]string, len(obs))
 	for _, t := range obs {
-		obsMap[awsclients.StringValue(t.Key)] = awsclients.StringValue(t.Value)
+		obsMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
 	}
 	added, removed := tags.DiffTags(spec, obsMap)
 	addedTags := make([]route53types.Tag, 0, len(added))
 	for k, v := range added {
 		addedTags = append(addedTags, route53types.Tag{
-			Key:   awsclients.String(k),
-			Value: awsclients.String(v),
+			Key:   pointer.String(k),
+			Value: pointer.String(v),
 		})
 	}
 	return addedTags, removed, len(addedTags) == 0 && len(removed) == 0
@@ -97,14 +97,14 @@ func LateInitialize(spec *v1alpha1.HostedZoneParameters, obs *route53.GetHostedZ
 		return
 	}
 	if obs.DelegationSet != nil {
-		spec.DelegationSetID = awsclients.LateInitializeStringPtr(spec.DelegationSetID, obs.DelegationSet.Id)
+		spec.DelegationSetID = pointer.LateInitializeStringPtr(spec.DelegationSetID, obs.DelegationSet.Id)
 	}
 	if spec.Config == nil && obs.HostedZone != nil {
 		spec.Config = &v1alpha1.Config{}
 	}
 	if spec.Config != nil && obs.HostedZone.Config != nil {
-		spec.Config.Comment = awsclients.LateInitializeStringPtr(spec.Config.Comment, obs.HostedZone.Config.Comment)
-		spec.Config.PrivateZone = awsclients.LateInitializeBoolPtr(spec.Config.PrivateZone, &obs.HostedZone.Config.PrivateZone)
+		spec.Config.Comment = pointer.LateInitializeStringPtr(spec.Config.Comment, obs.HostedZone.Config.Comment)
+		spec.Config.PrivateZone = pointer.LateInitializeBoolPtr(spec.Config.PrivateZone, &obs.HostedZone.Config.PrivateZone)
 	}
 }
 
@@ -123,7 +123,7 @@ func GenerateCreateHostedZoneInput(cr *v1alpha1.HostedZone) *route53.CreateHoste
 		}
 	}
 	if cr.Spec.ForProvider.VPC != nil {
-		reqInput.VPC = &route53types.VPC{VPCId: cr.Spec.ForProvider.VPC.VPCID, VPCRegion: route53types.VPCRegion(awsclients.StringValue(cr.Spec.ForProvider.VPC.VPCRegion))}
+		reqInput.VPC = &route53types.VPC{VPCId: cr.Spec.ForProvider.VPC.VPCID, VPCRegion: route53types.VPCRegion(pointer.StringValue(cr.Spec.ForProvider.VPC.VPCRegion))}
 	}
 	return reqInput
 }
@@ -155,7 +155,7 @@ func GenerateObservation(op *route53.GetHostedZoneOutput) v1alpha1.HostedZoneObs
 		}
 	}
 	for _, vpc := range op.VPCs {
-		o.VPCs = append(o.VPCs, v1alpha1.VPCObservation{VPCID: awsclients.StringValue(vpc.VPCId), VPCRegion: string(vpc.VPCRegion)})
+		o.VPCs = append(o.VPCs, v1alpha1.VPCObservation{VPCID: pointer.StringValue(vpc.VPCId), VPCRegion: string(vpc.VPCRegion)})
 	}
 	return o
 }

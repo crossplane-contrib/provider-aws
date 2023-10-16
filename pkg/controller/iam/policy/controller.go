@@ -41,6 +41,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -378,7 +379,7 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 	// slashes. In addition, it can contain any ASCII character from the ! (\u0021 ) through the
 	// DEL character (\u007F ), including most punctuation characters, digits, and upper and lowercased letters.
 	if policyPath == nil {
-		policyPath = awsclient.String("/")
+		policyPath = pointer.String("/")
 	}
 
 	// Use it to construct an arn for the policy
@@ -386,7 +387,7 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 		Service:   "iam",
 		Region:    identityArn.Region,
 		AccountID: identityArn.AccountID,
-		Resource:  "policy" + awsclient.StringValue(policyPath) + policyName}
+		Resource:  "policy" + pointer.StringValue(policyPath) + policyName}
 
 	return aws.String(policyArn.String()), nil
 }

@@ -24,7 +24,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 
 	"github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // GenerateRestoreDBInstanceFromS3Input from RDSInstanceSpec
@@ -40,7 +40,7 @@ func GenerateRestoreDBInstanceFromS3Input(name, password string, p *v1alpha1.DBI
 		DBInstanceClass:                    p.DBInstanceClass,
 		DBName:                             p.DBName,
 		DBParameterGroupName:               p.DBParameterGroupName,
-		DBSecurityGroups:                   awsclients.StringSliceToPtr(p.DBSecurityGroups),
+		DBSecurityGroups:                   pointer.StringSliceToPtr(p.DBSecurityGroups),
 		DBSubnetGroupName:                  p.DBSubnetGroupName,
 		DeletionProtection:                 p.DeletionProtection,
 		EnableCloudwatchLogsExports:        p.EnableCloudwatchLogsExports,
@@ -51,7 +51,7 @@ func GenerateRestoreDBInstanceFromS3Input(name, password string, p *v1alpha1.DBI
 		Iops:                               p.IOPS,
 		KmsKeyId:                           p.KMSKeyID,
 		LicenseModel:                       p.LicenseModel,
-		MasterUserPassword:                 awsclients.String(password),
+		MasterUserPassword:                 pointer.String(password),
 		MasterUsername:                     p.MasterUsername,
 		MonitoringInterval:                 p.MonitoringInterval,
 		MonitoringRoleArn:                  p.MonitoringRoleARN,
@@ -70,7 +70,7 @@ func GenerateRestoreDBInstanceFromS3Input(name, password string, p *v1alpha1.DBI
 		SourceEngineVersion:                p.RestoreFrom.S3.SourceEngineVersion,
 		StorageEncrypted:                   p.StorageEncrypted,
 		StorageType:                        p.StorageType,
-		VpcSecurityGroupIds:                awsclients.StringSliceToPtr(p.VPCSecurityGroupIDs),
+		VpcSecurityGroupIds:                pointer.StringSliceToPtr(p.VPCSecurityGroupIDs),
 	}
 	if len(p.ProcessorFeatures) != 0 {
 		c.ProcessorFeatures = make([]*svcsdk.ProcessorFeature, len(p.ProcessorFeatures))
@@ -118,7 +118,7 @@ func GenerateRestoreDBInstanceFromSnapshotInput(name string, p *v1alpha1.DBInsta
 		Port:                            p.Port,
 		PubliclyAccessible:              p.PubliclyAccessible,
 		StorageType:                     p.StorageType,
-		VpcSecurityGroupIds:             awsclients.StringSliceToPtr(p.VPCSecurityGroupIDs),
+		VpcSecurityGroupIds:             pointer.StringSliceToPtr(p.VPCSecurityGroupIDs),
 	}
 	if len(p.ProcessorFeatures) != 0 {
 		c.ProcessorFeatures = make([]*svcsdk.ProcessorFeature, len(p.ProcessorFeatures))
@@ -171,7 +171,7 @@ func GenerateRestoreDBInstanceToPointInTimeInput(name string, p *v1alpha1.DBInst
 		Port:                            p.Port,
 		PubliclyAccessible:              p.PubliclyAccessible,
 		StorageType:                     p.StorageType,
-		VpcSecurityGroupIds:             awsclients.StringSliceToPtr(p.VPCSecurityGroupIDs),
+		VpcSecurityGroupIds:             pointer.StringSliceToPtr(p.VPCSecurityGroupIDs),
 
 		TargetDBInstanceIdentifier:          aws.String(name),
 		RestoreTime:                         restoreTime,

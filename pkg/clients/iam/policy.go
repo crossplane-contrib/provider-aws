@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
@@ -44,7 +44,7 @@ func NewSTSClient(cfg aws.Config) STSClient {
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
 func IsPolicyUpToDate(in v1beta1.PolicyParameters, policy iamtypes.PolicyVersion) (bool, string, error) {
-	externalPolicyRaw := awsclients.StringValue(policy.Document)
+	externalPolicyRaw := pointer.StringValue(policy.Document)
 	if externalPolicyRaw == "" || in.Document == "" {
 		return false, "", nil
 	}

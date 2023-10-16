@@ -31,10 +31,10 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1alpha3"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -434,7 +434,7 @@ func TestFormat(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.str, awsclient.StringValue(str)); diff != "" {
+			if diff := cmp.Diff(tc.want.str, pointer.StringValue(str)); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

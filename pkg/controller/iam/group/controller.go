@@ -38,6 +38,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -124,7 +125,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	group := *observed.Group
 
 	current := cr.Spec.ForProvider.DeepCopy()
-	cr.Spec.ForProvider.Path = awsclient.LateInitializeStringPtr(cr.Spec.ForProvider.Path, group.Path)
+	cr.Spec.ForProvider.Path = pointer.LateInitializeStringPtr(cr.Spec.ForProvider.Path, group.Path)
 
 	if aws.ToString(current.Path) != aws.ToString(cr.Spec.ForProvider.Path) {
 		if err := e.kube.Update(ctx, cr); err != nil {

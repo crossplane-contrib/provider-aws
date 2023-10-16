@@ -12,7 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
@@ -56,7 +56,7 @@ func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
 	o := &v1beta1.RoleParameters{
 		Description:              &description,
 		AssumeRolePolicyDocument: assumeRolePolicyDocument,
-		MaxSessionDuration:       aws.Int32(1),
+		MaxSessionDuration:       pointer.Int32(1),
 	}
 
 	for _, f := range m {
@@ -78,7 +78,7 @@ func role(m ...func(*iamtypes.Role)) *iamtypes.Role {
 	o := &iamtypes.Role{
 		Description:              &description,
 		AssumeRolePolicyDocument: &assumeRolePolicyDocument,
-		MaxSessionDuration:       aws.Int32(1),
+		MaxSessionDuration:       pointer.Int32(1),
 	}
 
 	for _, f := range m {
@@ -89,8 +89,8 @@ func role(m ...func(*iamtypes.Role)) *iamtypes.Role {
 }
 
 func addRoleOutputFields(r *iamtypes.Role) {
-	r.Arn = aws.String(roleARN)
-	r.RoleId = aws.String(roleID)
+	r.Arn = pointer.String(roleARN)
+	r.RoleId = pointer.String(roleID)
 }
 
 func roleObservation(m ...func(*v1beta1.RoleExternalStatus)) *v1beta1.RoleExternalStatus {
@@ -114,10 +114,10 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 		"FilledInput": {
 			in: *roleParams(),
 			out: iam.CreateRoleInput{
-				RoleName:                 aws.String(roleName),
+				RoleName:                 pointer.String(roleName),
 				Description:              &description,
-				AssumeRolePolicyDocument: aws.String(assumeRolePolicyDocument),
-				MaxSessionDuration:       aws.Int32(1),
+				AssumeRolePolicyDocument: pointer.String(assumeRolePolicyDocument),
+				MaxSessionDuration:       pointer.Int32(1),
 			},
 		},
 	}
@@ -250,18 +250,18 @@ func TestIsRoleUpToDate(t *testing.T) {
 				role: iamtypes.Role{
 					AssumeRolePolicyDocument: escapedPolicyJSON(),
 					Description:              &description,
-					MaxSessionDuration:       aws.Int32(1),
-					Path:                     aws.String("/"),
+					MaxSessionDuration:       pointer.Int32(1),
+					Path:                     pointer.String("/"),
 					Tags: []iamtypes.Tag{{
-						Key:   aws.String("key1"),
-						Value: aws.String("value1"),
+						Key:   pointer.String("key1"),
+						Value: pointer.String("value1"),
 					}},
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
-					MaxSessionDuration:       aws.Int32(1),
-					Path:                     aws.String("/"),
+					MaxSessionDuration:       pointer.Int32(1),
+					Path:                     pointer.String("/"),
 					Tags: []v1beta1.Tag{{
 						Key:   "key1",
 						Value: "value1",
@@ -276,14 +276,14 @@ func TestIsRoleUpToDate(t *testing.T) {
 				role: iamtypes.Role{
 					AssumeRolePolicyDocument: escapedPolicyJSON(),
 					Description:              &description,
-					MaxSessionDuration:       aws.Int32(1),
-					Path:                     aws.String("/"),
+					MaxSessionDuration:       pointer.Int32(1),
+					Path:                     pointer.String("/"),
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument2,
-					MaxSessionDuration:       aws.Int32(1),
-					Path:                     aws.String("/"),
+					MaxSessionDuration:       pointer.Int32(1),
+					Path:                     pointer.String("/"),
 				},
 			},
 			want: false,
@@ -297,18 +297,18 @@ observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%
 				role: iamtypes.Role{
 					AssumeRolePolicyDocument: &assumeRolePolicyDocument,
 					Description:              &description,
-					MaxSessionDuration:       aws.Int32(1),
-					Path:                     aws.String("//"),
+					MaxSessionDuration:       pointer.Int32(1),
+					Path:                     pointer.String("//"),
 					Tags: []iamtypes.Tag{{
-						Key:   aws.String("key1"),
-						Value: aws.String("value1"),
+						Key:   pointer.String("key1"),
+						Value: pointer.String("value1"),
 					}},
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
-					MaxSessionDuration:       aws.Int32(1),
-					Path:                     aws.String("/"),
+					MaxSessionDuration:       pointer.Int32(1),
+					Path:                     pointer.String("/"),
 					Tags: []v1beta1.Tag{{
 						Key:   "key1",
 						Value: "value1",

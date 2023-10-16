@@ -29,11 +29,11 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	s3client "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 func makeRawPolicy(p *common.BucketPolicyBody) string {
@@ -105,7 +105,7 @@ func TestPolicyObserve(t *testing.T) {
 				Resource: []string{
 					"arn:aws:s3:::test-bucket-xxxx/*",
 				},
-				SID: awsclient.String("DenyIncorrectEncryptionHeader"),
+				SID: pointer.String("DenyIncorrectEncryptionHeader"),
 			},
 			{
 				Action: []string{
@@ -117,7 +117,7 @@ func TestPolicyObserve(t *testing.T) {
 						Conditions: []common.ConditionPair{
 							{
 								ConditionKey:          "s3:x-amz-server-side-encryption",
-								ConditionBooleanValue: awsclient.Bool(true),
+								ConditionBooleanValue: pointer.Bool(true),
 							},
 						},
 					},
@@ -129,7 +129,7 @@ func TestPolicyObserve(t *testing.T) {
 				Resource: []string{
 					"arn:aws:s3:::test-bucket-xxxx/*",
 				},
-				SID: awsclient.String("DenyUnEncryptedObjectUploads"),
+				SID: pointer.String("DenyUnEncryptedObjectUploads"),
 			},
 			{
 				Action: []string{
@@ -153,7 +153,7 @@ func TestPolicyObserve(t *testing.T) {
 						Conditions: []common.ConditionPair{
 							{
 								ConditionKey:         "aws:PrincipalAccount",
-								ConditionStringValue: awsclient.String("123456789012"),
+								ConditionStringValue: pointer.String("123456789012"),
 							},
 						},
 					},
@@ -166,7 +166,7 @@ func TestPolicyObserve(t *testing.T) {
 					"arn:aws:s3:::test-bucket-xxxx",
 					"arn:aws:s3:::test-bucket-xxxx/*",
 				},
-				SID: awsclient.String("AllowTenantReadWrite"),
+				SID: pointer.String("AllowTenantReadWrite"),
 			},
 			{
 				Action: []string{
@@ -191,7 +191,7 @@ func TestPolicyObserve(t *testing.T) {
 					"arn:aws:s3:::test-bucket-xxxx",
 					"arn:aws:s3:::test-bucket-xxxx/*",
 				},
-				SID: awsclient.String("AllowSSLRequestsOnly"),
+				SID: pointer.String("AllowSSLRequestsOnly"),
 			},
 		},
 	}

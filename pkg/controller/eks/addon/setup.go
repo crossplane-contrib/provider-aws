@@ -37,8 +37,8 @@ import (
 
 	eksv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/eks/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -115,7 +115,7 @@ func postObserve(_ context.Context, cr *eksv1alpha1.Addon, _ *awseks.DescribeAdd
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclients.StringValue(cr.Status.AtProvider.Status) {
+	switch pointer.StringValue(cr.Status.AtProvider.Status) {
 	case awseks.AddonStatusCreating:
 		cr.SetConditions(xpv1.Creating())
 	case awseks.AddonStatusDeleting:
@@ -134,7 +134,7 @@ func postObserve(_ context.Context, cr *eksv1alpha1.Addon, _ *awseks.DescribeAdd
 
 func lateInitialize(spec *eksv1alpha1.AddonParameters, resp *awseks.DescribeAddonOutput) error {
 	if resp.Addon != nil {
-		spec.ServiceAccountRoleARN = awsclients.LateInitializeStringPtr(spec.ServiceAccountRoleARN, resp.Addon.ServiceAccountRoleArn)
+		spec.ServiceAccountRoleARN = pointer.LateInitializeStringPtr(spec.ServiceAccountRoleARN, resp.Addon.ServiceAccountRoleArn)
 	}
 	return nil
 }
@@ -142,8 +142,8 @@ func lateInitialize(spec *eksv1alpha1.AddonParameters, resp *awseks.DescribeAddo
 func (h *hooks) isUpToDate(_ context.Context, cr *eksv1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, string, error) {
 	switch {
 	case resp.Addon == nil,
-		cr.Spec.ForProvider.AddonVersion != nil && awsclients.StringValue(cr.Spec.ForProvider.AddonVersion) != awsclients.StringValue(resp.Addon.AddonVersion),
-		cr.Spec.ForProvider.ServiceAccountRoleARN != nil && awsclients.StringValue(cr.Spec.ForProvider.ServiceAccountRoleARN) != awsclients.StringValue(resp.Addon.ServiceAccountRoleArn):
+		cr.Spec.ForProvider.AddonVersion != nil && pointer.StringValue(cr.Spec.ForProvider.AddonVersion) != pointer.StringValue(resp.Addon.AddonVersion),
+		cr.Spec.ForProvider.ServiceAccountRoleARN != nil && pointer.StringValue(cr.Spec.ForProvider.ServiceAccountRoleARN) != pointer.StringValue(resp.Addon.ServiceAccountRoleArn):
 		return false, "", nil
 	}
 
@@ -220,7 +220,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *eksv1alpha1.Addon, resp *aws
 	add, remove := tags.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, desc.Addon.Tags)
 	if len(add) > 0 {
 		_, err := h.client.TagResourceWithContext(ctx, &awseks.TagResourceInput{
-			ResourceArn: awsclients.String(meta.GetExternalName(cr)),
+			ResourceArn: pointer.String(meta.GetExternalName(cr)),
 			Tags:        add,
 		})
 		if err != nil {
@@ -229,7 +229,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *eksv1alpha1.Addon, resp *aws
 	}
 	if len(remove) > 0 {
 		_, err := h.client.UntagResourceWithContext(ctx, &awseks.UntagResourceInput{
-			ResourceArn: awsclients.String(meta.GetExternalName(cr)),
+			ResourceArn: pointer.String(meta.GetExternalName(cr)),
 			TagKeys:     remove,
 		})
 		if err != nil {
@@ -249,8 +249,8 @@ func postCreate(_ context.Context, cr *eksv1alpha1.Addon, res *awseks.CreateAddo
 		return managed.ExternalCreation{}, err
 	}
 
-	if res.Addon != nil && meta.GetExternalName(cr) != awsclients.StringValue(res.Addon.AddonArn) {
-		meta.SetExternalName(cr, awsclients.StringValue(res.Addon.AddonArn))
+	if res.Addon != nil && meta.GetExternalName(cr) != pointer.StringValue(res.Addon.AddonArn) {
+		meta.SetExternalName(cr, pointer.StringValue(res.Addon.AddonArn))
 	}
 	return cre, nil
 }
@@ -273,7 +273,7 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags = map[string]*string{}
 	}
 	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = awsclients.String(v)
+		cr.Spec.ForProvider.Tags[k] = pointer.String(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

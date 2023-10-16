@@ -28,8 +28,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupVolume adds a controller that reconciles Volume.
@@ -75,10 +75,10 @@ func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcsdk.DescribeVolumesOutput {
-	volumeIdentifier := awsclients.String(meta.GetExternalName(cr))
+	volumeIdentifier := pointer.String(meta.GetExternalName(cr))
 	resp := &svcsdk.DescribeVolumesOutput{}
 	for _, volume := range obj.Volumes {
-		if awsclients.StringValue(volume.VolumeId) == awsclients.StringValue(volumeIdentifier) {
+		if pointer.StringValue(volume.VolumeId) == pointer.StringValue(volumeIdentifier) {
 			resp.Volumes = append(resp.Volumes, volume)
 			break
 		}
@@ -88,7 +88,7 @@ func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcs
 
 func preCreate(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.CreateVolumeInput) error {
 	obj.KmsKeyId = cr.Spec.ForProvider.KMSKeyID
-	obj.ClientToken = awsclients.String(string(cr.UID))
+	obj.ClientToken = pointer.String(string(cr.UID))
 	return nil
 }
 
@@ -96,7 +96,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.Volume, c
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.VolumeId))
+	meta.SetExternalName(cr, pointer.StringValue(obj.VolumeId))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
@@ -105,7 +105,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.Describe
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclients.StringValue(obj.Volumes[0].State) {
+	switch pointer.StringValue(obj.Volumes[0].State) {
 	case string(svcapitypes.VolumeState_available):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.VolumeState_creating):
@@ -117,7 +117,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.Describe
 	}
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
-		"volumeID": []byte(awsclients.StringValue(obj.Volumes[0].VolumeId)),
+		"volumeID": []byte(pointer.StringValue(obj.Volumes[0].VolumeId)),
 	}
 	return obs, nil
 }

@@ -18,8 +18,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/globalaccelerator/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupAccelerator adds a controller that reconciles an Accelerator.
@@ -62,26 +62,26 @@ type gaClient struct {
 }
 
 func preObserve(ctx context.Context, cr *svcapitypes.Accelerator, obj *svcsdk.DescribeAcceleratorInput) error {
-	obj.AcceleratorArn = awsclients.String(meta.GetExternalName(cr))
+	obj.AcceleratorArn = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Accelerator, obj *svcsdk.CreateAcceleratorInput) error {
 	obj.Name = cr.Spec.ForProvider.Name
-	obj.IdempotencyToken = awsclients.String(string(cr.UID))
+	obj.IdempotencyToken = pointer.String(string(cr.UID))
 	return nil
 }
 
 func (d gaClient) preDelete(ctx context.Context, cr *svcapitypes.Accelerator, obj *svcsdk.DeleteAcceleratorInput) (bool, error) {
 	accArn := meta.GetExternalName(cr)
-	obj.AcceleratorArn = awsclients.String(accArn)
+	obj.AcceleratorArn = pointer.String(accArn)
 
 	// we need to check first if the accelerator is already disabled on remote
 	// because sending an update request will bring it into pending state and
 	// sending delete requests against an accelerator in pending state will result
 	// in a AcceleratorNotDisabledException
 	descReq := &svcsdk.DescribeAcceleratorInput{
-		AcceleratorArn: awsclients.String(accArn),
+		AcceleratorArn: pointer.String(accArn),
 	}
 
 	descResp, err := d.client.DescribeAccelerator(descReq)
@@ -93,7 +93,7 @@ func (d gaClient) preDelete(ctx context.Context, cr *svcapitypes.Accelerator, ob
 		enabled := false
 		updReq := &svcsdk.UpdateAcceleratorInput{
 			Enabled:        &enabled,
-			AcceleratorArn: awsclients.String(meta.GetExternalName(cr)),
+			AcceleratorArn: pointer.String(meta.GetExternalName(cr)),
 			Name:           cr.Spec.ForProvider.Name,
 			IpAddressType:  cr.Spec.ForProvider.IPAddressType,
 		}
@@ -129,7 +129,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Accelerator, resp *svcsdk.Cre
 		return managed.ExternalCreation{}, err
 	}
 
-	meta.SetExternalName(cr, awsclients.StringValue(resp.Accelerator.AcceleratorArn))
+	meta.SetExternalName(cr, pointer.StringValue(resp.Accelerator.AcceleratorArn))
 	return cre, nil
 }
 

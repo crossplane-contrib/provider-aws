@@ -31,11 +31,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -63,11 +63,11 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 				},
 				Filter: &v1beta1.LifecycleRuleFilter{
 					And: &v1beta1.LifecycleRuleAndOperator{
-						Prefix: awsclient.String(prefix),
+						Prefix: pointer.String(prefix),
 						Tags:   tags,
 					},
 				},
-				ID:                          awsclient.String(id),
+				ID:                          pointer.String(id),
 				NoncurrentVersionExpiration: &v1beta1.NoncurrentVersionExpiration{NoncurrentDays: days},
 				NoncurrentVersionTransitions: []v1beta1.NoncurrentVersionTransition{{
 					NoncurrentDays: days,
@@ -96,11 +96,11 @@ func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 				},
 				Filter: &s3types.LifecycleRuleFilterMemberAnd{
 					Value: s3types.LifecycleRuleAndOperator{
-						Prefix: awsclient.String(prefix),
+						Prefix: pointer.String(prefix),
 						Tags:   awsTags,
 					},
 				},
-				ID:                          awsclient.String(id),
+				ID:                          pointer.String(id),
 				NoncurrentVersionExpiration: &s3types.NoncurrentVersionExpiration{NoncurrentDays: days},
 				NoncurrentVersionTransitions: []s3types.NoncurrentVersionTransition{{
 					NoncurrentDays: days,

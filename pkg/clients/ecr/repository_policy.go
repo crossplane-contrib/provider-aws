@@ -11,7 +11,7 @@ import (
 	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -31,7 +31,7 @@ func GenerateSetRepositoryPolicyInput(params *v1beta1.RepositoryPolicyParameters
 		RepositoryName: params.RepositoryName,
 		RegistryId:     params.RegistryID,
 		PolicyText:     policy,
-		Force:          awsclient.BoolValue(params.Force),
+		Force:          pointer.BoolValue(params.Force),
 	}
 
 	return c
@@ -43,7 +43,7 @@ func LateInitializeRepositoryPolicy(in *v1beta1.RepositoryPolicyParameters, r *e
 	if r == nil {
 		return
 	}
-	in.RegistryID = awsclient.LateInitializeStringPtr(in.RegistryID, r.RegistryId)
+	in.RegistryID = pointer.LateInitializeStringPtr(in.RegistryID, r.RegistryId)
 }
 
 // IsPolicyNotFoundErr returns true if the error code indicates that the policy was not found
@@ -117,7 +117,7 @@ func SerializeRepositoryPolicyStatement(p v1beta1.RepositoryPolicyStatement) (in
 // SerializeRepositoryPrincipal is the custom serializer for the RepositoryPrincipal
 func SerializeRepositoryPrincipal(p *v1beta1.RepositoryPrincipal) (interface{}, error) {
 	all := "*"
-	if awsclient.BoolValue(p.AllowAnon) {
+	if pointer.BoolValue(p.AllowAnon) {
 		return all, nil
 	}
 	m := make(map[string]interface{})
@@ -126,11 +126,11 @@ func SerializeRepositoryPrincipal(p *v1beta1.RepositoryPrincipal) (interface{}, 
 	}
 
 	if len(p.AWSPrincipals) == 1 {
-		m["AWS"] = awsclient.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[0]))
+		m["AWS"] = pointer.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[0]))
 	} else if len(p.AWSPrincipals) > 1 {
 		values := make([]interface{}, len(p.AWSPrincipals))
 		for i := range p.AWSPrincipals {
-			values[i] = awsclient.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[i]))
+			values[i] = pointer.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[i]))
 		}
 		m["AWS"] = values
 	}

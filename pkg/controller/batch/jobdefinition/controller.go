@@ -41,6 +41,7 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -116,7 +117,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	resp, err := e.client.DescribeJobDefinitionsWithContext(ctx, &svcsdk.DescribeJobDefinitionsInput{
 		JobDefinitionName: &cr.Name,
-		Status:            awsclient.String("ACTIVE"), // to not get an older, inactive version/revision before we finish create!
+		Status:            pointer.String("ACTIVE"), // to not get an older, inactive version/revision before we finish create!
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDescribeJobDefinition)
@@ -132,11 +133,11 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	cr.Status.AtProvider = currentJobDefinition.Status.AtProvider
 
-	switch awsclient.StringValue(cr.Status.AtProvider.Status) {
+	switch pointer.StringValue(cr.Status.AtProvider.Status) {
 	case "ACTIVE":
-		cr.SetConditions(xpv1.Available().WithMessage(awsclient.StringValue(resp.JobDefinitions[0].Status)))
+		cr.SetConditions(xpv1.Available().WithMessage(pointer.StringValue(resp.JobDefinitions[0].Status)))
 	case "INACTIVE":
-		cr.SetConditions(xpv1.Unavailable().WithMessage(awsclient.StringValue(resp.JobDefinitions[0].Status) + " INACTIVE is considered deleted"))
+		cr.SetConditions(xpv1.Unavailable().WithMessage(pointer.StringValue(resp.JobDefinitions[0].Status) + " INACTIVE is considered deleted"))
 		return managed.ExternalObservation{ResourceExists: false}, nil
 		// INACTIVE JobDefinitions are only permanently deleted by AWS after 180 days.
 		// These JDs could only be used to make a revision (copy/clone). Or to edit tags.
@@ -185,7 +186,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotBatchJobDefinition)
 	}
 
-	if cr.Status.AtProvider.Status == awsclient.String("INACTIVE") {
+	if cr.Status.AtProvider.Status == pointer.String("INACTIVE") {
 		return nil
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -195,13 +196,13 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.JobDefinitionParameters) {
-	// spec.PlatformCapabilities = awsclient.LateInitializeStringPtrSlice(spec.PlatformCapabilities, current.PlatformCapabilities)
-	// spec.PropagateTags = awsclient.LateInitializeBoolPtr(spec.PropagateTags, current.PropagateTags)
+	// spec.PlatformCapabilities = pointer.LateInitializeStringPtrSlice(spec.PlatformCapabilities, current.PlatformCapabilities)
+	// spec.PropagateTags = pointer.LateInitializeBoolPtr(spec.PropagateTags, current.PropagateTags)
 	// ^ doc hints default value, however these fields (also in AWS Console) stay empty...
 
 	if current.ContainerProperties != nil {
 
-		if cmp.Equal(spec.PlatformCapabilities, []*string{awsclient.String(svcsdk.PlatformCapabilityFargate)}) && spec.ContainerProperties.FargatePlatformConfiguration == nil {
+		if cmp.Equal(spec.PlatformCapabilities, []*string{pointer.String(svcsdk.PlatformCapabilityFargate)}) && spec.ContainerProperties.FargatePlatformConfiguration == nil {
 			spec.ContainerProperties.FargatePlatformConfiguration = &svcapitypes.FargatePlatformConfiguration{PlatformVersion: current.ContainerProperties.FargatePlatformConfiguration.PlatformVersion}
 		}
 	}

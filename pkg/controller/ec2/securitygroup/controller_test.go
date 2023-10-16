@@ -34,10 +34,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -488,7 +488,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func compareTags(a awsec2types.Tag, b awsec2types.Tag) bool {
-	return awsclient.StringValue(a.Key) < awsclient.StringValue(b.Key)
+	return pointer.StringValue(a.Key) < pointer.StringValue(b.Key)
 }
 
 func TestUpdateTags(t *testing.T) {

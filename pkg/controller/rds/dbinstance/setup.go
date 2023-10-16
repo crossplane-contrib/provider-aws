@@ -28,11 +28,12 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // error constants
@@ -116,7 +117,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesInput) error {
-	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -142,18 +143,18 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		return errors.Wrap(err, dbinstance.ErrNoRetrievePasswordOrGenerate)
 	}
 
-	obj.MasterUserPassword = aws.String(pw)
-	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
+	obj.MasterUserPassword = pointer.String(pw)
+	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
 	if len(cr.Spec.ForProvider.VPCSecurityGroupIDs) > 0 {
 		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
 		for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			obj.VpcSecurityGroupIds[i] = aws.String(v)
+			obj.VpcSecurityGroupIds[i] = pointer.String(v)
 		}
 	}
 	if len(cr.Spec.ForProvider.DBSecurityGroups) > 0 {
 		obj.DBSecurityGroups = make([]*string, len(cr.Spec.ForProvider.DBSecurityGroups))
 		for i, v := range cr.Spec.ForProvider.DBSecurityGroups {
-			obj.DBSecurityGroups[i] = aws.String(v)
+			obj.DBSecurityGroups[i] = pointer.String(v)
 		}
 	}
 
@@ -199,7 +200,7 @@ func (e *custom) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DB
 		details = managed.ConnectionDetails{}
 	}
 
-	details[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername))
+	details[xpv1.ResourceCredentialsSecretUserKey] = []byte(pointer.StringValue(cr.Spec.ForProvider.MasterUsername))
 
 	pw, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
 	if err != nil {
@@ -210,10 +211,10 @@ func (e *custom) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DB
 	if cr.Status.AtProvider.Endpoint == nil {
 		return details, nil
 	}
-	if aws.StringValue(cr.Status.AtProvider.Endpoint.Address) != "" {
-		details[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(aws.StringValue(cr.Status.AtProvider.Endpoint.Address))
+	if pointer.StringValue(cr.Status.AtProvider.Endpoint.Address) != "" {
+		details[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint.Address))
 	}
-	if aws.Int64Value(cr.Status.AtProvider.Endpoint.Port) > 0 {
+	if pointer.Int64Value(cr.Status.AtProvider.Endpoint.Port) > 0 {
 		details[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(*cr.Status.AtProvider.Endpoint.Port, 10))
 	}
 
@@ -221,19 +222,19 @@ func (e *custom) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DB
 }
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) (err error) {
-	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 
 	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
 	if err != nil {
 		return errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
 	}
-	obj.MasterUserPassword = aws.String(desiredPassword)
+	obj.MasterUserPassword = pointer.String(desiredPassword)
 
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
 		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
 		for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			obj.VpcSecurityGroupIds[i] = aws.String(v)
+			obj.VpcSecurityGroupIds[i] = pointer.String(v)
 		}
 	}
 
@@ -290,9 +291,9 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, out
 }
 
 func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceInput) (bool, error) {
-	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
-	obj.FinalDBSnapshotIdentifier = aws.String(cr.Spec.ForProvider.FinalDBSnapshotIdentifier)
-	obj.SkipFinalSnapshot = aws.Bool(cr.Spec.ForProvider.SkipFinalSnapshot)
+	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.FinalDBSnapshotIdentifier = pointer.String(cr.Spec.ForProvider.FinalDBSnapshotIdentifier)
+	obj.SkipFinalSnapshot = pointer.Bool(cr.Spec.ForProvider.SkipFinalSnapshot)
 	obj.DeleteAutomatedBackups = cr.Spec.ForProvider.DeleteAutomatedBackups
 
 	_, _ = e.external.Update(ctx, cr)
@@ -315,17 +316,17 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, re
 		return obs, err
 	}
 
-	switch aws.StringValue(resp.DBInstances[0].DBInstanceStatus) {
+	switch pointer.StringValue(resp.DBInstances[0].DBInstanceStatus) {
 	case "available", "configuring-enhanced-monitoring", "storage-optimization", "backing-up":
 		cr.SetConditions(xpv1.Available())
 	case "modifying":
-		cr.SetConditions(xpv1.Available().WithMessage("DB Instance is " + aws.StringValue(resp.DBInstances[0].DBInstanceStatus) + ", availability may vary"))
+		cr.SetConditions(xpv1.Available().WithMessage("DB Instance is " + pointer.StringValue(resp.DBInstances[0].DBInstanceStatus) + ", availability may vary"))
 	case "deleting":
 		cr.SetConditions(xpv1.Deleting())
 	case "creating":
 		cr.SetConditions(xpv1.Creating())
 	default:
-		cr.SetConditions(xpv1.Unavailable().WithMessage("DB Instance is " + aws.StringValue(resp.DBInstances[0].DBInstanceStatus)))
+		cr.SetConditions(xpv1.Unavailable().WithMessage("DB Instance is " + pointer.StringValue(resp.DBInstances[0].DBInstanceStatus)))
 	}
 
 	obs.ConnectionDetails, err = e.updateConnectionDetails(ctx, cr, obs.ConnectionDetails)
@@ -335,22 +336,22 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, re
 func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDBInstancesOutput) error { //nolint:gocyclo
 	// (PocketMobsters): The controller should already be checking if out is nil so we *should* have a dbinstance here, always
 	db := out.DBInstances[0]
-	in.DBInstanceClass = aws.LateInitializeStringPtr(in.DBInstanceClass, db.DBInstanceClass)
-	in.Engine = aws.LateInitializeStringPtr(in.Engine, db.Engine)
+	in.DBInstanceClass = pointer.LateInitializeStringPtr(in.DBInstanceClass, db.DBInstanceClass)
+	in.Engine = pointer.LateInitializeStringPtr(in.Engine, db.Engine)
 
-	in.DBClusterIdentifier = aws.LateInitializeStringPtr(in.DBClusterIdentifier, db.DBClusterIdentifier)
+	in.DBClusterIdentifier = pointer.LateInitializeStringPtr(in.DBClusterIdentifier, db.DBClusterIdentifier)
 	// if the instance belongs to a cluster, these fields should not be lateinit,
 	// to allow the user to manage these via the cluster
 	if in.DBClusterIdentifier == nil {
-		in.AllocatedStorage = aws.LateInitializeInt64Ptr(in.AllocatedStorage, db.AllocatedStorage)
-		in.BackupRetentionPeriod = aws.LateInitializeInt64Ptr(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
-		in.CopyTagsToSnapshot = aws.LateInitializeBoolPtr(in.CopyTagsToSnapshot, db.CopyTagsToSnapshot)
-		in.DeletionProtection = aws.LateInitializeBoolPtr(in.DeletionProtection, db.DeletionProtection)
-		in.EnableIAMDatabaseAuthentication = aws.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
-		in.PreferredBackupWindow = aws.LateInitializeStringPtr(in.PreferredBackupWindow, db.PreferredBackupWindow)
-		in.StorageEncrypted = aws.LateInitializeBoolPtr(in.StorageEncrypted, db.StorageEncrypted)
-		in.StorageType = aws.LateInitializeStringPtr(in.StorageType, db.StorageType)
-		in.EngineVersion = aws.LateInitializeStringPtr(in.EngineVersion, db.EngineVersion)
+		in.AllocatedStorage = pointer.LateInitializeInt64Ptr(in.AllocatedStorage, db.AllocatedStorage)
+		in.BackupRetentionPeriod = pointer.LateInitializeInt64Ptr(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
+		in.CopyTagsToSnapshot = pointer.LateInitializeBoolPtr(in.CopyTagsToSnapshot, db.CopyTagsToSnapshot)
+		in.DeletionProtection = pointer.LateInitializeBoolPtr(in.DeletionProtection, db.DeletionProtection)
+		in.EnableIAMDatabaseAuthentication = pointer.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
+		in.PreferredBackupWindow = pointer.LateInitializeStringPtr(in.PreferredBackupWindow, db.PreferredBackupWindow)
+		in.StorageEncrypted = pointer.LateInitializeBoolPtr(in.StorageEncrypted, db.StorageEncrypted)
+		in.StorageType = pointer.LateInitializeStringPtr(in.StorageType, db.StorageType)
+		in.EngineVersion = pointer.LateInitializeStringPtr(in.EngineVersion, db.EngineVersion)
 		if in.DBParameterGroupName == nil {
 			for i := range db.DBParameterGroups {
 				if db.DBParameterGroups[i].DBParameterGroupName != nil {
@@ -362,48 +363,48 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 		if len(in.VPCSecurityGroupIDs) == 0 && len(db.VpcSecurityGroups) != 0 {
 			in.VPCSecurityGroupIDs = make([]string, len(db.VpcSecurityGroups))
 			for i, val := range db.VpcSecurityGroups {
-				in.VPCSecurityGroupIDs[i] = aws.StringValue(val.VpcSecurityGroupId)
+				in.VPCSecurityGroupIDs[i] = pointer.StringValue(val.VpcSecurityGroupId)
 			}
 		}
 	}
-	in.AutoMinorVersionUpgrade = aws.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
-	in.AvailabilityZone = aws.LateInitializeStringPtr(in.AvailabilityZone, db.AvailabilityZone)
-	in.CACertificateIdentifier = aws.LateInitializeStringPtr(in.CACertificateIdentifier, db.CACertificateIdentifier)
-	in.CharacterSetName = aws.LateInitializeStringPtr(in.CharacterSetName, db.CharacterSetName)
-	in.DBName = aws.LateInitializeStringPtr(in.DBName, db.DBName)
-	in.EnablePerformanceInsights = aws.LateInitializeBoolPtr(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
-	in.IOPS = aws.LateInitializeInt64Ptr(in.IOPS, db.Iops)
+	in.AutoMinorVersionUpgrade = pointer.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
+	in.AvailabilityZone = pointer.LateInitializeStringPtr(in.AvailabilityZone, db.AvailabilityZone)
+	in.CACertificateIdentifier = pointer.LateInitializeStringPtr(in.CACertificateIdentifier, db.CACertificateIdentifier)
+	in.CharacterSetName = pointer.LateInitializeStringPtr(in.CharacterSetName, db.CharacterSetName)
+	in.DBName = pointer.LateInitializeStringPtr(in.DBName, db.DBName)
+	in.EnablePerformanceInsights = pointer.LateInitializeBoolPtr(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
+	in.IOPS = pointer.LateInitializeInt64Ptr(in.IOPS, db.Iops)
 	kmsKey := handleKmsKey(in.KMSKeyID, db.KmsKeyId)
-	in.KMSKeyID = aws.LateInitializeStringPtr(in.KMSKeyID, kmsKey)
-	in.LicenseModel = aws.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
-	in.MasterUsername = aws.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
-	in.MaxAllocatedStorage = aws.LateInitializeInt64Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
-	in.StorageThroughput = aws.LateInitializeInt64Ptr(in.StorageThroughput, db.StorageThroughput)
+	in.KMSKeyID = pointer.LateInitializeStringPtr(in.KMSKeyID, kmsKey)
+	in.LicenseModel = pointer.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
+	in.MasterUsername = pointer.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
+	in.MaxAllocatedStorage = pointer.LateInitializeInt64Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
+	in.StorageThroughput = pointer.LateInitializeInt64Ptr(in.StorageThroughput, db.StorageThroughput)
 
-	if aws.Int64Value(db.MonitoringInterval) > 0 {
-		in.MonitoringInterval = aws.LateInitializeInt64Ptr(in.MonitoringInterval, db.MonitoringInterval)
+	if pointer.Int64Value(db.MonitoringInterval) > 0 {
+		in.MonitoringInterval = pointer.LateInitializeInt64Ptr(in.MonitoringInterval, db.MonitoringInterval)
 	}
 
-	in.MonitoringRoleARN = aws.LateInitializeStringPtr(in.MonitoringRoleARN, db.MonitoringRoleArn)
-	in.MultiAZ = aws.LateInitializeBoolPtr(in.MultiAZ, db.MultiAZ)
-	in.PerformanceInsightsKMSKeyID = aws.LateInitializeStringPtr(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)
-	in.PerformanceInsightsRetentionPeriod = aws.LateInitializeInt64Ptr(in.PerformanceInsightsRetentionPeriod, db.PerformanceInsightsRetentionPeriod)
-	in.PreferredMaintenanceWindow = aws.LateInitializeStringPtr(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
-	in.PromotionTier = aws.LateInitializeInt64Ptr(in.PromotionTier, db.PromotionTier)
-	in.PubliclyAccessible = aws.LateInitializeBoolPtr(in.PubliclyAccessible, db.PubliclyAccessible)
-	in.Timezone = aws.LateInitializeStringPtr(in.Timezone, db.Timezone)
+	in.MonitoringRoleARN = pointer.LateInitializeStringPtr(in.MonitoringRoleARN, db.MonitoringRoleArn)
+	in.MultiAZ = pointer.LateInitializeBoolPtr(in.MultiAZ, db.MultiAZ)
+	in.PerformanceInsightsKMSKeyID = pointer.LateInitializeStringPtr(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)
+	in.PerformanceInsightsRetentionPeriod = pointer.LateInitializeInt64Ptr(in.PerformanceInsightsRetentionPeriod, db.PerformanceInsightsRetentionPeriod)
+	in.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
+	in.PromotionTier = pointer.LateInitializeInt64Ptr(in.PromotionTier, db.PromotionTier)
+	in.PubliclyAccessible = pointer.LateInitializeBoolPtr(in.PubliclyAccessible, db.PubliclyAccessible)
+	in.Timezone = pointer.LateInitializeStringPtr(in.Timezone, db.Timezone)
 
 	if db.Endpoint != nil {
-		in.Port = aws.LateInitializeInt64Ptr(in.Port, db.Endpoint.Port)
+		in.Port = pointer.LateInitializeInt64Ptr(in.Port, db.Endpoint.Port)
 	}
 
 	if len(in.DBSecurityGroups) == 0 && len(db.DBSecurityGroups) != 0 {
 		in.DBSecurityGroups = make([]string, len(db.DBSecurityGroups))
 		for i, val := range db.DBSecurityGroups {
-			in.DBSecurityGroups[i] = aws.StringValue(val.DBSecurityGroupName)
+			in.DBSecurityGroups[i] = pointer.StringValue(val.DBSecurityGroupName)
 		}
 	}
-	if aws.StringValue(in.DBSubnetGroupName) == "" && db.DBSubnetGroup != nil {
+	if pointer.StringValue(in.DBSubnetGroupName) == "" && db.DBSubnetGroup != nil {
 		in.DBSubnetGroupName = db.DBSubnetGroup.DBSubnetGroupName
 	}
 	if len(in.EnableCloudwatchLogsExports) == 0 && len(db.EnabledCloudwatchLogsExports) != 0 {
@@ -435,7 +436,7 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	// again.
 	// This could be matured a bit more for specific statuses, such as not allowing storage changes
 	// when the status is "storage-optimization"
-	status := aws.StringValue(out.DBInstances[0].DBInstanceStatus)
+	status := pointer.StringValue(out.DBInstances[0].DBInstanceStatus)
 	if status == "modifying" || status == "upgrading" || status == "rebooting" || status == "creating" || status == "deleting" {
 		return true, "", nil
 	}
@@ -523,7 +524,7 @@ func isEngineVersionUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBI
 		}
 
 		// Upgrade is only necessary if the spec version is higher.
-		// Downgrades are not possible in AWS.
+		// Downgrades are not possible in pointer.
 		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *out.DBInstances[0].EngineVersion)
 		return c <= 0
 	}
@@ -535,13 +536,13 @@ func isOptionGroupUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBInstance) b
 	// so we do not try to update in this case
 	if cr.Spec.ForProvider.OptionGroupName != nil {
 		for _, group := range out.OptionGroupMemberships {
-			if group.OptionGroupName != nil && (aws.StringValue(group.OptionGroupName) == aws.StringValue(cr.Spec.ForProvider.OptionGroupName)) {
+			if group.OptionGroupName != nil && (pointer.StringValue(group.OptionGroupName) == pointer.StringValue(cr.Spec.ForProvider.OptionGroupName)) {
 
-				switch aws.StringValue(group.Status) {
+				switch pointer.StringValue(group.Status) {
 				case "pending-maintenance-apply":
 					// If ApplyImmediately was turned on after the OptionGroup change was requested,
 					// we can make a new Modify request
-					if aws.BoolValue(cr.Spec.ForProvider.ApplyImmediately) {
+					if pointer.BoolValue(cr.Spec.ForProvider.ApplyImmediately) {
 						return false
 					}
 					return true
@@ -564,7 +565,7 @@ func createPatch(out *svcsdk.DescribeDBInstancesOutput, target *svcapitypes.DBIn
 		return nil, err
 	}
 	currentParams.KMSKeyID = handleKmsKey(target.KMSKeyID, currentParams.KMSKeyID)
-	jsonPatch, err := aws.CreateJSONPatch(currentParams, target)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}
@@ -576,11 +577,11 @@ func createPatch(out *svcsdk.DescribeDBInstancesOutput, target *svcapitypes.DBIn
 }
 
 func compareTimeRanges(format string, expectedWindow *string, actualWindow *string) (bool, error) {
-	if aws.StringValue(expectedWindow) == "" {
+	if pointer.StringValue(expectedWindow) == "" {
 		// no window to set, don't bother
 		return false, nil
 	}
-	if aws.StringValue(actualWindow) == "" {
+	if pointer.StringValue(actualWindow) == "" {
 		// expected is set but actual is not, so we should set it
 		return true, nil
 	}
@@ -641,7 +642,7 @@ func isDBParameterGroupNameUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBIn
 
 	for _, grp := range actualGroups {
 
-		if aws.StringValue(grp.DBParameterGroupName) == aws.StringValue(desiredGroup) {
+		if pointer.StringValue(grp.DBParameterGroupName) == pointer.StringValue(desiredGroup) {
 			return true
 		}
 
@@ -653,7 +654,7 @@ func isDBParameterGroupNameUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBIn
 func filterList(cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesOutput) *svcsdk.DescribeDBInstancesOutput {
 	resp := &svcsdk.DescribeDBInstancesOutput{}
 	for _, dbInstance := range obj.DBInstances {
-		if aws.StringValue(dbInstance.DBInstanceIdentifier) == meta.GetExternalName(cr) {
+		if pointer.StringValue(dbInstance.DBInstanceIdentifier) == meta.GetExternalName(cr) {
 			resp.DBInstances = append(resp.DBInstances, dbInstance)
 			break
 		}

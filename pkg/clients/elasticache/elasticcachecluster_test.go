@@ -26,7 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -44,14 +44,14 @@ var (
 func clusterParams(m ...func(*v1alpha1.CacheClusterParameters)) *v1alpha1.CacheClusterParameters {
 	o := &v1alpha1.CacheClusterParameters{
 		CacheNodeType:              nodeType,
-		CacheSubnetGroupName:       aws.String(subnetGroup),
-		Engine:                     aws.String(redisEngine),
+		CacheSubnetGroupName:       pointer.String(subnetGroup),
+		Engine:                     pointer.String(redisEngine),
 		NumCacheNodes:              2,
-		PreferredAvailabilityZone:  aws.String(az),
-		PreferredMaintenanceWindow: aws.String(friday),
-		ReplicationGroupID:         aws.String(replicationGroupID),
-		SnapshotRetentionLimit:     aws.Int32(5),
-		SnapshotWindow:             aws.String(timeWindow),
+		PreferredAvailabilityZone:  pointer.String(az),
+		PreferredMaintenanceWindow: pointer.String(friday),
+		ReplicationGroupID:         pointer.String(replicationGroupID),
+		SnapshotRetentionLimit:     pointer.Int32(5),
+		SnapshotWindow:             pointer.String(timeWindow),
 	}
 
 	for _, f := range m {
@@ -65,17 +65,17 @@ func cluster(m ...func(*awscachetypes.CacheCluster)) *awscachetypes.CacheCluster
 	o := &awscachetypes.CacheCluster{
 		AtRestEncryptionEnabled:    &boolTrue,
 		AuthTokenEnabled:           &boolTrue,
-		CacheClusterStatus:         aws.String(v1alpha1.StatusAvailable),
-		CacheClusterId:             aws.String(clusterID),
-		CacheNodeType:              aws.String(nodeType),
-		CacheSubnetGroupName:       aws.String(subnetGroup),
-		Engine:                     aws.String(redisEngine),
-		NumCacheNodes:              aws.Int32(2),
-		PreferredMaintenanceWindow: aws.String(friday),
-		PreferredAvailabilityZone:  aws.String(az),
-		ReplicationGroupId:         aws.String(replicationGroupID),
-		SnapshotWindow:             aws.String(timeWindow),
-		SnapshotRetentionLimit:     aws.Int32(5),
+		CacheClusterStatus:         pointer.String(v1alpha1.StatusAvailable),
+		CacheClusterId:             pointer.String(clusterID),
+		CacheNodeType:              pointer.String(nodeType),
+		CacheSubnetGroupName:       pointer.String(subnetGroup),
+		Engine:                     pointer.String(redisEngine),
+		NumCacheNodes:              pointer.Int32(2),
+		PreferredMaintenanceWindow: pointer.String(friday),
+		PreferredAvailabilityZone:  pointer.String(az),
+		ReplicationGroupId:         pointer.String(replicationGroupID),
+		SnapshotWindow:             pointer.String(timeWindow),
+		SnapshotRetentionLimit:     pointer.Int32(5),
 	}
 
 	for _, f := range m {
@@ -118,7 +118,7 @@ func TestLateInitializeCluster(t *testing.T) {
 				in: *cluster(),
 			},
 			want: clusterParams(func(p *v1alpha1.CacheClusterParameters) {
-				p.ReplicationGroupID = aws.String(replicationGroupID)
+				p.ReplicationGroupID = pointer.String(replicationGroupID)
 			}),
 		},
 	}
@@ -142,15 +142,15 @@ func TestGenerateCreateCacheClusterInput(t *testing.T) {
 			in: *clusterParams(),
 			out: awscache.CreateCacheClusterInput{
 				CacheClusterId:             &clusterID,
-				CacheNodeType:              aws.String(nodeType),
-				CacheSubnetGroupName:       aws.String(subnetGroup),
-				Engine:                     aws.String(redisEngine),
-				NumCacheNodes:              aws.Int32(2),
-				PreferredAvailabilityZone:  aws.String(az),
-				PreferredMaintenanceWindow: aws.String(friday),
-				ReplicationGroupId:         aws.String(replicationGroupID),
-				SnapshotRetentionLimit:     aws.Int32(5),
-				SnapshotWindow:             aws.String(timeWindow),
+				CacheNodeType:              pointer.String(nodeType),
+				CacheSubnetGroupName:       pointer.String(subnetGroup),
+				Engine:                     pointer.String(redisEngine),
+				NumCacheNodes:              pointer.Int32(2),
+				PreferredAvailabilityZone:  pointer.String(az),
+				PreferredMaintenanceWindow: pointer.String(friday),
+				ReplicationGroupId:         pointer.String(replicationGroupID),
+				SnapshotRetentionLimit:     pointer.Int32(5),
+				SnapshotWindow:             pointer.String(timeWindow),
 			},
 		},
 	}
@@ -174,11 +174,11 @@ func TestGenerateModifyCacheClusterInput(t *testing.T) {
 			in: *clusterParams(),
 			out: awscache.ModifyCacheClusterInput{
 				CacheClusterId:             &clusterID,
-				CacheNodeType:              aws.String(nodeType),
-				NumCacheNodes:              aws.Int32(2),
-				PreferredMaintenanceWindow: aws.String(friday),
-				SnapshotRetentionLimit:     aws.Int32(5),
-				SnapshotWindow:             aws.String(timeWindow),
+				CacheNodeType:              pointer.String(nodeType),
+				NumCacheNodes:              pointer.Int32(2),
+				PreferredMaintenanceWindow: pointer.String(friday),
+				SnapshotRetentionLimit:     pointer.Int32(5),
+				SnapshotWindow:             pointer.String(timeWindow),
 			},
 		},
 	}
@@ -248,7 +248,7 @@ func TestGenerateClusterObservation(t *testing.T) {
 			in: *cluster(func(c *awscachetypes.CacheCluster) {
 				c.CacheNodes = []awscachetypes.CacheNode{
 					{
-						CacheNodeStatus: aws.String(v1alpha1.StatusAvailable),
+						CacheNodeStatus: pointer.String(v1alpha1.StatusAvailable),
 					},
 				}
 			}),

@@ -39,6 +39,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -177,7 +178,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	policyString := *policyData
-	_, err = e.client.PutBucketPolicy(ctx, &awss3.PutBucketPolicyInput{Bucket: cr.Spec.Parameters.BucketName, Policy: awsclient.String(policyString)})
+	_, err = e.client.PutBucketPolicy(ctx, &awss3.PutBucketPolicyInput{Bucket: cr.Spec.Parameters.BucketName, Policy: pointer.String(policyString)})
 	return managed.ExternalCreation{}, errorutils.Wrap(err, errAttach)
 }
 
@@ -193,7 +194,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
-	_, err = e.client.PutBucketPolicy(ctx, &awss3.PutBucketPolicyInput{Bucket: cr.Spec.Parameters.BucketName, Policy: awsclient.String(*policyData)})
+	_, err = e.client.PutBucketPolicy(ctx, &awss3.PutBucketPolicyInput{Bucket: cr.Spec.Parameters.BucketName, Policy: pointer.String(*policyData)})
 	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 

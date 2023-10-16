@@ -17,7 +17,8 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -117,9 +118,9 @@ func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2types.RouteTable)
 	if rt == nil {
 		return
 	}
-	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, rt.VpcId)
+	in.VPCID = pointer.LateInitializeStringPtr(in.VPCID, rt.VpcId)
 
-	if !awsclients.BoolValue(in.IgnoreRoutes) {
+	if !pointer.BoolValue(in.IgnoreRoutes) {
 		if len(in.Routes) == 0 && len(rt.Routes) != 0 {
 			in.Routes = make([]v1beta1.RouteBeta, len(rt.Routes))
 			for i, val := range rt.Routes {
@@ -148,7 +149,7 @@ func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2types.RouteTable)
 	}
 
 	if len(in.Tags) == 0 && len(rt.Tags) != 0 {
-		in.Tags = v1beta1.BuildFromEC2Tags(rt.Tags)
+		in.Tags = BuildFromEC2TagsV1Beta1(rt.Tags)
 	}
 }
 
@@ -159,9 +160,9 @@ func CreateRTPatch(in ec2types.RouteTable, target v1beta1.RouteTableParameters) 
 	targetCopy := target.DeepCopy()
 	currentParams := &v1beta1.RouteTableParameters{}
 
-	v1beta1.SortTags(target.Tags, in.Tags)
+	SortTagsV1Beta1(target.Tags, in.Tags)
 
-	if !awsclients.BoolValue(target.IgnoreRoutes) {
+	if !pointer.BoolValue(target.IgnoreRoutes) {
 		// Add the default route for fair comparison.
 		for _, val := range in.Routes {
 			if val.GatewayId != nil && *val.GatewayId == DefaultLocalGatewayID {
@@ -176,7 +177,7 @@ func CreateRTPatch(in ec2types.RouteTable, target v1beta1.RouteTableParameters) 
 
 	LateInitializeRT(currentParams, &in)
 
-	if !awsclients.BoolValue(target.IgnoreRoutes) {
+	if !pointer.BoolValue(target.IgnoreRoutes) {
 		for i := range targetCopy.Routes {
 			targetCopy.Routes[i].ClearRefSelectors()
 		}
@@ -186,7 +187,7 @@ func CreateRTPatch(in ec2types.RouteTable, target v1beta1.RouteTableParameters) 
 		targetCopy.Associations[i].ClearRefSelectors()
 	}
 
-	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, targetCopy)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(*currentParams, targetCopy)
 	if err != nil {
 		return nil, err
 	}

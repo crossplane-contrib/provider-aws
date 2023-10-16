@@ -18,9 +18,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -94,7 +94,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DescribeDBClusterParameterGroupsInput) error {
-	obj.DBClusterParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -110,13 +110,13 @@ func (c *custom) preCreate(ctx context.Context, cr *svcapitypes.DBClusterParamet
 	if err := c.ensureParameterGroupFamily(ctx, cr); err != nil {
 		return errors.Wrap(err, errDetermineDBParameterGroupFamily)
 	}
-	obj.DBClusterParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	obj.DBParameterGroupFamily = cr.Spec.ForProvider.DBParameterGroupFamily
 	return nil
 }
 
 func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.ModifyDBClusterParameterGroupInput) error {
-	obj.DBClusterParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	currentParameters, err := c.getCurrentDBClusterParameters(ctx, cr)
 
 	if err != nil {
@@ -129,7 +129,7 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBClusterParamet
 	if len(parametersToReset) > 0 {
 		if _, err := c.client.ResetDBClusterParameterGroupWithContext(ctx, &svcsdk.ResetDBClusterParameterGroupInput{
 			DBClusterParameterGroupName: obj.DBClusterParameterGroupName,
-			ResetAllParameters:          awsclients.Bool(false),
+			ResetAllParameters:          pointer.Bool(false),
 			Parameters:                  parametersToReset,
 		}); err != nil {
 			return err
@@ -185,7 +185,7 @@ func (c *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBClusterParame
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DeleteDBClusterParameterGroupInput) (bool, error) {
-	obj.DBClusterParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -218,8 +218,8 @@ func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBClusterParame
 
 func (c *custom) getCurrentDBClusterParameters(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup) ([]*svcsdk.Parameter, error) {
 	input := &svcsdk.DescribeDBClusterParametersInput{
-		DBClusterParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
-		MaxRecords:                  awsclients.Int64(100),
+		DBClusterParameterGroupName: pointer.String(meta.GetExternalName(cr)),
+		MaxRecords:                  pointer.Int64(100),
 	}
 	var results []*svcsdk.Parameter
 	err := c.client.DescribeDBClusterParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeDBClusterParametersOutput, lastPage bool) bool {
@@ -251,7 +251,7 @@ func (c *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.D
 	resp, err := c.client.DescribeDBEngineVersionsWithContext(ctx, &svcsdk.DescribeDBEngineVersionsInput{
 		Engine:        &selector.Engine,
 		EngineVersion: selector.EngineVersion,
-		DefaultOnly:   awsclients.Bool(selector.EngineVersion == nil),
+		DefaultOnly:   pointer.Bool(selector.EngineVersion == nil),
 	})
 	if err != nil {
 		return nil, err
@@ -267,19 +267,19 @@ func (c *custom) parametersToUpdate(cr *svcapitypes.DBClusterParameterGroup, cur
 	observed := make(map[string]svcsdk.Parameter, len(current))
 
 	for _, p := range current {
-		observed[awsclients.StringValue(p.ParameterName)] = *p
+		observed[pointer.StringValue(p.ParameterName)] = *p
 	}
 
 	// compare CR with currently set Parameters
 	for _, v := range cr.Spec.ForProvider.Parameters {
-		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
+		existing, ok := observed[pointer.StringValue(v.ParameterName)]
 
 		if !ok {
 			parameters = append(parameters, v)
 			continue
 		}
 
-		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) {
+		if pointer.StringValue(existing.ParameterValue) != pointer.StringValue(v.ParameterValue) {
 			parameters = append(parameters, v)
 		}
 	}
@@ -292,18 +292,18 @@ func (c *custom) parametersToReset(cr *svcapitypes.DBClusterParameterGroup, curr
 	set := make(map[string]svcapitypes.CustomParameter, len(cr.Spec.ForProvider.Parameters))
 
 	for _, p := range cr.Spec.ForProvider.Parameters {
-		set[awsclients.StringValue(p.ParameterName)] = p
+		set[pointer.StringValue(p.ParameterName)] = p
 	}
 
 	for _, v := range current {
-		if awsclients.StringValue(v.Source) != "user" {
+		if pointer.StringValue(v.Source) != "user" {
 			// The describe operation lists all possible parameters
 			// and their values, we only want to reset the parameter if
 			// it's been changed from the default
 			continue
 		}
 
-		if _, exists := set[awsclients.StringValue(v.ParameterName)]; !exists {
+		if _, exists := set[pointer.StringValue(v.ParameterName)]; !exists {
 			parameter := *v
 			parameters = append(parameters, &parameter)
 		}

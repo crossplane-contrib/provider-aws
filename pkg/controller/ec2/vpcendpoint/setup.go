@@ -22,8 +22,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
@@ -81,7 +81,7 @@ type custom struct {
 
 func preCreate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.CreateVpcEndpointInput) error {
 	obj.VpcId = cr.Spec.ForProvider.VPCID
-	obj.ClientToken = awsclients.String(string(cr.UID))
+	obj.ClientToken = pointer.String(string(cr.UID))
 	// Clear SGs, RTs, and Subnets if they're empty
 	if len(cr.Spec.ForProvider.SecurityGroupIDs) == 0 {
 		obj.SecurityGroupIds = nil
@@ -120,15 +120,15 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpoint, resp *svcsdk.De
 	}
 
 	// Load DNS Entry as connection detail
-	if len(resp.VpcEndpoints[0].DnsEntries) != 0 && awsclients.StringValue(resp.VpcEndpoints[0].DnsEntries[0].DnsName) != "" {
+	if len(resp.VpcEndpoints[0].DnsEntries) != 0 && pointer.StringValue(resp.VpcEndpoints[0].DnsEntries[0].DnsName) != "" {
 		obs.ConnectionDetails = managed.ConnectionDetails{
-			xpv1.ResourceCredentialsSecretEndpointKey: []byte(awsclients.StringValue(resp.VpcEndpoints[0].DnsEntries[0].DnsName)),
+			xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(resp.VpcEndpoints[0].DnsEntries[0].DnsName)),
 		}
 	}
 
 	cr.Status.AtProvider = generateVPCEndpointObservation(resp.VpcEndpoints[0])
 
-	switch awsclients.StringValue(resp.VpcEndpoints[0].State) {
+	switch pointer.StringValue(resp.VpcEndpoints[0].State) {
 	case "available":
 		cr.SetConditions(xpv1.Available())
 	case "pending", "pending-acceptance":
@@ -163,7 +163,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.Desc
 sgCompare:
 	for _, declaredSG := range cr.Spec.ForProvider.SecurityGroupIDs {
 		for _, upstreamSG := range upstreamSGs {
-			if awsclients.StringValue(declaredSG) == awsclients.StringValue(upstreamSG.GroupId) {
+			if pointer.StringValue(declaredSG) == pointer.StringValue(upstreamSG.GroupId) {
 				continue sgCompare
 			}
 		}
@@ -186,7 +186,7 @@ sgCompare:
 
 // preUpdate adds the mutable fields into the update request input
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.ModifyVpcEndpointInput) error {
-	obj.VpcEndpointId = awsclients.String(meta.GetExternalName(cr))
+	obj.VpcEndpointId = pointer.String(meta.GetExternalName(cr))
 
 	// Add fields to upstream AWS
 	obj.SetAddSecurityGroupIds(cr.Spec.ForProvider.SecurityGroupIDs)
@@ -347,7 +347,7 @@ func listCompareStringPtrIsSame(listA, listB []*string) bool {
 compare:
 	for _, elemA := range listA {
 		for _, elemB := range listB {
-			if awsclients.StringValue(elemA) == awsclients.StringValue(elemB) {
+			if pointer.StringValue(elemA) == pointer.StringValue(elemB) {
 				continue compare
 			}
 		}

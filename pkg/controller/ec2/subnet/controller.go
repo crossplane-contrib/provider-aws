@@ -206,7 +206,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	subnet := response.Subnets[0]
 
-	add, remove := ec2.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), subnet.Tags)
+	add, remove := ec2.DiffEC2Tags(ec2.GenerateEC2TagsV1Beta1(cr.Spec.ForProvider.Tags), subnet.Tags)
 	if len(remove) > 0 {
 		if _, err := e.client.DeleteTags(ctx, &awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},

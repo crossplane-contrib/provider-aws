@@ -19,9 +19,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/mq/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/mq"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupUser adds a controller that reconciles User.
@@ -79,7 +79,7 @@ type custom struct {
 
 func preObserve(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUserInput) error {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = awsclients.String(meta.GetExternalName(cr))
+	obj.Username = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -90,7 +90,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.User, obj *svc
 
 	// obj.Pending.PendingChange is nil if User is available
 	if obj.Pending != nil {
-		switch awsclients.StringValue(obj.Pending.PendingChange) {
+		switch pointer.StringValue(obj.Pending.PendingChange) {
 		case string(svcapitypes.ChangeType_CREATE):
 			cr.SetConditions(xpv1.Creating().WithMessage("wait for the next maintenance window or reboot the broker."))
 		case string(svcapitypes.ChangeType_DELETE):
@@ -115,7 +115,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.User, obj *svc
 
 func preDelete(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DeleteUserInput) (bool, error) {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = awsclients.String(meta.GetExternalName(cr))
+	obj.Username = pointer.String(meta.GetExternalName(cr))
 
 	return false, nil
 }
@@ -130,17 +130,17 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.User, obj *svcsd
 		return err
 	}
 
-	if awsclients.StringValue(brokerState.BrokerState) != svcsdk.BrokerStateRunning ||
-		awsclients.StringValue(brokerState.BrokerState) == svcsdk.BrokerStateDeletionInProgress {
-		return errors.New("broker is not ready for user creation " + awsclients.StringValue(brokerState.BrokerState))
+	if pointer.StringValue(brokerState.BrokerState) != svcsdk.BrokerStateRunning ||
+		pointer.StringValue(brokerState.BrokerState) == svcsdk.BrokerStateDeletionInProgress {
+		return errors.New("broker is not ready for user creation " + pointer.StringValue(brokerState.BrokerState))
 	}
 
 	pw, _, err := mq.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.PasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if resource.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
-	obj.Password = awsclients.String(pw)
-	obj.Username = awsclients.String(cr.Name)
+	obj.Password = pointer.String(pw)
+	obj.Username = pointer.String(cr.Name)
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
 	return nil
 }
@@ -155,7 +155,7 @@ func postCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserO
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.User, obj *svcsdk.UpdateUserRequest) error {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = awsclients.String(cr.Name)
+	obj.Username = pointer.String(cr.Name)
 
 	pw, pwchanged, err := mq.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.PasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {

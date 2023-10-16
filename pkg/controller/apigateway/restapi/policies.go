@@ -5,10 +5,10 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/google/go-cmp/cmp"
 
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 )
 

@@ -20,8 +20,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -86,7 +86,7 @@ func postObserve(_ context.Context, cr *svcapitypes.TransitGatewayVPCAttachment,
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclients.StringValue(obj.TransitGatewayVpcAttachments[0].State) {
+	switch pointer.StringValue(obj.TransitGatewayVpcAttachments[0].State) {
 	case string(svcapitypes.TransitGatewayAttachmentState_available):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.TransitGatewayAttachmentState_pending):
@@ -120,8 +120,8 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.TransitGatewayVP
 		return err
 	}
 
-	if awsclients.StringValue(tgwState.TransitGateways[0].State) != string(svcapitypes.TransitGatewayState_available) {
-		return errors.New("referenced transitgateway is not available for vpcattachment " + awsclients.StringValue(tgwState.TransitGateways[0].State))
+	if pointer.StringValue(tgwState.TransitGateways[0].State) != string(svcapitypes.TransitGatewayState_available) {
+		return errors.New("referenced transitgateway is not available for vpcattachment " + pointer.StringValue(tgwState.TransitGateways[0].State))
 	}
 
 	obj.VpcId = cr.Spec.ForProvider.VPCID

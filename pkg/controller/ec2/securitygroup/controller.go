@@ -43,6 +43,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -233,7 +234,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDescribe)
 	}
 
-	add, remove := ec2.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), response.SecurityGroups[0].Tags)
+	add, remove := ec2.DiffEC2Tags(ec2.GenerateEC2TagsV1Beta1(cr.Spec.ForProvider.Tags), response.SecurityGroups[0].Tags)
 	if len(remove) > 0 {
 		if _, err := e.sg.DeleteTags(ctx, &awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
@@ -252,7 +253,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if !awsclient.BoolValue(cr.Spec.ForProvider.IgnoreIngress) {
+	if !pointer.BoolValue(cr.Spec.ForProvider.IgnoreIngress) {
 		add, remove := ec2.DiffPermissions(ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Ingress), response.SecurityGroups[0].IpPermissions)
 		if len(remove) > 0 {
 			if _, err := e.sg.RevokeSecurityGroupIngress(ctx, &awsec2.RevokeSecurityGroupIngressInput{
@@ -272,7 +273,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if !awsclient.BoolValue(cr.Spec.ForProvider.IgnoreEgress) {
+	if !pointer.BoolValue(cr.Spec.ForProvider.IgnoreEgress) {
 		add, remove := ec2.DiffPermissions(ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Egress), response.SecurityGroups[0].IpPermissionsEgress)
 		if len(remove) > 0 {
 			if _, err = e.sg.RevokeSecurityGroupEgress(ctx, &awsec2.RevokeSecurityGroupEgressInput{

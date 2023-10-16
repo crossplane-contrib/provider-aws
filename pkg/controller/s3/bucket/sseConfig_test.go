@@ -27,11 +27,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -48,7 +48,7 @@ func generateSSEConfig() *v1beta1.ServerSideEncryptionConfiguration {
 		Rules: []v1beta1.ServerSideEncryptionRule{
 			{
 				ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
-					KMSMasterKeyID: awsclient.String(keyID),
+					KMSMasterKeyID: pointer.String(keyID),
 					SSEAlgorithm:   sseAlgo,
 				},
 			},
@@ -60,9 +60,9 @@ func generateSSEConfigWithBucketEncryption() *v1beta1.ServerSideEncryptionConfig
 	return &v1beta1.ServerSideEncryptionConfiguration{
 		Rules: []v1beta1.ServerSideEncryptionRule{
 			{
-				BucketKeyEnabled: *awsclient.Bool(true),
+				BucketKeyEnabled: *pointer.Bool(true),
 				ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
-					KMSMasterKeyID: awsclient.String(keyID),
+					KMSMasterKeyID: pointer.String(keyID),
 					SSEAlgorithm:   sseAlgo,
 				},
 			},
@@ -75,7 +75,7 @@ func generateAWSSSE() *s3types.ServerSideEncryptionConfiguration {
 		Rules: []s3types.ServerSideEncryptionRule{
 			{
 				ApplyServerSideEncryptionByDefault: &s3types.ServerSideEncryptionByDefault{
-					KMSMasterKeyID: awsclient.String(keyID),
+					KMSMasterKeyID: pointer.String(keyID),
 					SSEAlgorithm:   s3types.ServerSideEncryptionAes256,
 				},
 			},

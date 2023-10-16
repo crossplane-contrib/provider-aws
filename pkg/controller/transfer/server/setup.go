@@ -28,8 +28,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/transfer/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupServer adds a controller that reconciles Server.
@@ -78,13 +78,13 @@ func SetupServer(mgr ctrl.Manager, o controller.Options) error {
 
 func preObserve(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.DescribeServerInput) error {
 	if meta.GetExternalName(cr) != "" {
-		obj.ServerId = awsclients.String(meta.GetExternalName(cr))
+		obj.ServerId = pointer.String(meta.GetExternalName(cr))
 	}
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.DeleteServerInput) (bool, error) {
-	obj.ServerId = awsclients.String(meta.GetExternalName(cr))
+	obj.ServerId = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -93,7 +93,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.Describe
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclients.StringValue(obj.Server.State) {
+	switch pointer.StringValue(obj.Server.State) {
 	case string(svcapitypes.State_OFFLINE):
 		cr.SetConditions(xpv1.Unavailable())
 	case string(svcapitypes.State_ONLINE):
@@ -109,7 +109,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.Describe
 	}
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
-		"HostKeyFingerprint": []byte(awsclients.StringValue(obj.Server.HostKeyFingerprint)),
+		"HostKeyFingerprint": []byte(pointer.StringValue(obj.Server.HostKeyFingerprint)),
 	}
 
 	return obs, nil
@@ -119,7 +119,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateSer
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.ServerId))
+	meta.SetExternalName(cr, pointer.StringValue(obj.ServerId))
 	return managed.ExternalCreation{}, nil
 }
 

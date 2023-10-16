@@ -28,8 +28,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/transfer/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupUser adds a controller that reconciles User.
@@ -76,13 +76,13 @@ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUserInput) error {
-	obj.UserName = awsclients.String(meta.GetExternalName(cr))
+	obj.UserName = pointer.String(meta.GetExternalName(cr))
 	obj.ServerId = cr.Spec.ForProvider.ServerID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DeleteUserInput) (bool, error) {
-	obj.UserName = awsclients.String(meta.GetExternalName(cr))
+	obj.UserName = pointer.String(meta.GetExternalName(cr))
 	obj.ServerId = cr.Spec.ForProvider.ServerID
 	return false, nil
 }
@@ -100,6 +100,6 @@ func postObserve(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUs
 func preCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserInput) error {
 	obj.ServerId = cr.Spec.ForProvider.ServerID
 	obj.Role = cr.Spec.ForProvider.Role
-	obj.UserName = awsclients.String(meta.GetExternalName(cr))
+	obj.UserName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }

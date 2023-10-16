@@ -41,6 +41,7 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -118,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	resp, err := e.client.DescribeJobsWithContext(ctx, &svcsdk.DescribeJobsInput{
-		Jobs: []*string{awsclient.String(meta.GetExternalName(cr))},
+		Jobs: []*string{pointer.String(meta.GetExternalName(cr))},
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDescribeJob)
@@ -137,14 +138,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// Only consider a finished Job as deleted, when the user requested the deletion
 	if meta.WasDeleted(cr) {
 		// (unfinished Jobs are moved to Failed-status by AWS after deletion/termination-request completed)
-		switch awsclient.StringValue(cr.Status.AtProvider.Status) {
+		switch pointer.StringValue(cr.Status.AtProvider.Status) {
 		case svcsdk.JobStatusFailed,
 			svcsdk.JobStatusSucceeded:
 			return managed.ExternalObservation{ResourceExists: false}, nil
 		}
 	}
 
-	cr.SetConditions(xpv1.Available().WithMessage(awsclient.StringValue(cr.Status.AtProvider.Status)))
+	cr.SetConditions(xpv1.Available().WithMessage(pointer.StringValue(cr.Status.AtProvider.Status)))
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
@@ -170,7 +171,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalCreation{}, errorutils.Wrap(err, errSubmitJob)
 	}
-	meta.SetExternalName(cr, awsclient.StringValue(resp.JobId))
+	meta.SetExternalName(cr, pointer.StringValue(resp.JobId))
 	return managed.ExternalCreation{}, nil
 }
 
@@ -194,8 +195,8 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 	// No terminate-request needed, when Job is already finished
-	if cr.Status.AtProvider.Status == awsclient.String(svcsdk.JobStatusFailed) ||
-		cr.Status.AtProvider.Status == awsclient.String(svcsdk.JobStatusSucceeded) {
+	if cr.Status.AtProvider.Status == pointer.String(svcsdk.JobStatusFailed) ||
+		cr.Status.AtProvider.Status == pointer.String(svcsdk.JobStatusSucceeded) {
 		return nil
 	}
 
@@ -205,7 +206,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	// e.g. when Job is PENDING bc it's dependend on another Job to finish,
 	// termination seems to not get through until dependend Job is fisnished ... (-> tested on AWS Console)
 
-	_, err := e.client.TerminateJobWithContext(ctx, generateTerminateJobInput(cr, awsclient.String("Terminated for crossplane deletion")))
+	_, err := e.client.TerminateJobWithContext(ctx, generateTerminateJobInput(cr, pointer.String("Terminated for crossplane deletion")))
 	return errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errTerminateJob)
 }
 
@@ -232,7 +233,7 @@ func (e *external) lateInitialize(spec, current *svcapitypes.JobParameters) { //
 		}
 
 		if current.NodeOverrides != nil {
-			spec.NodeOverrides.NumNodes = awsclient.LateInitializeInt64Ptr(spec.NodeOverrides.NumNodes, current.NodeOverrides.NumNodes)
+			spec.NodeOverrides.NumNodes = pointer.LateInitializeInt64Ptr(spec.NodeOverrides.NumNodes, current.NodeOverrides.NumNodes)
 
 			if current.NodeOverrides.NodePropertyOverrides != nil {
 
@@ -247,7 +248,7 @@ func (e *external) lateInitialize(spec, current *svcapitypes.JobParameters) { //
 						specNoProOver.ContainerOverrides = &svcapitypes.ContainerOverrides{}
 					}
 					lateInitContainerOverrides(specNoProOver.ContainerOverrides, noProOver.ContainerOverrides)
-					specNoProOver.TargetNodes = awsclient.LateInitializeString(specNoProOver.TargetNodes, awsclient.String(noProOver.TargetNodes))
+					specNoProOver.TargetNodes = pointer.LateInitializeString(specNoProOver.TargetNodes, pointer.String(noProOver.TargetNodes))
 					spec.NodeOverrides.NodePropertyOverrides[i] = specNoProOver
 				}
 			}
@@ -262,8 +263,8 @@ func (e *external) lateInitialize(spec, current *svcapitypes.JobParameters) { //
 // Helper for lateInitialize() with ContainerOverrides
 func lateInitContainerOverrides(spec, current *svcapitypes.ContainerOverrides) {
 
-	spec.Command = awsclient.LateInitializeStringPtrSlice(spec.Command, current.Command)
-	spec.InstanceType = awsclient.LateInitializeStringPtr(spec.InstanceType, current.InstanceType)
+	spec.Command = pointer.LateInitializeStringPtrSlice(spec.Command, current.Command)
+	spec.InstanceType = pointer.LateInitializeStringPtr(spec.InstanceType, current.InstanceType)
 	if spec.Environment == nil && current.Environment != nil {
 		env := []*svcapitypes.KeyValuePair{}
 		for _, pair := range current.Environment {

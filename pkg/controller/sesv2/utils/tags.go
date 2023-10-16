@@ -25,7 +25,7 @@ import (
 	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -87,35 +87,35 @@ func ListTagsForResource(client sesv2iface.SESV2API, resourceArn *string) ([]*sv
 func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk.Tag, removeTags []*string) {
 	currentMap := make(map[string]string, len(current))
 	for _, t := range current {
-		currentMap[awsclient.StringValue(t.Key)] = awsclient.StringValue(t.Value)
+		currentMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
 	}
 
 	specMap := make(map[string]string, len(spec))
 	for _, t := range spec {
-		key := awsclient.StringValue(t.Key)
-		val := awsclient.StringValue(t.Value)
-		specMap[key] = awsclient.StringValue(t.Value)
+		key := pointer.StringValue(t.Key)
+		val := pointer.StringValue(t.Value)
+		specMap[key] = pointer.StringValue(t.Value)
 
 		if currentVal, exists := currentMap[key]; exists {
 			if currentVal != val {
 				removeTags = append(removeTags, t.Key)
 				addTags = append(addTags, &svcsdk.Tag{
-					Key:   awsclient.String(key),
-					Value: awsclient.String(val),
+					Key:   pointer.String(key),
+					Value: pointer.String(val),
 				})
 			}
 		} else {
 			addTags = append(addTags, &svcsdk.Tag{
-				Key:   awsclient.String(key),
-				Value: awsclient.String(val),
+				Key:   pointer.String(key),
+				Value: pointer.String(val),
 			})
 		}
 	}
 
 	for _, t := range current {
-		key := awsclient.StringValue(t.Key)
+		key := pointer.StringValue(t.Key)
 		if _, exists := specMap[key]; !exists {
-			removeTags = append(removeTags, awsclient.String(key))
+			removeTags = append(removeTags, pointer.String(key))
 		}
 	}
 
@@ -126,12 +126,12 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 func AddExternalTags(mg resource.Managed, spec []*svcapitypes.Tag) []*svcapitypes.Tag {
 	tagMap := make(map[string]struct{}, len(spec))
 	for _, t := range spec {
-		tagMap[awsclient.StringValue(t.Key)] = struct{}{}
+		tagMap[pointer.StringValue(t.Key)] = struct{}{}
 	}
 
 	tags := spec
 	for _, t := range GetExternalTags(mg) {
-		if _, exists := tagMap[awsclient.StringValue(t.Key)]; !exists {
+		if _, exists := tagMap[pointer.StringValue(t.Key)]; !exists {
 			tags = append(tags, t)
 		}
 	}
@@ -143,11 +143,11 @@ func AddExternalTags(mg resource.Managed, spec []*svcapitypes.Tag) []*svcapitype
 func GetExternalTags(mg resource.Managed) []*svcapitypes.Tag {
 	externalTags := []*svcapitypes.Tag{}
 	for k, v := range resource.GetExternalTags(mg) {
-		externalTags = append(externalTags, &svcapitypes.Tag{Key: awsclient.String(k), Value: awsclient.String(v)})
+		externalTags = append(externalTags, &svcapitypes.Tag{Key: pointer.String(k), Value: pointer.String(v)})
 	}
 
 	sort.Slice(externalTags, func(i, j int) bool {
-		return awsclient.StringValue(externalTags[i].Key) > awsclient.StringValue(externalTags[j].Key)
+		return pointer.StringValue(externalTags[i].Key) > pointer.StringValue(externalTags[j].Key)
 	})
 
 	return externalTags

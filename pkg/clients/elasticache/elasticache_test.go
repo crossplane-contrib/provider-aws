@@ -32,7 +32,7 @@ import (
 
 	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -158,46 +158,46 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 			params:    replicationGroupParams(),
 			authToken: &authToken,
 			want: &elasticache.CreateReplicationGroupInput{
-				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
-				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				Engine:                      aws.String(v1beta1.CacheEngineRedis, aws.FieldRequired),
-				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
-				AtRestEncryptionEnabled:     aws.Bool(atRestEncryptionEnabled),
-				AuthToken:                   aws.String(authToken),
-				AutomaticFailoverEnabled:    aws.Bool(autoFailoverEnabled),
-				CacheParameterGroupName:     aws.String(cacheParameterGroupName),
+				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
+				ReplicationGroupDescription: pointer.String(description, pointer.FieldRequired),
+				Engine:                      pointer.String(v1beta1.CacheEngineRedis, pointer.FieldRequired),
+				CacheNodeType:               pointer.String(cacheNodeType, pointer.FieldRequired),
+				AtRestEncryptionEnabled:     pointer.Bool(atRestEncryptionEnabled),
+				AuthToken:                   pointer.String(authToken),
+				AutomaticFailoverEnabled:    pointer.Bool(autoFailoverEnabled),
+				CacheParameterGroupName:     pointer.String(cacheParameterGroupName),
 				CacheSecurityGroupNames:     cacheSecurityGroupNames,
-				CacheSubnetGroupName:        aws.String(cacheSubnetGroupName),
-				EngineVersion:               aws.String(engineVersion),
-				MultiAZEnabled:              aws.Bool(multiAZ),
+				CacheSubnetGroupName:        pointer.String(cacheSubnetGroupName),
+				EngineVersion:               pointer.String(engineVersion),
+				MultiAZEnabled:              pointer.Bool(multiAZ),
 				NodeGroupConfiguration: []elasticachetypes.NodeGroupConfiguration{
 					{
-						PrimaryAvailabilityZone:  aws.String(nodeGroupPrimaryAZ),
+						PrimaryAvailabilityZone:  pointer.String(nodeGroupPrimaryAZ),
 						ReplicaAvailabilityZones: nodeGroupAZs,
-						ReplicaCount:             aws.Int32Address(&nodeGroupReplicaCount),
-						Slots:                    aws.String(nodeGroupSlots),
+						ReplicaCount:             pointer.Int32Address(&nodeGroupReplicaCount),
+						Slots:                    pointer.String(nodeGroupSlots),
 					},
 				},
-				NotificationTopicArn:       aws.String(notificationTopicARN),
-				NumCacheClusters:           aws.Int32Address(&numCacheClusters),
-				NumNodeGroups:              aws.Int32Address(&numNodeGroups),
-				Port:                       aws.Int32Address(&port),
+				NotificationTopicArn:       pointer.String(notificationTopicARN),
+				NumCacheClusters:           pointer.Int32Address(&numCacheClusters),
+				NumNodeGroups:              pointer.Int32Address(&numNodeGroups),
+				Port:                       pointer.Int32Address(&port),
 				PreferredCacheClusterAZs:   preferredCacheClusterAZs,
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
-				PrimaryClusterId:           aws.String(primaryClusterID),
-				ReplicasPerNodeGroup:       aws.Int32Address(&replicasPerNodeGroup),
+				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+				PrimaryClusterId:           pointer.String(primaryClusterID),
+				ReplicasPerNodeGroup:       pointer.Int32Address(&replicasPerNodeGroup),
 				SecurityGroupIds:           securityGroupIDs,
 				SnapshotArns:               snapshotARNs,
-				SnapshotName:               aws.String(snapshotName),
-				SnapshotRetentionLimit:     aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:             aws.String(snapshotWindow),
+				SnapshotName:               pointer.String(snapshotName),
+				SnapshotRetentionLimit:     pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:             pointer.String(snapshotWindow),
 				Tags: []elasticachetypes.Tag{
 					{
 						Key:   &tagKey,
 						Value: &tagValue,
 					},
 				},
-				TransitEncryptionEnabled: aws.Bool(transitEncryptionEnabled),
+				TransitEncryptionEnabled: pointer.Bool(transitEncryptionEnabled),
 			},
 		},
 		{
@@ -208,10 +208,10 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 				Engine:                      engine,
 			},
 			want: &elasticache.CreateReplicationGroupInput{
-				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
-				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				Engine:                      aws.String(engine, aws.FieldRequired),
-				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
+				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
+				ReplicationGroupDescription: pointer.String(description, pointer.FieldRequired),
+				Engine:                      pointer.String(engine, pointer.FieldRequired),
+				CacheNodeType:               pointer.String(cacheNodeType, pointer.FieldRequired),
 			},
 		},
 	}
@@ -237,23 +237,23 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 			name:   "AllPossibleFields",
 			params: replicationGroupParams(),
 			want: &elasticache.ModifyReplicationGroupInput{
-				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
+				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
 				ApplyImmediately:            true,
-				AutomaticFailoverEnabled:    aws.Bool(autoFailoverEnabled),
-				CacheNodeType:               aws.String(cacheNodeType),
-				CacheParameterGroupName:     aws.String(cacheParameterGroupName),
+				AutomaticFailoverEnabled:    pointer.Bool(autoFailoverEnabled),
+				CacheNodeType:               pointer.String(cacheNodeType),
+				CacheParameterGroupName:     pointer.String(cacheParameterGroupName),
 				CacheSecurityGroupNames:     cacheSecurityGroupNames,
-				EngineVersion:               aws.String(engineVersion),
-				MultiAZEnabled:              aws.Bool(true),
-				NotificationTopicArn:        aws.String(notificationTopicARN),
-				NotificationTopicStatus:     aws.String(notificationTopicStatus),
-				PreferredMaintenanceWindow:  aws.String(maintenanceWindow),
-				PrimaryClusterId:            aws.String(primaryClusterID),
-				ReplicationGroupDescription: aws.String(description),
+				EngineVersion:               pointer.String(engineVersion),
+				MultiAZEnabled:              pointer.Bool(true),
+				NotificationTopicArn:        pointer.String(notificationTopicARN),
+				NotificationTopicStatus:     pointer.String(notificationTopicStatus),
+				PreferredMaintenanceWindow:  pointer.String(maintenanceWindow),
+				PrimaryClusterId:            pointer.String(primaryClusterID),
+				ReplicationGroupDescription: pointer.String(description),
 				SecurityGroupIds:            securityGroupIDs,
-				SnapshotRetentionLimit:      aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:              aws.String(snapshotWindow),
-				SnapshottingClusterId:       aws.String(snapshottingClusterID),
+				SnapshotRetentionLimit:      pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:              pointer.String(snapshotWindow),
+				SnapshottingClusterId:       pointer.String(snapshottingClusterID),
 			},
 		},
 		{
@@ -263,10 +263,10 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				ReplicationGroupDescription: description,
 			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ApplyImmediately:            *aws.Bool(false, aws.FieldRequired),
-				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
-				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
+				ApplyImmediately:            *pointer.Bool(false, pointer.FieldRequired),
+				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
+				ReplicationGroupDescription: pointer.String(description, pointer.FieldRequired),
+				CacheNodeType:               pointer.String(cacheNodeType, pointer.FieldRequired),
 			},
 		},
 		{
@@ -277,10 +277,10 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				ReplicationGroupDescription: description,
 			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ApplyImmediately:            *aws.Bool(false, aws.FieldRequired),
-				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
-				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
+				ApplyImmediately:            *pointer.Bool(false, pointer.FieldRequired),
+				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
+				ReplicationGroupDescription: pointer.String(description, pointer.FieldRequired),
+				CacheNodeType:               pointer.String(cacheNodeType, pointer.FieldRequired),
 			},
 		},
 	}
@@ -309,14 +309,14 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 			observed: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{
 					{
-						NodeGroupId: aws.String("ng-01"),
+						NodeGroupId: pointer.String("ng-01"),
 					},
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
 				ApplyImmediately:   true,
 				NodeGroupCount:     2,
-				ReplicationGroupId: aws.String(name, aws.FieldRequired),
+				ReplicationGroupId: pointer.String(name, pointer.FieldRequired),
 			},
 		},
 		{
@@ -324,16 +324,16 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 			params: replicationGroupParams(),
 			observed: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{
-					{NodeGroupId: aws.String("ng-01")},
-					{NodeGroupId: aws.String("ng-02")},
-					{NodeGroupId: aws.String("ng-03")},
+					{NodeGroupId: pointer.String("ng-01")},
+					{NodeGroupId: pointer.String("ng-02")},
+					{NodeGroupId: pointer.String("ng-03")},
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
 				ApplyImmediately:   true,
 				NodeGroupCount:     2,
 				NodeGroupsToRemove: []string{"ng-01"},
-				ReplicationGroupId: aws.String(name),
+				ReplicationGroupId: pointer.String(name),
 			},
 		},
 		{
@@ -344,16 +344,16 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 			},
 			observed: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{
-					{NodeGroupId: aws.String("ng-01")},
-					{NodeGroupId: aws.String("ng-02")},
-					{NodeGroupId: aws.String("ng-03")},
+					{NodeGroupId: pointer.String("ng-01")},
+					{NodeGroupId: pointer.String("ng-02")},
+					{NodeGroupId: pointer.String("ng-03")},
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
 				ApplyImmediately:   false,
 				NodeGroupCount:     2,
 				NodeGroupsToRemove: []string{"ng-01"},
-				ReplicationGroupId: aws.String(name),
+				ReplicationGroupId: pointer.String(name),
 			},
 		},
 	}
@@ -376,7 +376,7 @@ func TestNewDeleteReplicationGroupInput(t *testing.T) {
 	}{
 		{
 			name: "Successful",
-			want: &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: aws.String(name, aws.FieldRequired)},
+			want: &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: pointer.String(name, pointer.FieldRequired)},
 		},
 	}
 
@@ -398,7 +398,7 @@ func TestNewDescribeReplicationGroupsInput(t *testing.T) {
 	}{
 		{
 			name: "Successful",
-			want: &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: aws.String(name, aws.FieldRequired)},
+			want: &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: pointer.String(name, pointer.FieldRequired)},
 		},
 	}
 
@@ -421,7 +421,7 @@ func TestNewDescribeCacheClustersInput(t *testing.T) {
 		{
 			name:    "Successful",
 			cluster: cacheClusterID,
-			want:    &elasticache.DescribeCacheClustersInput{CacheClusterId: aws.String(cacheClusterID, aws.FieldRequired)},
+			want:    &elasticache.DescribeCacheClustersInput{CacheClusterId: pointer.String(cacheClusterID, pointer.FieldRequired)},
 		},
 	}
 
@@ -465,27 +465,27 @@ func TestLateInitialize(t *testing.T) {
 				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
 				AuthTokenEnabled:         &authEnabled,
 				AutomaticFailover:        elasticachetypes.AutomaticFailoverStatusEnabled,
-				SnapshotRetentionLimit:   aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:           aws.String(snapshotWindow),
-				SnapshottingClusterId:    aws.String(snapshottingClusterID),
+				SnapshotRetentionLimit:   pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:           pointer.String(snapshotWindow),
+				SnapshottingClusterId:    pointer.String(snapshottingClusterID),
 				TransitEncryptionEnabled: &transitEncryptionEnabled,
 			},
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:       aws.String(engineVersion),
-				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+				EngineVersion:       pointer.String(engineVersion),
+				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
 				NotificationConfiguration: &elasticachetypes.NotificationConfiguration{
-					TopicArn:    aws.String(notificationTopicARN),
-					TopicStatus: aws.String(notificationTopicStatus),
+					TopicArn:    pointer.String(notificationTopicARN),
+					TopicStatus: pointer.String(notificationTopicStatus),
 				},
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
 					{
-						SecurityGroupId: aws.String(securityGroupIDs[0]),
+						SecurityGroupId: pointer.String(securityGroupIDs[0]),
 					},
 				},
 				CacheSecurityGroups: []elasticachetypes.CacheSecurityGroupMembership{
 					{
-						CacheSecurityGroupName: aws.String(cacheSecurityGroupNames[0]),
+						CacheSecurityGroupName: pointer.String(cacheSecurityGroupNames[0]),
 					},
 				},
 			},
@@ -513,27 +513,27 @@ func TestLateInitialize(t *testing.T) {
 				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
 				AuthTokenEnabled:         &authEnabled,
 				AutomaticFailover:        elasticachetypes.AutomaticFailoverStatusEnabled,
-				SnapshotRetentionLimit:   aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:           aws.String(snapshotWindow),
-				SnapshottingClusterId:    aws.String(snapshottingClusterID),
+				SnapshotRetentionLimit:   pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:           pointer.String(snapshotWindow),
+				SnapshottingClusterId:    pointer.String(snapshottingClusterID),
 				TransitEncryptionEnabled: &transitEncryptionEnabled,
 			},
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:       aws.String(engineVersion),
-				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+				EngineVersion:       pointer.String(engineVersion),
+				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
 				NotificationConfiguration: &elasticachetypes.NotificationConfiguration{
-					TopicArn:    aws.String(notificationTopicARN),
-					TopicStatus: aws.String(notificationTopicStatus),
+					TopicArn:    pointer.String(notificationTopicARN),
+					TopicStatus: pointer.String(notificationTopicStatus),
 				},
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
 					{
-						SecurityGroupId: aws.String(securityGroupIDs[0]),
+						SecurityGroupId: pointer.String(securityGroupIDs[0]),
 					},
 				},
 				CacheSecurityGroups: []elasticachetypes.CacheSecurityGroupMembership{
 					{
-						CacheSecurityGroupName: aws.String(cacheSecurityGroupNames[0]),
+						CacheSecurityGroupName: pointer.String(cacheSecurityGroupNames[0]),
 					},
 				},
 			},
@@ -570,28 +570,28 @@ func TestGenerateObservation(t *testing.T) {
 	automaticFailover := elasticachetypes.AutomaticFailoverStatusEnabled
 	clusterEnabled := true
 	configurationEndpoint := &elasticachetypes.Endpoint{
-		Address: aws.String("istanbul"),
+		Address: pointer.String("istanbul"),
 		Port:    34,
 	}
 	memberClusters := []string{"member-1", "member-2"}
 	status := "creating"
 	nodeGroups := []elasticachetypes.NodeGroup{
 		{
-			NodeGroupId: aws.String("my-id"),
-			Slots:       aws.String("special-slots"),
-			Status:      aws.String("creating"),
+			NodeGroupId: pointer.String("my-id"),
+			Slots:       pointer.String("special-slots"),
+			Status:      pointer.String("creating"),
 			PrimaryEndpoint: &elasticachetypes.Endpoint{
-				Address: aws.String("random-12"),
+				Address: pointer.String("random-12"),
 				Port:    124,
 			},
 			NodeGroupMembers: []elasticachetypes.NodeGroupMember{
 				{
-					CacheClusterId:            aws.String("my-cache-cluster"),
-					CacheNodeId:               aws.String("cluster-0001"),
-					CurrentRole:               aws.String("secret-role"),
-					PreferredAvailabilityZone: aws.String("us-east-1"),
+					CacheClusterId:            pointer.String("my-cache-cluster"),
+					CacheNodeId:               pointer.String("cluster-0001"),
+					CurrentRole:               pointer.String("secret-role"),
+					PreferredAvailabilityZone: pointer.String("us-east-1"),
 					ReadEndpoint: &elasticachetypes.Endpoint{
-						Address: aws.String("random-1"),
+						Address: pointer.String("random-1"),
 						Port:    23,
 					},
 				},
@@ -601,7 +601,7 @@ func TestGenerateObservation(t *testing.T) {
 	percentage := float64(54)
 	rgpmdv := elasticachetypes.ReplicationGroupPendingModifiedValues{
 		AutomaticFailoverStatus: elasticachetypes.PendingAutomaticFailoverStatusEnabled,
-		PrimaryClusterId:        aws.String("my-coolest-cluster"),
+		PrimaryClusterId:        pointer.String("my-coolest-cluster"),
 		Resharding: &elasticachetypes.ReshardingStatus{
 			SlotMigration: &elasticachetypes.SlotMigration{
 				ProgressPercentage: percentage,
@@ -666,7 +666,7 @@ func TestGenerateObservation(t *testing.T) {
 			name: "non-cluster-mode",
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:     automaticFailover,
-				ClusterEnabled:        aws.Bool(false),
+				ClusterEnabled:        pointer.Bool(false),
 				ConfigurationEndpoint: configurationEndpoint,
 				MemberClusters:        memberClusters,
 				Status:                &status,
@@ -692,7 +692,7 @@ func TestGenerateObservation(t *testing.T) {
 			name: "non-cluster-mode-no-nodes",
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:     automaticFailover,
-				ClusterEnabled:        aws.Bool(false),
+				ClusterEnabled:        pointer.Bool(false),
 				ConfigurationEndpoint: configurationEndpoint,
 				MemberClusters:        memberClusters,
 				Status:                &status,
@@ -739,7 +739,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover: elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:     aws.String("n1.insufficiently.cool"),
+				CacheNodeType:     pointer.String("n1.insufficiently.cool"),
 			},
 			want: true,
 		},
@@ -748,8 +748,8 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          aws.String(cacheNodeType),
-				SnapshotRetentionLimit: aws.Int32Address(&newSnapshotRetentionLimit),
+				CacheNodeType:          pointer.String(cacheNodeType),
+				SnapshotRetentionLimit: pointer.Int32Address(&newSnapshotRetentionLimit),
 			},
 			want: true,
 		},
@@ -758,9 +758,9 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          aws.String(cacheNodeType),
-				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         aws.String("yesterday"),
+				CacheNodeType:          pointer.String(cacheNodeType),
+				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.String("yesterday"),
 			},
 			want: true,
 		},
@@ -769,13 +769,13 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          aws.String(cacheNodeType),
-				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         aws.String(snapshotWindow),
+				CacheNodeType:          pointer.String(cacheNodeType),
+				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.String(snapshotWindow),
 			},
 			ccList: []elasticachetypes.CacheCluster{
 				{
-					EngineVersion: aws.String("4.0.0"),
+					EngineVersion: pointer.String("4.0.0"),
 				},
 			},
 			want: true,
@@ -785,28 +785,28 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          aws.String(cacheNodeType),
+				CacheNodeType:          pointer.String(cacheNodeType),
 				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
-				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         aws.String(snapshotWindow),
+				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.String(snapshotWindow),
 			},
 			ccList: []elasticachetypes.CacheCluster{
 				{
-					EngineVersion:              aws.String(engineVersion),
-					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-					PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+					EngineVersion:              pointer.String(engineVersion),
+					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+					PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 					SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 						ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 						for i, id := range securityGroupIDs {
-							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
 						}
 						return ids
 					}(),
 					CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
 						names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
 						for i, n := range cacheSecurityGroupNames {
-							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: aws.String(n)}
+							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.String(n)}
 						}
 						return names
 					}(),
@@ -819,28 +819,28 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          aws.String(cacheNodeType),
+				CacheNodeType:          pointer.String(cacheNodeType),
 				MultiAZ:                elasticachetypes.MultiAZStatusDisabled, // trigger Update
-				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         aws.String(snapshotWindow),
+				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.String(snapshotWindow),
 			},
 			ccList: []elasticachetypes.CacheCluster{
 				{
-					EngineVersion:              aws.String(engineVersion),
-					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-					PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+					EngineVersion:              pointer.String(engineVersion),
+					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+					PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 					SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 						ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 						for i, id := range securityGroupIDs {
-							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
 						}
 						return ids
 					}(),
 					CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
 						names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
 						for i, n := range cacheSecurityGroupNames {
-							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: aws.String(n)}
+							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.String(n)}
 						}
 						return names
 					}(),
@@ -853,10 +853,10 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          aws.String(cacheNodeType),
+				CacheNodeType:          pointer.String(cacheNodeType),
 				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
-				SnapshotRetentionLimit: aws.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         aws.String(snapshotWindow),
+				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.String(snapshotWindow),
 			},
 			ccList: []elasticachetypes.CacheCluster{},
 			want:   true,
@@ -930,7 +930,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewEngineVersion",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion: aws.String("4.0.0"),
+				EngineVersion: pointer.String("4.0.0"),
 			},
 			want: true,
 		},
@@ -938,8 +938,8 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewCacheParameterGroup",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:       aws.String(engineVersion),
-				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String("okaygroupiguess")},
+				EngineVersion:       pointer.String(engineVersion),
+				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String("okaygroupiguess")},
 			},
 			want: true,
 		},
@@ -947,9 +947,9 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewNotificationTopicARN",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:             aws.String(engineVersion),
-				CacheParameterGroup:       &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration: &elasticachetypes.NotificationConfiguration{TopicArn: aws.String("aws:arn:sqs:nope"), TopicStatus: aws.String(notificationTopicStatus)},
+				EngineVersion:             pointer.String(engineVersion),
+				CacheParameterGroup:       &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				NotificationConfiguration: &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String("aws:arn:sqs:nope"), TopicStatus: pointer.String(notificationTopicStatus)},
 			},
 			want: true,
 		},
@@ -957,10 +957,10 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewMaintenanceWindow",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              aws.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: aws.String("never!"),
+				EngineVersion:              pointer.String(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.String("never!"),
 			},
 			want: true,
 		},
@@ -968,13 +968,13 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewSecurityGroupIDs",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              aws.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				EngineVersion:              pointer.String(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
-					{SecurityGroupId: aws.String("notaverysecuregroupid")},
-					{SecurityGroupId: aws.String("evenlesssecuregroupid")},
+					{SecurityGroupId: pointer.String("notaverysecuregroupid")},
+					{SecurityGroupId: pointer.String("evenlesssecuregroupid")},
 				},
 			},
 			want: true,
@@ -983,10 +983,10 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsSecurityGroupIDs",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              aws.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				EngineVersion:              pointer.String(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 			},
 			want: true,
 		},
@@ -994,20 +994,20 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewSecurityGroupNames",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              aws.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				EngineVersion:              pointer.String(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
-						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
 					}
 					return ids
 				}(),
 				CacheSecurityGroups: []elasticachetypes.CacheSecurityGroupMembership{
-					{CacheSecurityGroupName: aws.String("notaverysecuregroup")},
-					{CacheSecurityGroupName: aws.String("evenlesssecuregroup")},
+					{CacheSecurityGroupName: pointer.String("notaverysecuregroup")},
+					{CacheSecurityGroupName: pointer.String("evenlesssecuregroup")},
 				},
 			},
 			want: true,
@@ -1016,14 +1016,14 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsSecurityGroupNames",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              aws.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				EngineVersion:              pointer.String(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
-						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
 					}
 					return ids
 				}(),
@@ -1034,21 +1034,21 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNoUpdate",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              aws.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				EngineVersion:              pointer.String(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
-						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
 					}
 					return ids
 				}(),
 				CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
 					names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
 					for i, n := range cacheSecurityGroupNames {
-						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: aws.String(n)}
+						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.String(n)}
 					}
 					return names
 				}(),
@@ -1058,25 +1058,25 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		{
 			name: "NeedsNoUpdateNormalizedMaintenanceWindow",
 			kube: replicationGroupParams(func(p *v1beta1.ReplicationGroupParameters) {
-				p.PreferredMaintenanceWindow = aws.String("Mon:00:00-Fri:23:59")
+				p.PreferredMaintenanceWindow = pointer.String("Mon:00:00-Fri:23:59")
 
 			}),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              aws.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: aws.String("mon:00:00-fri:23:59"),
+				EngineVersion:              pointer.String(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.String("mon:00:00-fri:23:59"),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
-						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
 					}
 					return ids
 				}(),
 				CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
 					names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
 					for i, n := range cacheSecurityGroupNames {
-						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: aws.String(n)}
+						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.String(n)}
 					}
 					return names
 				}(),
@@ -1104,9 +1104,9 @@ func TestConnectionEndpoint(t *testing.T) {
 		{
 			name: "ClusterModeEnabled",
 			rg: elasticachetypes.ReplicationGroup{
-				ClusterEnabled: aws.Bool(true),
+				ClusterEnabled: pointer.Bool(true),
 				ConfigurationEndpoint: &elasticachetypes.Endpoint{
-					Address: aws.String(host),
+					Address: pointer.String(host),
 					Port:    int32(port),
 				},
 			},
@@ -1118,7 +1118,7 @@ func TestConnectionEndpoint(t *testing.T) {
 		{
 			name: "ClusterModeEnabledMissingConfigurationEndpoint",
 			rg: elasticachetypes.ReplicationGroup{
-				ClusterEnabled: aws.Bool(true),
+				ClusterEnabled: pointer.Bool(true),
 			},
 			want: nil,
 		},
@@ -1127,7 +1127,7 @@ func TestConnectionEndpoint(t *testing.T) {
 			rg: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{{
 					PrimaryEndpoint: &elasticachetypes.Endpoint{
-						Address: aws.String(host),
+						Address: pointer.String(host),
 						Port:    int32(port),
 					}},
 				},
@@ -1171,13 +1171,13 @@ func TestIsSubnetGroupUpToDate(t *testing.T) {
 		"SameFields": {
 			args: args{
 				subnetGroup: elasticachetypes.CacheSubnetGroup{
-					CacheSubnetGroupDescription: aws.String(subnetGroupDesc),
+					CacheSubnetGroupDescription: pointer.String(subnetGroupDesc),
 					Subnets: []elasticachetypes.Subnet{
 						{
-							SubnetIdentifier: aws.String(subnetID1),
+							SubnetIdentifier: pointer.String(subnetID1),
 						},
 						{
-							SubnetIdentifier: aws.String(subnetID2),
+							SubnetIdentifier: pointer.String(subnetID2),
 						},
 					},
 				},
@@ -1191,13 +1191,13 @@ func TestIsSubnetGroupUpToDate(t *testing.T) {
 		"DifferentFields": {
 			args: args{
 				subnetGroup: elasticachetypes.CacheSubnetGroup{
-					CacheSubnetGroupDescription: aws.String(subnetGroupDesc),
+					CacheSubnetGroupDescription: pointer.String(subnetGroupDesc),
 					Subnets: []elasticachetypes.Subnet{
 						{
-							SubnetIdentifier: aws.String(subnetID1),
+							SubnetIdentifier: pointer.String(subnetID1),
 						},
 						{
-							SubnetIdentifier: aws.String(subnetID2),
+							SubnetIdentifier: pointer.String(subnetID2),
 						},
 					},
 				},
@@ -1229,14 +1229,14 @@ func TestVersionMatches(t *testing.T) {
 	}{
 		{
 			name:        "Same value",
-			kubeVersion: aws.String("5.0.8"),
-			awsVersion:  aws.String("5.0.8"),
+			kubeVersion: pointer.String("5.0.8"),
+			awsVersion:  pointer.String("5.0.8"),
 			want:        true,
 		},
 		{
 			name:        "Same pattern", // currently this will never happen, but if it does it should match..
-			kubeVersion: aws.String("6.x"),
-			awsVersion:  aws.String("6.x"),
+			kubeVersion: pointer.String("6.x"),
+			awsVersion:  pointer.String("6.x"),
 			want:        true,
 		},
 		{
@@ -1248,37 +1248,37 @@ func TestVersionMatches(t *testing.T) {
 		{
 			name:        "nil in kubernetes",
 			kubeVersion: nil,
-			awsVersion:  aws.String("5.0.8"),
+			awsVersion:  pointer.String("5.0.8"),
 			want:        false,
 		},
 		{
 			name:        "nil from aws",
-			kubeVersion: aws.String("5.0.8"),
+			kubeVersion: pointer.String("5.0.8"),
 			awsVersion:  nil,
 			want:        false,
 		},
 		{
 			name:        "mismatch",
-			kubeVersion: aws.String("5.0.8"),
-			awsVersion:  aws.String("5.0.9"),
+			kubeVersion: pointer.String("5.0.8"),
+			awsVersion:  pointer.String("5.0.9"),
 			want:        false,
 		},
 		{
 			name:        "pattern match",
-			kubeVersion: aws.String("6.x"),
-			awsVersion:  aws.String("6.0.5"),
+			kubeVersion: pointer.String("6.x"),
+			awsVersion:  pointer.String("6.0.5"),
 			want:        true,
 		},
 		{
 			name:        "minor match",
-			kubeVersion: aws.String("6.2"),
-			awsVersion:  aws.String("6.2.6"),
+			kubeVersion: pointer.String("6.2"),
+			awsVersion:  pointer.String("6.2.6"),
 			want:        true,
 		},
 		{
 			name:        "zero major mismatch",
-			kubeVersion: aws.String("0.2"),
-			awsVersion:  aws.String("6.2.6"),
+			kubeVersion: pointer.String("0.2"),
+			awsVersion:  pointer.String("6.2.6"),
 			want:        false,
 		},
 	}
@@ -1314,50 +1314,50 @@ func TestParseVersion(t *testing.T) {
 		},
 		{
 			name:    "bad version",
-			version: aws.String("badversion"),
+			version: pointer.String("badversion"),
 			parsed:  nil,
 			wantErr: errors.New("major version must be a number"),
 		},
 		{
 			name:    "major only",
-			version: aws.String("6"),
-			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			version: pointer.String("6"),
+			parsed:  &PartialSemanticVersion{Major: pointer.Int64(6)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.minor",
-			version: aws.String("6.2"),
-			parsed:  &PartialSemanticVersion{Major: aws.Int64(6), Minor: aws.Int64(2)},
+			version: pointer.String("6.2"),
+			parsed:  &PartialSemanticVersion{Major: pointer.Int64(6), Minor: pointer.Int64(2)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.x",
-			version: aws.String("6.x"),
-			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			version: pointer.String("6.x"),
+			parsed:  &PartialSemanticVersion{Major: pointer.Int64(6)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.",
-			version: aws.String("6."),
-			parsed:  &PartialSemanticVersion{Major: aws.Int64(6)},
+			version: pointer.String("6."),
+			parsed:  &PartialSemanticVersion{Major: pointer.Int64(6)},
 			wantErr: nil,
 		},
 		{
 			name:    "majorLarge.",
-			version: aws.String("999."),
-			parsed:  &PartialSemanticVersion{Major: aws.Int64(999)},
+			version: pointer.String("999."),
+			parsed:  &PartialSemanticVersion{Major: pointer.Int64(999)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.minor.patch",
-			version: aws.String("5.0.9"),
-			parsed:  &PartialSemanticVersion{Major: aws.Int64(5), Minor: aws.Int64(0, aws.FieldRequired), Patch: aws.Int64(9)},
+			version: pointer.String("5.0.9"),
+			parsed:  &PartialSemanticVersion{Major: pointer.Int64(5), Minor: pointer.Int64(0, pointer.FieldRequired), Patch: pointer.Int64(9)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.minor.x",
-			version: aws.String("5.0.x"),
-			parsed:  &PartialSemanticVersion{Major: aws.Int64(5), Minor: aws.Int64(0, aws.FieldRequired)},
+			version: pointer.String("5.0.x"),
+			parsed:  &PartialSemanticVersion{Major: pointer.Int64(5), Minor: pointer.Int64(0, pointer.FieldRequired)},
 			wantErr: nil,
 		},
 	}
@@ -1417,7 +1417,7 @@ func TestMultiAZEnabled(t *testing.T) {
 			if tc.want == nil && got != nil {
 				t.Errorf("MultiAZEnabled(%+v) - got %v", tc.want, got)
 			}
-			if aws.BoolValue(got) != aws.BoolValue(tc.want) {
+			if pointer.BoolValue(got) != pointer.BoolValue(tc.want) {
 				t.Errorf("MultiAZEnabled(%+v) - got %v", tc.want, got)
 			}
 		})
@@ -1456,7 +1456,7 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
 				},
 			},
 			want: want{
@@ -1475,9 +1475,9 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.String("key1"), Value: pointer.String("val1")},
+					{Key: pointer.String("key2"), Value: pointer.String("val2")},
 				},
 			},
 			want: want{
@@ -1488,9 +1488,9 @@ func TestDiffTags(t *testing.T) {
 		"RemoveAll": {
 			args: args{
 				remote: []elasticachetypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.String("key1"), Value: pointer.String("val1")},
+					{Key: pointer.String("key2"), Value: pointer.String("val2")},
 				},
 			},
 			want: want{
@@ -1502,7 +1502,7 @@ func TestDiffTags(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			tagCmp := cmpopts.SortSlices(func(i, j elasticachetypes.Tag) bool {
-				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
+				return pointer.StringValue(i.Key) < pointer.StringValue(j.Key)
 			})
 			add, remove := DiffTags(tc.args.local, tc.args.remote)
 			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
@@ -1558,7 +1558,7 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
 				},
 			},
 			want: want{
@@ -1573,9 +1573,9 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.String("key1"), Value: pointer.String("val1")},
+					{Key: pointer.String("key2"), Value: pointer.String("val2")},
 				},
 			},
 			want: want{
@@ -1589,8 +1589,8 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
+					{Key: pointer.String("key1"), Value: pointer.String("val1")},
+					{Key: pointer.String("key2"), Value: pointer.String("val2")},
 				},
 			},
 			want: want{
@@ -1609,9 +1609,9 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 		"RemoveAll": {
 			args: args{
 				remote: []elasticachetypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.String("key1"), Value: pointer.String("val1")},
+					{Key: pointer.String("key2"), Value: pointer.String("val2")},
 				},
 			},
 			want: want{
@@ -1649,7 +1649,7 @@ func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
 					NumCacheClusters: &numCacheClusters,
 				},
 				ccList: []elasticachetypes.CacheCluster{
-					{EngineVersion: aws.String(engineVersion)},
+					{EngineVersion: pointer.String(engineVersion)},
 				},
 			},
 			want: want{res: false},
@@ -1660,7 +1660,7 @@ func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
 					NumCacheClusters: &numCacheClusters5,
 				},
 				ccList: []elasticachetypes.CacheCluster{
-					{EngineVersion: aws.String(engineVersion)},
+					{EngineVersion: pointer.String(engineVersion)},
 				},
 			},
 			want: want{res: true},
@@ -1676,7 +1676,7 @@ func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
 			args: args{
 				kube: v1beta1.ReplicationGroupParameters{},
 				ccList: []elasticachetypes.CacheCluster{
-					{EngineVersion: aws.String(engineVersion)},
+					{EngineVersion: pointer.String(engineVersion)},
 				},
 			},
 			want: want{res: false},

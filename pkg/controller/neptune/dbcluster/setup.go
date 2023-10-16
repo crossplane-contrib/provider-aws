@@ -16,6 +16,7 @@ package dbcluster
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/neptune"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/neptune/neptuneiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -31,8 +32,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/neptune/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 type dbClusterStatus string
@@ -159,29 +160,29 @@ func lateInitialize(in *svcapitypes.DBClusterParameters, out *svcsdk.DescribeDBC
 
 	from := out.DBClusters[0]
 
-	in.AvailabilityZones = aws.LateInitializeStringPtrSlice(in.AvailabilityZones, from.AvailabilityZones)
-	in.BackupRetentionPeriod = aws.LateInitializeInt64Ptr(in.BackupRetentionPeriod, from.BackupRetentionPeriod)
-	in.CharacterSetName = aws.LateInitializeStringPtr(in.CharacterSetName, from.CharacterSetName)
-	in.DatabaseName = aws.LateInitializeStringPtr(in.DatabaseName, from.DatabaseName)
-	in.DBClusterParameterGroupName = aws.LateInitializeStringPtr(in.DBClusterParameterGroupName, from.DBClusterParameterGroup)
-	in.DBSubnetGroupName = aws.LateInitializeStringPtr(in.DBSubnetGroupName, from.DBSubnetGroup)
-	in.DeletionProtection = aws.LateInitializeBoolPtr(in.DeletionProtection, from.DeletionProtection)
-	in.EnableCloudwatchLogsExports = aws.LateInitializeStringPtrSlice(in.EnableCloudwatchLogsExports, from.EnabledCloudwatchLogsExports)
-	in.Engine = aws.LateInitializeStringPtr(in.Engine, from.Engine)
-	in.EngineVersion = aws.LateInitializeStringPtr(in.EngineVersion, from.EngineVersion)
-	in.EnableIAMDatabaseAuthentication = aws.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, from.IAMDatabaseAuthenticationEnabled)
-	in.KMSKeyID = aws.LateInitializeStringPtr(in.KMSKeyID, from.KmsKeyId)
-	in.MasterUsername = aws.LateInitializeStringPtr(in.MasterUsername, from.MasterUsername)
-	in.Port = aws.LateInitializeInt64Ptr(in.Port, from.Port)
-	in.PreferredBackupWindow = aws.LateInitializeStringPtr(in.PreferredBackupWindow, from.PreferredBackupWindow)
-	in.PreferredMaintenanceWindow = aws.LateInitializeStringPtr(in.PreferredMaintenanceWindow, from.PreferredMaintenanceWindow)
-	in.ReplicationSourceIdentifier = aws.LateInitializeStringPtr(in.ReplicationSourceIdentifier, from.ReplicationSourceIdentifier)
-	in.StorageEncrypted = aws.LateInitializeBoolPtr(in.StorageEncrypted, from.StorageEncrypted)
+	in.AvailabilityZones = pointer.LateInitializeStringPtrSlice(in.AvailabilityZones, from.AvailabilityZones)
+	in.BackupRetentionPeriod = pointer.LateInitializeInt64Ptr(in.BackupRetentionPeriod, from.BackupRetentionPeriod)
+	in.CharacterSetName = pointer.LateInitializeStringPtr(in.CharacterSetName, from.CharacterSetName)
+	in.DatabaseName = pointer.LateInitializeStringPtr(in.DatabaseName, from.DatabaseName)
+	in.DBClusterParameterGroupName = pointer.LateInitializeStringPtr(in.DBClusterParameterGroupName, from.DBClusterParameterGroup)
+	in.DBSubnetGroupName = pointer.LateInitializeStringPtr(in.DBSubnetGroupName, from.DBSubnetGroup)
+	in.DeletionProtection = pointer.LateInitializeBoolPtr(in.DeletionProtection, from.DeletionProtection)
+	in.EnableCloudwatchLogsExports = pointer.LateInitializeStringPtrSlice(in.EnableCloudwatchLogsExports, from.EnabledCloudwatchLogsExports)
+	in.Engine = pointer.LateInitializeStringPtr(in.Engine, from.Engine)
+	in.EngineVersion = pointer.LateInitializeStringPtr(in.EngineVersion, from.EngineVersion)
+	in.EnableIAMDatabaseAuthentication = pointer.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, from.IAMDatabaseAuthenticationEnabled)
+	in.KMSKeyID = pointer.LateInitializeStringPtr(in.KMSKeyID, from.KmsKeyId)
+	in.MasterUsername = pointer.LateInitializeStringPtr(in.MasterUsername, from.MasterUsername)
+	in.Port = pointer.LateInitializeInt64Ptr(in.Port, from.Port)
+	in.PreferredBackupWindow = pointer.LateInitializeStringPtr(in.PreferredBackupWindow, from.PreferredBackupWindow)
+	in.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(in.PreferredMaintenanceWindow, from.PreferredMaintenanceWindow)
+	in.ReplicationSourceIdentifier = pointer.LateInitializeStringPtr(in.ReplicationSourceIdentifier, from.ReplicationSourceIdentifier)
+	in.StorageEncrypted = pointer.LateInitializeBoolPtr(in.StorageEncrypted, from.StorageEncrypted)
 
 	if len(in.VPCSecurityGroupIDs) == 0 && len(from.VpcSecurityGroups) != 0 {
 		in.VPCSecurityGroupIDs = make([]*string, len(from.VpcSecurityGroups))
 		for i, val := range from.VpcSecurityGroups {
-			in.VPCSecurityGroupIDs[i] = aws.LateInitializeStringPtr(in.VPCSecurityGroupIDs[i], val.VpcSecurityGroupId)
+			in.VPCSecurityGroupIDs[i] = pointer.LateInitializeStringPtr(in.VPCSecurityGroupIDs[i], val.VpcSecurityGroupId)
 		}
 	}
 	return nil

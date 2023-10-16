@@ -15,17 +15,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
-	awsClient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3control/fake"
 	s3controlTesting "github.com/crossplane-contrib/provider-aws/pkg/controller/s3control/testing"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
 	unexpectedItem     resource.Managed
 	errBoom            = errors.New("boom")
 	testOutputPolicyV1 = s3control.GetAccessPointPolicyOutput{
-		Policy: awsClient.String(`{
+		Policy: pointer.String(`{
 						"Version": "2012-10-17",
 						"Statement": [{
 							"Sid": "AllowPublicRead",
@@ -42,11 +42,11 @@ var (
 		Version: "2012-10-17",
 		Statements: []common.BucketPolicyStatement{
 			{
-				SID:    awsClient.String("AllowPublicRead"),
+				SID:    pointer.String("AllowPublicRead"),
 				Effect: "Allow",
 				Principal: &common.BucketPrincipal{
 					AWSPrincipals: []common.AWSPrincipal{
-						{IAMRoleARN: awsClient.String("arn:aws:iam::1234567890:role/sso/role")},
+						{IAMRoleARN: pointer.String("arn:aws:iam::1234567890:role/sso/role")},
 					},
 				},
 				Action:   []string{"s3:GetObject"},
@@ -58,11 +58,11 @@ var (
 		Version: "2012-10-17",
 		Statements: []common.BucketPolicyStatement{
 			{
-				SID:    awsClient.String("AllowPublicWrite"),
+				SID:    pointer.String("AllowPublicWrite"),
 				Effect: "Allow",
 				Principal: &common.BucketPrincipal{
 					AWSPrincipals: []common.AWSPrincipal{
-						{IAMRoleARN: awsClient.String("arn:aws:iam::1234567890:role/sso/role")},
+						{IAMRoleARN: pointer.String("arn:aws:iam::1234567890:role/sso/role")},
 					},
 				},
 				Action:   []string{"s3:GetObject"},

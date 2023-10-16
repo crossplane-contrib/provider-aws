@@ -16,8 +16,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupParameterGroup adds a controller that reconciles ParameterGroup.
@@ -66,7 +66,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.DescribeParameterGroupsInput) error {
-	obj.ParameterGroupNames = append(obj.ParameterGroupNames, awsclients.String(meta.GetExternalName(cr)))
+	obj.ParameterGroupNames = append(obj.ParameterGroupNames, pointer.String(meta.GetExternalName(cr)))
 	return nil
 }
 
@@ -80,12 +80,12 @@ func postObserve(_ context.Context, cr *svcapitypes.ParameterGroup, _ *svcsdk.De
 
 func preCreate(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.CreateParameterGroupInput) error {
 	meta.SetExternalName(cr, cr.Name)
-	obj.ParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.ParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.UpdateParameterGroupInput) error {
-	obj.ParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.ParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	obj.ParameterNameValues = make([]*svcsdk.ParameterNameValue, len(cr.Spec.ForProvider.ParameterNameValues))
 
 	for i, v := range cr.Spec.ForProvider.ParameterNameValues {
@@ -107,7 +107,7 @@ func postUpdate(_ context.Context, cr *svcapitypes.ParameterGroup, _ *svcsdk.Upd
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.DeleteParameterGroupInput) (bool, error) {
-	obj.ParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.ParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -120,8 +120,8 @@ func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.ParameterGroup,
 	}
 
 	input := &svcsdk.DescribeParametersInput{
-		ParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
-		MaxResults:         awsclients.Int64(100),
+		ParameterGroupName: pointer.String(meta.GetExternalName(cr)),
+		MaxResults:         pointer.Int64(100),
 	}
 
 	results, err := c.client.DescribeParametersWithContext(ctx, input)
@@ -131,16 +131,16 @@ func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.ParameterGroup,
 	observed := make(map[string]svcsdk.Parameter, len(results.Parameters))
 
 	for _, p := range results.Parameters {
-		observed[awsclients.StringValue(p.ParameterName)] = *p
+		observed[pointer.StringValue(p.ParameterName)] = *p
 	}
 
 	for _, v := range cr.Spec.ForProvider.ParameterNameValues {
-		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
+		existing, ok := observed[pointer.StringValue(v.ParameterName)]
 		if !ok {
 			return false, "", nil
 		}
 
-		if awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue) {
+		if pointer.StringValue(existing.ParameterValue) != pointer.StringValue(v.ParameterValue) {
 			return false, "", nil
 		}
 

@@ -24,9 +24,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -51,7 +51,7 @@ func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket
 		// If the payer configuration is not set, do not check
 		return Updated, nil
 	}
-	external, err := in.client.GetBucketRequestPayment(ctx, &awss3.GetBucketRequestPaymentInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketRequestPayment(ctx, &awss3.GetBucketRequestPaymentInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return NeedsUpdate, errorutils.Wrap(err, paymentGetFailed)
 	}
@@ -80,7 +80,7 @@ func (*RequestPaymentConfigurationClient) Delete(_ context.Context, _ *v1beta1.B
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *RequestPaymentConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketRequestPayment(ctx, &awss3.GetBucketRequestPaymentInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketRequestPayment(ctx, &awss3.GetBucketRequestPaymentInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(err, paymentGetFailed)
 	}
@@ -93,7 +93,7 @@ func (in *RequestPaymentConfigurationClient) LateInitialize(ctx context.Context,
 	}
 
 	config := bucket.Spec.ForProvider.PayerConfiguration
-	config.Payer = awsclient.LateInitializeString(config.Payer, awsclient.String(string(external.Payer)))
+	config.Payer = pointer.LateInitializeString(config.Payer, pointer.String(string(external.Payer)))
 	return nil
 }
 
@@ -105,7 +105,7 @@ func (in *RequestPaymentConfigurationClient) SubresourceExists(bucket *v1beta1.B
 // GeneratePutBucketPaymentInput creates the input for the BucketRequestPayment request for the S3 Client
 func GeneratePutBucketPaymentInput(name string, config *v1beta1.PaymentConfiguration) *awss3.PutBucketRequestPaymentInput {
 	bci := &awss3.PutBucketRequestPaymentInput{
-		Bucket:                      awsclient.String(name),
+		Bucket:                      pointer.String(name),
 		RequestPaymentConfiguration: &types.RequestPaymentConfiguration{Payer: types.Payer(config.Payer)},
 	}
 	return bci

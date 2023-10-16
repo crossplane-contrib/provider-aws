@@ -23,7 +23,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 func TestLateInitialize(t *testing.T) {
@@ -142,188 +142,188 @@ func TestLateInitialize(t *testing.T) {
 					Distribution: &svcsdk.Distribution{
 						DistributionConfig: &svcsdk.DistributionConfig{
 							Aliases: &svcsdk.Aliases{
-								Items: []*string{awsclients.String("example.org")},
+								Items: []*string{pointer.String("example.org")},
 							},
 							CacheBehaviors: &svcsdk.CacheBehaviors{
 								Items: []*svcsdk.CacheBehavior{{
 									AllowedMethods: &svcsdk.AllowedMethods{
-										Items: []*string{awsclients.String("GET")},
+										Items: []*string{pointer.String("GET")},
 										CachedMethods: &svcsdk.CachedMethods{
-											Items: []*string{awsclients.String("GET")},
+											Items: []*string{pointer.String("GET")},
 										},
 									},
-									CachePolicyId:          awsclients.String("example"),
-									Compress:               awsclients.Bool(true),
-									DefaultTTL:             awsclients.Int64(42),
-									FieldLevelEncryptionId: awsclients.String("example"),
+									CachePolicyId:          pointer.String("example"),
+									Compress:               pointer.Bool(true),
+									DefaultTTL:             pointer.Int64(42),
+									FieldLevelEncryptionId: pointer.String("example"),
 									ForwardedValues: &svcsdk.ForwardedValues{
 										Cookies: &svcsdk.CookiePreference{
-											Forward: awsclients.String("example"),
+											Forward: pointer.String("example"),
 											WhitelistedNames: &svcsdk.CookieNames{
-												Items: []*string{awsclients.String("example")},
+												Items: []*string{pointer.String("example")},
 											},
 										},
 										Headers: &svcsdk.Headers{
-											Items: []*string{awsclients.String("X-Hello")},
+											Items: []*string{pointer.String("X-Hello")},
 										},
-										QueryString: awsclients.Bool(true),
+										QueryString: pointer.Bool(true),
 										QueryStringCacheKeys: &svcsdk.QueryStringCacheKeys{
-											Items: []*string{awsclients.String("search")},
+											Items: []*string{pointer.String("search")},
 										},
 									},
 									LambdaFunctionAssociations: &svcsdk.LambdaFunctionAssociations{
 										Items: []*svcsdk.LambdaFunctionAssociation{{
-											EventType:         awsclients.String("good"),
-											IncludeBody:       awsclients.Bool(true),
-											LambdaFunctionARN: awsclients.String("arn"),
+											EventType:         pointer.String("good"),
+											IncludeBody:       pointer.Bool(true),
+											LambdaFunctionARN: pointer.String("arn"),
 										}},
 									},
-									MaxTTL:                awsclients.Int64(42),
-									MinTTL:                awsclients.Int64(42),
-									OriginRequestPolicyId: awsclients.String("example"),
-									PathPattern:           awsclients.String("example"),
-									RealtimeLogConfigArn:  awsclients.String("example"),
-									SmoothStreaming:       awsclients.Bool(true),
-									TargetOriginId:        awsclients.String("example"),
+									MaxTTL:                pointer.Int64(42),
+									MinTTL:                pointer.Int64(42),
+									OriginRequestPolicyId: pointer.String("example"),
+									PathPattern:           pointer.String("example"),
+									RealtimeLogConfigArn:  pointer.String("example"),
+									SmoothStreaming:       pointer.Bool(true),
+									TargetOriginId:        pointer.String("example"),
 									TrustedKeyGroups: &svcsdk.TrustedKeyGroups{
-										Enabled: awsclients.Bool(true),
-										Items:   []*string{awsclients.String("the-good-key")},
+										Enabled: pointer.Bool(true),
+										Items:   []*string{pointer.String("the-good-key")},
 									},
 									TrustedSigners: &svcsdk.TrustedSigners{
-										Enabled: awsclients.Bool(true),
-										Items:   []*string{awsclients.String("the-good-signer")},
+										Enabled: pointer.Bool(true),
+										Items:   []*string{pointer.String("the-good-signer")},
 									},
 								}},
 							},
 							CustomErrorResponses: &svcsdk.CustomErrorResponses{
 								Items: []*svcsdk.CustomErrorResponse{{
-									ErrorCachingMinTTL: awsclients.Int64(42),
-									ErrorCode:          awsclients.Int64(418),
-									ResponseCode:       awsclients.String("I'm a teapot"),
-									ResponsePagePath:   awsclients.String("/teapot"),
+									ErrorCachingMinTTL: pointer.Int64(42),
+									ErrorCode:          pointer.Int64(418),
+									ResponseCode:       pointer.String("I'm a teapot"),
+									ResponsePagePath:   pointer.String("/teapot"),
 								}},
 							},
 							DefaultCacheBehavior: &svcsdk.DefaultCacheBehavior{
 								AllowedMethods: &svcsdk.AllowedMethods{
-									Items: []*string{awsclients.String("GET")},
+									Items: []*string{pointer.String("GET")},
 									CachedMethods: &svcsdk.CachedMethods{
-										Items: []*string{awsclients.String("GET")},
+										Items: []*string{pointer.String("GET")},
 									},
 								},
-								CachePolicyId:          awsclients.String("example"),
-								Compress:               awsclients.Bool(true),
-								DefaultTTL:             awsclients.Int64(42),
-								FieldLevelEncryptionId: awsclients.String("example"),
+								CachePolicyId:          pointer.String("example"),
+								Compress:               pointer.Bool(true),
+								DefaultTTL:             pointer.Int64(42),
+								FieldLevelEncryptionId: pointer.String("example"),
 								ForwardedValues: &svcsdk.ForwardedValues{
 									Cookies: &svcsdk.CookiePreference{
-										Forward: awsclients.String("example"),
+										Forward: pointer.String("example"),
 										WhitelistedNames: &svcsdk.CookieNames{
-											Items: []*string{awsclients.String("example")},
+											Items: []*string{pointer.String("example")},
 										},
 									},
 									Headers: &svcsdk.Headers{
-										Items: []*string{awsclients.String("X-Hello")},
+										Items: []*string{pointer.String("X-Hello")},
 									},
-									QueryString: awsclients.Bool(true),
+									QueryString: pointer.Bool(true),
 									QueryStringCacheKeys: &svcsdk.QueryStringCacheKeys{
-										Items: []*string{awsclients.String("search")},
+										Items: []*string{pointer.String("search")},
 									},
 								},
 								LambdaFunctionAssociations: &svcsdk.LambdaFunctionAssociations{
 									Items: []*svcsdk.LambdaFunctionAssociation{{
-										EventType:         awsclients.String("good"),
-										IncludeBody:       awsclients.Bool(true),
-										LambdaFunctionARN: awsclients.String("arn"),
+										EventType:         pointer.String("good"),
+										IncludeBody:       pointer.Bool(true),
+										LambdaFunctionARN: pointer.String("arn"),
 									}},
 								},
-								MaxTTL:                awsclients.Int64(42),
-								MinTTL:                awsclients.Int64(42),
-								OriginRequestPolicyId: awsclients.String("example"),
-								RealtimeLogConfigArn:  awsclients.String("example"),
-								SmoothStreaming:       awsclients.Bool(true),
-								TargetOriginId:        awsclients.String("example"),
+								MaxTTL:                pointer.Int64(42),
+								MinTTL:                pointer.Int64(42),
+								OriginRequestPolicyId: pointer.String("example"),
+								RealtimeLogConfigArn:  pointer.String("example"),
+								SmoothStreaming:       pointer.Bool(true),
+								TargetOriginId:        pointer.String("example"),
 								TrustedKeyGroups: &svcsdk.TrustedKeyGroups{
-									Enabled: awsclients.Bool(true),
-									Items:   []*string{awsclients.String("the-good-key")},
+									Enabled: pointer.Bool(true),
+									Items:   []*string{pointer.String("the-good-key")},
 								},
 								TrustedSigners: &svcsdk.TrustedSigners{
-									Enabled: awsclients.Bool(true),
-									Items:   []*string{awsclients.String("the-good-signer")},
+									Enabled: pointer.Bool(true),
+									Items:   []*string{pointer.String("the-good-signer")},
 								},
 							},
-							DefaultRootObject: awsclients.String("the-good-one"),
-							Enabled:           awsclients.Bool(true),
-							HttpVersion:       awsclients.String("1.1"),
-							IsIPV6Enabled:     awsclients.Bool(true),
+							DefaultRootObject: pointer.String("the-good-one"),
+							Enabled:           pointer.Bool(true),
+							HttpVersion:       pointer.String("1.1"),
+							IsIPV6Enabled:     pointer.Bool(true),
 							Logging: &svcsdk.LoggingConfig{
-								Bucket:         awsclients.String("big-logs"),
-								Enabled:        awsclients.Bool(true),
-								IncludeCookies: awsclients.Bool(true),
-								Prefix:         awsclients.String("one-large-log-"),
+								Bucket:         pointer.String("big-logs"),
+								Enabled:        pointer.Bool(true),
+								IncludeCookies: pointer.Bool(true),
+								Prefix:         pointer.String("one-large-log-"),
 							},
 							OriginGroups: &svcsdk.OriginGroups{
 								Items: []*svcsdk.OriginGroup{{
 									FailoverCriteria: &svcsdk.OriginGroupFailoverCriteria{
 										StatusCodes: &svcsdk.StatusCodes{
-											Items: []*int64{awsclients.Int64(418)},
+											Items: []*int64{pointer.Int64(418)},
 										},
 									},
 									Members: &svcsdk.OriginGroupMembers{
 										Items: []*svcsdk.OriginGroupMember{{
-											OriginId: awsclients.String("example"),
+											OriginId: pointer.String("example"),
 										}},
 									},
 								}},
 							},
 							Origins: &svcsdk.Origins{
 								Items: []*svcsdk.Origin{{
-									ConnectionAttempts: awsclients.Int64(42),
-									ConnectionTimeout:  awsclients.Int64(42),
+									ConnectionAttempts: pointer.Int64(42),
+									ConnectionTimeout:  pointer.Int64(42),
 									CustomHeaders: &svcsdk.CustomHeaders{
 										Items: []*svcsdk.OriginCustomHeader{{
-											HeaderName:  awsclients.String("X-Cool"),
-											HeaderValue: awsclients.String("very"),
+											HeaderName:  pointer.String("X-Cool"),
+											HeaderValue: pointer.String("very"),
 										}},
 									},
 									CustomOriginConfig: &svcsdk.CustomOriginConfig{
-										HTTPPort:               awsclients.Int64(8080),
-										HTTPSPort:              awsclients.Int64(443),
-										OriginKeepaliveTimeout: awsclients.Int64(42),
-										OriginProtocolPolicy:   awsclients.String("all-of-them"),
-										OriginReadTimeout:      awsclients.Int64(42),
+										HTTPPort:               pointer.Int64(8080),
+										HTTPSPort:              pointer.Int64(443),
+										OriginKeepaliveTimeout: pointer.Int64(42),
+										OriginProtocolPolicy:   pointer.String("all-of-them"),
+										OriginReadTimeout:      pointer.Int64(42),
 										OriginSslProtocols: &svcsdk.OriginSslProtocols{
-											Items: []*string{awsclients.String("TLS_1.2")},
+											Items: []*string{pointer.String("TLS_1.2")},
 										},
 									},
-									DomainName: awsclients.String("example.org"),
-									Id:         awsclients.String("custom"),
-									OriginPath: awsclients.String("/"),
+									DomainName: pointer.String("example.org"),
+									Id:         pointer.String("custom"),
+									OriginPath: pointer.String("/"),
 									OriginShield: &svcsdk.OriginShield{
-										Enabled:            awsclients.Bool(true),
-										OriginShieldRegion: awsclients.String("us-east-1"),
+										Enabled:            pointer.Bool(true),
+										OriginShieldRegion: pointer.String("us-east-1"),
 									},
 									S3OriginConfig: &svcsdk.S3OriginConfig{
-										OriginAccessIdentity: awsclients.String("cool-guy"),
+										OriginAccessIdentity: pointer.String("cool-guy"),
 									},
 								}},
 							},
-							PriceClass: awsclients.String("really-cheap"),
+							PriceClass: pointer.String("really-cheap"),
 							Restrictions: &svcsdk.Restrictions{
 								GeoRestriction: &svcsdk.GeoRestriction{
-									RestrictionType: awsclients.String("no-australians"),
-									Items:           []*string{awsclients.String("negz"), awsclients.String("kylie")},
+									RestrictionType: pointer.String("no-australians"),
+									Items:           []*string{pointer.String("negz"), pointer.String("kylie")},
 								},
 							},
 							ViewerCertificate: &svcsdk.ViewerCertificate{
-								ACMCertificateArn:            awsclients.String("example"),
-								Certificate:                  awsclients.String("example"),
-								CertificateSource:            awsclients.String("trusty-source"),
-								CloudFrontDefaultCertificate: awsclients.Bool(false),
-								IAMCertificateId:             awsclients.String("example"),
-								MinimumProtocolVersion:       awsclients.String("TLS_1.2"),
-								SSLSupportMethod:             awsclients.String("fax"),
+								ACMCertificateArn:            pointer.String("example"),
+								Certificate:                  pointer.String("example"),
+								CertificateSource:            pointer.String("trusty-source"),
+								CloudFrontDefaultCertificate: pointer.Bool(false),
+								IAMCertificateId:             pointer.String("example"),
+								MinimumProtocolVersion:       pointer.String("TLS_1.2"),
+								SSLSupportMethod:             pointer.String("fax"),
 							},
-							WebACLId: awsclients.String("example"),
+							WebACLId: pointer.String("example"),
 						},
 					},
 				},
@@ -331,188 +331,188 @@ func TestLateInitialize(t *testing.T) {
 			want: &svcapitypes.DistributionParameters{
 				DistributionConfig: &svcapitypes.DistributionConfig{
 					Aliases: &svcapitypes.Aliases{
-						Items: []*string{awsclients.String("example.org")},
+						Items: []*string{pointer.String("example.org")},
 					},
 					CacheBehaviors: &svcapitypes.CacheBehaviors{
 						Items: []*svcapitypes.CacheBehavior{{
 							AllowedMethods: &svcapitypes.AllowedMethods{
-								Items: []*string{awsclients.String("GET")},
+								Items: []*string{pointer.String("GET")},
 								CachedMethods: &svcapitypes.CachedMethods{
-									Items: []*string{awsclients.String("GET")},
+									Items: []*string{pointer.String("GET")},
 								},
 							},
-							CachePolicyID:          awsclients.String("example"),
-							Compress:               awsclients.Bool(true),
-							DefaultTTL:             awsclients.Int64(42),
-							FieldLevelEncryptionID: awsclients.String("example"),
+							CachePolicyID:          pointer.String("example"),
+							Compress:               pointer.Bool(true),
+							DefaultTTL:             pointer.Int64(42),
+							FieldLevelEncryptionID: pointer.String("example"),
 							ForwardedValues: &svcapitypes.ForwardedValues{
 								Cookies: &svcapitypes.CookiePreference{
-									Forward: awsclients.String("example"),
+									Forward: pointer.String("example"),
 									WhitelistedNames: &svcapitypes.CookieNames{
-										Items: []*string{awsclients.String("example")},
+										Items: []*string{pointer.String("example")},
 									},
 								},
 								Headers: &svcapitypes.Headers{
-									Items: []*string{awsclients.String("X-Hello")},
+									Items: []*string{pointer.String("X-Hello")},
 								},
-								QueryString: awsclients.Bool(true),
+								QueryString: pointer.Bool(true),
 								QueryStringCacheKeys: &svcapitypes.QueryStringCacheKeys{
-									Items: []*string{awsclients.String("search")},
+									Items: []*string{pointer.String("search")},
 								},
 							},
 							LambdaFunctionAssociations: &svcapitypes.LambdaFunctionAssociations{
 								Items: []*svcapitypes.LambdaFunctionAssociation{{
-									EventType:         awsclients.String("good"),
-									IncludeBody:       awsclients.Bool(true),
-									LambdaFunctionARN: awsclients.String("arn"),
+									EventType:         pointer.String("good"),
+									IncludeBody:       pointer.Bool(true),
+									LambdaFunctionARN: pointer.String("arn"),
 								}},
 							},
-							MaxTTL:                awsclients.Int64(42),
-							MinTTL:                awsclients.Int64(42),
-							OriginRequestPolicyID: awsclients.String("example"),
-							PathPattern:           awsclients.String("example"),
-							RealtimeLogConfigARN:  awsclients.String("example"),
-							SmoothStreaming:       awsclients.Bool(true),
-							TargetOriginID:        awsclients.String("example"),
+							MaxTTL:                pointer.Int64(42),
+							MinTTL:                pointer.Int64(42),
+							OriginRequestPolicyID: pointer.String("example"),
+							PathPattern:           pointer.String("example"),
+							RealtimeLogConfigARN:  pointer.String("example"),
+							SmoothStreaming:       pointer.Bool(true),
+							TargetOriginID:        pointer.String("example"),
 							TrustedKeyGroups: &svcapitypes.TrustedKeyGroups{
-								Enabled: awsclients.Bool(true),
-								Items:   []*string{awsclients.String("the-good-key")},
+								Enabled: pointer.Bool(true),
+								Items:   []*string{pointer.String("the-good-key")},
 							},
 							TrustedSigners: &svcapitypes.TrustedSigners{
-								Enabled: awsclients.Bool(true),
-								Items:   []*string{awsclients.String("the-good-signer")},
+								Enabled: pointer.Bool(true),
+								Items:   []*string{pointer.String("the-good-signer")},
 							},
 						}},
 					},
 					CustomErrorResponses: &svcapitypes.CustomErrorResponses{
 						Items: []*svcapitypes.CustomErrorResponse{{
-							ErrorCachingMinTTL: awsclients.Int64(42),
-							ErrorCode:          awsclients.Int64(418),
-							ResponseCode:       awsclients.String("I'm a teapot"),
-							ResponsePagePath:   awsclients.String("/teapot"),
+							ErrorCachingMinTTL: pointer.Int64(42),
+							ErrorCode:          pointer.Int64(418),
+							ResponseCode:       pointer.String("I'm a teapot"),
+							ResponsePagePath:   pointer.String("/teapot"),
 						}},
 					},
 					DefaultCacheBehavior: &svcapitypes.DefaultCacheBehavior{
 						AllowedMethods: &svcapitypes.AllowedMethods{
-							Items: []*string{awsclients.String("GET")},
+							Items: []*string{pointer.String("GET")},
 							CachedMethods: &svcapitypes.CachedMethods{
-								Items: []*string{awsclients.String("GET")},
+								Items: []*string{pointer.String("GET")},
 							},
 						},
-						CachePolicyID:          awsclients.String("example"),
-						Compress:               awsclients.Bool(true),
-						DefaultTTL:             awsclients.Int64(42),
-						FieldLevelEncryptionID: awsclients.String("example"),
+						CachePolicyID:          pointer.String("example"),
+						Compress:               pointer.Bool(true),
+						DefaultTTL:             pointer.Int64(42),
+						FieldLevelEncryptionID: pointer.String("example"),
 						ForwardedValues: &svcapitypes.ForwardedValues{
 							Cookies: &svcapitypes.CookiePreference{
-								Forward: awsclients.String("example"),
+								Forward: pointer.String("example"),
 								WhitelistedNames: &svcapitypes.CookieNames{
-									Items: []*string{awsclients.String("example")},
+									Items: []*string{pointer.String("example")},
 								},
 							},
 							Headers: &svcapitypes.Headers{
-								Items: []*string{awsclients.String("X-Hello")},
+								Items: []*string{pointer.String("X-Hello")},
 							},
-							QueryString: awsclients.Bool(true),
+							QueryString: pointer.Bool(true),
 							QueryStringCacheKeys: &svcapitypes.QueryStringCacheKeys{
-								Items: []*string{awsclients.String("search")},
+								Items: []*string{pointer.String("search")},
 							},
 						},
 						LambdaFunctionAssociations: &svcapitypes.LambdaFunctionAssociations{
 							Items: []*svcapitypes.LambdaFunctionAssociation{{
-								EventType:         awsclients.String("good"),
-								IncludeBody:       awsclients.Bool(true),
-								LambdaFunctionARN: awsclients.String("arn"),
+								EventType:         pointer.String("good"),
+								IncludeBody:       pointer.Bool(true),
+								LambdaFunctionARN: pointer.String("arn"),
 							}},
 						},
-						MaxTTL:                awsclients.Int64(42),
-						MinTTL:                awsclients.Int64(42),
-						OriginRequestPolicyID: awsclients.String("example"),
-						RealtimeLogConfigARN:  awsclients.String("example"),
-						SmoothStreaming:       awsclients.Bool(true),
-						TargetOriginID:        awsclients.String("example"),
+						MaxTTL:                pointer.Int64(42),
+						MinTTL:                pointer.Int64(42),
+						OriginRequestPolicyID: pointer.String("example"),
+						RealtimeLogConfigARN:  pointer.String("example"),
+						SmoothStreaming:       pointer.Bool(true),
+						TargetOriginID:        pointer.String("example"),
 						TrustedKeyGroups: &svcapitypes.TrustedKeyGroups{
-							Enabled: awsclients.Bool(true),
-							Items:   []*string{awsclients.String("the-good-key")},
+							Enabled: pointer.Bool(true),
+							Items:   []*string{pointer.String("the-good-key")},
 						},
 						TrustedSigners: &svcapitypes.TrustedSigners{
-							Enabled: awsclients.Bool(true),
-							Items:   []*string{awsclients.String("the-good-signer")},
+							Enabled: pointer.Bool(true),
+							Items:   []*string{pointer.String("the-good-signer")},
 						},
 					},
-					DefaultRootObject: awsclients.String("the-good-one"),
-					Enabled:           awsclients.Bool(true),
-					HTTPVersion:       awsclients.String("1.1"),
-					IsIPV6Enabled:     awsclients.Bool(true),
+					DefaultRootObject: pointer.String("the-good-one"),
+					Enabled:           pointer.Bool(true),
+					HTTPVersion:       pointer.String("1.1"),
+					IsIPV6Enabled:     pointer.Bool(true),
 					Logging: &svcapitypes.LoggingConfig{
-						Bucket:         awsclients.String("big-logs"),
-						Enabled:        awsclients.Bool(true),
-						IncludeCookies: awsclients.Bool(true),
-						Prefix:         awsclients.String("one-large-log-"),
+						Bucket:         pointer.String("big-logs"),
+						Enabled:        pointer.Bool(true),
+						IncludeCookies: pointer.Bool(true),
+						Prefix:         pointer.String("one-large-log-"),
 					},
 					OriginGroups: &svcapitypes.OriginGroups{
 						Items: []*svcapitypes.OriginGroup{{
 							FailoverCriteria: &svcapitypes.OriginGroupFailoverCriteria{
 								StatusCodes: &svcapitypes.StatusCodes{
-									Items: []*int64{awsclients.Int64(418)},
+									Items: []*int64{pointer.Int64(418)},
 								},
 							},
 							Members: &svcapitypes.OriginGroupMembers{
 								Items: []*svcapitypes.OriginGroupMember{{
-									OriginID: awsclients.String("example"),
+									OriginID: pointer.String("example"),
 								}},
 							},
 						}},
 					},
 					Origins: &svcapitypes.Origins{
 						Items: []*svcapitypes.Origin{{
-							ConnectionAttempts: awsclients.Int64(42),
-							ConnectionTimeout:  awsclients.Int64(42),
+							ConnectionAttempts: pointer.Int64(42),
+							ConnectionTimeout:  pointer.Int64(42),
 							CustomHeaders: &svcapitypes.CustomHeaders{
 								Items: []*svcapitypes.OriginCustomHeader{{
-									HeaderName:  awsclients.String("X-Cool"),
-									HeaderValue: awsclients.String("very"),
+									HeaderName:  pointer.String("X-Cool"),
+									HeaderValue: pointer.String("very"),
 								}},
 							},
 							CustomOriginConfig: &svcapitypes.CustomOriginConfig{
-								HTTPPort:               awsclients.Int64(8080),
-								HTTPSPort:              awsclients.Int64(443),
-								OriginKeepaliveTimeout: awsclients.Int64(42),
-								OriginProtocolPolicy:   awsclients.String("all-of-them"),
-								OriginReadTimeout:      awsclients.Int64(42),
+								HTTPPort:               pointer.Int64(8080),
+								HTTPSPort:              pointer.Int64(443),
+								OriginKeepaliveTimeout: pointer.Int64(42),
+								OriginProtocolPolicy:   pointer.String("all-of-them"),
+								OriginReadTimeout:      pointer.Int64(42),
 								OriginSSLProtocols: &svcapitypes.OriginSSLProtocols{
-									Items: []*string{awsclients.String("TLS_1.2")},
+									Items: []*string{pointer.String("TLS_1.2")},
 								},
 							},
-							DomainName: awsclients.String("example.org"),
-							ID:         awsclients.String("custom"),
-							OriginPath: awsclients.String("/"),
+							DomainName: pointer.String("example.org"),
+							ID:         pointer.String("custom"),
+							OriginPath: pointer.String("/"),
 							OriginShield: &svcapitypes.OriginShield{
-								Enabled:            awsclients.Bool(true),
-								OriginShieldRegion: awsclients.String("us-east-1"),
+								Enabled:            pointer.Bool(true),
+								OriginShieldRegion: pointer.String("us-east-1"),
 							},
 							S3OriginConfig: &svcapitypes.S3OriginConfig{
-								OriginAccessIdentity: awsclients.String("cool-guy"),
+								OriginAccessIdentity: pointer.String("cool-guy"),
 							},
 						}},
 					},
-					PriceClass: awsclients.String("really-cheap"),
+					PriceClass: pointer.String("really-cheap"),
 					Restrictions: &svcapitypes.Restrictions{
 						GeoRestriction: &svcapitypes.GeoRestriction{
-							RestrictionType: awsclients.String("no-australians"),
-							Items:           []*string{awsclients.String("negz"), awsclients.String("kylie")},
+							RestrictionType: pointer.String("no-australians"),
+							Items:           []*string{pointer.String("negz"), pointer.String("kylie")},
 						},
 					},
 					ViewerCertificate: &svcapitypes.ViewerCertificate{
-						ACMCertificateARN:            awsclients.String("example"),
-						Certificate:                  awsclients.String("example"),
-						CertificateSource:            awsclients.String("trusty-source"),
-						CloudFrontDefaultCertificate: awsclients.Bool(false),
-						IAMCertificateID:             awsclients.String("example"),
-						MinimumProtocolVersion:       awsclients.String("TLS_1.2"),
-						SSLSupportMethod:             awsclients.String("fax"),
+						ACMCertificateARN:            pointer.String("example"),
+						Certificate:                  pointer.String("example"),
+						CertificateSource:            pointer.String("trusty-source"),
+						CloudFrontDefaultCertificate: pointer.Bool(false),
+						IAMCertificateID:             pointer.String("example"),
+						MinimumProtocolVersion:       pointer.String("TLS_1.2"),
+						SSLSupportMethod:             pointer.String("fax"),
 					},
-					WebACLID: awsclients.String("example"),
+					WebACLID: pointer.String("example"),
 				},
 			},
 		},
@@ -525,11 +525,11 @@ func TestLateInitialize(t *testing.T) {
 								{}, // This one has a nil ID.
 								{
 									// This one only exists in desired state.
-									ID: awsclients.String("desired-only"),
+									ID: pointer.String("desired-only"),
 								},
 								{
 									// We want to late-init domain-name here.
-									ID: awsclients.String("custom"),
+									ID: pointer.String("custom"),
 								},
 							},
 						},
@@ -543,11 +543,11 @@ func TestLateInitialize(t *testing.T) {
 									{}, // This one has a nil Id.
 									{
 										// This one only exists in actual state.
-										Id: awsclients.String("actual-only"),
+										Id: pointer.String("actual-only"),
 									},
 									{
-										DomainName: awsclients.String("example.org"),
-										Id:         awsclients.String("custom"),
+										DomainName: pointer.String("example.org"),
+										Id:         pointer.String("custom"),
 									},
 								},
 							},
@@ -562,11 +562,11 @@ func TestLateInitialize(t *testing.T) {
 							{}, // This one has a nil ID.
 							{
 								// This one only exists in desired state.
-								ID: awsclients.String("desired-only"),
+								ID: pointer.String("desired-only"),
 							},
 							{
-								DomainName: awsclients.String("example.org"),
-								ID:         awsclients.String("custom"),
+								DomainName: pointer.String("example.org"),
+								ID:         pointer.String("custom"),
 							},
 						},
 					},

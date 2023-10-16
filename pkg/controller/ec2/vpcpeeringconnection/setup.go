@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -108,9 +109,9 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConn
 		pc = e.client
 	}
 
-	if awsclients.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest && !meta.WasDeleted(cr) {
+	if pointer.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest && !meta.WasDeleted(cr) {
 		req := svcsdk.AcceptVpcPeeringConnectionInput{
-			VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+			VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 		}
 		request, _ := pc.AcceptVpcPeeringConnectionRequest(&req)
 		err = request.Send()
@@ -119,24 +120,24 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConn
 		}
 	}
 
-	if meta.WasDeleted(cr) && awsclients.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "deleted" {
+	if meta.WasDeleted(cr) && pointer.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "deleted" {
 		return managed.ExternalObservation{
 			ResourceExists:   false,
 			ResourceUpToDate: false,
 		}, nil
 	}
 
-	if awsclients.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "active" {
+	if pointer.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "active" {
 		if !reflect.DeepEqual(obj.VpcPeeringConnections[0].AccepterVpcInfo.PeeringOptions, cr.Spec.ForProvider.AccepterPeeringOptions) ||
 			!reflect.DeepEqual(obj.VpcPeeringConnections[0].RequesterVpcInfo.PeeringOptions, cr.Spec.ForProvider.RequesterPeeringOptions) {
 			req := svcsdk.ModifyVpcPeeringConnectionOptionsInput{
-				VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+				VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 			}
 			if *cr.Spec.ForProvider.PeerRegion == cr.Spec.ForProvider.Region {
 				setAccepterRequester(&req, cr)
 			} else {
 				acc := svcsdk.ModifyVpcPeeringConnectionOptionsInput{
-					VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+					VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 				}
 				setAccepter(&acc, cr)
 				request, _ := pc.ModifyVpcPeeringConnectionOptionsRequest(&acc)

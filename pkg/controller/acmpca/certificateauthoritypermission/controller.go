@@ -40,6 +40,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -133,7 +134,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	var attachedPermission *awsacmpcatypes.Permission
 	for i := range response.Permissions {
-		if awsclient.StringValue(response.Permissions[i].Principal) == principal {
+		if pointer.StringValue(response.Permissions[i].Principal) == principal {
 			attachedPermission = &response.Permissions[i]
 			break
 		}
@@ -175,7 +176,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// This resource is interesting in that it's a binding without its own
 	// external identity. We therefore derive an external name from the
 	// identity of the CA it applies to, and the principal it applies.
-	meta.SetExternalName(cr, cr.Spec.ForProvider.Principal+"/"+awsclient.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN))
+	meta.SetExternalName(cr, cr.Spec.ForProvider.Principal+"/"+pointer.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN))
 
 	return managed.ExternalCreation{}, nil
 

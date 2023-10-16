@@ -28,8 +28,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupUserPoolDomain adds a controller that reconciles User.
@@ -74,12 +74,12 @@ func SetupUserPoolDomain(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.UserPoolDomain, obj *svcsdk.DescribeUserPoolDomainInput) error {
-	obj.Domain = awsclients.String(meta.GetExternalName(cr))
+	obj.Domain = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.UserPoolDomain, obj *svcsdk.DeleteUserPoolDomainInput) (bool, error) {
-	obj.Domain = awsclients.String(meta.GetExternalName(cr))
+	obj.Domain = pointer.String(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return false, nil
 }
@@ -98,7 +98,7 @@ func postObserve(_ context.Context, cr *svcapitypes.UserPoolDomain, obj *svcsdk.
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.UserPoolDomain, obj *svcsdk.CreateUserPoolDomainInput) error {
-	obj.Domain = awsclients.String(meta.GetExternalName(cr))
+	obj.Domain = pointer.String(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return nil
 }

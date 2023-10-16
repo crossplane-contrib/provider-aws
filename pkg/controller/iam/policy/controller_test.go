@@ -37,10 +37,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -64,9 +64,9 @@ var (
 	errBoom = errors.New("boom")
 
 	getCallerIdentityOutput = &sts.GetCallerIdentityOutput{
-		Account:        awsclient.String("123456789012"),
-		Arn:            awsclient.String("arn:aws:iam::123456789012:user/DevAdmin"),
-		UserId:         awsclient.String("AIDASAMPLEUSERID"),
+		Account:        pointer.String("123456789012"),
+		Arn:            pointer.String("arn:aws:iam::123456789012:user/DevAdmin"),
+		UserId:         pointer.String("AIDASAMPLEUSERID"),
 		ResultMetadata: middleware.Metadata{},
 	}
 
@@ -131,7 +131,7 @@ func withSpec(spec v1beta1.PolicyParameters) policyModifier {
 
 func withPath(path string) policyModifier {
 	return func(r *v1beta1.Policy) {
-		r.Spec.ForProvider.Path = awsclient.String(path)
+		r.Spec.ForProvider.Path = pointer.String(path)
 	}
 }
 

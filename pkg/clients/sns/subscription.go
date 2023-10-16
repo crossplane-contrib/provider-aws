@@ -26,7 +26,7 @@ import (
 	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SubscriptionAttributes refers to AWS SNS Subscription Attributes List
@@ -105,11 +105,11 @@ func GenerateSubscriptionObservation(attr map[string]string) v1beta1.Subscriptio
 // *v1beta1.SubscriptionParameters with the values seen in
 // sns.Subscription
 func LateInitializeSubscription(in *v1beta1.SubscriptionParameters, subAttributes map[string]string) {
-	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, awsclients.String(subAttributes[SubscriptionDeliveryPolicy]))
-	in.FilterPolicy = awsclients.LateInitializeStringPtr(in.FilterPolicy, awsclients.String(subAttributes[SubscriptionFilterPolicy]))
-	in.FilterPolicyScope = awsclients.LateInitializeStringPtr(in.FilterPolicyScope, awsclients.String(subAttributes[SubscriptionFilterPolicyScope]))
-	in.RawMessageDelivery = awsclients.LateInitializeStringPtr(in.RawMessageDelivery, awsclients.String(subAttributes[SubscriptionRawMessageDelivery]))
-	in.RedrivePolicy = awsclients.LateInitializeStringPtr(in.RedrivePolicy, awsclients.String(subAttributes[SubscriptionRedrivePolicy]))
+	in.DeliveryPolicy = pointer.LateInitializeStringPtr(in.DeliveryPolicy, pointer.String(subAttributes[SubscriptionDeliveryPolicy]))
+	in.FilterPolicy = pointer.LateInitializeStringPtr(in.FilterPolicy, pointer.String(subAttributes[SubscriptionFilterPolicy]))
+	in.FilterPolicyScope = pointer.LateInitializeStringPtr(in.FilterPolicyScope, pointer.String(subAttributes[SubscriptionFilterPolicyScope]))
+	in.RawMessageDelivery = pointer.LateInitializeStringPtr(in.RawMessageDelivery, pointer.String(subAttributes[SubscriptionRawMessageDelivery]))
+	in.RedrivePolicy = pointer.LateInitializeStringPtr(in.RedrivePolicy, pointer.String(subAttributes[SubscriptionRedrivePolicy]))
 }
 
 // getSubAttributes returns map of SNS Sunscription Attributes

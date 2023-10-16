@@ -20,10 +20,10 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -93,7 +93,7 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfigurat
 	}
 
 	cr.Status.AtProvider.ServiceConfiguration = GenerateObservation(obj.ServiceConfigurations[0])
-	switch awsclients.StringValue(obj.ServiceConfigurations[0].ServiceState) {
+	switch pointer.StringValue(obj.ServiceConfigurations[0].ServiceState) {
 	case string(svcapitypes.ServiceState_Available):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.ServiceState_Pending):
@@ -111,7 +111,7 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfigurat
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.CreateVpcEndpointServiceConfigurationInput) error {
-	obj.ClientToken = awsclients.String(meta.GetExternalName(cr))
+	obj.ClientToken = pointer.String(meta.GetExternalName(cr))
 	obj.GatewayLoadBalancerArns = append(obj.GatewayLoadBalancerArns, cr.Spec.ForProvider.GatewayLoadBalancerARNs...)
 	obj.NetworkLoadBalancerArns = append(obj.NetworkLoadBalancerArns, cr.Spec.ForProvider.NetworkLoadBalancerARNs...)
 
@@ -150,11 +150,11 @@ func isUpToDate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfigurati
 		return false, "", nil
 	}
 
-	if awsclients.StringValue(cr.Spec.ForProvider.PrivateDNSName) != awsclients.StringValue(obj.ServiceConfigurations[0].PrivateDnsName) {
+	if pointer.StringValue(cr.Spec.ForProvider.PrivateDNSName) != pointer.StringValue(obj.ServiceConfigurations[0].PrivateDnsName) {
 		return false, "", nil
 	}
 
-	if awsclients.BoolValue(cr.Spec.ForProvider.AcceptanceRequired) != awsclients.BoolValue(obj.ServiceConfigurations[0].AcceptanceRequired) {
+	if pointer.BoolValue(cr.Spec.ForProvider.AcceptanceRequired) != pointer.BoolValue(obj.ServiceConfigurations[0].AcceptanceRequired) {
 		return false, "", nil
 	}
 
@@ -164,7 +164,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfigurati
 func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.ModifyVpcEndpointServiceConfigurationInput) error {
 
 	input := &svcsdk.DescribeVpcEndpointServiceConfigurationsInput{}
-	input.ServiceIds = append(input.ServiceIds, awsclients.String(meta.GetExternalName(cr)))
+	input.ServiceIds = append(input.ServiceIds, pointer.String(meta.GetExternalName(cr)))
 
 	resp, err := u.client.DescribeVpcEndpointServiceConfigurations(input)
 	if err != nil {
@@ -194,7 +194,7 @@ func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServic
 		obj.RemovePrivateDnsName = aws.Bool(true)
 	}
 
-	obj.ServiceId = awsclients.String(meta.GetExternalName(cr))
+	obj.ServiceId = pointer.String(meta.GetExternalName(cr))
 
 	return nil
 }
@@ -208,7 +208,7 @@ func (u *updater) delete(ctx context.Context, mg cpresource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	input := &svcsdk.DeleteVpcEndpointServiceConfigurationsInput{}
-	input.ServiceIds = append(input.ServiceIds, awsclients.String(meta.GetExternalName(cr)))
+	input.ServiceIds = append(input.ServiceIds, pointer.String(meta.GetExternalName(cr)))
 
 	_, err := u.client.DeleteVpcEndpointServiceConfigurationsWithContext(ctx, input)
 	return errorutils.Wrap(cpresource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)

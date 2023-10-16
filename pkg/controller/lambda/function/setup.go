@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -20,9 +21,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -86,8 +87,8 @@ func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
 // LateInitialize fills the empty fields in *svcapitypes.FunctionParameters with
 // the values seen in svcsdk.GetFunctionOutput.
 func LateInitialize(cr *svcapitypes.FunctionParameters, resp *svcsdk.GetFunctionOutput) error {
-	cr.MemorySize = aws.LateInitializeInt64Ptr(cr.MemorySize, resp.Configuration.MemorySize)
-	cr.Timeout = aws.LateInitializeInt64Ptr(cr.Timeout, resp.Configuration.Timeout)
+	cr.MemorySize = pointer.LateInitializeInt64Ptr(cr.MemorySize, resp.Configuration.MemorySize)
+	cr.Timeout = pointer.LateInitializeInt64Ptr(cr.Timeout, resp.Configuration.Timeout)
 	if cr.TracingConfig == nil {
 		cr.TracingConfig = &svcapitypes.TracingConfig{Mode: resp.Configuration.TracingConfig.Mode}
 	}

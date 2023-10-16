@@ -42,6 +42,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // Error strings.
@@ -357,11 +358,11 @@ func (e *external) updateReplicationGroupNumCacheClusters(ctx context.Context, r
 	case newReplicaCount > 5:
 		return errors.New(errReplicationGroupCacheClusterMaximum)
 	case desiredClusterSize > existingClusterSize:
-		input := elasticache.NewIncreaseReplicaCountInput(replicaGroup, awsclient.Int32(newReplicaCount))
+		input := elasticache.NewIncreaseReplicaCountInput(replicaGroup, pointer.Int32(newReplicaCount))
 		_, err := e.client.IncreaseReplicaCount(ctx, input)
 		return err
 	case desiredClusterSize < existingClusterSize:
-		input := elasticache.NewDecreaseReplicaCountInput(replicaGroup, awsclient.Int32(newReplicaCount))
+		input := elasticache.NewDecreaseReplicaCountInput(replicaGroup, pointer.Int32(newReplicaCount))
 		_, err := e.client.DecreaseReplicaCount(ctx, input)
 		return err
 	default:

@@ -30,8 +30,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupSecurityConfiguration adds a controller that reconciles SecurityConfiguration.
@@ -77,12 +77,12 @@ func SetupSecurityConfiguration(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.DeleteSecurityConfigurationInput) (bool, error) {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.GetSecurityConfigurationInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -103,12 +103,12 @@ func postCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *s
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.Name))
+	meta.SetExternalName(cr, pointer.StringValue(obj.Name))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.CreateSecurityConfigurationInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.CustomEncryptionConfiguration != nil {
 

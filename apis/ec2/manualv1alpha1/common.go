@@ -17,14 +17,8 @@ limitations under the License.
 package manualv1alpha1
 
 import (
-	"sort"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 )
 
 // BlockDeviceMapping describes a block device mapping.
@@ -873,106 +867,4 @@ type TagSpecification struct {
 
 	// The tags to apply to the resource
 	Tags []Tag `json:"tags"`
-}
-
-// BuildFromEC2Tags returns a list of tags, off of the given ec2 tags
-func BuildFromEC2Tags(tags []types.Tag) []Tag {
-	if len(tags) < 1 {
-		return nil
-	}
-	res := make([]Tag, len(tags))
-	for i, t := range tags {
-		res[i] = Tag{awsclients.StringValue(t.Key), awsclients.StringValue(t.Value)}
-	}
-
-	return res
-}
-
-// GenerateEC2Tags generates a tag array with type that EC2 client expects.
-func GenerateEC2Tags(tags []Tag) []types.Tag {
-	res := make([]types.Tag, len(tags))
-	for i, t := range tags {
-		res[i] = types.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
-	}
-	return res
-}
-
-// CompareGroupNames compares slices of group names and ec2.GroupIdentifier
-func CompareGroupNames(groupNames []string, ec2Groups []types.GroupIdentifier) bool {
-	if len(groupNames) != len(ec2Groups) {
-		return false
-	}
-
-	sortGroupNames(groupNames, ec2Groups)
-
-	for i, g := range groupNames {
-		if g != *ec2Groups[i].GroupName {
-			return false
-		}
-	}
-
-	return true
-}
-
-// CompareGroupIDs compares slices of group IDs and ec2.GroupIdentifier
-func CompareGroupIDs(groupIDs []string, ec2Groups []types.GroupIdentifier) bool {
-	if len(groupIDs) != len(ec2Groups) {
-		return false
-	}
-
-	sortGroupIDs(groupIDs, ec2Groups)
-
-	for i, g := range groupIDs {
-		if g != *ec2Groups[i].GroupId {
-			return false
-		}
-	}
-
-	return true
-}
-
-// sortGroupNames sorts slice of string and ec2.GroupIdentifier on 'GroupName'
-func sortGroupNames(groupNames []string, ec2Groups []types.GroupIdentifier) {
-	sort.Strings(groupNames)
-
-	sort.Slice(ec2Groups, func(i, j int) bool {
-		return *ec2Groups[i].GroupName < *ec2Groups[j].GroupName
-	})
-}
-
-// sortGroupNames sorts slice of string and ec2.GroupIdentifier on 'GroupName'
-func sortGroupIDs(groupIDs []string, ec2Groups []types.GroupIdentifier) {
-	sort.Strings(groupIDs)
-
-	sort.Slice(ec2Groups, func(i, j int) bool {
-		return *ec2Groups[i].GroupId < *ec2Groups[j].GroupId
-	})
-}
-
-// CompareTags compares arrays of manualv1alpha1.Tag and ec2.Tag
-func CompareTags(tags []Tag, ec2Tags []types.Tag) bool {
-	if len(tags) != len(ec2Tags) {
-		return false
-	}
-
-	SortTags(tags, ec2Tags)
-
-	for i, t := range tags {
-		if t.Key != *ec2Tags[i].Key || t.Value != *ec2Tags[i].Value {
-			return false
-		}
-	}
-
-	return true
-}
-
-// SortTags sorts array of v1beta1.Tag and ec2.Tag on 'Key'
-func SortTags(tags []Tag, ec2Tags []types.Tag) {
-	sort.Slice(tags, func(i, j int) bool {
-		return tags[i].Key < tags[j].Key
-	})
-
-	sort.Slice(ec2Tags, func(i, j int) bool {
-		return *ec2Tags[i].Key < *ec2Tags[j].Key
-	})
 }

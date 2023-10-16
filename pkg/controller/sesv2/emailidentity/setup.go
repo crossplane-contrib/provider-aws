@@ -35,8 +35,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/utils"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -83,17 +83,17 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.EmailIdentity, res
 		return true, "", nil // There is no need to check for updates when we want to delete.
 	}
 
-	if awsclient.StringValue(cr.Spec.ForProvider.ConfigurationSetName) != awsclient.StringValue(resp.ConfigurationSetName) {
+	if pointer.StringValue(cr.Spec.ForProvider.ConfigurationSetName) != pointer.StringValue(resp.ConfigurationSetName) {
 		return false, "", nil
 	}
 
 	// Checks if MailFromAttributes Object are up to date
 	if cr.Spec.ForProvider.MailFromAttributes != nil && resp.MailFromAttributes != nil {
 		// BehaviorOnMxFailure Response by default return "USE_DEFAULT_VALUE"
-		if awsclient.StringValue(cr.Spec.ForProvider.MailFromAttributes.BehaviorOnMxFailure) != awsclient.StringValue(resp.MailFromAttributes.BehaviorOnMxFailure) {
+		if pointer.StringValue(cr.Spec.ForProvider.MailFromAttributes.BehaviorOnMxFailure) != pointer.StringValue(resp.MailFromAttributes.BehaviorOnMxFailure) {
 			return false, "", nil
 		}
-		if awsclient.StringValue(cr.Spec.ForProvider.MailFromAttributes.MailFromDomain) != awsclient.StringValue(resp.MailFromAttributes.MailFromDomain) {
+		if pointer.StringValue(cr.Spec.ForProvider.MailFromAttributes.MailFromDomain) != pointer.StringValue(resp.MailFromAttributes.MailFromDomain) {
 			return false, "", nil
 		}
 	}
@@ -103,14 +103,14 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.EmailIdentity, res
 	// To trigger update need toggle based on NextSigningKeyLength OR DomainSigningPrivateKey/DomainSigningPrivateKeySecretRef
 	if cr.Spec.ForProvider.DkimSigningAttributes != nil && resp.DkimAttributes.NextSigningKeyLength != nil {
 		// EasyDKIM mode - Update NextSigningKeyLength or Toggle mode if cr value is empty
-		if awsclient.StringValue(cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength) != awsclient.StringValue(resp.DkimAttributes.NextSigningKeyLength) {
+		if pointer.StringValue(cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength) != pointer.StringValue(resp.DkimAttributes.NextSigningKeyLength) {
 			return false, "", nil
 		}
 	}
 
 	if cr.Spec.ForProvider.DkimSigningAttributes != nil && len(resp.DkimAttributes.Tokens) == 1 {
 		// BYODKIM mode - Update DkimSigningAttributes domain or Toggle mode if cr value is empty
-		if awsclient.StringValue(cr.Spec.ForProvider.DkimSigningAttributes.DomainSigningSelector) != awsclient.StringValue(resp.DkimAttributes.Tokens[0]) {
+		if pointer.StringValue(cr.Spec.ForProvider.DkimSigningAttributes.DomainSigningSelector) != pointer.StringValue(resp.DkimAttributes.Tokens[0]) {
 			return false, "", nil
 		}
 	}
@@ -124,7 +124,7 @@ func postObserve(_ context.Context, cr *svcapitypes.EmailIdentity, resp *svcsdk.
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclient.BoolValue(resp.VerifiedForSendingStatus) {
+	switch pointer.BoolValue(resp.VerifiedForSendingStatus) {
 	case true:
 		cr.Status.SetConditions(xpv1.Available())
 	case false:
@@ -144,7 +144,7 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.EmailIdentity, ob
 			if err != nil {
 				return errors.Wrap(err, "private key retrival failed")
 			}
-			obj.DkimSigningAttributes.DomainSigningPrivateKey = awsclient.String(base64.StdEncoding.EncodeToString([]byte(pk)))
+			obj.DkimSigningAttributes.DomainSigningPrivateKey = pointer.String(base64.StdEncoding.EncodeToString([]byte(pk)))
 		}
 	}
 	return nil
@@ -202,10 +202,10 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 		dkimSigningAttributesInput := &svcsdk.PutEmailIdentityDkimSigningAttributesInput{
 			EmailIdentity: cr.Spec.ForProvider.EmailIdentity,
 			SigningAttributes: &svcsdk.DkimSigningAttributes{
-				DomainSigningPrivateKey: awsclient.String(base64.StdEncoding.EncodeToString([]byte(pk))),
+				DomainSigningPrivateKey: pointer.String(base64.StdEncoding.EncodeToString([]byte(pk))),
 				DomainSigningSelector:   cr.Spec.ForProvider.DkimSigningAttributes.DomainSigningSelector,
 			},
-			SigningAttributesOrigin: awsclient.String(dkimSigningAttributeExternal),
+			SigningAttributesOrigin: pointer.String(dkimSigningAttributeExternal),
 		}
 		if _, err := e.client.PutEmailIdentityDkimSigningAttributesWithContext(ctx, dkimSigningAttributesInput); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, "update failed for EmailIdentityDkimSigningAttributes")
@@ -215,7 +215,7 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 	if cr.Spec.ForProvider.DkimSigningAttributes != nil && cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength != nil {
 		dkimSigningAttributesInput := &svcsdk.PutEmailIdentityDkimSigningAttributesInput{
 			EmailIdentity:           cr.Spec.ForProvider.EmailIdentity,
-			SigningAttributesOrigin: awsclient.String(dkimSigningAttributeEasyDKIM),
+			SigningAttributesOrigin: pointer.String(dkimSigningAttributeEasyDKIM),
 			SigningAttributes: &svcsdk.DkimSigningAttributes{
 				NextSigningKeyLength: cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength,
 			},

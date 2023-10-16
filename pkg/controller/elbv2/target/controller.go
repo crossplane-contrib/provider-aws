@@ -38,6 +38,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -112,13 +113,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// Set the external-name to the LambdARN if not set.
 	if meta.GetExternalName(cr) == "" {
-		meta.SetExternalName(cr, awsclient.StringValue(cr.Spec.ForProvider.LambdaARN))
+		meta.SetExternalName(cr, pointer.StringValue(cr.Spec.ForProvider.LambdaARN))
 	}
 	res, err := e.client.DescribeTargetHealth(ctx, &awselasticloadbalancingv2.DescribeTargetHealthInput{
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               awsclient.String(meta.GetExternalName(cr)),
+				Id:               pointer.String(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
@@ -156,7 +157,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               awsclient.String(meta.GetExternalName(cr)),
+				Id:               pointer.String(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
@@ -177,14 +178,14 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	cr.SetConditions(xpv1.Deleting())
 	// Check if the target is already unregistered.
-	if cr.Status.AtProvider.TargetHealth != nil && awsclient.StringValue(cr.Status.AtProvider.TargetHealth.State) == manualv1alpha1.TargetStatusDraining {
+	if cr.Status.AtProvider.TargetHealth != nil && pointer.StringValue(cr.Status.AtProvider.TargetHealth.State) == manualv1alpha1.TargetStatusDraining {
 		return nil
 	}
 	_, err := e.client.DeregisterTargets(ctx, &awselasticloadbalancingv2.DeregisterTargetsInput{
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               awsclient.String(meta.GetExternalName(cr)),
+				Id:               pointer.String(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},

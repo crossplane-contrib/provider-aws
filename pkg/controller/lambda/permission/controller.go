@@ -41,6 +41,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -122,7 +123,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errGetPolicyFailed)
 	}
 
-	policyDocument, err := parsePolicy(awsclient.StringValue(resp.Policy))
+	policyDocument, err := parsePolicy(pointer.StringValue(resp.Policy))
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errParsePolicy)
 	}
@@ -193,10 +194,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.PermissionParameters) {
-	spec.EventSourceToken = awsclient.LateInitializeStringPtr(spec.EventSourceToken, current.EventSourceToken)
-	spec.PrincipalOrgID = awsclient.LateInitializeStringPtr(spec.PrincipalOrgID, current.PrincipalOrgID)
-	spec.SourceAccount = awsclient.LateInitializeStringPtr(spec.SourceAccount, current.SourceAccount)
-	spec.SourceArn = awsclient.LateInitializeStringPtr(spec.SourceArn, current.SourceArn)
+	spec.EventSourceToken = pointer.LateInitializeStringPtr(spec.EventSourceToken, current.EventSourceToken)
+	spec.PrincipalOrgID = pointer.LateInitializeStringPtr(spec.PrincipalOrgID, current.PrincipalOrgID)
+	spec.SourceAccount = pointer.LateInitializeStringPtr(spec.SourceAccount, current.SourceAccount)
+	spec.SourceArn = pointer.LateInitializeStringPtr(spec.SourceArn, current.SourceArn)
 }
 
 // IsErrorNotFound helper function to test for ResourceNotFoundException error.

@@ -13,7 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -45,10 +45,10 @@ func TestGenerateRepositoryObservation(t *testing.T) {
 				CreatedAt:                  &createTime,
 				ImageScanningConfiguration: &awsImageScanConfig,
 				ImageTagMutability:         ecrtypes.ImageTagMutability(tagMutability),
-				RegistryId:                 aws.String(registryID),
-				RepositoryName:             aws.String(repositoryName),
-				RepositoryArn:              aws.String(repositoryARN),
-				RepositoryUri:              aws.String(repositoryURI),
+				RegistryId:                 pointer.String(registryID),
+				RepositoryName:             pointer.String(repositoryName),
+				RepositoryArn:              pointer.String(repositoryARN),
+				RepositoryUri:              pointer.String(repositoryURI),
 			},
 			out: v1beta1.RepositoryObservation{
 				CreatedAt:      &metav1.Time{Time: createTime},
@@ -237,7 +237,7 @@ func TestDiffTags(t *testing.T) {
 			},
 			want: want{
 				add: []ecrtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
 				},
 			},
 		},
@@ -249,13 +249,13 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []ecrtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
 				},
 			},
 			want: want{
 				add: []ecrtypes.Tag{
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
+					{Key: pointer.String("key1"), Value: pointer.String("val1")},
+					{Key: pointer.String("key2"), Value: pointer.String("val2")},
 				},
 			},
 		},
@@ -267,14 +267,14 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []ecrtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.String("key1"), Value: pointer.String("val1")},
+					{Key: pointer.String("key2"), Value: pointer.String("val2")},
 				},
 			},
 			want: want{
 				add: []ecrtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("different")},
+					{Key: pointer.String("key"), Value: pointer.String("different")},
 				},
 				remove: []string{"key"},
 			},
@@ -282,9 +282,9 @@ func TestDiffTags(t *testing.T) {
 		"RemoveAll": {
 			args: args{
 				remote: []ecrtypes.Tag{
-					{Key: aws.String("key"), Value: aws.String("val")},
-					{Key: aws.String("key1"), Value: aws.String("val1")},
-					{Key: aws.String("key2"), Value: aws.String("val2")},
+					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.String("key1"), Value: pointer.String("val1")},
+					{Key: pointer.String("key2"), Value: pointer.String("val2")},
 				},
 			},
 			want: want{
@@ -296,7 +296,7 @@ func TestDiffTags(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			tagCmp := cmpopts.SortSlices(func(i, j ecrtypes.Tag) bool {
-				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
+				return pointer.StringValue(i.Key) < pointer.StringValue(j.Key)
 			})
 			add, remove := DiffTags(tc.args.local, tc.args.remote)
 			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {

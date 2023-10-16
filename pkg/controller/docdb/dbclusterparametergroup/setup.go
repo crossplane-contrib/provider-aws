@@ -35,9 +35,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -103,18 +103,18 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DescribeDBClusterParameterGroupsInput) error {
-	obj.DBClusterParameterGroupName = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, resp *svcsdk.DescribeDBClusterParameterGroupsOutput) (bool, string, error) {
 	group := resp.DBClusterParameterGroups[0]
 
-	if awsclient.StringValue(cr.Spec.ForProvider.DBParameterGroupFamily) != awsclient.StringValue(group.DBParameterGroupFamily) {
+	if pointer.StringValue(cr.Spec.ForProvider.DBParameterGroupFamily) != pointer.StringValue(group.DBParameterGroupFamily) {
 		return false, "", errors.New(errModifyFamily)
 	}
 
-	if awsclient.StringValue(cr.Spec.ForProvider.Description) != awsclient.StringValue(group.Description) {
+	if pointer.StringValue(cr.Spec.ForProvider.Description) != pointer.StringValue(group.Description) {
 		return false, "", errors.New(errModifyDescription)
 	}
 
@@ -164,11 +164,11 @@ func lateInitializeParameters(in []*svcapitypes.CustomParameter, from []*svcsdk.
 
 	apiParams := make(map[string]*svcapitypes.CustomParameter, len(out))
 	for _, p := range out {
-		apiParams[awsclient.StringValue(p.ParameterName)] = p
+		apiParams[pointer.StringValue(p.ParameterName)] = p
 	}
 
 	for _, sdkP := range from {
-		if _, exists := apiParams[awsclient.StringValue(sdkP.ParameterName)]; !exists {
+		if _, exists := apiParams[pointer.StringValue(sdkP.ParameterName)]; !exists {
 			newP := &svcapitypes.CustomParameter{}
 			generateAPIParameter(sdkP, newP)
 			out = append(out, newP)
@@ -179,7 +179,7 @@ func lateInitializeParameters(in []*svcapitypes.CustomParameter, from []*svcsdk.
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.ModifyDBClusterParameterGroupInput) error {
-	obj.DBClusterParameterGroupName = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	obj.Parameters = generateSdkParameters(cr.Spec.ForProvider.Parameters)
 	return nil
 }
@@ -193,20 +193,20 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.DBClusterParameter
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.CreateDBClusterParameterGroupInput) error {
-	obj.DBClusterParameterGroupName = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	// CreateDBClusterParameterGroup does not create the parameters themselves. Parameters are added during update.
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DeleteDBClusterParameterGroupInput) (bool, error) {
-	obj.DBClusterParameterGroupName = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func filterList(cr *svcapitypes.DBClusterParameterGroup, list *svcsdk.DescribeDBClusterParameterGroupsOutput) *svcsdk.DescribeDBClusterParameterGroupsOutput {
 	id := meta.GetExternalName(cr)
 	for _, instance := range list.DBClusterParameterGroups {
-		if awsclient.StringValue(instance.DBClusterParameterGroupName) == id {
+		if pointer.StringValue(instance.DBClusterParameterGroupName) == id {
 			return &svcsdk.DescribeDBClusterParameterGroupsOutput{
 				Marker:                   list.Marker,
 				DBClusterParameterGroups: []*svcsdk.DBClusterParameterGroup{instance},
@@ -223,11 +223,11 @@ func filterList(cr *svcapitypes.DBClusterParameterGroup, list *svcsdk.DescribeDB
 func areParametersEqual(spec []*svcapitypes.CustomParameter, current []*svcsdk.Parameter) bool {
 	currentMap := make(map[string]*svcsdk.Parameter, len(current))
 	for _, currentParam := range current {
-		currentMap[awsclient.StringValue(currentParam.ParameterName)] = currentParam
+		currentMap[pointer.StringValue(currentParam.ParameterName)] = currentParam
 	}
 
 	for _, specParam := range spec {
-		currentParam, exists := currentMap[awsclient.StringValue(specParam.ParameterName)]
+		currentParam, exists := currentMap[pointer.StringValue(specParam.ParameterName)]
 		if !exists || !cmp.Equal(
 			specParam.ParameterValue,
 			generateAPIParameter(currentParam, &svcapitypes.CustomParameter{}).ParameterValue,

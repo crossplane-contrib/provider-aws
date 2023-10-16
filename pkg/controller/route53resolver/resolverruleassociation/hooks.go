@@ -37,6 +37,7 @@ import (
 	resolverruleassociation "github.com/crossplane-contrib/provider-aws/pkg/clients/resolverruleassociation"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -115,7 +116,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
-	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(awsclient.String(meta.GetExternalName(cr))))
+	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(pointer.String(meta.GetExternalName(cr))))
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errGet)
 	}
@@ -150,7 +151,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, awsclient.StringValue(rsp.ResolverRuleAssociation.Id))
+	meta.SetExternalName(cr, pointer.StringValue(rsp.ResolverRuleAssociation.Id))
 	return managed.ExternalCreation{}, nil
 }
 

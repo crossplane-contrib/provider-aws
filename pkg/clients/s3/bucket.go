@@ -29,7 +29,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // See - https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#RESTErrorResponses
@@ -272,7 +272,7 @@ func CopyTags(tags []v1beta1.Tag) []s3types.Tag {
 func CopyAWSTags(tags []s3types.Tag) []v1beta1.Tag {
 	out := make([]v1beta1.Tag, len(tags))
 	for i, one := range tags {
-		out[i] = v1beta1.Tag{Key: awsclient.StringValue(one.Key), Value: awsclient.StringValue(one.Value)}
+		out[i] = v1beta1.Tag{Key: pointer.StringValue(one.Key), Value: pointer.StringValue(one.Value)}
 	}
 	return out
 }

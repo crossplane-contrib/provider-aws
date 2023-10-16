@@ -27,7 +27,7 @@ import (
 	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
@@ -100,15 +100,15 @@ func GenerateCreateTopicInput(p *v1beta1.TopicParameters) *sns.CreateTopicInput 
 // LateInitializeTopicAttr fills the empty fields in *v1beta1.TopicParameters with the
 // values seen in sns.Topic.
 func LateInitializeTopicAttr(in *v1beta1.TopicParameters, attrs map[string]string) {
-	in.DisplayName = awsclients.LateInitializeStringPtr(in.DisplayName, aws.String(attrs[string(TopicDisplayName)]))
-	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(attrs[string(TopicDeliveryPolicy)]))
-	in.KMSMasterKeyID = awsclients.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs[string(TopicKmsMasterKeyID)]))
-	in.Policy = awsclients.LateInitializeStringPtr(in.Policy, aws.String(attrs[string(TopicPolicy)]))
+	in.DisplayName = pointer.LateInitializeStringPtr(in.DisplayName, aws.String(attrs[string(TopicDisplayName)]))
+	in.DeliveryPolicy = pointer.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(attrs[string(TopicDeliveryPolicy)]))
+	in.KMSMasterKeyID = pointer.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs[string(TopicKmsMasterKeyID)]))
+	in.Policy = pointer.LateInitializeStringPtr(in.Policy, aws.String(attrs[string(TopicPolicy)]))
 
 	in.FifoTopic = nil
 	fifoTopic, err := strconv.ParseBool(attrs[string(TopicFifoTopic)])
 	if err == nil && fifoTopic {
-		in.FifoTopic = awsclients.LateInitializeBoolPtr(in.FifoTopic, aws.Bool(fifoTopic))
+		in.FifoTopic = pointer.LateInitializeBoolPtr(in.FifoTopic, aws.Bool(fifoTopic))
 	}
 }
 

@@ -3,6 +3,7 @@ package targetgroup
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/elbv2"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -15,8 +16,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/elbv2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupTargetGroup adds a controller that reconciles TargetGroup.
@@ -72,7 +73,7 @@ func postCreate(_ context.Context, cr *svcapitypes.TargetGroup, resp *svcsdk.Cre
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, aws.StringValue(resp.TargetGroups[0].TargetGroupArn))
+	meta.SetExternalName(cr, pointer.StringValue(resp.TargetGroups[0].TargetGroupArn))
 	return cre, nil
 }
 

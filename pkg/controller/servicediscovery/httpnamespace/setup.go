@@ -31,10 +31,10 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clientsvcdk "github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupHTTPNamespace adds a controller that reconciles HTTPNamespace.
@@ -88,7 +88,7 @@ type hooks struct {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {
-	obj.CreatorRequestId = awsclient.String(string(cr.UID))
+	obj.CreatorRequestId = pointer.String(string(cr.UID))
 
 	return nil
 }
@@ -100,8 +100,8 @@ func postCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, resp *svcsdk.C
 
 func preUpdate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.UpdateHttpNamespaceInput) error {
 
-	obj.UpdaterRequestId = awsclient.String(string(cr.UID))
-	obj.Id = awsclient.String(meta.GetExternalName(cr))
+	obj.UpdaterRequestId = pointer.String(string(cr.UID))
+	obj.Id = pointer.String(meta.GetExternalName(cr))
 
 	obj.Namespace = &svcsdk.HttpNamespaceChange{
 		Description: cr.GetDescription(),

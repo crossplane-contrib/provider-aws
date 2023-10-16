@@ -35,9 +35,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -101,7 +101,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesInput) error {
-	obj.DBInstanceIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -110,7 +110,7 @@ func postObserve(_ context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.Des
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclient.StringValue(cr.Status.AtProvider.DBInstanceStatus) {
+	switch pointer.StringValue(cr.Status.AtProvider.DBInstanceStatus) {
 	case svcapitypes.DocDBInstanceStateAvailable:
 		cr.Status.SetConditions(xpv1.Available())
 	case svcapitypes.DocDBInstanceStateCreating:
@@ -129,11 +129,11 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.DBInstance, resp *
 	instance := resp.DBInstances[0]
 
 	switch {
-	case awsclient.BoolValue(cr.Spec.ForProvider.AutoMinorVersionUpgrade) != awsclient.BoolValue(instance.AutoMinorVersionUpgrade),
-		awsclient.StringValue(cr.Spec.ForProvider.CACertificateIdentifier) != awsclient.StringValue(instance.CACertificateIdentifier),
-		awsclient.StringValue(cr.Spec.ForProvider.DBInstanceClass) != awsclient.StringValue(instance.DBInstanceClass),
-		awsclient.StringValue(cr.Spec.ForProvider.PreferredMaintenanceWindow) != awsclient.StringValue(instance.PreferredMaintenanceWindow),
-		awsclient.Int64Value(cr.Spec.ForProvider.PromotionTier) != awsclient.Int64Value(instance.PromotionTier):
+	case pointer.BoolValue(cr.Spec.ForProvider.AutoMinorVersionUpgrade) != pointer.BoolValue(instance.AutoMinorVersionUpgrade),
+		pointer.StringValue(cr.Spec.ForProvider.CACertificateIdentifier) != pointer.StringValue(instance.CACertificateIdentifier),
+		pointer.StringValue(cr.Spec.ForProvider.DBInstanceClass) != pointer.StringValue(instance.DBInstanceClass),
+		pointer.StringValue(cr.Spec.ForProvider.PreferredMaintenanceWindow) != pointer.StringValue(instance.PreferredMaintenanceWindow),
+		pointer.Int64Value(cr.Spec.ForProvider.PromotionTier) != pointer.Int64Value(instance.PromotionTier):
 		return false, "", nil
 	}
 
@@ -144,16 +144,16 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.DBInstance, resp *
 func lateInitialize(cr *svcapitypes.DBInstanceParameters, resp *svcsdk.DescribeDBInstancesOutput) error {
 	instance := resp.DBInstances[0]
 
-	cr.AvailabilityZone = awsclient.LateInitializeStringPtr(cr.AvailabilityZone, instance.AvailabilityZone)
-	cr.AutoMinorVersionUpgrade = awsclient.LateInitializeBoolPtr(cr.AutoMinorVersionUpgrade, instance.AutoMinorVersionUpgrade)
-	cr.CACertificateIdentifier = awsclient.LateInitializeStringPtr(cr.CACertificateIdentifier, instance.CACertificateIdentifier)
-	cr.PreferredMaintenanceWindow = awsclient.LateInitializeStringPtr(cr.PreferredMaintenanceWindow, instance.PreferredMaintenanceWindow)
-	cr.PromotionTier = awsclient.LateInitializeInt64Ptr(cr.PromotionTier, instance.PromotionTier)
+	cr.AvailabilityZone = pointer.LateInitializeStringPtr(cr.AvailabilityZone, instance.AvailabilityZone)
+	cr.AutoMinorVersionUpgrade = pointer.LateInitializeBoolPtr(cr.AutoMinorVersionUpgrade, instance.AutoMinorVersionUpgrade)
+	cr.CACertificateIdentifier = pointer.LateInitializeStringPtr(cr.CACertificateIdentifier, instance.CACertificateIdentifier)
+	cr.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(cr.PreferredMaintenanceWindow, instance.PreferredMaintenanceWindow)
+	cr.PromotionTier = pointer.LateInitializeInt64Ptr(cr.PromotionTier, instance.PromotionTier)
 	return nil
 }
 
 func preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) error {
-	obj.DBInstanceIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
 	obj.CACertificateIdentifier = cr.Spec.ForProvider.CACertificateIdentifier
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 	return nil
@@ -167,7 +167,7 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, resp
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.CreateDBInstanceInput) error {
-	obj.DBInstanceIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
 	obj.DBClusterIdentifier = cr.Spec.ForProvider.DBClusterIdentifier
 	return nil
 }
@@ -183,18 +183,18 @@ func postCreate(ctx context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.Cr
 
 func preDelete(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceInput) (bool, error) {
 	// Skip if cluster is already in deleting state
-	if awsclient.StringValue(cr.Status.AtProvider.DBInstanceStatus) == svcapitypes.DocDBInstanceStateDeleting {
+	if pointer.StringValue(cr.Status.AtProvider.DBInstanceStatus) == svcapitypes.DocDBInstanceStateDeleting {
 		return true, nil
 	}
 
-	obj.DBInstanceIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func filterList(cr *svcapitypes.DBInstance, list *svcsdk.DescribeDBInstancesOutput) *svcsdk.DescribeDBInstancesOutput {
 	id := meta.GetExternalName(cr)
 	for _, instance := range list.DBInstances {
-		if awsclient.StringValue(instance.DBInstanceIdentifier) == id {
+		if pointer.StringValue(instance.DBInstanceIdentifier) == id {
 			return &svcsdk.DescribeDBInstancesOutput{
 				Marker:      list.Marker,
 				DBInstances: []*svcsdk.DBInstance{instance},
@@ -213,8 +213,8 @@ func getConnectionDetails(cr *svcapitypes.DBInstance) managed.ConnectionDetails 
 		return nil
 	}
 	return managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretEndpointKey: []byte(awsclient.StringValue(cr.Status.AtProvider.Endpoint.Address)),
-		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(awsclient.Int64Value(cr.Status.AtProvider.Endpoint.Port)))),
+		xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint.Address)),
+		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(pointer.Int64Value(cr.Status.AtProvider.Endpoint.Port)))),
 	}
 }
 

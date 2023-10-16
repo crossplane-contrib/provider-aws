@@ -31,9 +31,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	cloudfront "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupCachePolicy adds a controller that reconciles CachePolicy.
@@ -88,12 +88,12 @@ func postCreate(_ context.Context, cp *svcapitypes.CachePolicy, cpo *svcsdk.Crea
 		return managed.ExternalCreation{}, err
 	}
 
-	meta.SetExternalName(cp, awsclients.StringValue(cpo.CachePolicy.Id))
+	meta.SetExternalName(cp, pointer.StringValue(cpo.CachePolicy.Id))
 	return ec, nil
 }
 
 func preObserve(_ context.Context, cp *svcapitypes.CachePolicy, gpi *svcsdk.GetCachePolicyInput) error {
-	gpi.Id = awsclients.String(meta.GetExternalName(cp))
+	gpi.Id = pointer.String(meta.GetExternalName(cp))
 	return nil
 }
 
@@ -107,14 +107,14 @@ func postObserve(_ context.Context, cp *svcapitypes.CachePolicy, _ *svcsdk.GetCa
 }
 
 func preUpdate(_ context.Context, cp *svcapitypes.CachePolicy, upi *svcsdk.UpdateCachePolicyInput) error {
-	upi.Id = awsclients.String(meta.GetExternalName(cp))
-	upi.SetIfMatch(awsclients.StringValue(cp.Status.AtProvider.ETag))
+	upi.Id = pointer.String(meta.GetExternalName(cp))
+	upi.SetIfMatch(pointer.StringValue(cp.Status.AtProvider.ETag))
 	return nil
 }
 
 func preDelete(_ context.Context, cp *svcapitypes.CachePolicy, dpi *svcsdk.DeleteCachePolicyInput) (bool, error) {
-	dpi.Id = awsclients.String(meta.GetExternalName(cp))
-	dpi.SetIfMatch(awsclients.StringValue(cp.Status.AtProvider.ETag))
+	dpi.Id = pointer.String(meta.GetExternalName(cp))
+	dpi.SetIfMatch(pointer.StringValue(cp.Status.AtProvider.ETag))
 	return false, nil
 }
 

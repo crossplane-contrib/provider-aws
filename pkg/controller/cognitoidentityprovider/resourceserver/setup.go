@@ -15,8 +15,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupResourceServer adds a controller that reconciles Stage.
@@ -63,12 +63,12 @@ func SetupResourceServer(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.ResourceServer, obj *svcsdk.DescribeResourceServerInput) error {
-	obj.Identifier = awsclients.String(meta.GetExternalName(cr))
+	obj.Identifier = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.ResourceServer, obj *svcsdk.DeleteResourceServerInput) (bool, error) {
-	obj.Identifier = awsclients.String(meta.GetExternalName(cr))
+	obj.Identifier = pointer.String(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return false, nil
 }
@@ -87,7 +87,7 @@ func postObserve(_ context.Context, cr *svcapitypes.ResourceServer, obj *svcsdk.
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.ResourceServer, obj *svcsdk.CreateResourceServerInput) error {
-	obj.Identifier = awsclients.String(meta.GetExternalName(cr))
+	obj.Identifier = pointer.String(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return nil
 }

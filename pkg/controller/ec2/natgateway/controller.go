@@ -140,7 +140,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: v1beta1.CompareTags(cr.Spec.ForProvider.Tags, observed.Tags),
+		ResourceUpToDate: ec2.CompareTagsV1Beta1(cr.Spec.ForProvider.Tags, observed.Tags),
 	}, nil
 }
 
@@ -161,7 +161,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.Tags != nil {
 		input.TagSpecifications = []awsec2types.TagSpecification{{
 			ResourceType: "natgateway",
-			Tags:         v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+			Tags:         ec2.GenerateEC2TagsV1Beta1(cr.Spec.ForProvider.Tags),
 		}}
 	}
 
@@ -193,7 +193,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	observed := response.NatGateways[0]
 
-	addTags, RemoveTags := ec2.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), observed.Tags)
+	addTags, RemoveTags := ec2.DiffEC2Tags(ec2.GenerateEC2TagsV1Beta1(cr.Spec.ForProvider.Tags), observed.Tags)
 	if len(RemoveTags) > 0 {
 		if _, err := e.client.DeleteTags(ctx, &awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},

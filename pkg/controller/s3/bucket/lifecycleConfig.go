@@ -30,9 +30,9 @@ import (
 	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -53,7 +53,7 @@ func NewLifecycleConfigurationClient(client s3.BucketClient) *LifecycleConfigura
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	response, err := in.client.GetBucketLifecycleConfiguration(ctx, &awss3.GetBucketLifecycleConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	response, err := in.client.GetBucketLifecycleConfiguration(ctx, &awss3.GetBucketLifecycleConfigurationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if bucket.Spec.ForProvider.LifecycleConfiguration == nil && s3.LifecycleConfigurationNotFound(err) {
 		return Updated, nil
 	}
@@ -98,7 +98,7 @@ func (in *LifecycleConfigurationClient) CreateOrUpdate(ctx context.Context, buck
 func (in *LifecycleConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketLifecycle(ctx,
 		&awss3.DeleteBucketLifecycleInput{
-			Bucket: awsclient.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.String(meta.GetExternalName(bucket)),
 		},
 	)
 	return errorutils.Wrap(err, lifecycleDeleteFailed)
@@ -107,7 +107,7 @@ func (in *LifecycleConfigurationClient) Delete(ctx context.Context, bucket *v1be
 // LateInitialize does nothing because LifecycleConfiguration might have been be
 // deleted by the user.
 func (in *LifecycleConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketLifecycleConfiguration(ctx, &awss3.GetBucketLifecycleConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketLifecycleConfiguration(ctx, &awss3.GetBucketLifecycleConfigurationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(resource.Ignore(s3.LifecycleConfigurationNotFound, err), lifecycleGetFailed)
 	}
@@ -140,7 +140,7 @@ func GenerateLifecycleConfiguration(name string, config *v1beta1.BucketLifecycle
 		return nil
 	}
 	return &awss3.PutBucketLifecycleConfigurationInput{
-		Bucket:                 awsclient.String(name),
+		Bucket:                 pointer.String(name),
 		LifecycleConfiguration: &types.BucketLifecycleConfiguration{Rules: GenerateLifecycleRules(config.Rules)},
 	}
 }
@@ -200,7 +200,7 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 				rule.Filter = &types.LifecycleRuleFilterMemberPrefix{Value: *local.Filter.Prefix}
 			}
 			if local.Filter.Tag != nil {
-				rule.Filter = &types.LifecycleRuleFilterMemberTag{Value: types.Tag{Key: awsclient.String(local.Filter.Tag.Key), Value: awsclient.String(local.Filter.Tag.Value)}}
+				rule.Filter = &types.LifecycleRuleFilterMemberTag{Value: types.Tag{Key: pointer.String(local.Filter.Tag.Key), Value: pointer.String(local.Filter.Tag.Value)}}
 			}
 			if local.Filter.And != nil {
 				andOperator := types.LifecycleRuleAndOperator{
@@ -272,7 +272,7 @@ func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1
 		}
 		if rule.Expiration != nil {
 			config.Rules[i].Expiration = &v1beta1.LifecycleExpiration{}
-			config.Rules[i].Expiration.Date = awsclient.LateInitializeTimePtr(
+			config.Rules[i].Expiration.Date = pointer.LateInitializeTimePtr(
 				config.Rules[i].Expiration.Date,
 				rule.Expiration.Date,
 			)
@@ -295,7 +295,7 @@ func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1
 			config.Rules[i].Transitions = make([]v1beta1.Transition, len(rule.Transitions))
 			for j, transition := range rule.Transitions {
 				config.Rules[i].Transitions[j].Days = transition.Days
-				config.Rules[i].Transitions[j].Date = awsclient.LateInitializeTimePtr(
+				config.Rules[i].Transitions[j].Date = pointer.LateInitializeTimePtr(
 					config.Rules[i].Transitions[j].Date,
 					transition.Date,
 				)

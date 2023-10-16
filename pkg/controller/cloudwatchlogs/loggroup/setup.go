@@ -31,9 +31,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -94,10 +94,10 @@ type updater struct {
 }
 
 func filterList(cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsOutput) *svcsdk.DescribeLogGroupsOutput {
-	logGroupIdentifier := awsclients.String(meta.GetExternalName(cr))
+	logGroupIdentifier := pointer.String(meta.GetExternalName(cr))
 	resp := &svcsdk.DescribeLogGroupsOutput{}
 	for _, LogGroups := range obj.LogGroups {
-		if awsclients.StringValue(LogGroups.LogGroupName) == awsclients.StringValue(logGroupIdentifier) {
+		if pointer.StringValue(LogGroups.LogGroupName) == pointer.StringValue(logGroupIdentifier) {
 			resp.LogGroups = append(resp.LogGroups, LogGroups)
 			break
 		}
@@ -128,12 +128,12 @@ func postCreate(ctx context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.Creat
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(cr.Spec.ForProvider.LogGroupName))
+	meta.SetExternalName(cr, pointer.StringValue(cr.Spec.ForProvider.LogGroupName))
 	return managed.ExternalCreation{}, nil
 }
 
 func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsOutput) (bool, string, error) {
-	if awsclients.Int64Value(cr.Spec.ForProvider.RetentionInDays) != awsclients.Int64Value(obj.LogGroups[0].RetentionInDays) {
+	if pointer.Int64Value(cr.Spec.ForProvider.RetentionInDays) != pointer.Int64Value(obj.LogGroups[0].RetentionInDays) {
 		return false, "", nil
 	}
 
@@ -156,7 +156,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	}
 
 	obj, err := u.client.DescribeLogGroupsWithContext(ctx, &svcsdk.DescribeLogGroupsInput{
-		LogGroupNamePrefix: awsclients.String(meta.GetExternalName(cr)),
+		LogGroupNamePrefix: pointer.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreate)
@@ -191,18 +191,18 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	}
 
 	var zero int64 = 0
-	if cr.Spec.ForProvider.RetentionInDays == nil || awsclients.Int64Value(cr.Spec.ForProvider.RetentionInDays) == awsclients.Int64Value(&zero) {
+	if cr.Spec.ForProvider.RetentionInDays == nil || pointer.Int64Value(cr.Spec.ForProvider.RetentionInDays) == pointer.Int64Value(&zero) {
 		if _, err := u.client.DeleteRetentionPolicy(&svcsdk.DeleteRetentionPolicyInput{
-			LogGroupName: awsclients.String(meta.GetExternalName(cr)),
+			LogGroupName: pointer.String(meta.GetExternalName(cr)),
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
 	if cr.Spec.ForProvider.RetentionInDays != nil &&
-		awsclients.Int64Value(cr.Spec.ForProvider.RetentionInDays) != awsclients.Int64Value(obj.LogGroups[0].RetentionInDays) {
+		pointer.Int64Value(cr.Spec.ForProvider.RetentionInDays) != pointer.Int64Value(obj.LogGroups[0].RetentionInDays) {
 		if _, err := u.client.PutRetentionPolicy(&svcsdk.PutRetentionPolicyInput{
-			LogGroupName:    awsclients.String(meta.GetExternalName(cr)),
+			LogGroupName:    pointer.String(meta.GetExternalName(cr)),
 			RetentionInDays: cr.Spec.ForProvider.RetentionInDays,
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)

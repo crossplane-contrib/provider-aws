@@ -15,8 +15,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupMountTarget adds a controller that reconciles MountTarget.
@@ -75,7 +75,7 @@ func postCreate(_ context.Context, cr *svcapitypes.MountTarget, obj *svcsdk.Moun
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.MountTargetId))
+	meta.SetExternalName(cr, pointer.StringValue(obj.MountTargetId))
 	return managed.ExternalCreation{}, nil
 }
 
@@ -85,7 +85,7 @@ func preObserve(_ context.Context, cr *svcapitypes.MountTarget, obj *svcsdk.Desc
 	obj.Marker = nil
 	obj.MaxItems = nil
 	obj.FileSystemId = nil
-	obj.MountTargetId = awsclients.String(meta.GetExternalName(cr))
+	obj.MountTargetId = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -93,7 +93,7 @@ func postObserve(_ context.Context, cr *svcapitypes.MountTarget, obj *svcsdk.Des
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-	if awsclients.StringValue(obj.MountTargets[0].LifeCycleState) == string(svcapitypes.LifeCycleState_available) {
+	if pointer.StringValue(obj.MountTargets[0].LifeCycleState) == string(svcapitypes.LifeCycleState_available) {
 		cr.SetConditions(xpv1.Available())
 	}
 	return obs, nil

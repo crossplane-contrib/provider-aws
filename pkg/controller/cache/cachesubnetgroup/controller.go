@@ -38,6 +38,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // Error strings.
@@ -111,7 +112,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	resp, err := e.client.DescribeCacheSubnetGroups(ctx, &awscache.DescribeCacheSubnetGroupsInput{
-		CacheSubnetGroupName: awsclient.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupName: pointer.String(meta.GetExternalName(cr)),
 	})
 	if err != nil || resp.CacheSubnetGroups == nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(elasticache.IsSubnetGroupNotFound, err), errDescribeSubnetGroup)
@@ -120,7 +121,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	sg := resp.CacheSubnetGroups[0]
 
 	cr.Status.AtProvider = cachev1alpha1.CacheSubnetGroupExternalStatus{
-		VPCID: awsclient.StringValue(sg.VpcId),
+		VPCID: pointer.StringValue(sg.VpcId),
 	}
 
 	cr.SetConditions(xpv1.Available())
@@ -140,8 +141,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr.Status.SetConditions(xpv1.Creating())
 
 	_, err := e.client.CreateCacheSubnetGroup(ctx, &awscache.CreateCacheSubnetGroupInput{
-		CacheSubnetGroupDescription: awsclient.String(cr.Spec.ForProvider.Description),
-		CacheSubnetGroupName:        awsclient.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupDescription: pointer.String(cr.Spec.ForProvider.Description),
+		CacheSubnetGroupName:        pointer.String(meta.GetExternalName(cr)),
 		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	})
 	if err != nil {
@@ -158,8 +159,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	_, err := e.client.ModifyCacheSubnetGroup(ctx, &awscache.ModifyCacheSubnetGroupInput{
-		CacheSubnetGroupDescription: awsclient.String(cr.Spec.ForProvider.Description),
-		CacheSubnetGroupName:        awsclient.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupDescription: pointer.String(cr.Spec.ForProvider.Description),
+		CacheSubnetGroupName:        pointer.String(meta.GetExternalName(cr)),
 		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	})
 
@@ -175,7 +176,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeleteCacheSubnetGroup(ctx, &awscache.DeleteCacheSubnetGroupInput{
-		CacheSubnetGroupName: awsclient.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupName: pointer.String(meta.GetExternalName(cr)),
 	})
 
 	return errorutils.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteSubnetGroup)

@@ -32,8 +32,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupCloudFrontOriginAccessIdentity adds a controller that reconciles CloudFrontOriginAccessIdentity .
@@ -83,7 +83,7 @@ func SetupCloudFrontOriginAccessIdentity(mgr ctrl.Manager, o controller.Options)
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.CloudFrontOriginAccessIdentity, cdi *svcsdk.CreateCloudFrontOriginAccessIdentityInput) error {
-	cdi.CloudFrontOriginAccessIdentityConfig.CallerReference = awsclients.String(string(cr.UID))
+	cdi.CloudFrontOriginAccessIdentityConfig.CallerReference = pointer.String(string(cr.UID))
 	return nil
 }
 
@@ -93,12 +93,12 @@ func postCreate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentit
 		return managed.ExternalCreation{}, err
 	}
 
-	meta.SetExternalName(cp, awsclients.StringValue(cpo.CloudFrontOriginAccessIdentity.Id))
+	meta.SetExternalName(cp, pointer.StringValue(cpo.CloudFrontOriginAccessIdentity.Id))
 	return ec, nil
 }
 
 func preObserve(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, gpi *svcsdk.GetCloudFrontOriginAccessIdentityInput) error {
-	gpi.Id = awsclients.String(meta.GetExternalName(cp))
+	gpi.Id = pointer.String(meta.GetExternalName(cp))
 	return nil
 }
 
@@ -112,15 +112,15 @@ func postObserve(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdenti
 }
 
 func preUpdate(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, upi *svcsdk.UpdateCloudFrontOriginAccessIdentityInput) error {
-	upi.CloudFrontOriginAccessIdentityConfig.CallerReference = awsclients.String(string(cp.UID))
-	upi.Id = awsclients.String(meta.GetExternalName(cp))
-	upi.SetIfMatch(awsclients.StringValue(cp.Status.AtProvider.ETag))
+	upi.CloudFrontOriginAccessIdentityConfig.CallerReference = pointer.String(string(cp.UID))
+	upi.Id = pointer.String(meta.GetExternalName(cp))
+	upi.SetIfMatch(pointer.StringValue(cp.Status.AtProvider.ETag))
 	return nil
 }
 
 func preDelete(_ context.Context, cp *svcapitypes.CloudFrontOriginAccessIdentity, dpi *svcsdk.DeleteCloudFrontOriginAccessIdentityInput) (bool, error) {
-	dpi.Id = awsclients.String(meta.GetExternalName(cp))
-	dpi.SetIfMatch(awsclients.StringValue(cp.Status.AtProvider.ETag))
+	dpi.Id = pointer.String(meta.GetExternalName(cp))
+	dpi.SetIfMatch(pointer.StringValue(cp.Status.AtProvider.ETag))
 	return false, nil
 }
 

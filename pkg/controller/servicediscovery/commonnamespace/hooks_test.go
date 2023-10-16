@@ -33,9 +33,9 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcclient "github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -100,7 +100,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -149,7 +149,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -196,7 +196,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -252,7 +252,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -320,7 +320,7 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -331,7 +331,7 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
-						if awsclient.StringValue(input.Id) != validNSID {
+						if pointer.StringValue(input.Id) != validNSID {
 							return &svcsdk.GetNamespaceOutput{}, nil
 						}
 						return &svcsdk.GetNamespaceOutput{
@@ -396,7 +396,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -407,7 +407,7 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
-						if awsclient.StringValue(input.Id) != validNSID {
+						if pointer.StringValue(input.Id) != validNSID {
 							return &svcsdk.GetNamespaceOutput{}, nil
 						}
 						return &svcsdk.GetNamespaceOutput{
@@ -470,7 +470,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -481,7 +481,7 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
-						if awsclient.StringValue(input.Id) != validNSID {
+						if pointer.StringValue(input.Id) != validNSID {
 							return &svcsdk.GetNamespaceOutput{}, nil
 						}
 						return &svcsdk.GetNamespaceOutput{
@@ -544,7 +544,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -555,7 +555,7 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
-						if awsclient.StringValue(input.Id) != validNSID {
+						if pointer.StringValue(input.Id) != validNSID {
 							return &svcsdk.GetNamespaceOutput{}, nil
 						}
 						return &svcsdk.GetNamespaceOutput{
@@ -664,7 +664,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -675,7 +675,7 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
-						if awsclient.StringValue(input.Id) != validNSID {
+						if pointer.StringValue(input.Id) != validNSID {
 							return &svcsdk.GetNamespaceOutput{}, nil
 						}
 						return &svcsdk.GetNamespaceOutput{
@@ -768,7 +768,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -779,7 +779,7 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
-						if awsclient.StringValue(input.Id) != validNSID {
+						if pointer.StringValue(input.Id) != validNSID {
 							return &svcsdk.GetNamespaceOutput{}, nil
 						}
 						return &svcsdk.GetNamespaceOutput{
@@ -880,7 +880,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
+						if pointer.StringValue(input.OperationId) != validOpID {
 							return &svcsdk.GetOperationOutput{}, nil
 						}
 						return &svcsdk.GetOperationOutput{
@@ -891,7 +891,7 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
-						if awsclient.StringValue(input.Id) != validNSID {
+						if pointer.StringValue(input.Id) != validNSID {
 							return &svcsdk.GetNamespaceOutput{}, nil
 						}
 						return &svcsdk.GetNamespaceOutput{

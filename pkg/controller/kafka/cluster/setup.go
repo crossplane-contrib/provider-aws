@@ -36,9 +36,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kafka/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
@@ -129,7 +129,7 @@ type hooks struct {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterInput) (bool, error) {
-	obj.ClusterArn = awsclients.String(meta.GetExternalName(cr))
+	obj.ClusterArn = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -145,7 +145,7 @@ func postDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteCl
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterInput) error {
-	obj.ClusterArn = awsclients.String(meta.GetExternalName(cr))
+	obj.ClusterArn = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -157,28 +157,28 @@ func (u *hooks) postObserve(ctx context.Context, cr *svcapitypes.Cluster, obj *s
 	obs.ConnectionDetails = managed.ConnectionDetails{
 		// see: https://docs.aws.amazon.com/msk/latest/developerguide/client-access.html
 		// no endpoint informations available in DescribeClusterOutput only endpoints for zookeeperPlain/Tls
-		"zookeeperEndpointPlain": []byte(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectString)),
-		"zookeeperEndpointTls":   []byte(awsclients.StringValue(obj.ClusterInfo.ZookeeperConnectStringTls)),
+		"zookeeperEndpointPlain": []byte(pointer.StringValue(obj.ClusterInfo.ZookeeperConnectString)),
+		"zookeeperEndpointTls":   []byte(pointer.StringValue(obj.ClusterInfo.ZookeeperConnectStringTls)),
 	}
 
-	switch awsclients.StringValue(obj.ClusterInfo.State) {
+	switch pointer.StringValue(obj.ClusterInfo.State) {
 	case string(svcapitypes.ClusterState_ACTIVE):
 		cr.SetConditions(xpv1.Available())
 
 		// see: https://docs.aws.amazon.com/msk/latest/developerguide/msk-get-bootstrap-brokers.html
 		// retrieve cluster bootstrap brokers (endpoints)
 		// not possible in every cluster state (e.g. "You can't get bootstrap broker nodes for a cluster in DELETING state.")
-		endpoints, err := u.client.GetBootstrapBrokersWithContext(ctx, &svcsdk.GetBootstrapBrokersInput{ClusterArn: awsclients.String(meta.GetExternalName(cr))})
+		endpoints, err := u.client.GetBootstrapBrokersWithContext(ctx, &svcsdk.GetBootstrapBrokersInput{ClusterArn: pointer.String(meta.GetExternalName(cr))})
 		if err != nil {
 			return obs, errorutils.Wrap(err, errGetBootstrapBrokers)
 		}
-		obs.ConnectionDetails["clusterEndpointPlain"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerString))
-		obs.ConnectionDetails["clusterEndpointTls"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringTls))
-		obs.ConnectionDetails["clusterEndpointIAM"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringSaslIam))
-		obs.ConnectionDetails["clusterEndpointScram"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringSaslScram))
-		obs.ConnectionDetails["clusterEndpointTlsPublic"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringPublicTls))
-		obs.ConnectionDetails["clusterEndpointIAMPublic"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringPublicSaslIam))
-		obs.ConnectionDetails["clusterEndpointScramPublic"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringPublicSaslScram))
+		obs.ConnectionDetails["clusterEndpointPlain"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerString))
+		obs.ConnectionDetails["clusterEndpointTls"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringTls))
+		obs.ConnectionDetails["clusterEndpointIAM"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringSaslIam))
+		obs.ConnectionDetails["clusterEndpointScram"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringSaslScram))
+		obs.ConnectionDetails["clusterEndpointTlsPublic"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringPublicTls))
+		obs.ConnectionDetails["clusterEndpointIAMPublic"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringPublicSaslIam))
+		obs.ConnectionDetails["clusterEndpointScramPublic"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringPublicSaslScram))
 
 	case string(svcapitypes.ClusterState_CREATING):
 		cr.SetConditions(xpv1.Creating())
@@ -215,7 +215,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateCl
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.ClusterArn))
+	meta.SetExternalName(cr, pointer.StringValue(obj.ClusterArn))
 	return managed.ExternalCreation{}, nil
 }
 
@@ -224,7 +224,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateCl
 func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClusterOutput) error { //nolint:gocyclo
 
 	if cr.EnhancedMonitoring == nil && obj.ClusterInfo.EnhancedMonitoring != nil {
-		cr.EnhancedMonitoring = awsclients.LateInitializeStringPtr(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
+		cr.EnhancedMonitoring = pointer.LateInitializeStringPtr(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
 	}
 
 	if cr.CustomBrokerNodeGroupInfo.SecurityGroups == nil && obj.ClusterInfo.BrokerNodeGroupInfo.SecurityGroups != nil {
@@ -239,7 +239,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 			if cr.EncryptionInfo.EncryptionAtRest == nil {
 				cr.EncryptionInfo.EncryptionAtRest = &svcapitypes.EncryptionAtRest{}
 			}
-			cr.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID = awsclients.LateInitializeStringPtr(
+			cr.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID = pointer.LateInitializeStringPtr(
 				cr.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID,
 				obj.ClusterInfo.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyId,
 			)
@@ -248,11 +248,11 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 			if cr.EncryptionInfo.EncryptionInTransit == nil {
 				cr.EncryptionInfo.EncryptionInTransit = &svcapitypes.EncryptionInTransit{}
 			}
-			cr.EncryptionInfo.EncryptionInTransit.ClientBroker = awsclients.LateInitializeStringPtr(
+			cr.EncryptionInfo.EncryptionInTransit.ClientBroker = pointer.LateInitializeStringPtr(
 				cr.EncryptionInfo.EncryptionInTransit.ClientBroker,
 				obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.ClientBroker,
 			)
-			cr.EncryptionInfo.EncryptionInTransit.InCluster = awsclients.LateInitializeBoolPtr(
+			cr.EncryptionInfo.EncryptionInTransit.InCluster = pointer.LateInitializeBoolPtr(
 				cr.EncryptionInfo.EncryptionInTransit.InCluster,
 				obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.InCluster,
 			)
@@ -268,7 +268,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 				if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess == nil {
 					cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess = &svcapitypes.CustomPublicAccess{}
 				}
-				cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type = awsclients.LateInitializeStringPtr(
+				cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type = pointer.LateInitializeStringPtr(
 					cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type,
 					obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type,
 				)
@@ -289,7 +289,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 							if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM == nil {
 								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM = &svcapitypes.VPCConnectivityIAM{}
 							}
-							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM.Enabled = awsclients.LateInitializeBoolPtr(
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM.Enabled = pointer.LateInitializeBoolPtr(
 								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM.Enabled,
 								obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl.Iam.Enabled,
 							)
@@ -298,7 +298,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 							if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM == nil {
 								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM = &svcapitypes.VPCConnectivitySCRAM{}
 							}
-							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM.Enabled = awsclients.LateInitializeBoolPtr(
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM.Enabled = pointer.LateInitializeBoolPtr(
 								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM.Enabled,
 								obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl.Scram.Enabled,
 							)
@@ -308,7 +308,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 						if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS == nil {
 							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS = &svcapitypes.VPCConnectivityTLS{}
 						}
-						cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS.Enabled = awsclients.LateInitializeBoolPtr(
+						cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS.Enabled = pointer.LateInitializeBoolPtr(
 							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS.Enabled,
 							obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Tls.Enabled,
 						)
@@ -372,7 +372,7 @@ func (u *hooks) isUpToDate(ctx context.Context, wanted *svcapitypes.Cluster, cur
 
 func (u *hooks) getClusterPolicyState(ctx context.Context, wanted *svcapitypes.Cluster) (subResourceState, string, error) {
 	res, err := u.client.GetClusterPolicyWithContext(ctx, &svcsdk.GetClusterPolicyInput{
-		ClusterArn: awsclients.String(meta.GetExternalName(wanted)),
+		ClusterArn: pointer.String(meta.GetExternalName(wanted)),
 	})
 	if IsNotFound(err) {
 		if wanted.Spec.ForProvider.ClusterPolicy == nil {

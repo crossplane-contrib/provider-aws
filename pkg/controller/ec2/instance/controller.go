@@ -41,6 +41,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -102,7 +103,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, pointer.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -254,13 +255,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	instance := result.Instances[0]
 
 	if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
-		Resources: []string{awsclient.StringValue(instance.InstanceId)},
-		Tags:      svcapitypes.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		Resources: []string{pointer.StringValue(instance.InstanceId)},
+		Tags:      ec2.GenerateEC2TagsManualV1alpha1(cr.Spec.ForProvider.Tags),
 	}); err != nil {
 		return managed.ExternalCreation{ExternalNameAssigned: false}, errorutils.Wrap(err, errCreateTags)
 	}
 
-	meta.SetExternalName(cr, awsclient.StringValue(instance.InstanceId))
+	meta.SetExternalName(cr, pointer.StringValue(instance.InstanceId))
 
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
@@ -343,7 +344,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	_, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 		Resources: []string{meta.GetExternalName(cr)},
-		Tags:      svcapitypes.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		Tags:      ec2.GenerateEC2TagsManualV1alpha1(cr.Spec.ForProvider.Tags),
 	})
 
 	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)

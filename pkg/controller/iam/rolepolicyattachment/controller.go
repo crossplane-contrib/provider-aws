@@ -38,6 +38,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -125,7 +126,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 	cr.SetConditions(xpv1.Available())
-	cr.Status.AtProvider.AttachedPolicyARN = awsclient.StringValue(attachedPolicyObject.PolicyArn)
+	cr.Status.AtProvider.AttachedPolicyARN = pointer.StringValue(attachedPolicyObject.PolicyArn)
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
