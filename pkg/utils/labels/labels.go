@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package labels
 
 // DiffLabels returns labels that should be added, modified, or removed.
 func DiffLabels(local, remote map[string]string) (addOrModify map[string]string, remove []string) {

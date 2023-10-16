@@ -28,6 +28,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/labels"
 )
 
 // GenerateCreateNodeGroupInput from NodeGroupParameters.
@@ -144,7 +145,7 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *manualv1alpha1.NodeGroup
 	}
 
 	if len(p.Labels) > 0 {
-		addOrModify, remove := awsclient.DiffLabels(p.Labels, ng.Labels)
+		addOrModify, remove := labels.DiffLabels(p.Labels, ng.Labels)
 		// error: both or either addOrUpdateLabels or removeLabels must not be empty
 		if len(addOrModify) > 0 || len(remove) > 0 {
 			u.Labels = &ekstypes.UpdateLabelsPayload{
