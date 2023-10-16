@@ -146,9 +146,9 @@ spec:
                       and Availability Zones, see Regions and Availability Zones (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html).
                       Default: A random, system-chosen Availability Zone in the endpoint''s
                       AWS Region. Example: us-east-1d Constraint: The AvailabilityZone
-                      parameter can''t be specified if the MultiAZ parameter is set
-                      to true. The specified Availability Zone must be in the same
-                      AWS Region as the current endpoint.'
+                      parameter is ignored if the MultiAZ is set to true. The specified
+                      Availability Zone must be in the same AWS Region as the current
+                      endpoint.'
                     type: string
                   backupRetentionPeriod:
                     description: 'BackupRetentionPeriod is the number of days for
