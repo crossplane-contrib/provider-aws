@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -125,7 +126,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		GroupName: &groupName,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	var attachedPolicyObject *awsiamtypes.AttachedPolicy
@@ -163,7 +164,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		GroupName: &cr.Spec.ForProvider.GroupName,
 	})
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errAttach)
 	}
 
 	// This resource is interesting in that it's a binding without its own
@@ -194,5 +195,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		GroupName: &cr.Spec.ForProvider.GroupName,
 	})
 
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
+	return errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
 }

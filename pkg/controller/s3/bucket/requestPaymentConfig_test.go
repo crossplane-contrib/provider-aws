@@ -26,9 +26,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -68,7 +68,7 @@ func TestRequestPaymentObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, paymentGetFailed),
+				err:    errorutils.Wrap(errBoom, paymentGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -152,7 +152,7 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, paymentPutFailed),
+				err: errorutils.Wrap(errBoom, paymentPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -218,7 +218,7 @@ func TestReqPaymentLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, paymentGetFailed),
+				err: errorutils.Wrap(errBoom, paymentGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

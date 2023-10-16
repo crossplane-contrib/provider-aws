@@ -30,9 +30,9 @@ import (
 	"github.com/pkg/errors"
 
 	v1beta1 "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -132,7 +132,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  rolePolicy(withRoleName(&roleName)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -218,7 +218,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
 					withSpecPolicyArn(&specPolicyArn)),
-				err: awsclient.Wrap(errBoom, errAttach),
+				err: errorutils.Wrap(errBoom, errAttach),
 			},
 		},
 	}
@@ -341,7 +341,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: rolePolicy(withRoleName(&roleName),
 					withSpecPolicyArn(&specPolicyArn)),
-				err: awsclient.Wrap(errBoom, errDetach),
+				err: errorutils.Wrap(errBoom, errDetach),
 			},
 		},
 		"ResourceDoesNotExist": {

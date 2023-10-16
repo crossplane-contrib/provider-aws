@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -158,7 +159,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		LogGroupNamePrefix: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclients.Wrap(err, errCreate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreate)
 	}
 
 	trimmedArn := trimArnSuffix(*obj.LogGroups[0].Arn)
@@ -194,7 +195,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		if _, err := u.client.DeleteRetentionPolicy(&svcsdk.DeleteRetentionPolicyInput{
 			LogGroupName: awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -204,7 +205,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			LogGroupName:    awsclients.String(meta.GetExternalName(cr)),
 			RetentionInDays: cr.Spec.ForProvider.RetentionInDays,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 

@@ -37,6 +37,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -113,7 +114,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if observed.Group == nil {
@@ -156,7 +157,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		GroupName: aws.String(meta.GetExternalName(cr)),
 		Path:      cr.Spec.ForProvider.Path,
 	})
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -170,7 +171,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		NewGroupName: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -185,5 +186,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		GroupName: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

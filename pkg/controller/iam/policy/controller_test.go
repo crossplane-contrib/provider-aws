@@ -40,6 +40,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -259,7 +260,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  policy(withExternalName(policyArn)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 		"EmptySpecPolicy": {
@@ -526,7 +527,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  policy(),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -611,7 +612,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  policy(withExternalName(policyArn)),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 		"CreateVersionError": {
@@ -631,7 +632,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  policy(withExternalName(policyArn)),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -704,7 +705,7 @@ func TestUpdate_Tags(t *testing.T) {
 					withTags(map[string]string{
 						"key": "value",
 					})),
-				err: awsclient.Wrap(errBoom, errTag),
+				err: errorutils.Wrap(errBoom, errTag),
 			},
 		},
 		"AddTagsSuccess": {
@@ -807,7 +808,7 @@ func TestUpdate_Tags(t *testing.T) {
 					withTags(map[string]string{
 						"key2": "value2",
 					})),
-				err: awsclient.Wrap(errBoom, errUntag),
+				err: errorutils.Wrap(errBoom, errUntag),
 			},
 		},
 		"RemoveTagsSuccess": {
@@ -938,7 +939,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  policy(withExternalName(policyArn)),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"DeletePolicyError": {
@@ -959,7 +960,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: policy(withExternalName(policyArn),
 					withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 	}

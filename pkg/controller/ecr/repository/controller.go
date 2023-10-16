@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -132,7 +133,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		RepositoryNames: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -145,14 +146,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		ResourceArn: observed.RepositoryArn,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errListTags)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errListTags)
 	}
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
 	ecr.LateInitializeRepository(&cr.Spec.ForProvider, &observed)
 	if !cmp.Equal(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, awsclient.Wrap(err, errSpecUpdate)
+			return managed.ExternalObservation{}, errorutils.Wrap(err, errSpecUpdate)
 		}
 	}
 
@@ -179,7 +180,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	_, err := e.client.CreateRepository(ctx, ecr.GenerateCreateRepositoryInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
@@ -199,7 +200,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		RepositoryNames: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -220,7 +221,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			ImageTagMutability: awsecrtypes.ImageTagMutability(aws.ToString(patch.ImageTagMutability)),
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errUpdateMutability)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errUpdateMutability)
 		}
 	}
 
@@ -232,7 +233,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			},
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errUpdateScan)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errUpdateScan)
 		}
 	}
 
@@ -250,7 +251,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		RepositoryName: aws.String(meta.GetExternalName(cr)),
 		Force:          aws.ToBool(cr.Spec.ForProvider.ForceDelete),
 	})
-	return awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDelete)
 }
 
 type tagger struct {
@@ -282,17 +283,17 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 func (e *external) updateTags(ctx context.Context, repo *v1beta1.Repository) error {
 	resp, err := e.client.ListTagsForResource(ctx, &awsecr.ListTagsForResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn})
 	if err != nil {
-		return awsclient.Wrap(err, errListTags)
+		return errorutils.Wrap(err, errListTags)
 	}
 	add, remove := ecr.DiffTags(repo.Spec.ForProvider.Tags, resp.Tags)
 	if len(remove) != 0 {
 		if _, err := e.client.UntagResource(ctx, &awsecr.UntagResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn, TagKeys: remove}); err != nil {
-			return awsclient.Wrap(err, errRemoveTags)
+			return errorutils.Wrap(err, errRemoveTags)
 		}
 	}
 	if len(add) != 0 {
 		if _, err := e.client.TagResource(ctx, &awsecr.TagResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn, Tags: add}); err != nil {
-			return awsclient.Wrap(err, errCreateTags)
+			return errorutils.Wrap(err, errCreateTags)
 		}
 	}
 	return nil

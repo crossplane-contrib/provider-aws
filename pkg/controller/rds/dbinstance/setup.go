@@ -32,6 +32,7 @@ import (
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // error constants
@@ -164,18 +165,18 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		case "S3":
 			_, err := e.client.RestoreDBInstanceFromS3WithContext(ctx, dbinstance.GenerateRestoreDBInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 			if err != nil {
-				return aws.Wrap(err, errS3RestoreFailed)
+				return errorutils.Wrap(err, errS3RestoreFailed)
 			}
 
 		case "Snapshot":
 			_, err := e.client.RestoreDBInstanceFromDBSnapshotWithContext(ctx, dbinstance.GenerateRestoreDBInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 			if err != nil {
-				return aws.Wrap(err, errSnapshotRestoreFailed)
+				return errorutils.Wrap(err, errSnapshotRestoreFailed)
 			}
 		case "PointInTime":
 			_, err := e.client.RestoreDBInstanceToPointInTimeWithContext(ctx, dbinstance.GenerateRestoreDBInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 			if err != nil {
-				return aws.Wrap(err, errPointInTimeRestoreFailed)
+				return errorutils.Wrap(err, errPointInTimeRestoreFailed)
 			}
 		default:
 			return errors.New(errUnknownRestoreSource)

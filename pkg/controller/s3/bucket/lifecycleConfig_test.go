@@ -35,6 +35,7 @@ import (
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -179,7 +180,7 @@ func TestLifecycleObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, lifecycleGetFailed),
+				err:    errorutils.Wrap(errBoom, lifecycleGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -291,7 +292,7 @@ func TestLifecycleCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, lifecyclePutFailed),
+				err: errorutils.Wrap(errBoom, lifecyclePutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -356,7 +357,7 @@ func TestLifecycleDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, lifecycleDeleteFailed),
+				err: errorutils.Wrap(errBoom, lifecycleDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {
@@ -409,7 +410,7 @@ func TestLifecycleLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, lifecycleGetFailed),
+				err: errorutils.Wrap(errBoom, lifecycleGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

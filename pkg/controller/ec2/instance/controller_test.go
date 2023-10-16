@@ -34,9 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -208,7 +208,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
 					InstanceType: string(types.InstanceTypeM1Small),
 				}), withExternalName(instanceID)),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -279,7 +279,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -396,7 +396,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(withSpec(manualv1alpha1.InstanceParameters{})),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 	}

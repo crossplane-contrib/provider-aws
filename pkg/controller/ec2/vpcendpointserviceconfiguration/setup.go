@@ -23,6 +23,7 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -167,7 +168,7 @@ func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServic
 
 	resp, err := u.client.DescribeVpcEndpointServiceConfigurations(input)
 	if err != nil {
-		return awsclients.Wrap(err, errDescribe)
+		return errorutils.Wrap(err, errDescribe)
 	}
 
 	createGlbArns, deleteGlbArns := DifferenceARN(cr.Spec.ForProvider.GatewayLoadBalancerARNs, resp.ServiceConfigurations[0].GatewayLoadBalancerArns)
@@ -210,7 +211,7 @@ func (u *updater) delete(ctx context.Context, mg cpresource.Managed) error {
 	input.ServiceIds = append(input.ServiceIds, awsclients.String(meta.GetExternalName(cr)))
 
 	_, err := u.client.DeleteVpcEndpointServiceConfigurationsWithContext(ctx, input)
-	return awsclients.Wrap(cpresource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
+	return errorutils.Wrap(cpresource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
 }
 
 type tagger struct {

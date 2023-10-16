@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	awscognitoidpclient "github.com/crossplane-contrib/provider-aws/pkg/clients/cognitoidentityprovider"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -197,7 +198,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errAdd)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errAdd)
 	}
 
 	// This resource is interesting in that it's a binding without its own
@@ -241,5 +242,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		UserPoolId: &cr.Spec.ForProvider.UserPoolID,
 	})
 
-	return awsclient.Wrap(err, errRemove)
+	return errorutils.Wrap(err, errRemove)
 }

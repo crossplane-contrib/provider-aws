@@ -33,9 +33,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -165,7 +165,7 @@ func TestObserve(t *testing.T) {
 					ResourceExists:   false,
 					ResourceUpToDate: false,
 				},
-				err: awsclient.Wrap(errBoom, errGetTopicAttr),
+				err: errorutils.Wrap(errBoom, errGetTopicAttr),
 			},
 		},
 		"ClientGetTopicAttributesError": {
@@ -186,7 +186,7 @@ func TestObserve(t *testing.T) {
 					ResourceExists:   false,
 					ResourceUpToDate: false,
 				},
-				err: awsclient.Wrap(errBoom, errGetTopicAttr),
+				err: errorutils.Wrap(errBoom, errGetTopicAttr),
 			},
 		},
 		"ValidInputResourceNotUpToDate": {
@@ -301,7 +301,7 @@ func TestCreate(t *testing.T) {
 				cr: topic(
 					withDisplayName(&topicDisplayName),
 					withTopicName(&topicName)),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -390,7 +390,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  topic(withTopicName(&topicName)),
-				err: awsclient.Wrap(errBoom, errGetTopicAttr),
+				err: errorutils.Wrap(errBoom, errGetTopicAttr),
 			},
 		},
 		"ClientSetTopicAttributeError": {
@@ -413,7 +413,7 @@ func TestUpdate(t *testing.T) {
 					withDisplayName(&topicDisplayName),
 					withTopicName(&topicName),
 				),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -481,7 +481,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  topic(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {

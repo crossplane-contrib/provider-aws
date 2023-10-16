@@ -30,6 +30,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -144,7 +145,7 @@ func TestNotificationObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, notificationGetFailed),
+				err:    errorutils.Wrap(errBoom, notificationGetFailed),
 			},
 		},
 		"UpdateNeededFull": {
@@ -249,7 +250,7 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, notificationPutFailed),
+				err: errorutils.Wrap(errBoom, notificationPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -315,7 +316,7 @@ func TestNotifLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, notificationGetFailed),
+				err: errorutils.Wrap(errBoom, notificationGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

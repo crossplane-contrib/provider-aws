@@ -23,6 +23,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -110,7 +111,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		NatGatewayIds: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -166,7 +167,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	nat, err := e.client.CreateNatGateway(ctx, input)
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, aws.ToString(nat.NatGateway.NatGatewayId))
 	return managed.ExternalCreation{}, nil
@@ -182,7 +183,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		NatGatewayIds: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -198,7 +199,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      RemoveTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errDeleteTags)
 		}
 	}
 	if len(addTags) > 0 {
@@ -206,7 +207,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      addTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateTags)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -228,5 +229,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		NatGatewayId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDelete)
 }

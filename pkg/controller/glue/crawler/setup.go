@@ -42,6 +42,7 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/glue/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -112,7 +113,7 @@ func (h *hooks) preDelete(ctx context.Context, cr *svcapitypes.Crawler, obj *svc
 	if awsclients.StringValue(cr.Status.AtProvider.State) == svcsdk.CrawlerStateRunning {
 		_, err := h.client.StopCrawlerWithContext(ctx, &svcsdk.StopCrawlerInput{Name: obj.Name})
 
-		return true, awsclients.Wrap(err, errDelete)
+		return true, errorutils.Wrap(err, errDelete)
 	}
 	// wait with delete-request while Crawler is stopping
 	if awsclients.StringValue(cr.Status.AtProvider.State) == svcsdk.CrawlerStateStopping {
@@ -555,7 +556,7 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Crawler) (*string,
 
 	sess, err := awsclients.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
-		return nil, awsclients.Wrap(err, errBuildARN)
+		return nil, errorutils.Wrap(err, errBuildARN)
 	}
 
 	stsclient := svcsdksts.New(sess)

@@ -40,6 +40,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -118,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		Status:            awsclient.String("ACTIVE"), // to not get an older, inactive version/revision before we finish create!
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(isErrorNotFound, err), errDescribeJobDefinition)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDescribeJobDefinition)
 	}
 	if len(resp.JobDefinitions) == 0 {
 		return managed.ExternalObservation{ResourceExists: false}, nil
@@ -163,7 +164,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr.Status.SetConditions(xpv1.Creating())
 
 	_, err := e.client.RegisterJobDefinitionWithContext(ctx, generateRegisterJobDefinitionInput(cr))
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errRegisterJobDefinition)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errRegisterJobDefinition)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -190,7 +191,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeregisterJobDefinitionWithContext(ctx, generateDeregisterJobDefinitionInput(cr))
-	return awsclient.Wrap(resource.Ignore(isErrorNotFound, err), errDeregisterJobDefinition)
+	return errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDeregisterJobDefinition)
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.JobDefinitionParameters) {

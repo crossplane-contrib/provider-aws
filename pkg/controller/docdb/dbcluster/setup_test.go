@@ -40,6 +40,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/docdb/fake"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -3143,7 +3144,7 @@ func TestInitialize(t *testing.T) {
 						svcutils.GetExternalTags(instance()),
 					)...,
 				)),
-				err: awsclient.Wrap(errors.New(testErrBoom), errKubeUpdateFailed),
+				err: errorutils.Wrap(errors.New(testErrBoom), errKubeUpdateFailed),
 			},
 		},
 	}

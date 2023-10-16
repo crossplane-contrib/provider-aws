@@ -31,6 +31,7 @@ import (
 	clientss3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -139,7 +140,7 @@ func TestReplicationObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, replicationGetFailed),
+				err:    errorutils.Wrap(errBoom, replicationGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -251,7 +252,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, replicationPutFailed),
+				err: errorutils.Wrap(errBoom, replicationPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -316,7 +317,7 @@ func TestReplicationDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, replicationDeleteFailed),
+				err: errorutils.Wrap(errBoom, replicationDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {
@@ -369,7 +370,7 @@ func TestReplicationLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, replicationGetFailed),
+				err: errorutils.Wrap(errBoom, replicationGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

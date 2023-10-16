@@ -40,9 +40,6 @@ import (
 
 const (
 	awsCredentialsFileFormat = "[%s]\naws_access_key_id = %s\naws_secret_access_key = %s"
-
-	errBoom = "boom"
-	errMsg  = "example err msg"
 )
 
 func TestCredentialsIdSecret(t *testing.T) {

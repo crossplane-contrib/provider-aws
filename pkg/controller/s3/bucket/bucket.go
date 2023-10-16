@@ -40,6 +40,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -118,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	if _, err := e.s3client.HeadBucket(ctx, &awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}); err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
 
 	// get the proper partitionId for the bucket's region
@@ -199,7 +200,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, err := e.s3client.CreateBucket(ctx, s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider))
 	if resource.Ignore(s3.IsAlreadyExists, err) != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 	current := cr.Spec.ForProvider.DeepCopy()
 
@@ -215,7 +216,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	if !cmp.Equal(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
-			errs = append(errs, awsclient.Wrap(err, errKubeUpdateFailed))
+			errs = append(errs, errorutils.Wrap(err, errKubeUpdateFailed))
 		}
 	}
 	if len(errs) != 0 {
@@ -240,11 +241,11 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		case NeedsDeletion:
 			err = awsClient.Delete(ctx, cr)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errDelete)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errDelete)
 			}
 		case NeedsUpdate:
 			if err := awsClient.CreateOrUpdate(ctx, cr); err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateOrUpdate)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreateOrUpdate)
 			}
 		}
 	}

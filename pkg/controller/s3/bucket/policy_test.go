@@ -33,6 +33,7 @@ import (
 	s3client "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 func makeRawPolicy(p *common.BucketPolicyBody) string {
@@ -228,7 +229,7 @@ func TestPolicyObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, policyGetFailed),
+				err:    errorutils.Wrap(errBoom, policyGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -411,7 +412,7 @@ func TestPolicyCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, policyPutFailed),
+				err: errorutils.Wrap(errBoom, policyPutFailed),
 			},
 		},
 		"NoPutIfNoPolicy": {
@@ -496,7 +497,7 @@ func TestPolicyDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, policyDeleteFailed),
+				err: errorutils.Wrap(errBoom, policyDeleteFailed),
 			},
 		},
 		"SuccessfullDelete": {

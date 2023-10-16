@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	mockeksiface "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/eksiface"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -155,7 +156,7 @@ func TestObserve(t *testing.T) {
 				cr: addon(
 					withExternalName(testExternalName),
 				),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 		"LateInitSuccess": {
@@ -324,7 +325,7 @@ func TestCreate(t *testing.T) {
 					}),
 					withConditions(xpv1.Creating()),
 				),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -490,7 +491,7 @@ func TestUpdate(t *testing.T) {
 						},
 					}),
 				),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 		"FailedDescribeAddon": {
@@ -544,7 +545,7 @@ func TestUpdate(t *testing.T) {
 						},
 					}),
 				),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 		"FailedTagResource": {
@@ -626,7 +627,7 @@ func TestUpdate(t *testing.T) {
 						v1alpha1.AddonObservation{AddonARN: &testExternalName},
 					),
 				),
-				err: awsclient.Wrap(errBoom, errTagResource),
+				err: errorutils.Wrap(errBoom, errTagResource),
 			},
 		},
 		"UntagResource": {
@@ -716,7 +717,7 @@ func TestUpdate(t *testing.T) {
 						v1alpha1.AddonObservation{AddonARN: &testExternalName},
 					),
 				),
-				err: awsclient.Wrap(errBoom, errUntagResource),
+				err: errorutils.Wrap(errBoom, errUntagResource),
 			},
 		},
 	}
@@ -815,7 +816,7 @@ func TestDelete(t *testing.T) {
 					}),
 					withConditions(xpv1.Deleting()),
 				),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 	}

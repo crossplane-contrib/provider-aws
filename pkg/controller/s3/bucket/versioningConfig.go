@@ -26,6 +26,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -47,7 +48,7 @@ func NewVersioningConfigurationClient(client s3.BucketClient) *VersioningConfigu
 func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return NeedsUpdate, awsclient.Wrap(err, versioningGetFailed)
+		return NeedsUpdate, errorutils.Wrap(err, versioningGetFailed)
 	}
 	if bucket.Spec.ForProvider.VersioningConfiguration == nil {
 		return Updated, nil
@@ -66,7 +67,7 @@ func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 	}
 	input := GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.VersioningConfiguration)
 	_, err := in.client.PutBucketVersioning(ctx, input)
-	return awsclient.Wrap(err, versioningPutFailed)
+	return errorutils.Wrap(err, versioningPutFailed)
 }
 
 // Delete does nothing because there is no corresponding deletion call in awsclient.
@@ -78,7 +79,7 @@ func (*VersioningConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucke
 func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(err, versioningGetFailed)
+		return errorutils.Wrap(err, versioningGetFailed)
 	}
 
 	if len(external.Status) == 0 && len(external.MFADelete) == 0 {

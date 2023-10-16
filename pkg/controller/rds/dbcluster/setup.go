@@ -28,6 +28,7 @@ import (
 	dbinstance "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // error constants
@@ -797,7 +798,7 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj 
 	input.DBClusterIdentifier = aws.String(meta.GetExternalName(cr))
 	resp, err := e.client.DescribeDBClustersWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
+		return managed.ExternalUpdate{}, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 
 	needsEngineVersionUpdate := !isEngineVersionUpToDate(cr, resp)

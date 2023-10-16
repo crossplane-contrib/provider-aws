@@ -41,6 +41,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -136,7 +137,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 	if observedProvider == nil {
 		return managed.ExternalObservation{}, errors.New(errSDK)
@@ -171,7 +172,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.ToString(observed.OpenIDConnectProviderArn))
@@ -192,7 +193,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGet)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errGet)
 	}
 	if observedProvider == nil {
 		return managed.ExternalUpdate{}, errors.New(errSDK)
@@ -206,7 +207,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			OpenIDConnectProviderArn: arn,
 			ThumbprintList:           cr.Spec.ForProvider.ThumbprintList,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateThumbprint)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateThumbprint)
 		}
 	}
 
@@ -216,7 +217,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			OpenIDConnectProviderArn: arn,
 			ClientID:                 aws.String(clientID),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddClientID)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errAddClientID)
 		}
 	}
 
@@ -225,7 +226,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			OpenIDConnectProviderArn: arn,
 			ClientID:                 aws.String(clientID),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveClientID)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errRemoveClientID)
 		}
 	}
 
@@ -236,7 +237,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			OpenIDConnectProviderArn: arn,
 			Tags:                     addTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errAddTags)
 		}
 	}
 
@@ -245,7 +246,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			OpenIDConnectProviderArn: arn,
 			TagKeys:                  removeTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errRemoveTags)
 		}
 	}
 
@@ -261,7 +262,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }
 
 func (e *external) getOpenIDConnectProviderByTags(ctx context.Context, tags map[string]string) (*string, error) {
@@ -272,7 +273,7 @@ func (e *external) getOpenIDConnectProviderByTags(ctx context.Context, tags map[
 
 	oidcs, err := e.client.ListOpenIDConnectProviders(ctx, &awsiam.ListOpenIDConnectProvidersInput{})
 	if err != nil || len(oidcs.OpenIDConnectProviderList) == 0 {
-		return nil, awsclient.Wrap(err, errList)
+		return nil, errorutils.Wrap(err, errList)
 	}
 
 	for _, o := range oidcs.OpenIDConnectProviderList {
@@ -280,7 +281,7 @@ func (e *external) getOpenIDConnectProviderByTags(ctx context.Context, tags map[
 			OpenIDConnectProviderArn: o.Arn,
 		})
 		if err != nil {
-			return nil, awsclient.Wrap(err, errListTags)
+			return nil, errorutils.Wrap(err, errListTags)
 		}
 
 		for _, t := range tags.Tags {

@@ -19,6 +19,7 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -116,7 +117,7 @@ func (e *external) findRouteByDestination(ctx context.Context, cr *svcapitypes.R
 	})
 
 	if err != nil {
-		return nil, awsclients.Wrap(cpresource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
+		return nil, errorutils.Wrap(cpresource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object

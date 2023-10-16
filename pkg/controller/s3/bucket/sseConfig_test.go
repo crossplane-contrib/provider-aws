@@ -31,6 +31,7 @@ import (
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -108,7 +109,7 @@ func TestSSEObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, sseGetFailed),
+				err:    errorutils.Wrap(errBoom, sseGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -234,7 +235,7 @@ func TestSSECreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, ssePutFailed),
+				err: errorutils.Wrap(errBoom, ssePutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -299,7 +300,7 @@ func TestSSEDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, sseDeleteFailed),
+				err: errorutils.Wrap(errBoom, sseDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {
@@ -352,7 +353,7 @@ func TestSSELateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, sseGetFailed),
+				err: errorutils.Wrap(errBoom, sseGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

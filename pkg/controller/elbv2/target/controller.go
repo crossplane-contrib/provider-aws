@@ -37,6 +37,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -124,7 +125,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		},
 	})
 	if err != nil || len(res.TargetHealthDescriptions) == 0 {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribeTargetHealthFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errDescribeTargetHealthFailed)
 	}
 
 	cr.Status.AtProvider = generateTargetObservation(res)
@@ -161,7 +162,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 			},
 		},
 	})
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errRegisterTargetFailed)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errRegisterTargetFailed)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -189,7 +190,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 			},
 		},
 	})
-	return awsclient.Wrap(err, errDeregisterTargetFailed)
+	return errorutils.Wrap(err, errDeregisterTargetFailed)
 }
 
 func generateTargetObservation(i *awselasticloadbalancingv2.DescribeTargetHealthOutput) manualv1alpha1.TargetObservation {

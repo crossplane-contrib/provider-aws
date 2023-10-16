@@ -18,6 +18,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -92,7 +93,7 @@ func (e *external) observer(ctx context.Context, mg cpresource.Managed) (managed
 	input := GenerateDescribeDBInstancesInput(cr)
 	resp, err := e.client.DescribeDBInstancesWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribeAssoc)
+		return managed.ExternalObservation{ResourceExists: false}, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDescribeAssoc)
 	}
 	if len(resp.DBInstances) == 0 {
 		return managed.ExternalObservation{ResourceExists: false}, nil

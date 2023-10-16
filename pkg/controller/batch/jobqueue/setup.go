@@ -34,6 +34,7 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -176,7 +177,7 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.JobQueue, obj *sv
 	_, err := e.client.UpdateJobQueueWithContext(ctx, &svcsdk.UpdateJobQueueInput{
 		JobQueue: awsclients.String(meta.GetExternalName(cr)),
 		State:    awsclients.String(svcsdk.JQStateDisabled)})
-	return true, awsclients.Wrap(err, errUpdate)
+	return true, errorutils.Wrap(err, errUpdate)
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesOutput) (bool, string, error) {

@@ -36,6 +36,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/docdb/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -2292,7 +2293,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBIdentifier),
 				),
 				result: managed.ExternalObservation{},
-				err:    awsclient.Wrap(cpresource.Ignore(IsNotFound, errors.New(testErrDescribeDBInstancesFailed)), errDescribe),
+				err:    errorutils.Wrap(cpresource.Ignore(IsNotFound, errors.New(testErrDescribeDBInstancesFailed)), errDescribe),
 				docdb: fake.MockDocDBClientCall{
 					DescribeDBInstancesWithContext: []*fake.CallDescribeDBInstancesWithContext{
 						{

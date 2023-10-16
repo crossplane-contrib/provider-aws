@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // SetupStream adds a controller that reconciles Stream.
@@ -194,13 +195,13 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		StreamName: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclients.Wrap(err, errCreate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreate)
 	}
 
 	// we need information about activeShards for decision
 	number, err := u.ActiveShards(cr)
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 	if awsclients.Int64Value(cr.Spec.ForProvider.ShardCount) != number &&
 		awsclients.StringValue(obj.StreamDescription.StreamStatus) == svcsdk.StreamStatusActive {
@@ -210,7 +211,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			TargetShardCount: cr.Spec.ForProvider.ShardCount,
 			ScalingType:      &scalingType,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
@@ -222,7 +223,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			StreamName:           awsclients.String(meta.GetExternalName(cr)),
 			RetentionPeriodHours: cr.Spec.ForProvider.RetentionPeriodHours,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
@@ -234,7 +235,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			StreamName:           awsclients.String(meta.GetExternalName(cr)),
 			RetentionPeriodHours: cr.Spec.ForProvider.RetentionPeriodHours,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
@@ -249,7 +250,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			KeyId:          cr.Spec.ForProvider.KMSKeyARN,
 			StreamName:     awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
@@ -271,7 +272,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			KeyId:          obj.StreamDescription.KeyId,
 			StreamName:     awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
@@ -291,7 +292,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			ShardLevelMetrics: cr.Spec.ForProvider.EnhancedMetrics[0].ShardLevelMetrics,
 			StreamName:        awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
@@ -304,7 +305,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			ShardLevelMetrics: obj.StreamDescription.EnhancedMonitoring[0].ShardLevelMetrics,
 			StreamName:        awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
@@ -313,7 +314,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	objTags, err := u.ListTags(cr)
 	if err != nil &&
 		objTags == nil {
-		return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 	addTags, removeTags := DiffTags(cr.Spec.ForProvider.Tags, objTags.Tags)
 
@@ -323,7 +324,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			StreamName: awsclients.String(meta.GetExternalName(cr)),
 			Tags:       addTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil
@@ -335,7 +336,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			StreamName: awsclients.String(meta.GetExternalName(cr)),
 			TagKeys:    removeTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 		// You can't make other updates to the data stream while it is being updated.
 		return managed.ExternalUpdate{}, nil

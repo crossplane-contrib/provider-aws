@@ -32,9 +32,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -144,7 +144,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  certificateAuthorityPermission(withExternalName(principal + "/" + arn)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 	}
@@ -225,7 +225,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  certificateAuthorityPermission(),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -309,7 +309,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  certificateAuthorityPermission(),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -329,7 +329,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  certificateAuthorityPermission(),
-				err: awsclient.Wrap(&awsacmpcatypes.ResourceNotFoundException{}, errDelete),
+				err: errorutils.Wrap(&awsacmpcatypes.ResourceNotFoundException{}, errDelete),
 			},
 		},
 	}

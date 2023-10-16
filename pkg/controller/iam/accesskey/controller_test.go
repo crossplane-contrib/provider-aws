@@ -33,9 +33,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -192,7 +192,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  accesskey(withAccessKey("test")),
-				err: awsclient.Wrap(errBoom, errList),
+				err: errorutils.Wrap(errBoom, errList),
 			},
 		},
 	}
@@ -278,7 +278,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  accesskey(),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -346,7 +346,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  accesskey(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -423,7 +423,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  accesskey(withStatus(string(activeStatus))),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 	}

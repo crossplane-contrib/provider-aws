@@ -38,6 +38,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
@@ -169,7 +170,7 @@ func (u *hooks) postObserve(ctx context.Context, cr *svcapitypes.Cluster, obj *s
 		// not possible in every cluster state (e.g. "You can't get bootstrap broker nodes for a cluster in DELETING state.")
 		endpoints, err := u.client.GetBootstrapBrokersWithContext(ctx, &svcsdk.GetBootstrapBrokersInput{ClusterArn: awsclients.String(meta.GetExternalName(cr))})
 		if err != nil {
-			return obs, awsclients.Wrap(err, errGetBootstrapBrokers)
+			return obs, errorutils.Wrap(err, errGetBootstrapBrokers)
 		}
 		obs.ConnectionDetails["clusterEndpointPlain"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerString))
 		obs.ConnectionDetails["clusterEndpointTls"] = []byte(awsclients.StringValue(endpoints.BootstrapBrokerStringTls))
@@ -771,7 +772,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 		obj, err := u.client.DescribeClusterWithContext(ctx, input)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errDescribe)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribe)
 		}
 		currentARN := meta.GetExternalName(cr)
 		currentVersion := obj.ClusterInfo.CurrentVersion
@@ -789,7 +790,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 			_, err := u.client.UpdateBrokerTypeWithContext(ctx, input)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdateBrokerType)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateBrokerType)
 			}
 		}
 
@@ -798,7 +799,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 			obj, err = u.client.DescribeClusterWithContext(ctx, input)
 			currentVersion = obj.ClusterInfo.CurrentVersion
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errDescribe)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribe)
 			}
 
 			if aws.StringValue(obj.ClusterInfo.State) != stateActive {
@@ -827,7 +828,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 			_, err := u.client.UpdateBrokerStorageWithContext(ctx, input)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdateBrokerStorage)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateBrokerStorage)
 			}
 		}
 
@@ -835,7 +836,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 			obj, err = u.client.DescribeClusterWithContext(ctx, input)
 			currentVersion = obj.ClusterInfo.CurrentVersion
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errDescribe)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribe)
 			}
 			if aws.StringValue(obj.ClusterInfo.State) != stateActive {
 				return managed.ExternalUpdate{}, errors.New(errStateForUpdate)
@@ -848,7 +849,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 			_, err := u.client.UpdateBrokerCountWithContext(ctx, input)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdateBrokerCount)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateBrokerCount)
 			}
 		}
 
@@ -856,7 +857,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 			obj, err = u.client.DescribeClusterWithContext(ctx, input)
 			currentVersion = obj.ClusterInfo.CurrentVersion
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errDescribe)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribe)
 			}
 			if aws.StringValue(obj.ClusterInfo.State) != stateActive {
 				return managed.ExternalUpdate{}, errors.New(errStateForUpdate)
@@ -871,7 +872,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 			_, err := u.client.UpdateMonitoringWithContext(ctx, input)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdateMonitoring)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateMonitoring)
 			}
 
 		}
@@ -880,7 +881,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 			obj, err = u.client.DescribeClusterWithContext(ctx, input)
 			currentVersion = obj.ClusterInfo.CurrentVersion
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errDescribe)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribe)
 			}
 			if aws.StringValue(obj.ClusterInfo.State) != stateActive {
 				return managed.ExternalUpdate{}, errors.New(errStateForUpdate)
@@ -893,7 +894,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 			_, err := u.client.UpdateClusterConfigurationWithContext(ctx, input)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdateClusterConfiguration)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateClusterConfiguration)
 			}
 		}
 
@@ -901,7 +902,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 			obj, err = u.client.DescribeClusterWithContext(ctx, input)
 			currentVersion = obj.ClusterInfo.CurrentVersion
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errDescribe)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribe)
 			}
 			if aws.StringValue(obj.ClusterInfo.State) != stateActive {
 				return managed.ExternalUpdate{}, errors.New(errStateForUpdate)
@@ -918,7 +919,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 			_, err := u.client.UpdateClusterKafkaVersionWithContext(ctx, input)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdateClusterKafkaVersion)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateClusterKafkaVersion)
 			}
 		}
 
@@ -928,7 +929,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 			obj, err = u.client.DescribeClusterWithContext(ctx, input)
 			currentVersion = obj.ClusterInfo.CurrentVersion
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errDescribe)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribe)
 			}
 			if aws.StringValue(obj.ClusterInfo.State) != stateActive {
 				return managed.ExternalUpdate{}, errors.New(errStateForUpdate)
@@ -953,7 +954,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 			_, err := u.client.UpdateSecurityWithContext(ctx, input)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdateSecurity)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateSecurity)
 			}
 		}
 
@@ -969,7 +970,7 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 			_, err := u.client.TagResourceWithContext(ctx, input)
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdateTags)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateTags)
 			}
 		}
 

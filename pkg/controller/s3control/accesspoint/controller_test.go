@@ -18,6 +18,7 @@ import (
 	awsClient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3control/fake"
 	s3controlTesting "github.com/crossplane-contrib/provider-aws/pkg/controller/s3control/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -107,7 +108,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  s3controlTesting.AccessPoint(),
-				err: awsClient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 		{name: "ResourceDoesNotExist",
@@ -234,7 +235,7 @@ func TestObserve(t *testing.T) {
 				cr: s3controlTesting.AccessPoint(
 					s3controlTesting.WithPolicy(testPolicyV2),
 				),
-				err: errors.Wrap(awsClient.Wrap(errBoom, errDescribePolicy), "isUpToDate check failed"),
+				err: errors.Wrap(errorutils.Wrap(errBoom, errDescribePolicy), "isUpToDate check failed"),
 			},
 		},
 	}
@@ -291,9 +292,9 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3controlTesting.AccessPoint(
-					s3controlTesting.WithConditions(xpv1.ReconcileError(awsClient.Wrap(errBoom, errDescribePolicy))),
+					s3controlTesting.WithConditions(xpv1.ReconcileError(errorutils.Wrap(errBoom, errDescribePolicy))),
 				),
-				err: awsClient.Wrap(errBoom, errDescribePolicy),
+				err: errorutils.Wrap(errBoom, errDescribePolicy),
 			},
 		},
 		{name: "DeleteAccessPointPolicyClientError",
@@ -306,7 +307,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  s3controlTesting.AccessPoint(),
-				err: awsClient.Wrap(errBoom, errDeletePolicy),
+				err: errorutils.Wrap(errBoom, errDeletePolicy),
 			},
 		},
 		{name: "DeleteAccessPointPolicyClientEmptyOutputPolicy",
@@ -349,7 +350,7 @@ func TestUpdate(t *testing.T) {
 				cr: s3controlTesting.AccessPoint(
 					s3controlTesting.WithPolicy(testPolicyV2),
 				),
-				err: awsClient.Wrap(errBoom, errPutPolicy),
+				err: errorutils.Wrap(errBoom, errPutPolicy),
 			},
 		},
 		{name: "DontUpdatePolicy",
@@ -424,7 +425,7 @@ func TestCreate(t *testing.T) {
 				cr: s3controlTesting.AccessPoint(
 					s3controlTesting.WithConditions(xpv1.Creating()),
 				),
-				err: awsClient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 		{name: "ValidInput",
@@ -495,7 +496,7 @@ func TestDelete(t *testing.T) {
 				cr: s3controlTesting.AccessPoint(
 					s3controlTesting.WithConditions(xpv1.Deleting()),
 				),
-				err: awsClient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		{name: "ValidInput",

@@ -41,6 +41,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -132,14 +133,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			PublicIps: []string{meta.GetExternalName(cr)},
 		})
 		if err != nil {
-			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
+			return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
 		}
 	} else {
 		output, err = e.client.DescribeAddresses(ctx, &awsec2.DescribeAddressesInput{
 			AllocationIds: []string{meta.GetExternalName(cr)},
 		})
 		if err != nil {
-			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
+			return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
 		}
 
 	}
@@ -185,7 +186,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		PublicIpv4Pool:        cr.Spec.ForProvider.PublicIPv4Pool,
 	})
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	if ec2.IsStandardDomain(cr.Spec.ForProvider) {
@@ -208,7 +209,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Resources: []string{meta.GetExternalName(cr)},
 		Tags:      ec2.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 	}); err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreateTags)
 	}
 	return managed.ExternalUpdate{}, nil
 }
@@ -232,7 +233,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		})
 	}
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDelete)
 }
 
 type tagger struct {

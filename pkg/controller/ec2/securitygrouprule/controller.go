@@ -22,6 +22,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -291,14 +292,14 @@ func (e *external) deleteSgrForType(ctx context.Context, sgr *manualv1alpha1.Sec
 			GroupId:              sgr.Spec.ForProvider.SecurityGroupID,
 		})
 
-		return awsclient.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
+		return errorutils.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
 	} else if sgrType == egressType {
 		_, err := e.client.RevokeSecurityGroupEgress(ctx, &awsec2.RevokeSecurityGroupEgressInput{
 			SecurityGroupRuleIds: []string{meta.GetExternalName(sgr)},
 			GroupId:              sgr.Spec.ForProvider.SecurityGroupID,
 		})
 
-		return awsclient.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
+		return errorutils.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
 	}
 	return nil
 }

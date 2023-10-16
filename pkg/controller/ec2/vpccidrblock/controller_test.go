@@ -32,9 +32,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -206,7 +206,7 @@ func TestObserve(t *testing.T) {
 					VPCID:     &vpcID,
 					CIDRBlock: &cidr,
 				}), withStatus(v1beta1.VPCCIDRBlockObservation{}), withExternalName(matchAssociationID)),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -311,7 +311,7 @@ func TestCreate(t *testing.T) {
 					CIDRBlock: &cidr,
 					VPCID:     &vpcID,
 				})),
-				err: awsclient.Wrap(errBoom, errAssociate),
+				err: errorutils.Wrap(errBoom, errAssociate),
 			},
 		},
 	}
@@ -396,7 +396,7 @@ func TestDelete(t *testing.T) {
 						StatusMessage: testStatus,
 					},
 				})),
-				err: awsclient.Wrap(errBoom, errDisassociate),
+				err: errorutils.Wrap(errBoom, errDisassociate),
 			},
 		},
 	}

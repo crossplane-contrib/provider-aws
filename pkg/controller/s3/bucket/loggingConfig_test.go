@@ -26,9 +26,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -101,7 +101,7 @@ func TestLoggingObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, loggingGetFailed),
+				err:    errorutils.Wrap(errBoom, loggingGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -185,7 +185,7 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, loggingPutFailed),
+				err: errorutils.Wrap(errBoom, loggingPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -251,7 +251,7 @@ func TestLoggingLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, loggingGetFailed),
+				err: errorutils.Wrap(errBoom, loggingGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

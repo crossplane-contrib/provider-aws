@@ -38,6 +38,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -112,7 +113,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	keys, err := e.client.ListAccessKeys(ctx, &awsiam.ListAccessKeysInput{UserName: aws.String(cr.Spec.ForProvider.Username)})
 	if err != nil || len(keys.AccessKeyMetadata) == 0 {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errList)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errList)
 	}
 	found := false
 	var accessKey awsiamtypes.AccessKeyMetadata
@@ -148,7 +149,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	response, err := e.client.CreateAccessKey(ctx, &awsiam.CreateAccessKeyInput{UserName: aws.String(cr.Spec.ForProvider.Username)})
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	var conn managed.ConnectionDetails
@@ -174,7 +175,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		UserName:    aws.String(cr.Spec.ForProvider.Username),
 	})
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -190,5 +191,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		AccessKeyId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

@@ -37,6 +37,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // TODO: Aren't these defined as an API constant somewhere in aws-sdk-go?
@@ -522,7 +523,7 @@ func (d *deleter) preDelete(ctx context.Context, cr *svcapitypes.Distribution, d
 			return false, errors.New("distribution needs to be disabled before deletion")
 		}
 		if _, err := d.external.Update(ctx, cr); err != nil {
-			return false, awsclients.Wrap(err, errUpdate)
+			return false, errorutils.Wrap(err, errUpdate)
 		}
 	}
 	ddi.Id = awsclients.String(meta.GetExternalName(cr))

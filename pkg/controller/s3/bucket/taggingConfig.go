@@ -30,6 +30,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -56,7 +57,7 @@ func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		if s3.TaggingNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
+		return NeedsUpdate, errorutils.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
 
 	switch {
@@ -78,7 +79,7 @@ func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	}
 	input := GeneratePutBucketTagging(meta.GetExternalName(bucket), bucket.Spec.ForProvider.BucketTagging)
 	_, err := in.client.PutBucketTagging(ctx, input)
-	return awsclient.Wrap(err, taggingPutFailed)
+	return errorutils.Wrap(err, taggingPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -88,7 +89,7 @@ func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
 	)
-	return awsclient.Wrap(err, taggingDeleteFailed)
+	return errorutils.Wrap(err, taggingDeleteFailed)
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
@@ -96,7 +97,7 @@ func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 func (in *TaggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
+		return errorutils.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
 
 	// We need the second check here because by default the tags are not set

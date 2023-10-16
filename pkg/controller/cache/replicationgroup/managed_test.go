@@ -36,8 +36,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -865,7 +865,7 @@ func TestInitialize(t *testing.T) {
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errorBoom)},
 			},
 			want: want{
-				err: awsclient.Wrap(errorBoom, errUpdateReplicationGroupCR),
+				err: errorutils.Wrap(errorBoom, errUpdateReplicationGroupCR),
 			},
 		},
 	}

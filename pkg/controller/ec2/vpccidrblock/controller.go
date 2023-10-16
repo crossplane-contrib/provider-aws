@@ -40,6 +40,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -128,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if err != nil {
 		return managed.ExternalObservation{
 			ResourceExists: false,
-		}, awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
+		}, errorutils.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -185,7 +186,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		VpcId:                           cr.Spec.ForProvider.VPCID,
 	})
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errAssociate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errAssociate)
 	}
 
 	if result != nil {
@@ -217,5 +218,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		AssociationId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDisassociate)
+	return errorutils.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDisassociate)
 }

@@ -30,6 +30,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -51,7 +52,7 @@ func NewLoggingConfigurationClient(client s3.BucketClient) *LoggingConfiguration
 func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	external, err := in.client.GetBucketLogging(ctx, &awss3.GetBucketLoggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return NeedsUpdate, awsclient.Wrap(err, loggingGetFailed)
+		return NeedsUpdate, errorutils.Wrap(err, loggingGetFailed)
 	}
 	if !cmp.Equal(GenerateAWSLogging(bucket.Spec.ForProvider.LoggingConfiguration), external.LoggingEnabled,
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}), cmpopts.IgnoreTypes(document.NoSerde{})) {
@@ -67,7 +68,7 @@ func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	}
 	input := GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.LoggingConfiguration)
 	_, err := in.client.PutBucketLogging(ctx, input)
-	return awsclient.Wrap(err, loggingPutFailed)
+	return errorutils.Wrap(err, loggingPutFailed)
 }
 
 // Delete does nothing because there is no deletion call for logging config.
@@ -79,7 +80,7 @@ func (*LoggingConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) 
 func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketLogging(ctx, &awss3.GetBucketLoggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(err, loggingGetFailed)
+		return errorutils.Wrap(err, loggingGetFailed)
 	}
 
 	if external == nil || external.LoggingEnabled == nil {

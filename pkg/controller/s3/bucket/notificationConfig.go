@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -54,7 +55,7 @@ func NewNotificationConfigurationClient(client s3.BucketClient) *NotificationCon
 func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	external, err := in.client.GetBucketNotificationConfiguration(ctx, &awss3.GetBucketNotificationConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return NeedsUpdate, awsclient.Wrap(err, notificationGetFailed)
+		return NeedsUpdate, errorutils.Wrap(err, notificationGetFailed)
 	}
 
 	return IsNotificationConfigurationUpToDate(bucket.Spec.ForProvider.NotificationConfiguration, external)
@@ -277,7 +278,7 @@ func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, b
 	}
 	input := GenerateNotificationConfigurationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.NotificationConfiguration)
 	_, err := in.client.PutBucketNotificationConfiguration(ctx, input)
-	return awsclient.Wrap(err, notificationPutFailed)
+	return errorutils.Wrap(err, notificationPutFailed)
 }
 
 // Delete does nothing because there is no corresponding deletion call in awsclient.
@@ -289,7 +290,7 @@ func (*NotificationConfigurationClient) Delete(_ context.Context, _ *v1beta1.Buc
 func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketNotificationConfiguration(ctx, &awss3.GetBucketNotificationConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(err, notificationGetFailed)
+		return errorutils.Wrap(err, notificationGetFailed)
 	}
 	if emptyConfiguration(external) {
 		// There is nothing to initialize from AWS

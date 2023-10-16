@@ -40,6 +40,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -118,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		FunctionName: cr.Spec.ForProvider.FunctionName,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(isErrorNotFound, err), errGetPolicyFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errGetPolicyFailed)
 	}
 
 	policyDocument, err := parsePolicy(awsclient.StringValue(resp.Policy))
@@ -165,7 +166,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	_, err := e.client.AddPermission(ctx, generateAddPermissionInput(cr))
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errAddPermission)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errAddPermission)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -188,7 +189,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotLambdaPermission)
 	}
 	_, err := e.client.RemovePermission(ctx, generateRemovePermissionInput(cr))
-	return awsclient.Wrap(resource.Ignore(isErrorNotFound, err), errRemovePermission)
+	return errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errRemovePermission)
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.PermissionParameters) {

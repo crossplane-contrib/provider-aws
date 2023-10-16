@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticloadbalancing/elb"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -121,7 +122,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		LoadBalancerNames: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -135,7 +136,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		LoadBalancerNames: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
 	}
 
 	// update the CRD spec for any new values from provider
@@ -173,7 +174,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	_, err := e.client.CreateLoadBalancer(ctx, elb.GenerateCreateELBInput(meta.GetExternalName(cr),
 		cr.Spec.ForProvider))
 
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // //nolint:gocyclo
@@ -186,7 +187,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		LoadBalancerNames: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
 	}
 
 	if len(response.LoadBalancerDescriptions) != 1 {
@@ -199,19 +200,19 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		LoadBalancerNames: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
 	}
 
 	// AWS ELB API doesn't have a single PUT/PATCH API.
 	// Hence, create a patch to figure which fields are to be updated.
 	patch, err := elb.CreatePatch(observed, cr.Spec.ForProvider, tagsResponse.TagDescriptions[0].Tags)
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
 	}
 
 	if len(patch.AvailabilityZones) != 0 {
 		if err := e.updateAvailabilityZones(ctx, cr.Spec.ForProvider.AvailabilityZones, observed.AvailabilityZones, meta.GetExternalName(cr)); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -220,13 +221,13 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			SecurityGroups:   cr.Spec.ForProvider.SecurityGroupIDs,
 			LoadBalancerName: aws.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
 	if len(patch.SubnetIDs) != 0 {
 		if err := e.updateSubnets(ctx, cr.Spec.ForProvider.SubnetIDs, observed.Subnets, meta.GetExternalName(cr)); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -241,19 +242,19 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 				UnhealthyThreshold: cr.Spec.ForProvider.HealthCheck.HealthyThreshold,
 			},
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
 	if len(patch.Listeners) != 0 {
 		if err := e.updateListeners(ctx, cr.Spec.ForProvider.Listeners, observed.ListenerDescriptions, meta.GetExternalName(cr)); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
 	if len(patch.Tags) != 0 {
 		if err := e.updateTags(ctx, cr.Spec.ForProvider.Tags, tagsResponse.TagDescriptions[0].Tags, meta.GetExternalName(cr)); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -272,7 +273,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		LoadBalancerName: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDelete)
 }
 
 func (e *external) updateAvailabilityZones(ctx context.Context, zones, elbZones []string, name string) error {

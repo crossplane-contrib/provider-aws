@@ -38,6 +38,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -118,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if observed.Role == nil {
@@ -162,7 +163,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr.Status.SetConditions(xpv1.Creating())
 
 	_, err := e.client.CreateRole(ctx, iam.GenerateCreateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
@@ -176,7 +177,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 	if observed.Role == nil {
 		return managed.ExternalUpdate{}, errors.New(errSDK)
@@ -193,7 +194,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			RoleName: aws.String(meta.GetExternalName(cr)),
 			TagKeys:  remove,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, "cannot untag")
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, "cannot untag")
 		}
 	}
 	if len(add) != 0 {
@@ -201,7 +202,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			RoleName: aws.String(meta.GetExternalName(cr)),
 			Tags:     add,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, "cannot tag")
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, "cannot tag")
 		}
 	}
 
@@ -218,7 +219,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		})
 
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -239,7 +240,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -249,7 +250,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			RoleName:       aws.String(meta.GetExternalName(cr)),
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -267,7 +268,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		RoleName: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }
 
 type tagger struct {

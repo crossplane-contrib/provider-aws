@@ -27,6 +27,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -53,7 +54,7 @@ func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.B
 		if s3.SSEConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.SSEConfigurationNotFound, err), sseGetFailed)
+		return NeedsUpdate, errorutils.Wrap(resource.Ignore(s3.SSEConfigurationNotFound, err), sseGetFailed)
 	}
 
 	switch {
@@ -90,7 +91,7 @@ func (in *SSEConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1
 	}
 	input := GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.ServerSideEncryptionConfiguration)
 	_, err := in.client.PutBucketEncryption(ctx, input)
-	return awsclient.Wrap(err, ssePutFailed)
+	return errorutils.Wrap(err, ssePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -100,7 +101,7 @@ func (in *SSEConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bu
 			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
 	)
-	return awsclient.Wrap(err, sseDeleteFailed)
+	return errorutils.Wrap(err, sseDeleteFailed)
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
@@ -108,7 +109,7 @@ func (in *SSEConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bu
 func (in *SSEConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketEncryption(ctx, &awss3.GetBucketEncryptionInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(s3.SSEConfigurationNotFound, err), sseGetFailed)
+		return errorutils.Wrap(resource.Ignore(s3.SSEConfigurationNotFound, err), sseGetFailed)
 	}
 
 	// We need the second check here because by default the SSE is not set

@@ -37,6 +37,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -212,7 +213,7 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists: false,
 				},
-				err: awsclient.Wrap(errBoom, errGetSecurityGroup),
+				err: errorutils.Wrap(errBoom, errGetSecurityGroup),
 			},
 		},
 		"MultipleSGs": {
@@ -254,7 +255,7 @@ func TestObserve(t *testing.T) {
 					SecurityGroupID: sgID,
 				}),
 					withExternalName(sgID)),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -327,7 +328,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  sg(withConditions(xpv1.Creating())),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 		"RevokeFail": {
@@ -350,7 +351,7 @@ func TestCreate(t *testing.T) {
 				cr: sg(),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, errRevokeEgress),
+				err: errorutils.Wrap(errBoom, errRevokeEgress),
 				cr: sg(withExternalName(sgID),
 					withConditions(xpv1.Creating())),
 			},
@@ -463,7 +464,7 @@ func TestUpdate(t *testing.T) {
 					withStatus(v1beta1.SecurityGroupObservation{
 						SecurityGroupID: sgID,
 					})),
-				err: awsclient.Wrap(errBoom, errAuthorizeIngress),
+				err: errorutils.Wrap(errBoom, errAuthorizeIngress),
 			},
 		},
 	}
@@ -677,7 +678,7 @@ func TestUpdateTags(t *testing.T) {
 					withStatus(v1beta1.SecurityGroupObservation{
 						SecurityGroupID: sgID,
 					})),
-				err: awsclient.Wrap(errBoom, errCreateTags),
+				err: errorutils.Wrap(errBoom, errCreateTags),
 			},
 		},
 	}
@@ -755,7 +756,7 @@ func TestDelete(t *testing.T) {
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}), withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 	}

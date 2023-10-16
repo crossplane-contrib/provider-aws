@@ -37,6 +37,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // SetupGlobalTable adds a controller that reconciles GlobalTable.
@@ -132,7 +133,7 @@ func (u *updater) preUpdate(ctx context.Context, cr *svcapitypes.GlobalTable, ob
 	input := GenerateDescribeGlobalTableInput(cr)
 	o, err := u.client.DescribeGlobalTableWithContext(ctx, input)
 	if err != nil {
-		return aws.Wrap(err, errDescribe)
+		return errorutils.Wrap(err, errDescribe)
 	}
 	desired := map[string]bool{}
 	for _, r := range cr.Spec.ForProvider.ReplicationGroup {
@@ -178,7 +179,7 @@ func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
 		u.ReplicaUpdates = append(u.ReplicaUpdates, &svcsdk.ReplicaUpdate{Delete: &svcsdk.DeleteReplicaAction{RegionName: region.RegionName}})
 	}
 	if _, err := d.client.UpdateGlobalTableWithContext(ctx, u); err != nil {
-		return aws.Wrap(err, "update call for deletion failed")
+		return errorutils.Wrap(err, "update call for deletion failed")
 	}
 	return nil
 }

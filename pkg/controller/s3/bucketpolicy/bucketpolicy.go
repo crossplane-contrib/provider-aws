@@ -38,6 +38,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -120,13 +121,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		if s3.IsErrorBucketNotFound(err) {
 			return managed.ExternalObservation{}, nil
 		}
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(s3.IsErrorPolicyNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(s3.IsErrorPolicyNotFound, err), errGet)
 	}
 
 	policyData, err := e.formatBucketPolicy(cr)
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(s3.IsErrorPolicyNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(s3.IsErrorPolicyNotFound, err), errGet)
 	}
 
 	cr.SetConditions(xpv1.Available())
@@ -172,12 +173,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	policyData, err := e.formatBucketPolicy(cr)
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errAttach)
 	}
 
 	policyString := *policyData
 	_, err = e.client.PutBucketPolicy(ctx, &awss3.PutBucketPolicyInput{Bucket: cr.Spec.Parameters.BucketName, Policy: awsclient.String(policyString)})
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errAttach)
 }
 
 // Update patches the existing policy for the bucket with the policy in the request body
@@ -189,11 +190,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	policyData, err := e.formatBucketPolicy(cr)
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	_, err = e.client.PutBucketPolicy(ctx, &awss3.PutBucketPolicyInput{Bucket: cr.Spec.Parameters.BucketName, Policy: awsclient.String(*policyData)})
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
 // Delete removes the existing policy for a bucket
@@ -208,5 +209,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return nil
 	}
 
-	return awsclient.Wrap(resource.Ignore(s3.IsErrorPolicyNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(s3.IsErrorPolicyNotFound, err), errDelete)
 }

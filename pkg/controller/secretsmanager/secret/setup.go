@@ -41,6 +41,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
@@ -295,7 +296,7 @@ func (e *hooks) isPayloadUpToDate(ctx context.Context, cr *svcapitypes.Secret) (
 		SecretId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return false, awsclients.Wrap(err, errGetSecretValue)
+		return false, errorutils.Wrap(err, errGetSecretValue)
 	}
 	payload, err := e.getPayload(ctx, &cr.Spec.ForProvider)
 	if err != nil {
@@ -360,7 +361,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 		SecretId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return awsclients.Wrap(err, errDescribe)
+		return errorutils.Wrap(err, errDescribe)
 	}
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, resp.Tags)
 	if len(remove) != 0 {
@@ -368,7 +369,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 			SecretId: awsclients.String(meta.GetExternalName(cr)),
 			TagKeys:  remove,
 		}); err != nil {
-			return awsclients.Wrap(err, errRemoveTags)
+			return errorutils.Wrap(err, errRemoveTags)
 		}
 	}
 	if len(add) != 0 {
@@ -376,7 +377,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 			SecretId: awsclients.String(meta.GetExternalName(cr)),
 			Tags:     add,
 		}); err != nil {
-			return awsclients.Wrap(err, errCreateTags)
+			return errorutils.Wrap(err, errCreateTags)
 		}
 	}
 

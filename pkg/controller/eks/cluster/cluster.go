@@ -38,6 +38,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -122,7 +123,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	rsp, err := e.client.DescribeCluster(ctx, &awseks.DescribeClusterInput{Name: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -166,7 +167,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, nil
 	}
 	_, err := e.client.CreateCluster(ctx, eks.GenerateCreateClusterInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreateFailed)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
@@ -183,40 +184,40 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// fields require different update methods.
 	rsp, err := e.client.DescribeCluster(ctx, &awseks.DescribeClusterInput{Name: aws.String(meta.GetExternalName(cr))})
 	if err != nil || rsp.Cluster == nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribeFailed)
 	}
 	add, remove := tags.DiffTags(cr.Spec.ForProvider.Tags, rsp.Cluster.Tags)
 	if len(remove) != 0 {
 		if _, err := e.client.UntagResource(ctx, &awseks.UntagResourceInput{ResourceArn: rsp.Cluster.Arn, TagKeys: remove}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if len(add) != 0 {
 		if _, err := e.client.TagResource(ctx, &awseks.TagResourceInput{ResourceArn: rsp.Cluster.Arn, Tags: add}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	patch, err := eks.CreatePatch(rsp.Cluster, &cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errPatchCreationFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errPatchCreationFailed)
 	}
 	if patch.EncryptionConfig != nil {
 		_, err := e.client.AssociateEncryptionConfig(ctx, &awseks.AssociateEncryptionConfigInput{
 			ClusterName:      awsclient.String(meta.GetExternalName(cr)),
 			EncryptionConfig: eks.GenerateEncryptionConfig(&cr.Spec.ForProvider),
 		})
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	if patch.Version != nil {
 		_, err := e.client.UpdateClusterVersion(ctx, &awseks.UpdateClusterVersionInput{Name: awsclient.String(meta.GetExternalName(cr)), Version: patch.Version})
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	if patch.Logging != nil {
 		_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForLogging(meta.GetExternalName(cr), patch))
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForVPC(meta.GetExternalName(cr), patch))
-	return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
+	return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -229,7 +230,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return nil
 	}
 	_, err := e.client.DeleteCluster(ctx, &awseks.DeleteClusterInput{Name: awsclient.String(meta.GetExternalName(cr))})
-	return awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+	return errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
 }
 
 type tagger struct {

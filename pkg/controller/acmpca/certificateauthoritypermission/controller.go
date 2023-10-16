@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -127,7 +128,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		CertificateAuthorityArn: &caARN,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
 	}
 
 	var attachedPermission *awsacmpcatypes.Permission
@@ -168,7 +169,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	_, err := e.client.CreatePermission(ctx, in)
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	// This resource is interesting in that it's a binding without its own
@@ -194,5 +195,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		Principal:               aws.String(cr.Spec.ForProvider.Principal),
 	})
 
-	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 }

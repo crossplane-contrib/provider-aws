@@ -33,6 +33,7 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // SetupComputeEnvironment adds a controller that reconciles a ComputeEnvironment.
@@ -225,7 +226,7 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.ComputeEnvironmen
 	_, err := e.client.UpdateComputeEnvironmentWithContext(ctx, &svcsdk.UpdateComputeEnvironmentInput{
 		ComputeEnvironment: awsclients.String(meta.GetExternalName(cr)),
 		State:              awsclients.String(svcsdk.CEStateDisabled)})
-	return true, awsclients.Wrap(err, errUpdate)
+	return true, errorutils.Wrap(err, errUpdate)
 
 }
 

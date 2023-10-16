@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -123,7 +124,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if observed.User == nil {
@@ -166,7 +167,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Tags:                iam.BuildIAMTags(cr.Spec.ForProvider.Tags),
 		UserName:            aws.String(meta.GetExternalName(cr)),
 	})
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -180,7 +181,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	// take care of changes to path (only call if necessary)
@@ -212,7 +213,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		UserName: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }
 
 type tagger struct {
@@ -255,7 +256,7 @@ func (e *external) updateUser(ctx context.Context, observed *awsiam.GetUserOutpu
 			UserName: aws.String(meta.GetExternalName(cr)),
 		})
 
-		return awsclient.Wrap(err, errUpdateUser)
+		return errorutils.Wrap(err, errUpdateUser)
 	}
 
 	return nil
@@ -275,7 +276,7 @@ func (e *external) updatePermissionsBoundary(ctx context.Context, observed *awsi
 				UserName: aws.String(meta.GetExternalName(cr)),
 			})
 
-			return awsclient.Wrap(err, errDeleteUserPermissionsBoundary)
+			return errorutils.Wrap(err, errDeleteUserPermissionsBoundary)
 		}
 
 		// must be an update
@@ -284,7 +285,7 @@ func (e *external) updatePermissionsBoundary(ctx context.Context, observed *awsi
 			UserName:            aws.String(meta.GetExternalName(cr)),
 		})
 
-		return awsclient.Wrap(err, errPutUserPermissionsBoundary)
+		return errorutils.Wrap(err, errPutUserPermissionsBoundary)
 	}
 
 	return nil
@@ -298,7 +299,7 @@ func (e *external) updateTags(ctx context.Context, observed *awsiam.GetUserOutpu
 			UserName: aws.String(meta.GetExternalName(cr)),
 			Tags:     add,
 		}); err != nil {
-			return awsclient.Wrap(err, errTag)
+			return errorutils.Wrap(err, errTag)
 		}
 	}
 
@@ -307,7 +308,7 @@ func (e *external) updateTags(ctx context.Context, observed *awsiam.GetUserOutpu
 			TagKeys:  remove,
 			UserName: aws.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return awsclient.Wrap(err, errUntag)
+			return errorutils.Wrap(err, errUntag)
 		}
 	}
 

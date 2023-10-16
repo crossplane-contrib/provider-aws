@@ -28,6 +28,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -64,7 +65,7 @@ func (in *PublicAccessBlockClient) Observe(ctx context.Context, cr *v1beta1.Buck
 		return NeedsDeletion, nil
 	}
 	if err != nil {
-		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
+		return NeedsUpdate, errorutils.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
 	}
 	if !isPublicAccessBlockUpToDate(cr, external) {
 		return NeedsUpdate, nil
@@ -103,7 +104,7 @@ func (in *PublicAccessBlockClient) CreateOrUpdate(ctx context.Context, cr *v1bet
 		},
 	}
 	_, err := in.client.PutPublicAccessBlock(ctx, input)
-	return awsclient.Wrap(err, publicAccessBlockPutFailed)
+	return errorutils.Wrap(err, publicAccessBlockPutFailed)
 }
 
 // Delete removes the public access block configuration.
@@ -119,7 +120,7 @@ func (in *PublicAccessBlockClient) Delete(ctx context.Context, cr *v1beta1.Bucke
 func (in *PublicAccessBlockClient) LateInitialize(ctx context.Context, cr *v1beta1.Bucket) error {
 	external, err := in.client.GetPublicAccessBlock(ctx, &awss3.GetPublicAccessBlockInput{Bucket: awsclient.String(meta.GetExternalName(cr))})
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
+		return errorutils.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
 	}
 	if external.PublicAccessBlockConfiguration == nil {
 		return nil

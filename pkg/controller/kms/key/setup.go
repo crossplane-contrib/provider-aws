@@ -19,6 +19,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
@@ -121,7 +122,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			KeyId:       awsclients.String(meta.GetExternalName(cr)),
 			Description: cr.Spec.ForProvider.Description,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -131,7 +132,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		PolicyName: awsclients.String("default"),
 		Policy:     cr.Spec.ForProvider.Policy,
 	}); err != nil {
-		return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	if awsclients.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) {
@@ -139,14 +140,14 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		if _, err := u.client.EnableKeyRotationWithContext(ctx, &svcsdk.EnableKeyRotationInput{
 			KeyId: awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	} else {
 		// DisableKeyRotation
 		if _, err := u.client.DisableKeyRotationWithContext(ctx, &svcsdk.DisableKeyRotationInput{
 			KeyId: awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclients.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -168,7 +169,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.Key) error {
 		KeyId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return awsclients.Wrap(err, errUpdate)
+		return errorutils.Wrap(err, errUpdate)
 	}
 
 	addTags, removeTags := diffTags(cr.Spec.ForProvider.Tags, tagsOutput.Tags)
@@ -178,7 +179,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.Key) error {
 			KeyId: awsclients.String(meta.GetExternalName(cr)),
 			Tags:  addTags,
 		}); err != nil {
-			return awsclients.Wrap(err, "cannot tag Key")
+			return errorutils.Wrap(err, "cannot tag Key")
 		}
 	}
 	if len(removeTags) != 0 {
@@ -186,7 +187,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.Key) error {
 			KeyId:   awsclients.String(meta.GetExternalName(cr)),
 			TagKeys: removeTags,
 		}); err != nil {
-			return awsclients.Wrap(err, "cannot untag Key")
+			return errorutils.Wrap(err, "cannot untag Key")
 		}
 	}
 	return nil
@@ -205,13 +206,13 @@ func (u *updater) enableDisableKey(ctx context.Context, cr *svcapitypes.Key) err
 		if _, err := u.client.EnableKeyWithContext(ctx, &svcsdk.EnableKeyInput{
 			KeyId: awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return awsclients.Wrap(err, "cannot enable Key")
+			return errorutils.Wrap(err, "cannot enable Key")
 		}
 	} else {
 		if _, err := u.client.DisableKeyWithContext(ctx, &svcsdk.DisableKeyInput{
 			KeyId: awsclients.String(meta.GetExternalName(cr)),
 		}); err != nil {
-			return awsclients.Wrap(err, "cannot disable Key")
+			return errorutils.Wrap(err, "cannot disable Key")
 		}
 	}
 	return nil
@@ -243,7 +244,7 @@ func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
 
 	_, err := d.client.ScheduleKeyDeletionWithContext(ctx, req)
 
-	return awsclients.Wrap(err, errDelete)
+	return errorutils.Wrap(err, errDelete)
 }
 
 type observer struct {
@@ -259,7 +260,7 @@ func (o *observer) lateInitialize(in *svcapitypes.KeyParameters, obj *svcsdk.Des
 		})
 
 		if err != nil {
-			return awsclients.Wrap(err, "cannot get key policy")
+			return errorutils.Wrap(err, "cannot get key policy")
 		}
 
 		in.Policy = awsclients.LateInitializeStringPtr(in.Policy, resPolicy.Policy)
@@ -273,7 +274,7 @@ func (o *observer) lateInitialize(in *svcapitypes.KeyParameters, obj *svcsdk.Des
 		})
 
 		if err != nil {
-			return awsclients.Wrap(err, "cannot list tags")
+			return errorutils.Wrap(err, "cannot list tags")
 		}
 
 		if len(resTags.Tags) > 0 {
@@ -308,7 +309,7 @@ func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsd
 		PolicyName: awsclients.String("default"),
 	})
 	if err != nil {
-		return false, "", awsclients.Wrap(err, "cannot get key policy")
+		return false, "", errorutils.Wrap(err, "cannot get key policy")
 	}
 	specPolicy, err := policy.ParsePolicyStringPtr(cr.Spec.ForProvider.Policy)
 	if err != nil {
@@ -327,7 +328,7 @@ func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsd
 		KeyId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return false, "", awsclients.Wrap(err, "cannot get key rotation status")
+		return false, "", errorutils.Wrap(err, "cannot get key rotation status")
 	}
 	if awsclients.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) != awsclients.BoolValue(resRotation.KeyRotationEnabled) {
 		return false, "", nil
@@ -338,7 +339,7 @@ func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsd
 		KeyId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return false, "", awsclients.Wrap(err, "cannot list tags")
+		return false, "", errorutils.Wrap(err, "cannot list tags")
 	}
 	addTags, removeTags := diffTags(cr.Spec.ForProvider.Tags, resTags.Tags)
 	return len(addTags) == 0 && len(removeTags) == 0, "", nil

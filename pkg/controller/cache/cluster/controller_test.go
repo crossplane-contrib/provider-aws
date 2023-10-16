@@ -31,9 +31,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -168,7 +168,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(),
-				err: awsclient.Wrap(errBoom, errDescribeCacheCluster),
+				err: errorutils.Wrap(errBoom, errDescribeCacheCluster),
 			},
 		},
 	}
@@ -240,7 +240,7 @@ func TestCreate(t *testing.T) {
 					CacheNodeType: nodeType,
 					NumCacheNodes: 2,
 				}), withConditions(xpv1.Creating())),
-				err: awsclient.Wrap(errBoom, errCreateCacheCluster),
+				err: errorutils.Wrap(errBoom, errCreateCacheCluster),
 			},
 		},
 	}
@@ -320,7 +320,7 @@ func TestUpdate(t *testing.T) {
 					withStatus(v1alpha1.CacheClusterObservation{
 						CacheClusterStatus: v1alpha1.StatusAvailable,
 					})),
-				err: awsclient.Wrap(errBoom, errModifyCacheCluster),
+				err: errorutils.Wrap(errBoom, errModifyCacheCluster),
 			},
 		},
 		"NotAvailable": {
@@ -400,7 +400,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: cluster(withExternalName(),
 					withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDeleteCacheCluster),
+				err: errorutils.Wrap(errBoom, errDeleteCacheCluster),
 			},
 		},
 	}

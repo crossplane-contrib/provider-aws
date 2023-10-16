@@ -40,6 +40,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -140,7 +141,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -167,7 +168,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	upToDate, err := ec2.IsRtUpToDate(cr.Spec.ForProvider, observed)
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errDescribe)
 	}
 
 	return managed.ExternalObservation{
@@ -189,7 +190,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		VpcId: cr.Spec.ForProvider.VPCID,
 	})
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, aws.ToString(result.RouteTable.RouteTableId))
 	return managed.ExternalCreation{}, nil
@@ -208,18 +209,18 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
 	}
 
 	if response.RouteTables == nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateNotFound)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateNotFound)
 	}
 
 	table := response.RouteTables[0]
 
 	patch, err := ec2.CreateRTPatch(table, cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	if len(patch.Tags) != 0 {
@@ -230,7 +231,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 				Resources: []string{meta.GetExternalName(cr)},
 				Tags:      addTags,
 			}); err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreateTags)
 			}
 		}
 		if len(removeTags) > 0 {
@@ -238,7 +239,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 				Resources: []string{meta.GetExternalName(cr)},
 				Tags:      removeTags,
 			}); err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errDeleteTags)
 			}
 		}
 	}
@@ -281,7 +282,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		RouteTableId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)
 }
 
 func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v1beta1.RouteBeta, observed []v1beta1.RouteState) error { //nolint:gocyclo
@@ -366,10 +367,10 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 func (e *external) reconcileRoutes(ctx context.Context, tableID string, desired []v1beta1.RouteBeta, observed []v1beta1.RouteState) error {
 
 	if err := e.deleteRoutes(ctx, tableID, desired, observed); err != nil {
-		return awsclient.Wrap(err, errDeleteRoute)
+		return errorutils.Wrap(err, errDeleteRoute)
 	}
 	if err := e.createRoutes(ctx, tableID, desired, observed); err != nil {
-		return awsclient.Wrap(err, errCreateRoute)
+		return errorutils.Wrap(err, errCreateRoute)
 	}
 
 	return nil
@@ -424,7 +425,7 @@ func (e *external) reconcileAssociations(ctx context.Context, tableID string, de
 	}
 
 	if err := e.createAssociations(ctx, tableID, desired, observed); err != nil {
-		return awsclient.Wrap(err, errAssociateSubnet)
+		return errorutils.Wrap(err, errAssociateSubnet)
 	}
 	return nil
 }
@@ -439,7 +440,7 @@ func (e *external) deleteAssociations(ctx context.Context, observed []v1beta1.As
 			if ec2.IsAssociationIDNotFoundErr(err) {
 				continue
 			}
-			return awsclient.Wrap(err, errDisassociateSubnet)
+			return errorutils.Wrap(err, errDisassociateSubnet)
 		}
 	}
 

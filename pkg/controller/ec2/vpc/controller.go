@@ -41,6 +41,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -132,7 +133,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		VpcIds: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -154,7 +155,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		})
 
 		if err != nil {
-			return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
+			return managed.ExternalObservation{}, errorutils.Wrap(err, errDescribe)
 		}
 
 		if r.EnableDnsHostnames != nil {
@@ -211,7 +212,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		InstanceTenancy:             awsec2types.Tenancy(aws.ToString(cr.Spec.ForProvider.InstanceTenancy)),
 	})
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.ToString(result.Vpc.VpcId))
@@ -230,7 +231,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
 	}
 
 	if response.Vpcs == nil {
@@ -245,7 +246,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			EnableDnsSupport: &awsec2types.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSSupport},
 		}
 		if _, err := e.client.ModifyVpcAttribute(ctx, modifyInput); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyVPCAttributes)
 		}
 	}
 
@@ -255,7 +256,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			EnableDnsHostnames: &awsec2types.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSHostNames},
 		}
 		if _, err := e.client.ModifyVpcAttribute(ctx, modifyInput); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyVPCAttributes)
 		}
 	}
 
@@ -265,7 +266,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      remove,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errDeleteTags)
 		}
 	}
 
@@ -274,7 +275,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      add,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreateTags)
 		}
 	}
 
@@ -283,7 +284,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		VpcId:           aws.String(meta.GetExternalName(cr)),
 	})
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -298,7 +299,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		VpcId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
 }
 
 type tagger struct {

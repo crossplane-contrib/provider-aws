@@ -31,9 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	v1beta1 "github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	dbsg "github.com/crossplane-contrib/provider-aws/pkg/clients/dbsubnetgroup"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/dbsubnetgroup/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -184,7 +184,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  dbSubnetGroup(),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 		"NotFound": {
@@ -253,7 +253,7 @@ func TestObserve(t *testing.T) {
 				cr: dbSubnetGroup(
 					withDBSubnetGroupDescription(dbSubnetGroupDescription),
 				),
-				err: awsclient.Wrap(errBoom, errLateInit),
+				err: errorutils.Wrap(errBoom, errLateInit),
 			},
 		},
 	}
@@ -313,7 +313,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  dbSubnetGroup(withConditions(xpv1.Creating())),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -381,7 +381,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  dbSubnetGroup(),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 		"SuccessfulWithTags": {
@@ -488,7 +488,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  dbSubnetGroup(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 	}

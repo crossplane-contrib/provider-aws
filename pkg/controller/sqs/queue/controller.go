@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/sqs"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -119,7 +120,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		QueueName: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil || getURLOutput.QueueUrl == nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueURLFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueURLFailed)
 	}
 
 	// Get all the attributes.
@@ -128,14 +129,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		AttributeNames: []awssqstypes.QueueAttributeName{awssqstypes.QueueAttributeName(v1beta1.AttributeAll)},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueAttributesFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueAttributesFailed)
 	}
 
 	resTags, err := e.client.ListQueueTags(ctx, &awssqs.ListQueueTagsInput{
 		QueueUrl: getURLOutput.QueueUrl,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errListQueueTagsFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errListQueueTagsFailed)
 	}
 
 	sqs.LateInitialize(&cr.Spec.ForProvider, resAttributes.Attributes, resTags.Tags)
@@ -171,7 +172,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		Tags:       cr.Spec.ForProvider.Tags,
 	})
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreateFailed)
 	}
 	conn := managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(*resp.QueueUrl),
@@ -194,14 +195,14 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		Attributes: sqs.GenerateQueueAttributes(&cr.Spec.ForProvider),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateFailed)
 	}
 
 	resTags, err := e.client.ListQueueTags(ctx, &awssqs.ListQueueTagsInput{
 		QueueUrl: aws.String(cr.Status.AtProvider.URL),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errListQueueTagsFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errListQueueTagsFailed)
 	}
 
 	removedTags, addedTags := sqs.TagsDiff(resTags.Tags, cr.Spec.ForProvider.Tags)
@@ -217,7 +218,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			TagKeys:  removedKeys,
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateFailed)
 		}
 	}
 
@@ -227,7 +228,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			Tags:     addedTags,
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errTag)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errTag)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -244,5 +245,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	_, err := e.client.DeleteQueue(ctx, &awssqs.DeleteQueueInput{
 		QueueUrl: aws.String(cr.Status.AtProvider.URL),
 	})
-	return awsclient.Wrap(resource.Ignore(sqs.IsNotFound, err), errDeleteFailed)
+	return errorutils.Wrap(resource.Ignore(sqs.IsNotFound, err), errDeleteFailed)
 }

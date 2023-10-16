@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -58,7 +59,7 @@ func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v
 		if s3.ReplicationConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.ReplicationConfigurationNotFound, err), replicationGetFailed)
+		return NeedsUpdate, errorutils.Wrap(resource.Ignore(s3.ReplicationConfigurationNotFound, err), replicationGetFailed)
 	}
 
 	switch {
@@ -91,7 +92,7 @@ func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bu
 	}
 	input := GeneratePutBucketReplicationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.ReplicationConfiguration)
 	_, err := in.client.PutBucketReplication(ctx, input)
-	return awsclient.Wrap(err, replicationPutFailed)
+	return errorutils.Wrap(err, replicationPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -101,7 +102,7 @@ func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1
 			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
 	)
-	return awsclient.Wrap(err, replicationDeleteFailed)
+	return errorutils.Wrap(err, replicationDeleteFailed)
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
@@ -109,7 +110,7 @@ func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1
 func (in *ReplicationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketReplication(ctx, &awss3.GetBucketReplicationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(s3.ReplicationConfigurationNotFound, err), replicationGetFailed)
+		return errorutils.Wrap(resource.Ignore(s3.ReplicationConfigurationNotFound, err), replicationGetFailed)
 	}
 
 	if external == nil || external.ReplicationConfiguration == nil || len(external.ReplicationConfiguration.Rules) == 0 {

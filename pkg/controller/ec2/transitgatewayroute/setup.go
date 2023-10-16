@@ -22,6 +22,7 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // SetupTransitGatewayRoute adds a controller that reconciles TransitGatewayRoutes.
@@ -141,7 +142,7 @@ func (e *external) findRouteByDestination(ctx context.Context, cr *svcapitypes.T
 	})
 
 	if err != nil {
-		return nil, awsclients.Wrap(cpresource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
+		return nil, errorutils.Wrap(cpresource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
 	}
 
 	for _, route := range response.Routes {

@@ -26,6 +26,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -52,7 +53,7 @@ func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket
 	}
 	external, err := in.client.GetBucketRequestPayment(ctx, &awss3.GetBucketRequestPaymentInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return NeedsUpdate, awsclient.Wrap(err, paymentGetFailed)
+		return NeedsUpdate, errorutils.Wrap(err, paymentGetFailed)
 	}
 
 	// Requester;BucketOwner
@@ -69,7 +70,7 @@ func (in *RequestPaymentConfigurationClient) CreateOrUpdate(ctx context.Context,
 	}
 	input := GeneratePutBucketPaymentInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.PayerConfiguration)
 	_, err := in.client.PutBucketRequestPayment(ctx, input)
-	return awsclient.Wrap(err, paymentPutFailed)
+	return errorutils.Wrap(err, paymentPutFailed)
 }
 
 // Delete does nothing since there is no corresponding deletion call in awsclient.
@@ -81,7 +82,7 @@ func (*RequestPaymentConfigurationClient) Delete(_ context.Context, _ *v1beta1.B
 func (in *RequestPaymentConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketRequestPayment(ctx, &awss3.GetBucketRequestPaymentInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(err, paymentGetFailed)
+		return errorutils.Wrap(err, paymentGetFailed)
 	}
 	if external == nil || len(external.Payer) == 0 {
 		return nil

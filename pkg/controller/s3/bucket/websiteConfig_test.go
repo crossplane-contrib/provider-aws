@@ -27,10 +27,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -124,7 +124,7 @@ func TestWebsiteObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, websiteGetFailed),
+				err:    errorutils.Wrap(errBoom, websiteGetFailed),
 			},
 		},
 		"UpdateNeededFull": {
@@ -262,7 +262,7 @@ func TestWebsiteCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, websitePutFailed),
+				err: errorutils.Wrap(errBoom, websitePutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -327,7 +327,7 @@ func TestWebsiteDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, websiteDeleteFailed),
+				err: errorutils.Wrap(errBoom, websiteDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {
@@ -380,7 +380,7 @@ func TestWebsiteLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, websiteGetFailed),
+				err: errorutils.Wrap(errBoom, websiteGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

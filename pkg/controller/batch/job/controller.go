@@ -40,6 +40,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/batch/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -120,7 +121,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		Jobs: []*string{awsclient.String(meta.GetExternalName(cr))},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(isErrorNotFound, err), errDescribeJob)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDescribeJob)
 	}
 	if len(resp.Jobs) == 0 {
 		return managed.ExternalObservation{ResourceExists: false}, nil
@@ -167,7 +168,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	resp, err := e.client.SubmitJobWithContext(ctx, generateSubmitJobInput(cr))
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errSubmitJob)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errSubmitJob)
 	}
 	meta.SetExternalName(cr, awsclient.StringValue(resp.JobId))
 	return managed.ExternalCreation{}, nil
@@ -205,7 +206,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	// termination seems to not get through until dependend Job is fisnished ... (-> tested on AWS Console)
 
 	_, err := e.client.TerminateJobWithContext(ctx, generateTerminateJobInput(cr, awsclient.String("Terminated for crossplane deletion")))
-	return awsclient.Wrap(resource.Ignore(isErrorNotFound, err), errTerminateJob)
+	return errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errTerminateJob)
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.JobParameters) { //nolint:gocyclo

@@ -39,6 +39,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acm"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -131,7 +132,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errGet)
 	}
 
 	if response.Certificate == nil {
@@ -151,7 +152,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		CertificateArn: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
 	}
 
 	// TODO(muvaf): We can possibly call `GetCertificate` and publish the actual
@@ -171,7 +172,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 	response, err := e.client.RequestCertificate(ctx, acm.GenerateCreateCertificateInput(cr.Spec.ForProvider))
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, aws.ToString(response.CertificateArn))
 	return managed.ExternalCreation{}, nil
@@ -187,7 +188,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		CertificateArn: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
 	}
 
 	add, remove := acm.DiffTags(cr.Spec.ForProvider.Tags, currentTags.Tags)
@@ -196,7 +197,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			CertificateArn: aws.String(meta.GetExternalName(cr)),
 			Tags:           remove,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errRemoveTagsFailed)
 		}
 	}
 	if len(add) != 0 {
@@ -204,7 +205,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			CertificateArn: aws.String(meta.GetExternalName(cr)),
 			Tags:           add,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errAddTagsFailed)
 		}
 	}
 
@@ -217,7 +218,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 				CertificateTransparencyLoggingPreference: awsacmtypes.CertificateTransparencyLoggingPreference(cr.Spec.ForProvider.Options.CertificateTransparencyLoggingPreference),
 			},
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -233,7 +234,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		CertificateArn: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errDelete)
 }
 
 type tagger struct {

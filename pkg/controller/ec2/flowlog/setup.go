@@ -20,8 +20,8 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -322,5 +322,5 @@ func (d *deleter) delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	input := GenerateDeleteFlowLogsInput(cr)
 	_, err := d.client.DeleteFlowLogsWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	return errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
 }

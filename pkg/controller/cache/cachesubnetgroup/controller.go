@@ -37,6 +37,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // Error strings.
@@ -113,7 +114,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		CacheSubnetGroupName: awsclient.String(meta.GetExternalName(cr)),
 	})
 	if err != nil || resp.CacheSubnetGroups == nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(elasticache.IsSubnetGroupNotFound, err), errDescribeSubnetGroup)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(elasticache.IsSubnetGroupNotFound, err), errDescribeSubnetGroup)
 	}
 
 	sg := resp.CacheSubnetGroups[0]
@@ -144,7 +145,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	})
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateSubnetGroup)
+		return managed.ExternalCreation{}, errorutils.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateSubnetGroup)
 	}
 
 	return managed.ExternalCreation{}, nil
@@ -162,7 +163,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	})
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifySubnetGroup)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifySubnetGroup)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -177,5 +178,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		CacheSubnetGroupName: awsclient.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteSubnetGroup)
+	return errorutils.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteSubnetGroup)
 }

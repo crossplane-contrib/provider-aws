@@ -22,6 +22,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -367,23 +368,23 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 	// LastUpdateStatus must be Successful before running UpdateFunctionCode
 	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.UpdateFunctionCode
 	updateFunctionCodeInput := GenerateUpdateFunctionCodeInput(cr)
 	if _, err := u.client.UpdateFunctionCodeWithContext(ctx, updateFunctionCodeInput); err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// LastUpdateStatus must be Successful before running UpdateFunctionConfiguration
 	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	updateFunctionConfigurationInput := GenerateUpdateFunctionConfigurationInput(cr)
 	if _, err := u.client.UpdateFunctionConfigurationWithContext(ctx, updateFunctionConfigurationInput); err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// Should store the ARN somewhere else?
@@ -391,7 +392,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		FunctionName: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// Tags
@@ -399,7 +400,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		Resource: functionConfiguration.FunctionArn,
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	addTags, removeTags := tagutils.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
@@ -409,7 +410,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			Resource: functionConfiguration.FunctionArn,
 			TagKeys:  removeTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -418,7 +419,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			Resource: functionConfiguration.FunctionArn,
 			Tags:     addTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 

@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/glue/glueiface"
 	"github.com/pkg/errors"
 
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -63,7 +63,7 @@ func UpdateTagsForResource(ctx context.Context, client glueiface.GlueAPI, spec m
 			TagsToRemove: remove,
 		})
 		if err != nil {
-			return awsclient.Wrap(err, errUntagResource)
+			return errorutils.Wrap(err, errUntagResource)
 		}
 	}
 	// remove before add for case where we just simply update a tag
@@ -75,7 +75,7 @@ func UpdateTagsForResource(ctx context.Context, client glueiface.GlueAPI, spec m
 			TagsToAdd:   add,
 		})
 		if err != nil {
-			return awsclient.Wrap(err, errTagResource)
+			return errorutils.Wrap(err, errTagResource)
 		}
 	}
 

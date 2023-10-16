@@ -26,6 +26,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -51,7 +52,7 @@ func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1
 		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
 			return Updated, nil
 		}
-		return NeedsUpdate, awsclient.Wrap(err, accelGetFailed)
+		return NeedsUpdate, errorutils.Wrap(err, accelGetFailed)
 	}
 	if bucket.Spec.ForProvider.AccelerateConfiguration != nil &&
 		bucket.Spec.ForProvider.AccelerateConfiguration.Status != string(external.Status) {
@@ -67,7 +68,7 @@ func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 	}
 	input := GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.AccelerateConfiguration)
 	_, err := in.client.PutBucketAccelerateConfiguration(ctx, input)
-	return awsclient.Wrap(err, accelPutFailed)
+	return errorutils.Wrap(err, accelPutFailed)
 }
 
 // Delete does not do anything since AccelerateConfiguration doesn't have Delete call.
@@ -83,7 +84,7 @@ func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, buc
 		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
 			return nil
 		}
-		return awsclient.Wrap(err, accelGetFailed)
+		return errorutils.Wrap(err, accelGetFailed)
 	}
 
 	// We need the second check here because by default the accelerateConfig status is not set

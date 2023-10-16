@@ -30,6 +30,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -56,7 +57,7 @@ func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		if s3.WebsiteConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
+		return NeedsUpdate, errorutils.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
 	}
 
 	switch {
@@ -88,7 +89,7 @@ func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	}
 	input := GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.WebsiteConfiguration)
 	_, err := in.client.PutBucketWebsite(ctx, input)
-	return awsclient.Wrap(err, websitePutFailed)
+	return errorutils.Wrap(err, websitePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -98,7 +99,7 @@ func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
 	)
-	return awsclient.Wrap(err, websiteDeleteFailed)
+	return errorutils.Wrap(err, websiteDeleteFailed)
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
@@ -106,7 +107,7 @@ func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 func (in *WebsiteConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
+		return errorutils.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
 	}
 
 	if external == nil || (len(external.RoutingRules) == 0 &&

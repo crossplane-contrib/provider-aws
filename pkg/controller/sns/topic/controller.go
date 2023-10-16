@@ -39,6 +39,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
 	snsclient "github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -124,7 +125,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 	if err != nil {
 		return managed.ExternalObservation{},
-			awsclient.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopicAttr)
+			errorutils.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopicAttr)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -155,7 +156,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	resp, err := e.client.CreateTopic(ctx, snsclient.GenerateCreateTopicInput(&cr.Spec.ForProvider))
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.ToString(resp.TopicArn))
@@ -173,7 +174,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		TopicArn: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGetTopicAttr)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errGetTopicAttr)
 	}
 
 	// Update Topic Attributes
@@ -188,7 +189,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			TopicArn:       aws.String(meta.GetExternalName(cr)),
 		})
 	}
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -203,5 +204,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		TopicArn: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errDelete)
 }

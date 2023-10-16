@@ -33,6 +33,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -136,7 +137,7 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 		}
 		cr.SetConditions(xpv1.Unavailable())
 		return managed.ExternalObservation{},
-			awsclient.Wrap(cpresource.Ignore(ActualIsNotFound, err), errGetNamespace)
+			errorutils.Wrap(cpresource.Ignore(ActualIsNotFound, err), errGetNamespace)
 	}
 
 	// Deleting is still on-going.
@@ -155,7 +156,7 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 		return managed.ExternalObservation{
 				ResourceExists: true,
 			},
-			awsclient.Wrap(cpresource.Ignore(ActualIsNotFound, err), errListTagsForResource)
+			errorutils.Wrap(cpresource.Ignore(ActualIsNotFound, err), errListTagsForResource)
 	}
 	if !tagUpToDate {
 		// Update Tags
@@ -199,7 +200,7 @@ func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	op, err := h.client.DeleteNamespaceWithContext(ctx, input)
 	if cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest) != nil {
-		return awsclient.Wrap(err, errDeleteNamespace)
+		return errorutils.Wrap(err, errDeleteNamespace)
 	}
 	cr.SetOperationID(op.OperationId)
 	return nil

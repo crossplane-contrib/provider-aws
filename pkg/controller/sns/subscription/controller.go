@@ -39,6 +39,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
 	snsclient "github.com/crossplane-contrib/provider-aws/pkg/clients/sns"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -125,7 +126,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 	if err != nil {
 		return managed.ExternalObservation{},
-			awsclient.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errGetSubscriptionAttr)
+			errorutils.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errGetSubscriptionAttr)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -160,7 +161,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	res, err := e.client.Subscribe(ctx, input)
 
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.ToString(res.SubscriptionArn))
@@ -178,7 +179,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 	// Update Subscription
 	attrs := snsclient.GetChangedSubAttributes(cr.Spec.ForProvider, resp.Attributes)
@@ -189,7 +190,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			SubscriptionArn: aws.String(meta.GetExternalName(cr)),
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -209,5 +210,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	_, err := e.client.Unsubscribe(ctx, &awssns.UnsubscribeInput{
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),
 	})
-	return awsclient.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errDelete)
 }

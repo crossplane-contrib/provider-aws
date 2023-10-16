@@ -34,8 +34,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -177,7 +177,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  user(withExternalName(userName)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 		"DifferentTags": {
@@ -297,7 +297,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  user(withConditions(xpv1.Creating())),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -375,7 +375,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  user(withExternalName(userName), withPath(aws.String("foo"))),
-				err: awsclient.Wrap(errBoom, errUpdateUser),
+				err: errorutils.Wrap(errBoom, errUpdateUser),
 			},
 		},
 		"GetUserError": {
@@ -392,7 +392,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  user(withExternalName(userName)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 	}
@@ -453,7 +453,7 @@ func TestUpdate_Tags(t *testing.T) {
 					withTags(map[string]string{
 						"key": "value",
 					})),
-				err: awsclient.Wrap(errBoom, errTag),
+				err: errorutils.Wrap(errBoom, errTag),
 			},
 		},
 		"AddTagsSuccess": {
@@ -556,7 +556,7 @@ func TestUpdate_Tags(t *testing.T) {
 					withTags(map[string]string{
 						"key2": "value2",
 					})),
-				err: awsclient.Wrap(errBoom, errUntag),
+				err: errorutils.Wrap(errBoom, errUntag),
 			},
 		},
 		"RemoveTagsSuccess": {
@@ -673,7 +673,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: user(withExternalName(userName),
 					withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 	}

@@ -31,9 +31,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -154,7 +154,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  groupPolicy(withSpecGroupName(groupName), withExternalName(groupName+"/"+policyArn)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 	}
@@ -229,7 +229,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
-				err: awsclient.Wrap(errBoom, errAttach),
+				err: errorutils.Wrap(errBoom, errAttach),
 			},
 		},
 	}
@@ -303,7 +303,7 @@ func TestDelete(t *testing.T) {
 				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDetach),
+				err: errorutils.Wrap(errBoom, errDetach),
 			},
 		},
 		"ResourceDoesNotExist": {

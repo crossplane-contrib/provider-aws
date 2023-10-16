@@ -14,6 +14,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 func TestPublicAccessBlockClient_Observe(t *testing.T) {
@@ -42,7 +43,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, publicAccessBlockGetFailed),
+				err:    errorutils.Wrap(errBoom, publicAccessBlockGetFailed),
 			},
 		},
 		"NotFoundNotNeeded": {
@@ -233,7 +234,7 @@ func TestPublicAccessBlockClient_CreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, publicAccessBlockPutFailed),
+				err: errorutils.Wrap(errBoom, publicAccessBlockPutFailed),
 			},
 		},
 	}
@@ -272,7 +273,7 @@ func TestPublicAccessBlockClient_Delete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, publicAccessBlockDeleteFailed),
+				err: errorutils.Wrap(errBoom, publicAccessBlockDeleteFailed),
 			},
 		},
 		"GoneAlready": {
@@ -321,7 +322,7 @@ func TestPublicAccessBlockClient_LateInitialize(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, publicAccessBlockGetFailed),
+				err: errorutils.Wrap(errBoom, publicAccessBlockGetFailed),
 			},
 		},
 		"NotFoundSkip": {

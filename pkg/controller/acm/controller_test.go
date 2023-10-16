@@ -32,9 +32,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acm"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acm/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -173,7 +173,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  certificate(withCertificateArn()),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -264,7 +264,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  certificate(),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -361,7 +361,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  certificate(withCertificateTransparencyLoggingPreference()),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 		"ClientUpdateTagsError": {
@@ -387,7 +387,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  certificate(withTags()),
-				err: awsclient.Wrap(errBoom, errAddTagsFailed),
+				err: errorutils.Wrap(errBoom, errAddTagsFailed),
 			},
 		},
 	}
@@ -454,7 +454,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  certificate(),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {

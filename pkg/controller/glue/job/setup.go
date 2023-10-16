@@ -40,6 +40,7 @@ import (
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/glue/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -337,7 +338,7 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Job) (*string, err
 
 	sess, err := awsclients.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
-		return nil, awsclients.Wrap(err, errBuildARN)
+		return nil, errorutils.Wrap(err, errBuildARN)
 	}
 
 	stsclient := svcsdksts.New(sess)
