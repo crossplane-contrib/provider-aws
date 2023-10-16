@@ -37,6 +37,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 var (
@@ -82,7 +83,7 @@ func withArn(s string) roleModifier {
 
 func withPolicy() roleModifier {
 	return func(r *v1beta1.Role) {
-		p, err := awsclient.CompactAndEscapeJSON(policy)
+		p, err := legacypolicy.CompactAndEscapeJSON(policy)
 		if err != nil {
 			return
 		}

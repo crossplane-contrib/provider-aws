@@ -17,6 +17,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 const (
@@ -79,7 +80,7 @@ func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
 func GenerateRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
 
 	if in.AssumeRolePolicyDocument != "" {
-		s, err := awsclients.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
+		s, err := legacypolicy.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
 		if err != nil {
 			return errors.Wrap(err, errPolicyJSONEscape)
 		}
@@ -162,7 +163,7 @@ func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
 		return false, errors.Wrap(err, errPolicyJSONUnescape)
 	}
 
-	return awsclients.IsPolicyUpToDate(&jsonA, &jsonB), nil
+	return legacypolicy.IsPolicyUpToDate(&jsonA, &jsonB), nil
 }
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.

@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
@@ -178,9 +179,9 @@ sgCompare:
 
 	// If no declared policy, we expect the result to be equivalent to the default policy
 	if aws.StringValue(declaredPolicy) == "" {
-		return awsclients.IsPolicyUpToDate(upstreamPolicy, defaultPolicyEndpoint) || awsclients.IsPolicyUpToDate(upstreamPolicy, defaultPolicyGateway), "", nil
+		return legacypolicy.IsPolicyUpToDate(upstreamPolicy, defaultPolicyEndpoint) || legacypolicy.IsPolicyUpToDate(upstreamPolicy, defaultPolicyGateway), "", nil
 	}
-	return awsclients.IsPolicyUpToDate(upstreamPolicy, declaredPolicy), "", nil
+	return legacypolicy.IsPolicyUpToDate(upstreamPolicy, declaredPolicy), "", nil
 }
 
 // preUpdate adds the mutable fields into the update request input

@@ -13,6 +13,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 var (
@@ -66,7 +67,7 @@ func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
 }
 
 func escapedPolicyJSON() *string {
-	p, err := aws.CompactAndEscapeJSON(assumeRolePolicyDocument)
+	p, err := legacypolicy.CompactAndEscapeJSON(assumeRolePolicyDocument)
 	if err == nil {
 		return &p
 	}

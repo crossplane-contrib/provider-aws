@@ -36,6 +36,7 @@ import (
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	ecr "github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 const (
@@ -130,7 +131,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        awsclient.IsPolicyUpToDate(&policyData, response.PolicyText),
+		ResourceUpToDate:        legacypolicy.IsPolicyUpToDate(&policyData, response.PolicyText),
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }

@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 const (
@@ -158,7 +159,7 @@ func (h *hooks) isUpToDateAccessPolicies(ctx context.Context, cr *svcapitypes.Do
 	spec := cr.Spec.ForProvider.CustomDomainParameters
 	current := resp.AccessPolicies
 
-	isUpToDate := awsclients.IsPolicyUpToDate(spec.AccessPolicies, current.Options) && !awsclients.BoolValue(current.Status.PendingDeletion)
+	isUpToDate := legacypolicy.IsPolicyUpToDate(spec.AccessPolicies, current.Options) && !awsclients.BoolValue(current.Status.PendingDeletion)
 
 	return isUpToDate, nil
 }
