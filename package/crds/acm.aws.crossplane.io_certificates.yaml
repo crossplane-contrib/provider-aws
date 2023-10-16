@@ -171,8 +171,8 @@ spec:
                       description: DomainValidationOption validate domain ownership.
                       properties:
                         domainName:
-                          description: Additinal Fully qualified domain name (FQDN),that
-                            to secure with an ACM certificate.
+                          description: Additional Fully qualified domain name (FQDN),
+                            that to secure with an ACM certificate.
                           type: string
                         validationDomain:
                           description: Method to validate certificate
@@ -667,8 +667,8 @@ spec:
                       description: DomainValidationOption validate domain ownership.
                       properties:
                         domainName:
-                          description: Additinal Fully qualified domain name (FQDN),that
-                            to secure with an ACM certificate.
+                          description: Additional Fully qualified domain name (FQDN),
+                            that to secure with an ACM certificate.
                           type: string
                         validationDomain:
                           description: Method to validate certificate
