@@ -28,6 +28,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 // IDPrefix is the prefix of the actual ID that's returned from GET call.
@@ -78,7 +79,7 @@ func AreTagsUpToDate(spec map[string]string, obs []route53types.Tag) ([]route53t
 	for _, t := range obs {
 		obsMap[awsclients.StringValue(t.Key)] = awsclients.StringValue(t.Value)
 	}
-	added, removed := awsclients.DiffTags(spec, obsMap)
+	added, removed := tags.DiffTags(spec, obsMap)
 	addedTags := make([]route53types.Tag, 0, len(added))
 	for k, v := range added {
 		addedTags = append(addedTags, route53types.Tag{

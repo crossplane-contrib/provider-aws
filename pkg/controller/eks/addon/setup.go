@@ -39,6 +39,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -155,7 +156,7 @@ func (h *hooks) isUpToDate(_ context.Context, cr *eksv1alpha1.Addon, resp *awsek
 		return false, configUpToDateDiff, nil
 	}
 
-	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Addon.Tags)
+	add, remove := tags.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Addon.Tags)
 	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
@@ -216,7 +217,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *eksv1alpha1.Addon, resp *aws
 		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribe)
 	}
 
-	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, desc.Addon.Tags)
+	add, remove := tags.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, desc.Addon.Tags)
 	if len(add) > 0 {
 		_, err := h.client.TagResourceWithContext(ctx, &awseks.TagResourceInput{
 			ResourceArn: awsclients.String(meta.GetExternalName(cr)),

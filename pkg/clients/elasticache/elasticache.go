@@ -36,6 +36,7 @@ import (
 	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
 	clients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -489,7 +490,7 @@ func DiffTags(rgtags []v1beta1.Tag, tags []elasticachetypes.Tag) (add map[string
 		remote[aws.ToString(t.Key)] = aws.ToString(t.Value)
 	}
 
-	return clients.DiffTags(local, remote)
+	return tagutils.DiffTags(local, remote)
 }
 
 // ReplicationGroupNumCacheClustersNeedsUpdate determines if the number of Cache Clusters

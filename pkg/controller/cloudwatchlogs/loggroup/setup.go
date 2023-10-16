@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -142,7 +143,7 @@ func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.LogGroup, obj *s
 	if err != nil {
 		return false, "", errors.Wrap(err, errListTags)
 	}
-	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
+	add, remove := tagutils.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 
 	return len(add) == 0 && len(remove) == 0, "", nil
 }
@@ -167,7 +168,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errListTags)
 	}
-	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
+	add, remove := tagutils.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 
 	if len(add) > 0 {
 		_, err := u.client.TagResourceWithContext(ctx, &svcsdk.TagResourceInput{

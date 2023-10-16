@@ -24,6 +24,7 @@ import (
 	"github.com/pkg/errors"
 
 	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -54,7 +55,7 @@ func UpdateTagsForResource(ctx context.Context, client batchiface.BatchAPI, spec
 		return err
 	}
 
-	add, remove := awsclient.DiffTagsMapPtr(spec, current)
+	add, remove := tags.DiffTagsMapPtr(spec, current)
 
 	if len(remove) > 0 {
 		_, err := client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{

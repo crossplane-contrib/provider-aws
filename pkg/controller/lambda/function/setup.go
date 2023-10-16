@@ -22,6 +22,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -207,7 +208,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.GetFunc
 		return false, "", nil
 	}
 
-	addTags, removeTags := aws.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, obj.Tags)
+	addTags, removeTags := tagutils.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, obj.Tags)
 	return len(addTags) == 0 && len(removeTags) == 0, "", nil
 
 }
@@ -401,7 +402,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
 	}
 
-	addTags, removeTags := aws.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
+	addTags, removeTags := tagutils.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 	// Remove old tags before adding new tags in case values change for keys
 	if len(removeTags) > 0 {
 		if _, err := u.client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{

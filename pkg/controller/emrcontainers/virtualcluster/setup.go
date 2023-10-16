@@ -19,8 +19,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/emrcontainers/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -131,7 +131,7 @@ func postDelete(ctx context.Context, cr *svcapitypes.VirtualCluster, resp *svcsd
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.VirtualCluster, output *svcsdk.DescribeVirtualClusterOutput) (bool, string, error) {
-	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, output.VirtualCluster.Tags)
+	add, remove := tags.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, output.VirtualCluster.Tags)
 	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
@@ -151,7 +151,7 @@ func (e *external) updateTags(ctx context.Context, cr *svcapitypes.VirtualCluste
 		return errors.Wrap(err, errListTag)
 	}
 
-	add, remove := awsclients.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Tags)
+	add, remove := tags.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Tags)
 	if len(remove) > 0 {
 		_, err = e.client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{
 			ResourceArn: cr.Status.AtProvider.ARN,
