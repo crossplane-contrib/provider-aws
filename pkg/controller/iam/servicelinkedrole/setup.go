@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/arn"
 )
 
 const (
@@ -109,7 +110,7 @@ func (e *hooks) observe(ctx context.Context, mg resource.Managed) (managed.Exter
 }
 
 func isServiceLinkedRole(role *svcsdk.Role) error {
-	arn, err := awsclients.ParseARN(awsclients.StringValue(role.Arn))
+	arn, err := arn.ParseARN(awsclients.StringValue(role.Arn))
 	if err != nil {
 		return err
 	}
