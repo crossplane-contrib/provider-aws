@@ -18,8 +18,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/mwaa/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -81,7 +81,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Environment, obj *svcsdk.GetEnvironmentInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -91,7 +91,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.Environment, o
 	}
 
 	// obj.Pending.PendingChange is nil if Environment is available
-	if status := awsclients.StringValue(obj.Environment.Status); status != string(svcapitypes.EnvironmentStatus_SDK_AVAILABLE) {
+	if status := pointer.StringValue(obj.Environment.Status); status != string(svcapitypes.EnvironmentStatus_SDK_AVAILABLE) {
 		switch status {
 		case string(svcapitypes.EnvironmentStatus_SDK_CREATING), string(svcapitypes.EnvironmentStatus_SDK_UPDATING):
 			cr.SetConditions(xpv1.Creating().WithMessage(status))
@@ -107,17 +107,17 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.Environment, o
 
 	cr.SetConditions(xpv1.Available())
 	obs.ConnectionDetails = managed.ConnectionDetails{
-		svcapitypes.ConnectionDetailsWebServerURL: []byte(awsclients.StringValue(obj.Environment.WebserverUrl)),
+		svcapitypes.ConnectionDetailsWebServerURL: []byte(pointer.StringValue(obj.Environment.WebserverUrl)),
 	}
 	return obs, nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Environment, obj *svcsdk.DeleteEnvironmentInput) (bool, error) {
 	// Only environments that are not PENDING can be deleted
-	switch awsclients.StringValue(cr.Status.AtProvider.Status) {
+	switch pointer.StringValue(cr.Status.AtProvider.Status) {
 	case svcsdk.EnvironmentStatusCreateFailed,
 		svcsdk.EnvironmentStatusAvailable:
-		obj.Name = awsclients.String(meta.GetExternalName(cr))
+		obj.Name = pointer.String(meta.GetExternalName(cr))
 		return false, nil
 	}
 
@@ -125,13 +125,13 @@ func preDelete(_ context.Context, cr *svcapitypes.Environment, obj *svcsdk.Delet
 }
 
 func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.Environment, obj *svcsdk.CreateEnvironmentInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	obj.SourceBucketArn = cr.Spec.ForProvider.SourceBucketARN
 	obj.ExecutionRoleArn = cr.Spec.ForProvider.ExecutionRoleARN
 	obj.KmsKey = cr.Spec.ForProvider.KMSKey
 	obj.NetworkConfiguration = &svcsdk.NetworkConfiguration{
-		SecurityGroupIds: awsclients.StringSliceToPtr(cr.Spec.ForProvider.NetworkConfiguration.SecurityGroupIDs),
-		SubnetIds:        awsclients.StringSliceToPtr(cr.Spec.ForProvider.NetworkConfiguration.SubnetIDs),
+		SecurityGroupIds: pointer.StringSliceToPtr(cr.Spec.ForProvider.NetworkConfiguration.SecurityGroupIDs),
+		SubnetIds:        pointer.StringSliceToPtr(cr.Spec.ForProvider.NetworkConfiguration.SubnetIDs),
 	}
 	return nil
 }
@@ -141,30 +141,30 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.Environment, ob
 		return cre, err
 	}
 
-	cliTokenRes, err := e.client.CreateCliTokenWithContext(ctx, &svcsdk.CreateCliTokenInput{Name: awsclients.String(meta.GetExternalName(cr))})
+	cliTokenRes, err := e.client.CreateCliTokenWithContext(ctx, &svcsdk.CreateCliTokenInput{Name: pointer.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateCLIToken)
 	}
 
-	webTokenRes, err := e.client.CreateWebLoginTokenWithContext(ctx, &svcsdk.CreateWebLoginTokenInput{Name: awsclients.String(meta.GetExternalName(cr))})
+	webTokenRes, err := e.client.CreateWebLoginTokenWithContext(ctx, &svcsdk.CreateWebLoginTokenInput{Name: pointer.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateWebToken)
 	}
 
 	return managed.ExternalCreation{
 		ConnectionDetails: managed.ConnectionDetails{
-			svcapitypes.ConnectionDetailsCLITokenKey: []byte(awsclients.StringValue(cliTokenRes.CliToken)),
-			svcapitypes.ConnectionDetailsWebTokenKey: []byte(awsclients.StringValue(webTokenRes.WebToken)),
+			svcapitypes.ConnectionDetailsCLITokenKey: []byte(pointer.StringValue(cliTokenRes.CliToken)),
+			svcapitypes.ConnectionDetailsWebTokenKey: []byte(pointer.StringValue(webTokenRes.WebToken)),
 		},
 	}, err
 }
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.Environment, obj *svcsdk.UpdateEnvironmentInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	obj.SourceBucketArn = cr.Spec.ForProvider.SourceBucketARN
 	obj.ExecutionRoleArn = cr.Spec.ForProvider.ExecutionRoleARN
 	obj.NetworkConfiguration = &svcsdk.UpdateNetworkConfigurationInput{
-		SecurityGroupIds: awsclients.StringSliceToPtr(cr.Spec.ForProvider.NetworkConfiguration.SecurityGroupIDs),
+		SecurityGroupIds: pointer.StringSliceToPtr(cr.Spec.ForProvider.NetworkConfiguration.SecurityGroupIDs),
 	}
 	return nil
 }
@@ -175,7 +175,7 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.Environment, ob
 	}
 
 	res, err := e.client.GetEnvironmentWithContext(ctx, &svcsdk.GetEnvironmentInput{
-		Name: awsclients.String(meta.GetExternalName(cr)),
+		Name: pointer.String(meta.GetExternalName(cr)),
 	})
 	if err != nil || res.Environment == nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errGetEnvironemt)
@@ -223,20 +223,20 @@ func lateInitialize(spec *svcapitypes.EnvironmentParameters, obj *svcsdk.GetEnvi
 	if spec.AirflowConfigurationOptions == nil {
 		spec.AirflowConfigurationOptions = current.AirflowConfigurationOptions
 	}
-	spec.AirflowVersion = awsclients.LateInitializeStringPtr(spec.AirflowVersion, current.AirflowVersion)
-	spec.EnvironmentClass = awsclients.LateInitializeStringPtr(spec.EnvironmentClass, current.EnvironmentClass)
+	spec.AirflowVersion = pointer.LateInitializeStringPtr(spec.AirflowVersion, current.AirflowVersion)
+	spec.EnvironmentClass = pointer.LateInitializeStringPtr(spec.EnvironmentClass, current.EnvironmentClass)
 	if spec.LoggingConfiguration == nil {
 		spec.LoggingConfiguration = current.LoggingConfiguration
 	}
-	spec.MaxWorkers = awsclients.LateInitializeInt64Ptr(spec.MaxWorkers, current.MaxWorkers)
-	spec.MinWorkers = awsclients.LateInitializeInt64Ptr(spec.MinWorkers, current.MinWorkers)
-	spec.PluginsS3ObjectVersion = awsclients.LateInitializeStringPtr(spec.PluginsS3ObjectVersion, current.PluginsS3ObjectVersion)
-	spec.PluginsS3Path = awsclients.LateInitializeStringPtr(spec.PluginsS3Path, current.PluginsS3Path)
-	spec.RequirementsS3ObjectVersion = awsclients.LateInitializeStringPtr(spec.RequirementsS3ObjectVersion, current.RequirementsS3ObjectVersion)
-	spec.RequirementsS3Path = awsclients.LateInitializeStringPtr(spec.RequirementsS3Path, current.RequirementsS3Path)
-	spec.Schedulers = awsclients.LateInitializeInt64Ptr(spec.Schedulers, current.Schedulers)
-	spec.WebserverAccessMode = awsclients.LateInitializeStringPtr(spec.WebserverAccessMode, current.WebserverAccessMode)
-	spec.WeeklyMaintenanceWindowStart = awsclients.LateInitializeStringPtr(spec.WeeklyMaintenanceWindowStart, current.WeeklyMaintenanceWindowStart)
+	spec.MaxWorkers = pointer.LateInitializeInt64Ptr(spec.MaxWorkers, current.MaxWorkers)
+	spec.MinWorkers = pointer.LateInitializeInt64Ptr(spec.MinWorkers, current.MinWorkers)
+	spec.PluginsS3ObjectVersion = pointer.LateInitializeStringPtr(spec.PluginsS3ObjectVersion, current.PluginsS3ObjectVersion)
+	spec.PluginsS3Path = pointer.LateInitializeStringPtr(spec.PluginsS3Path, current.PluginsS3Path)
+	spec.RequirementsS3ObjectVersion = pointer.LateInitializeStringPtr(spec.RequirementsS3ObjectVersion, current.RequirementsS3ObjectVersion)
+	spec.RequirementsS3Path = pointer.LateInitializeStringPtr(spec.RequirementsS3Path, current.RequirementsS3Path)
+	spec.Schedulers = pointer.LateInitializeInt64Ptr(spec.Schedulers, current.Schedulers)
+	spec.WebserverAccessMode = pointer.LateInitializeStringPtr(spec.WebserverAccessMode, current.WebserverAccessMode)
+	spec.WeeklyMaintenanceWindowStart = pointer.LateInitializeStringPtr(spec.WeeklyMaintenanceWindowStart, current.WeeklyMaintenanceWindowStart)
 	return nil
 }
 
@@ -247,14 +247,14 @@ func diffTags(spec, current map[string]*string) (map[string]*string, []*string) 
 
 	for k, specVal := range spec {
 		curVal, exists := current[k]
-		if !exists || awsclients.StringValue(curVal) != awsclients.StringValue(specVal) {
+		if !exists || pointer.StringValue(curVal) != pointer.StringValue(specVal) {
 			addTags[k] = specVal
 		}
 	}
 
 	for k := range current {
 		if _, exists := spec[k]; !exists {
-			remove = append(remove, awsclients.String(k))
+			remove = append(remove, pointer.String(k))
 		}
 	}
 
@@ -277,7 +277,7 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 	}
 
 	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = awsclients.String(v)
+		cr.Spec.ForProvider.Tags[k] = pointer.String(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

@@ -35,8 +35,8 @@ import (
 	iottypes "github.com/crossplane-contrib/provider-aws/apis/iot/v1alpha1"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iot/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws2 "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
 )
 
 // SetupThing adds a controller that reconciles Thing.
@@ -132,7 +132,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Thing, resp *svcsdk.DescribeT
 }
 
 func createPatch(in *svcsdk.DescribeThingOutput, target *svcapitypes.ThingParameters) (*svcapitypes.ThingParameters, error) {
-	jsonPatch, err := aws2.CreateJSONPatch(in, target)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(in, target)
 	if err != nil {
 		return nil, err
 	}

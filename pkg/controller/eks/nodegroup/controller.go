@@ -35,9 +35,12 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -97,7 +100,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotEKSNodeGroup)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +120,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	rsp, err := e.client.DescribeNodegroup(ctx, &awseks.DescribeNodegroupInput{NodegroupName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -162,7 +165,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, nil
 	}
 	_, err := e.client.CreateNodegroup(ctx, eks.GenerateCreateNodeGroupInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreateFailed)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -179,25 +182,25 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// different fields require different update methods.
 	rsp, err := e.client.DescribeNodegroup(ctx, &awseks.DescribeNodegroupInput{NodegroupName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	if err != nil || rsp.Nodegroup == nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribeFailed)
 	}
-	add, remove := awsclient.DiffTags(cr.Spec.ForProvider.Tags, rsp.Nodegroup.Tags)
+	add, remove := tagutils.DiffTags(cr.Spec.ForProvider.Tags, rsp.Nodegroup.Tags)
 	if len(remove) != 0 {
 		if _, err := e.client.UntagResource(ctx, &awseks.UntagResourceInput{ResourceArn: rsp.Nodegroup.NodegroupArn, TagKeys: remove}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if len(add) != 0 {
 		if _, err := e.client.TagResource(ctx, &awseks.TagResourceInput{ResourceArn: rsp.Nodegroup.NodegroupArn, Tags: add}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if update, updateInput := eks.GenerateUpdateNodeGroupVersionInput(meta.GetExternalName(cr), &cr.Spec.ForProvider, rsp.Nodegroup); update {
 		_, err := e.client.UpdateNodegroupVersion(ctx, updateInput)
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	_, err = e.client.UpdateNodegroupConfig(ctx, eks.GenerateUpdateNodeGroupConfigInput(meta.GetExternalName(cr), &cr.Spec.ForProvider, rsp.Nodegroup))
-	return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
+	return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -209,8 +212,8 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if cr.Status.AtProvider.Status == manualv1alpha1.NodeGroupStatusDeleting {
 		return nil
 	}
-	_, err := e.client.DeleteNodegroup(ctx, &awseks.DeleteNodegroupInput{NodegroupName: awsclient.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
-	return awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+	_, err := e.client.DeleteNodegroup(ctx, &awseks.DeleteNodegroupInput{NodegroupName: pointer.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
+	return errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
 }
 
 type tagger struct {

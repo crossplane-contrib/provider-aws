@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2023 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,38 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package pointer
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	jsonpatch "github.com/evanphx/json-patch"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 )
 
-// TODO(muvaf): All the types that use CreateJSONPatch are known during
-// development time. In order to avoid unnecessary panic checks, we can generate
-// the code that creates a patch between two objects that share the same type.
+// A FieldOption determines how common Go types are translated to the types
+// required by the AWS Go SDK.
+type FieldOption int
 
-// CreateJSONPatch creates a diff JSON object that can be applied to any other
-// JSON object.
-func CreateJSONPatch(source, destination interface{}) ([]byte, error) {
-	sourceJSON, err := json.Marshal(source)
-	if err != nil {
-		return nil, err
-	}
-	destinationJSON, err := json.Marshal(destination)
-	if err != nil {
-		return nil, err
-	}
-	patchJSON, err := jsonpatch.CreateMergePatch(sourceJSON, destinationJSON)
-	if err != nil {
-		return nil, err
-	}
-	return patchJSON, nil
-}
+// Field options.
+const (
+	// FieldRequired causes zero values to be converted to a pointer to the zero
+	// value, rather than a nil pointer. AWS Go SDK types use pointer fields,
+	// with a nil pointer indicating an unset field. Our ToPtr functions return
+	// a nil pointer for a zero values, unless FieldRequired is set.
+	FieldRequired FieldOption = iota
+)
 
 // String converts the supplied string for use with the AWS Go SDK.
 func String(v string, o ...FieldOption) *string {
@@ -172,6 +162,8 @@ func Int64(v int, o ...FieldOption) *int64 {
 	return aws.Int64(int64(v))
 }
 
+var Int64Ptr = ptr.To[int64]
+
 // Int32 converts the supplied int for use with the AWS Go SDK.
 func Int32(v int, o ...FieldOption) *int32 {
 	for _, fo := range o {
@@ -187,6 +179,8 @@ func Int32(v int, o ...FieldOption) *int32 {
 	return aws.Int32(int32(v))
 }
 
+var Int32Ptr = ptr.To[int32]
+
 // Int64Address returns the given *int in the form of *int64.
 func Int64Address(i *int) *int64 {
 	if i == nil {
@@ -194,6 +188,8 @@ func Int64Address(i *int) *int64 {
 	}
 	return aws.Int64(int64(*i))
 }
+
+var Int64Slice = aws.Int64Slice
 
 // Int32Address returns the given *int in the form of *int32.
 func Int32Address(i *int) *int32 {

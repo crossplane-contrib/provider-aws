@@ -24,7 +24,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 func TestDiffTags(t *testing.T) {
@@ -67,7 +67,7 @@ func TestDiffTags(t *testing.T) {
 					sdkTag("testAdd", "val"),
 				},
 				remove: []*string{
-					awsclient.String("testRemove"),
+					pointer.String("testRemove"),
 				},
 			},
 		},

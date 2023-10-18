@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package connectaws
 
 import (
 	"context"
@@ -44,6 +44,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/metrics"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	"github.com/crossplane-contrib/provider-aws/pkg/version"
 )
 
@@ -58,19 +59,6 @@ const GlobalRegion = "aws-global"
 const (
 	URLConfigTypeStatic  = "Static"
 	URLConfigTypeDynamic = "Dynamic"
-)
-
-// A FieldOption determines how common Go types are translated to the types
-// required by the AWS Go SDK.
-type FieldOption int
-
-// Field options.
-const (
-	// FieldRequired causes zero values to be converted to a pointer to the zero
-	// value, rather than a nil pointer. AWS Go SDK types use pointer fields,
-	// with a nil pointer indicating an unset field. Our ToPtr functions return
-	// a nil pointer for a zero values, unless FieldRequired is set.
-	FieldRequired FieldOption = iota
 )
 
 // middlewareV2 constructs the AWS SDK v2 middleware
@@ -171,7 +159,7 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //no
 			if pc.Spec.Endpoint.URL.Static == nil {
 				return aws.Endpoint{}, errors.New("static type is chosen but static field does not have a value")
 			}
-			fullURL = StringValue(pc.Spec.Endpoint.URL.Static)
+			fullURL = pointer.StringValue(pc.Spec.Endpoint.URL.Static)
 		case URLConfigTypeDynamic:
 			if pc.Spec.Endpoint.URL.Dynamic == nil {
 				return aws.Endpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
@@ -187,19 +175,19 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //no
 		}
 		e := aws.Endpoint{
 			URL:               fullURL,
-			HostnameImmutable: BoolValue(pc.Spec.Endpoint.HostnameImmutable),
-			PartitionID:       StringValue(pc.Spec.Endpoint.PartitionID),
-			SigningName:       StringValue(pc.Spec.Endpoint.SigningName),
-			SigningRegion:     StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
-			SigningMethod:     StringValue(pc.Spec.Endpoint.SigningMethod),
+			HostnameImmutable: pointer.BoolValue(pc.Spec.Endpoint.HostnameImmutable),
+			PartitionID:       pointer.StringValue(pc.Spec.Endpoint.PartitionID),
+			SigningName:       pointer.StringValue(pc.Spec.Endpoint.SigningName),
+			SigningRegion:     pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningMethod:     pointer.StringValue(pc.Spec.Endpoint.SigningMethod),
 		}
 		// Only IAM does not have a region parameter and "aws-global" is used in
 		// SDK setup. However, signing region has to be us-east-1 and it needs
 		// to be set.
 		if region == "aws-global" {
-			switch StringValue(pc.Spec.Endpoint.PartitionID) {
+			switch pointer.StringValue(pc.Spec.Endpoint.PartitionID) {
 			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
-				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+				e.SigningRegion = pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
 			}
@@ -303,7 +291,7 @@ func UseProviderSecretAssumeRole(ctx context.Context, data []byte, profile, regi
 	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	stsAssume := stscreds.NewAssumeRoleProvider(
 		stsSvc,
-		StringValue(roleArn),
+		pointer.StringValue(roleArn),
 		stsAssumeRoleOptions,
 	)
 	config.Credentials = aws.NewCredentialsCache(stsAssume)
@@ -332,7 +320,7 @@ func UsePodServiceAccountAssumeRole(ctx context.Context, _ []byte, _, region str
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
 				stsclient,
-				StringValue(roleArn),
+				pointer.StringValue(roleArn),
 				stsAssumeRoleOptions,
 			)),
 		),
@@ -367,7 +355,7 @@ func UsePodServiceAccountAssumeRoleWithWebIdentity(ctx context.Context, _ []byte
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewWebIdentityRoleProvider(
 				stsclient,
-				StringValue(roleArn),
+				pointer.StringValue(roleArn),
 				stscreds.IdentityTokenFile(getWebidentityTokenFilePath()),
 				webIdentityRoleOptions,
 			)),
@@ -511,7 +499,7 @@ func UseProviderSecretV1AssumeRole(ctx context.Context, data []byte, pc *v1beta1
 	stsAssumeRoleOptions := SetAssumeRoleOptions(pc)
 	stsAssume := stscreds.NewAssumeRoleProvider(
 		stsSvc,
-		StringValue(roleArn),
+		pointer.StringValue(roleArn),
 		stsAssumeRoleOptions,
 	)
 	config.Credentials = aws.NewCredentialsCache(stsAssume)
@@ -586,7 +574,7 @@ func UsePodServiceAccountV1AssumeRole(ctx context.Context, _ []byte, pc *v1beta1
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewAssumeRoleProvider(
 				stsclient,
-				StringValue(roleArn),
+				pointer.StringValue(roleArn),
 				stsAssumeRoleOptions,
 			)),
 		),
@@ -629,7 +617,7 @@ func UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx context.Context, _ []by
 		config.WithCredentialsProvider(aws.NewCredentialsCache(
 			stscreds.NewWebIdentityRoleProvider(
 				stsclient,
-				StringValue(roleArn),
+				pointer.StringValue(roleArn),
 				stscreds.IdentityTokenFile("/var/run/secrets/eks.amazonaws.com/serviceaccount/token"),
 				webIdentityRoleOptions,
 			)),
@@ -686,7 +674,7 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 			if pc.Spec.Endpoint.URL.Static == nil {
 				return endpointsv1.ResolvedEndpoint{}, errors.New("static type is chosen but static field does not have a value")
 			}
-			fullURL = StringValue(pc.Spec.Endpoint.URL.Static)
+			fullURL = pointer.StringValue(pc.Spec.Endpoint.URL.Static)
 		case URLConfigTypeDynamic:
 			if pc.Spec.Endpoint.URL.Dynamic == nil {
 				return endpointsv1.ResolvedEndpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
@@ -702,18 +690,18 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		}
 		e := endpointsv1.ResolvedEndpoint{
 			URL:           fullURL,
-			PartitionID:   StringValue(pc.Spec.Endpoint.PartitionID),
-			SigningName:   StringValue(pc.Spec.Endpoint.SigningName),
-			SigningRegion: StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
-			SigningMethod: StringValue(pc.Spec.Endpoint.SigningMethod),
+			PartitionID:   pointer.StringValue(pc.Spec.Endpoint.PartitionID),
+			SigningName:   pointer.StringValue(pc.Spec.Endpoint.SigningName),
+			SigningRegion: pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningMethod: pointer.StringValue(pc.Spec.Endpoint.SigningMethod),
 		}
 		// Only IAM does not have a region parameter and "aws-global" is used in
 		// SDK setup. However, signing region has to be us-east-1 and it needs
 		// to be set.
 		if region == "aws-global" {
-			switch StringValue(pc.Spec.Endpoint.PartitionID) {
+			switch pointer.StringValue(pc.Spec.Endpoint.PartitionID) {
 			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
-				e.SigningRegion = StringValue(LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+				e.SigningRegion = pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
 			}
@@ -725,7 +713,7 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 
 // GetAssumeRoleARN gets the AssumeRoleArn from a ProviderConfigSpec
 func GetAssumeRoleARN(pcs *v1beta1.ProviderConfigSpec) (*string, error) {
-	if pcs.AssumeRole != nil && StringValue(pcs.AssumeRole.RoleARN) != "" {
+	if pcs.AssumeRole != nil && pointer.StringValue(pcs.AssumeRole.RoleARN) != "" {
 		return pcs.AssumeRole.RoleARN, nil
 	}
 
@@ -740,7 +728,7 @@ func GetAssumeRoleARN(pcs *v1beta1.ProviderConfigSpec) (*string, error) {
 // GetAssumeRoleWithWebIdentityARN gets the RoleArn from a ProviderConfigSpec
 func GetAssumeRoleWithWebIdentityARN(pcs *v1beta1.ProviderConfigSpec) (*string, error) {
 	if pcs.AssumeRoleWithWebIdentity != nil {
-		if pcs.AssumeRoleWithWebIdentity.RoleARN != nil && StringValue(pcs.AssumeRoleWithWebIdentity.RoleARN) != "" {
+		if pcs.AssumeRoleWithWebIdentity.RoleARN != nil && pointer.StringValue(pcs.AssumeRoleWithWebIdentity.RoleARN) != "" {
 			return pcs.AssumeRoleWithWebIdentity.RoleARN, nil
 		}
 	}

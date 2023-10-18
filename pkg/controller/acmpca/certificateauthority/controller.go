@@ -36,9 +36,10 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -101,7 +102,7 @@ func (conn *connector) Connect(ctx context.Context, mg resource.Managed) (manage
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, conn.client, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, conn.client, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +131,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
 	}
 
 	if response.CertificateAuthority == nil {
@@ -157,7 +158,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
 	}
 
 	return managed.ExternalObservation{
@@ -175,7 +176,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	response, err := e.client.CreateCertificateAuthority(ctx, acmpca.GenerateCreateCertificateAuthorityInput(&cr.Spec.ForProvider))
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, aws.ToString(response.CertificateAuthorityArn))
 	return managed.ExternalCreation{}, nil
@@ -200,7 +201,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
 		}
 		if len(tags) != len(currentTags.Tags) {
 			_, err := e.client.UntagCertificateAuthority(ctx, &awsacmpca.UntagCertificateAuthorityInput{
@@ -208,7 +209,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 				Tags:                    currentTags.Tags,
 			})
 			if err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTagsFailed)
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errRemoveTagsFailed)
 			}
 		}
 		_, err = e.client.TagCertificateAuthority(ctx, &awsacmpca.TagCertificateAuthorityInput{
@@ -216,7 +217,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Tags:                    tags,
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errAddTagsFailed)
 		}
 	}
 
@@ -227,7 +228,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Status:                  awsacmpcatypes.CertificateAuthorityStatus(aws.ToString(cr.Spec.ForProvider.Status)),
 	})
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errCertificateAuthority)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errCertificateAuthority)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -243,7 +244,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+		return errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 	}
 
 	if response != nil {
@@ -254,7 +255,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 			})
 
 			if err != nil {
-				return awsclient.Wrap(err, errDelete)
+				return errorutils.Wrap(err, errDelete)
 			}
 		}
 	}
@@ -264,7 +265,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		PermanentDeletionTimeInDays: cr.Spec.ForProvider.PermanentDeletionTimeInDays,
 	})
 
-	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 }
 
 type tagger struct {

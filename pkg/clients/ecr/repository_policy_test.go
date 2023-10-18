@@ -10,13 +10,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
 	// an arbitrary managed resource
 	effect      = "Allow"
-	statementID = aws.String("1")
+	statementID = pointer.String("1")
 	boolCheck   = true
 	testID      = "id"
 	policy      = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":"*"}],"Version":"2012-10-17"}`
@@ -114,15 +114,15 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 				withPrincipal(&v1beta1.RepositoryPrincipal{
 					AWSPrincipals: []v1beta1.AWSPrincipal{
 						{
-							UserARN: aws.String("arn:aws:iam::111122223333:userARN"),
+							UserARN: pointer.String("arn:aws:iam::111122223333:userARN"),
 						},
 						{
 							// Note: should be converted to full ARN when serialized
 							// to avoid needless updates.
-							AWSAccountID: aws.String("111122223334"),
+							AWSAccountID: pointer.String("111122223334"),
 						},
 						{
-							IAMRoleARN: aws.String("arn:aws:iam::111122223333:roleARN"),
+							IAMRoleARN: pointer.String("arn:aws:iam::111122223333:roleARN"),
 						},
 					},
 				}),
@@ -133,11 +133,11 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 						Conditions: []v1beta1.ConditionPair{
 							{
 								ConditionKey:         "test",
-								ConditionStringValue: aws.String("testKey"),
+								ConditionStringValue: pointer.String("testKey"),
 							},
 							{
 								ConditionKey:         "test2",
-								ConditionStringValue: aws.String("testKey2"),
+								ConditionStringValue: pointer.String("testKey2"),
 							},
 						},
 					},

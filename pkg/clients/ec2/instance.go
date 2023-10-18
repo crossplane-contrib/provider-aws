@@ -27,7 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -60,7 +60,7 @@ func IsInstanceNotFoundErr(err error) bool {
 // and observed state of the resource.
 func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance types.Instance, attributes ec2.DescribeInstanceAttributeOutput) bool {
 	// DisableApiTermination
-	if awsclients.BoolValue(spec.DisableAPITermination) != attributeBoolValue(attributes.DisableApiTermination) {
+	if pointer.BoolValue(spec.DisableAPITermination) != attributeBoolValue(attributes.DisableApiTermination) {
 		return false
 	}
 	// InstanceInitiatedShutdownBehavior
@@ -68,18 +68,18 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance types.I
 		return false
 	}
 	// KernalID
-	if awsclients.StringValue(spec.KernelID) != awsclients.StringValue(instance.KernelId) {
+	if pointer.StringValue(spec.KernelID) != pointer.StringValue(instance.KernelId) {
 		return false
 	}
 	// RamDiskID
-	if awsclients.StringValue(spec.RAMDiskID) != awsclients.StringValue(instance.RamdiskId) {
+	if pointer.StringValue(spec.RAMDiskID) != pointer.StringValue(instance.RamdiskId) {
 		return false
 	}
 	// UserData
-	if awsclients.StringValue(spec.UserData) != attributeValue(attributes.UserData) {
+	if pointer.StringValue(spec.UserData) != attributeValue(attributes.UserData) {
 		return false
 	}
-	return manualv1alpha1.CompareGroupIDs(spec.SecurityGroupIDs, instance.SecurityGroups)
+	return CompareGroupIDs(spec.SecurityGroupIDs, instance.SecurityGroups)
 }
 
 // GenerateInstanceObservation is used to produce manualv1alpha1.InstanceObservation from
@@ -183,24 +183,24 @@ func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *typ
 	}
 
 	if attributes.DisableApiTermination != nil {
-		in.DisableAPITermination = awsclients.LateInitializeBoolPtr(in.DisableAPITermination, attributes.DisableApiTermination.Value)
+		in.DisableAPITermination = pointer.LateInitializeBoolPtr(in.DisableAPITermination, attributes.DisableApiTermination.Value)
 	}
 
 	if attributes.InstanceInitiatedShutdownBehavior != nil {
-		in.InstanceInitiatedShutdownBehavior = awsclients.LateInitializeString(in.InstanceInitiatedShutdownBehavior, attributes.InstanceInitiatedShutdownBehavior.Value)
+		in.InstanceInitiatedShutdownBehavior = pointer.LateInitializeString(in.InstanceInitiatedShutdownBehavior, attributes.InstanceInitiatedShutdownBehavior.Value)
 	}
 
 	if attributes.InstanceType != nil {
-		in.InstanceType = awsclients.LateInitializeString(in.InstanceType, attributes.InstanceType.Value)
+		in.InstanceType = pointer.LateInitializeString(in.InstanceType, attributes.InstanceType.Value)
 	}
 
 	if attributes.UserData != nil {
-		in.UserData = awsclients.LateInitializeStringPtr(in.UserData, attributes.UserData.Value)
+		in.UserData = pointer.LateInitializeStringPtr(in.UserData, attributes.UserData.Value)
 	}
 
-	in.EBSOptimized = awsclients.LateInitializeBoolPtr(in.EBSOptimized, instance.EbsOptimized)
-	in.KernelID = awsclients.LateInitializeStringPtr(in.KernelID, instance.KernelId)
-	in.RAMDiskID = awsclients.LateInitializeStringPtr(in.RAMDiskID, instance.RamdiskId)
+	in.EBSOptimized = pointer.LateInitializeBoolPtr(in.EBSOptimized, instance.EbsOptimized)
+	in.KernelID = pointer.LateInitializeStringPtr(in.KernelID, instance.KernelId)
+	in.RAMDiskID = pointer.LateInitializeStringPtr(in.RAMDiskID, instance.RamdiskId)
 
 	if len(in.SecurityGroupIDs) == 0 && len(instance.SecurityGroups) != 0 {
 		in.SecurityGroupIDs = make([]string, len(instance.SecurityGroups))
@@ -912,7 +912,7 @@ func attributeBoolValue(v *types.AttributeBooleanValue) bool {
 	if v == nil {
 		return false
 	}
-	return awsclients.BoolValue(v.Value)
+	return pointer.BoolValue(v.Value)
 }
 
 // attributeValue helps will comparing string values against nested pointers
@@ -920,5 +920,5 @@ func attributeValue(v *types.AttributeValue) string {
 	if v == nil {
 		return ""
 	}
-	return awsclients.StringValue(v.Value)
+	return pointer.StringValue(v.Value)
 }

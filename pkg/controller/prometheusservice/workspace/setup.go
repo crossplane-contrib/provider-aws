@@ -19,8 +19,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/prometheusservice/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -94,9 +94,9 @@ func postObserve(_ context.Context, cr *svcapitypes.Workspace, resp *svcsdk.Desc
 	cr.Status.AtProvider.Status.StatusCode = resp.Workspace.Status.StatusCode
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
-		"arn":                []byte(awsclients.StringValue(resp.Workspace.Arn)),
-		"prometheusEndpoint": []byte(awsclients.StringValue(resp.Workspace.PrometheusEndpoint)),
-		"workspaceId":        []byte(awsclients.StringValue(resp.Workspace.WorkspaceId)),
+		"arn":                []byte(pointer.StringValue(resp.Workspace.Arn)),
+		"prometheusEndpoint": []byte(pointer.StringValue(resp.Workspace.PrometheusEndpoint)),
+		"workspaceId":        []byte(pointer.StringValue(resp.Workspace.WorkspaceId)),
 	}
 
 	return obs, nil
@@ -139,7 +139,7 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags = map[string]*string{}
 	}
 	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = awsclients.String(v)
+		cr.Spec.ForProvider.Tags[k] = pointer.String(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

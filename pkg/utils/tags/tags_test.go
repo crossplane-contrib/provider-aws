@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package tags
 
 import (
 	"testing"
@@ -22,6 +22,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/utils/ptr"
 )
 
 func TestDiffTags(t *testing.T) {
@@ -107,15 +108,15 @@ func TestDiffTagsMapPtr(t *testing.T) {
 		"AddNewTag": {
 			args: args{
 				cr: map[string]*string{
-					"k1": String("exists_in_both"),
-					"k2": String("only_in_cr"),
+					"k1": ptr.To("exists_in_both"),
+					"k2": ptr.To("only_in_cr"),
 				},
 				obj: map[string]*string{
-					"k1": String("exists_in_both"),
+					"k1": ptr.To("exists_in_both"),
 				}},
 			want: want{
 				addTags: map[string]*string{
-					"k2": String("only_in_cr"),
+					"k2": ptr.To("only_in_cr"),
 				},
 				removeTags: []*string{},
 			},
@@ -123,43 +124,43 @@ func TestDiffTagsMapPtr(t *testing.T) {
 		"RemoveExistingTag": {
 			args: args{
 				cr: map[string]*string{
-					"k1": String("exists_in_both"),
+					"k1": ptr.To("exists_in_both"),
 				},
 				obj: map[string]*string{
-					"k1": String("exists_in_both"),
-					"k2": String("only_in_aws"),
+					"k1": ptr.To("exists_in_both"),
+					"k2": ptr.To("only_in_aws"),
 				}},
 			want: want{
 				addTags: map[string]*string{},
 				removeTags: []*string{
-					String("k2"),
+					ptr.To("k2"),
 				}},
 		},
 		"AddAndRemoveWhenKeyChanges": {
 			args: args{
 				cr: map[string]*string{
-					"k1": String("exists_in_both"),
-					"k2": String("same_key_different_value_1"),
+					"k1": ptr.To("exists_in_both"),
+					"k2": ptr.To("same_key_different_value_1"),
 				},
 				obj: map[string]*string{
-					"k1": String("exists_in_both"),
-					"k2": String("same_key_different_value_2"),
+					"k1": ptr.To("exists_in_both"),
+					"k2": ptr.To("same_key_different_value_2"),
 				}},
 			want: want{
 				addTags: map[string]*string{
-					"k2": String("same_key_different_value_1"),
+					"k2": ptr.To("same_key_different_value_1"),
 				},
 				removeTags: []*string{
-					String("k2"),
+					ptr.To("k2"),
 				}},
 		},
 		"NoChange": {
 			args: args{
 				cr: map[string]*string{
-					"k1": String("exists_in_both"),
+					"k1": ptr.To("exists_in_both"),
 				},
 				obj: map[string]*string{
-					"k1": String("exists_in_both"),
+					"k1": ptr.To("exists_in_both"),
 				}},
 			want: want{
 				addTags:    map[string]*string{},

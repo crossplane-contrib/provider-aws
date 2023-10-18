@@ -28,8 +28,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupGroup adds a controller that reconciles Group.
@@ -78,13 +78,13 @@ func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.GetGroupInput) error {
-	obj.GroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.String(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.DeleteGroupInput) (bool, error) {
-	obj.GroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.String(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return false, nil
 }
@@ -102,21 +102,21 @@ func postObserve(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.GetGroupO
 func preCreate(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.CreateGroupInput) error {
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	obj.RoleArn = cr.Spec.ForProvider.RoleARN
-	obj.GroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.UpdateGroupInput) error {
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	obj.RoleArn = cr.Spec.ForProvider.RoleARN
-	obj.GroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.Group, resp *svcsdk.GetGroupOutput) (bool, string, error) {
 	switch {
-	case awsclients.StringValue(cr.Spec.ForProvider.Description) != awsclients.StringValue(resp.Group.Description),
-		awsclients.Int64Value(cr.Spec.ForProvider.Precedence) != awsclients.Int64Value(resp.Group.Precedence):
+	case pointer.StringValue(cr.Spec.ForProvider.Description) != pointer.StringValue(resp.Group.Description),
+		pointer.Int64Value(cr.Spec.ForProvider.Precedence) != pointer.Int64Value(resp.Group.Precedence):
 		return false, "", nil
 	}
 	return true, "", nil

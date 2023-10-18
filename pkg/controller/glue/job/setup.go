@@ -37,9 +37,11 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/glue/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -102,12 +104,12 @@ type hooks struct {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.DeleteJobInput) (bool, error) {
-	obj.JobName = awsclients.String(meta.GetExternalName(cr))
+	obj.JobName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.GetJobInput) error {
-	obj.JobName = awsclients.String(meta.GetExternalName(cr))
+	obj.JobName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -128,17 +130,17 @@ func lateInitialize(spec *svcapitypes.JobParameters, resp *svcsdk.GetJobOutput) 
 
 	// Command is required, so spec should never be nil
 	if resp.Job.Command != nil {
-		spec.Command.PythonVersion = awsclients.LateInitializeStringPtr(spec.Command.PythonVersion, resp.Job.Command.PythonVersion)
+		spec.Command.PythonVersion = pointer.LateInitializeStringPtr(spec.Command.PythonVersion, resp.Job.Command.PythonVersion)
 	}
 
 	if spec.ExecutionProperty == nil {
 		spec.ExecutionProperty = &svcapitypes.ExecutionProperty{}
 	}
-	spec.ExecutionProperty.MaxConcurrentRuns = awsclients.LateInitializeInt64Ptr(spec.ExecutionProperty.MaxConcurrentRuns, resp.Job.ExecutionProperty.MaxConcurrentRuns)
+	spec.ExecutionProperty.MaxConcurrentRuns = pointer.LateInitializeInt64Ptr(spec.ExecutionProperty.MaxConcurrentRuns, resp.Job.ExecutionProperty.MaxConcurrentRuns)
 
-	spec.GlueVersion = awsclients.LateInitializeStringPtr(spec.GlueVersion, resp.Job.GlueVersion)
-	spec.MaxRetries = awsclients.LateInitializeInt64Ptr(spec.MaxRetries, resp.Job.MaxRetries)
-	spec.Timeout = awsclients.LateInitializeInt64Ptr(spec.Timeout, resp.Job.Timeout)
+	spec.GlueVersion = pointer.LateInitializeStringPtr(spec.GlueVersion, resp.Job.GlueVersion)
+	spec.MaxRetries = pointer.LateInitializeInt64Ptr(spec.MaxRetries, resp.Job.MaxRetries)
+	spec.Timeout = pointer.LateInitializeInt64Ptr(spec.Timeout, resp.Job.Timeout)
 
 	// if WorkerType & NumberOfWorkers are used, AWS is in charge of setting MaxCapacity (not the user, not we)
 	if spec.MaxCapacity == nil || (spec.WorkerType != nil && spec.NumberOfWorkers != nil) {
@@ -174,7 +176,7 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Job, resp *svcsdk.
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.UpdateJobInput) error {
-	obj.JobName = awsclients.String(meta.GetExternalName(cr))
+	obj.JobName = pointer.String(meta.GetExternalName(cr))
 
 	obj.JobUpdate = &svcsdk.JobUpdate{
 		DefaultArguments:        cr.Spec.ForProvider.DefaultArguments,
@@ -240,9 +242,9 @@ func (h *hooks) postUpdate(ctx context.Context, cr *svcapitypes.Job, obj *svcsdk
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.CreateJobInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 
-	obj.Role = awsclients.String(cr.Spec.ForProvider.Role)
+	obj.Role = pointer.String(cr.Spec.ForProvider.Role)
 	obj.SecurityConfiguration = cr.Spec.ForProvider.SecurityConfiguration
 
 	if cr.Spec.ForProvider.Connections != nil {
@@ -272,7 +274,7 @@ func (h *hooks) postCreate(ctx context.Context, cr *svcapitypes.Job, obj *svcsdk
 		return managed.ExternalCreation{}, err
 	}
 	annotation := map[string]string{
-		annotationARN: awsclients.StringValue(jobARN),
+		annotationARN: pointer.StringValue(jobARN),
 	}
 	meta.AddAnnotations(cr, annotation)
 
@@ -284,7 +286,7 @@ func customGenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 
 	cr := GenerateJob(resp)
 
-	cr.Spec.ForProvider.Role = awsclients.StringValue(resp.Job.Role)
+	cr.Spec.ForProvider.Role = pointer.StringValue(resp.Job.Role)
 	cr.Spec.ForProvider.SecurityConfiguration = resp.Job.SecurityConfiguration
 
 	if resp.Job.Connections != nil {
@@ -335,9 +337,9 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Job) (*string, err
 
 	var accountID string
 
-	sess, err := awsclients.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
+	sess, err := connectaws.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
-		return nil, awsclients.Wrap(err, errBuildARN)
+		return nil, errorutils.Wrap(err, errBuildARN)
 	}
 
 	stsclient := svcsdksts.New(sess)
@@ -346,7 +348,7 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Job) (*string, err
 	if err != nil {
 		return nil, err
 	}
-	accountID = awsclients.StringValue(callerID.Account)
+	accountID = pointer.StringValue(callerID.Account)
 
 	jobARN := ("arn:aws:glue:" +
 		cr.Spec.ForProvider.Region + ":" +

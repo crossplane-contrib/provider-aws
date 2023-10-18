@@ -37,9 +37,11 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -100,7 +102,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, connectaws.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +126,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		// Try to get the policy by name
 		policyArn, policyErr := e.getPolicyArnByNameAndPath(ctx, cr.Spec.ForProvider.Name, cr.Spec.ForProvider.Path)
 		if policyArn == nil || policyErr != nil {
-			return managed.ExternalObservation{}, awsclient.Wrap(policyErr, errExternalName)
+			return managed.ExternalObservation{}, errorutils.Wrap(policyErr, errExternalName)
 		}
 		meta.SetExternalName(cr, aws.ToString(policyArn))
 		_ = e.kube.Update(ctx, cr)
@@ -135,7 +137,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if policyResp.Policy == nil {
@@ -160,13 +162,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil || versionRsp.PolicyVersion == nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errPolicyVersion)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errPolicyVersion)
 	}
 
 	update, diff, err := iam.IsPolicyUpToDate(cr.Spec.ForProvider, *versionRsp.PolicyVersion)
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errUpToDate)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errUpToDate)
 	}
 
 	crTagMap := make(map[string]string, len(cr.Spec.ForProvider.Tags))
@@ -206,7 +208,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.ToString(createOutput.Policy.Arn))
@@ -226,7 +228,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// The new version is set as default.
 
 	if err := e.deleteOldestVersion(ctx, meta.GetExternalName(cr)); err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	_, err := e.client.CreatePolicyVersion(ctx, &awsiam.CreatePolicyVersionInput{
@@ -236,7 +238,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	observed, err := e.client.GetPolicy(ctx, &awsiam.GetPolicyInput{
@@ -244,7 +246,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	add, remove, _ := iam.DiffIAMTagsWithUpdates(cr.Spec.ForProvider.Tags, observed.Policy.Tags)
@@ -253,7 +255,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			PolicyArn: aws.String(meta.GetExternalName(cr)),
 			Tags:      add,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errTag)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errTag)
 		}
 	}
 
@@ -262,7 +264,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			PolicyArn: aws.String(meta.GetExternalName(cr)),
 			TagKeys:   remove,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUntag)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUntag)
 		}
 	}
 
@@ -276,7 +278,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	if err := e.deleteNonDefaultVersions(ctx, meta.GetExternalName(cr)); err != nil {
-		return awsclient.Wrap(err, errDelete)
+		return errorutils.Wrap(err, errDelete)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -285,7 +287,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		PolicyArn: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }
 
 func (e *external) getCallerIdentityArn(ctx context.Context) (arn.ARN, error) {
@@ -377,7 +379,7 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 	// slashes. In addition, it can contain any ASCII character from the ! (\u0021 ) through the
 	// DEL character (\u007F ), including most punctuation characters, digits, and upper and lowercased letters.
 	if policyPath == nil {
-		policyPath = awsclient.String("/")
+		policyPath = pointer.String("/")
 	}
 
 	// Use it to construct an arn for the policy
@@ -385,7 +387,7 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 		Service:   "iam",
 		Region:    identityArn.Region,
 		AccountID: identityArn.AccountID,
-		Resource:  "policy" + awsclient.StringValue(policyPath) + policyName}
+		Resource:  "policy" + pointer.StringValue(policyPath) + policyName}
 
 	return aws.String(policyArn.String()), nil
 }

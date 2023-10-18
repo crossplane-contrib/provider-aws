@@ -32,8 +32,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudsearch/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 const (
@@ -105,19 +106,19 @@ func (h *hooks) lateInitialize(forProvider *svcapitypes.DomainParameters, _ *svc
 
 	current := resp.ScalingParameters.Options
 
-	spec.DesiredReplicationCount = awsclients.LateInitializeInt64Ptr(spec.DesiredReplicationCount, current.DesiredReplicationCount)
-	spec.DesiredInstanceType = awsclients.LateInitializeStringPtr(spec.DesiredInstanceType, current.DesiredInstanceType)
-	spec.DesiredPartitionCount = awsclients.LateInitializeInt64Ptr(spec.DesiredPartitionCount, current.DesiredPartitionCount)
+	spec.DesiredReplicationCount = pointer.LateInitializeInt64Ptr(spec.DesiredReplicationCount, current.DesiredReplicationCount)
+	spec.DesiredInstanceType = pointer.LateInitializeStringPtr(spec.DesiredInstanceType, current.DesiredInstanceType)
+	spec.DesiredPartitionCount = pointer.LateInitializeInt64Ptr(spec.DesiredPartitionCount, current.DesiredPartitionCount)
 
 	respAccessPolicies, err := h.client.DescribeServiceAccessPolicies(&svcsdk.DescribeServiceAccessPoliciesInput{
 		DomainName: forProvider.DomainName,
-		Deployed:   awsclients.Bool(false),
+		Deployed:   pointer.Bool(false),
 	})
 	if err != nil {
 		return errors.Wrap(err, errDescribeServiceAccessPolicies)
 	}
 
-	spec.AccessPolicies = awsclients.LateInitializeStringPtr(spec.AccessPolicies, respAccessPolicies.AccessPolicies.Options)
+	spec.AccessPolicies = pointer.LateInitializeStringPtr(spec.AccessPolicies, respAccessPolicies.AccessPolicies.Options)
 
 	return nil
 }
@@ -136,9 +137,9 @@ func (h *hooks) isUpToDateScalingParameters(ctx context.Context, cr *svcapitypes
 	spec := cr.Spec.ForProvider.CustomDomainParameters
 	current := resp.ScalingParameters.Options
 
-	isUpToDate := awsclients.Int64Value(spec.DesiredReplicationCount) == awsclients.Int64Value(current.DesiredReplicationCount) &&
-		awsclients.StringValue(spec.DesiredInstanceType) == awsclients.StringValue(current.DesiredInstanceType) &&
-		awsclients.Int64Value(spec.DesiredPartitionCount) == awsclients.Int64Value(current.DesiredPartitionCount)
+	isUpToDate := pointer.Int64Value(spec.DesiredReplicationCount) == pointer.Int64Value(current.DesiredReplicationCount) &&
+		pointer.StringValue(spec.DesiredInstanceType) == pointer.StringValue(current.DesiredInstanceType) &&
+		pointer.Int64Value(spec.DesiredPartitionCount) == pointer.Int64Value(current.DesiredPartitionCount)
 
 	return isUpToDate, nil
 }
@@ -146,7 +147,7 @@ func (h *hooks) isUpToDateScalingParameters(ctx context.Context, cr *svcapitypes
 func (h *hooks) isUpToDateAccessPolicies(ctx context.Context, cr *svcapitypes.Domain, domainName *string) (bool, error) {
 	in := svcsdk.DescribeServiceAccessPoliciesInput{
 		DomainName: domainName,
-		Deployed:   awsclients.Bool(false), // include pending policies as well
+		Deployed:   pointer.Bool(false), // include pending policies as well
 	}
 
 	resp, err := h.client.DescribeServiceAccessPoliciesWithContext(ctx, &in)
@@ -158,7 +159,7 @@ func (h *hooks) isUpToDateAccessPolicies(ctx context.Context, cr *svcapitypes.Do
 	spec := cr.Spec.ForProvider.CustomDomainParameters
 	current := resp.AccessPolicies
 
-	isUpToDate := awsclients.IsPolicyUpToDate(spec.AccessPolicies, current.Options) && !awsclients.BoolValue(current.Status.PendingDeletion)
+	isUpToDate := legacypolicy.IsPolicyUpToDate(spec.AccessPolicies, current.Options) && !pointer.BoolValue(current.Status.PendingDeletion)
 
 	return isUpToDate, nil
 }
@@ -175,15 +176,15 @@ func (h *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Domain, obj *svc
 		return false, "", err
 	}
 
-	return !awsclients.BoolValue(ds.RequiresIndexDocuments), "", nil
+	return !pointer.BoolValue(ds.RequiresIndexDocuments), "", nil
 }
 
 func updateConditions(cr *svcapitypes.Domain, ds *svcsdk.DomainStatus) {
 	switch {
-	case awsclients.BoolValue(ds.Deleted):
+	case pointer.BoolValue(ds.Deleted):
 		cr.SetConditions(xpv1.Deleting())
-	case awsclients.BoolValue(ds.Created) && ds.SearchService.Endpoint != nil && ds.DocService.Endpoint != nil:
-		if awsclients.BoolValue(ds.Processing) {
+	case pointer.BoolValue(ds.Created) && ds.SearchService.Endpoint != nil && ds.DocService.Endpoint != nil:
+		if pointer.BoolValue(ds.Processing) {
 			cr.SetConditions(xpv1.Available().WithMessage(infoConditionProcessing))
 		} else {
 			cr.SetConditions(xpv1.Available())
@@ -203,8 +204,8 @@ func (h *hooks) postObserve(ctx context.Context, cr *svcapitypes.Domain, obj *sv
 	updateConditions(cr, ds)
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
-		"docServiceEndpoint":    []byte(awsclients.StringValue(ds.DocService.Endpoint)),
-		"searchServiceEndpoint": []byte(awsclients.StringValue(ds.SearchService.Endpoint)),
+		"docServiceEndpoint":    []byte(pointer.StringValue(ds.DocService.Endpoint)),
+		"searchServiceEndpoint": []byte(pointer.StringValue(ds.SearchService.Endpoint)),
 	}
 
 	return obs, nil
@@ -250,7 +251,7 @@ func (h *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 		return managed.ExternalUpdate{}, nil
 	}
 
-	if awsclients.BoolValue(cr.Status.AtProvider.RequiresIndexDocuments) {
+	if pointer.BoolValue(cr.Status.AtProvider.RequiresIndexDocuments) {
 		_, err = h.client.IndexDocumentsWithContext(ctx, &svcsdk.IndexDocumentsInput{
 			DomainName: cr.Spec.ForProvider.DomainName,
 		})
@@ -263,5 +264,5 @@ func (h *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Domain, _ *svcsdk.DeleteDomainInput) (bool, error) {
-	return awsclients.BoolValue(cr.Status.AtProvider.Deleted), nil
+	return pointer.BoolValue(cr.Status.AtProvider.Deleted), nil
 }

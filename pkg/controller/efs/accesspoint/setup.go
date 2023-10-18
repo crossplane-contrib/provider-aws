@@ -12,8 +12,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupAccessPoint adds a controller that reconciles AccessPoint.
@@ -54,7 +54,7 @@ func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
 
 func preObserve(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.DescribeAccessPointsInput) error {
 	obj.FileSystemId = nil
-	obj.AccessPointId = awsclients.String(meta.GetExternalName(cr))
+	obj.AccessPointId = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -62,7 +62,7 @@ func postObserve(_ context.Context, cr *svcapitypes.AccessPoint, resp *svcsdk.De
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-	switch awsclients.StringValue(resp.AccessPoints[0].LifeCycleState) {
+	switch pointer.StringValue(resp.AccessPoints[0].LifeCycleState) {
 	case string(svcapitypes.LifeCycleState_available):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.LifeCycleState_creating):
@@ -77,7 +77,7 @@ func postObserve(_ context.Context, cr *svcapitypes.AccessPoint, resp *svcsdk.De
 
 func preCreate(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.CreateAccessPointInput) error {
 	obj.FileSystemId = cr.Spec.ForProvider.FileSystemID
-	obj.ClientToken = awsclients.String(string(cr.UID))
+	obj.ClientToken = pointer.String(string(cr.UID))
 	return nil
 }
 
@@ -85,6 +85,6 @@ func postCreate(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.Crea
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.AccessPointId))
+	meta.SetExternalName(cr, pointer.StringValue(obj.AccessPointId))
 	return managed.ExternalCreation{}, nil
 }

@@ -34,10 +34,11 @@ import (
 
 	elasticloadbalancingv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticloadbalancing/elb"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -94,7 +95,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +117,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		LoadBalancerNames: []string{cr.Spec.ForProvider.ELBName},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -158,7 +159,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		LoadBalancerName: aws.String(cr.Spec.ForProvider.ELBName),
 	})
 
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -178,5 +179,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		LoadBalancerName: aws.String(cr.Spec.ForProvider.ELBName),
 	})
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
 }

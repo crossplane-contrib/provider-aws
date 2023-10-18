@@ -33,9 +33,11 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/route53resolver/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	resolverruleassociation "github.com/crossplane-contrib/provider-aws/pkg/clients/resolverruleassociation"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -90,7 +92,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -114,9 +116,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
-	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(awsclient.String(meta.GetExternalName(cr))))
+	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(pointer.String(meta.GetExternalName(cr))))
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errGet)
 	}
 
 	switch res.ResolverRuleAssociation.Status {
@@ -146,10 +148,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	rsp, err := e.client.AssociateResolverRule(ctx, resolverruleassociation.GenerateCreateAssociateResolverRuleInput(cr))
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, awsclient.StringValue(rsp.ResolverRuleAssociation.Id))
+	meta.SetExternalName(cr, pointer.StringValue(rsp.ResolverRuleAssociation.Id))
 	return managed.ExternalCreation{}, nil
 }
 
@@ -161,7 +163,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	_, err := e.client.DisassociateResolverRule(ctx, resolverruleassociation.GenerateDeleteAssociateResolverRuleInput(cr))
 
-	return awsclient.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errDelete)
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {

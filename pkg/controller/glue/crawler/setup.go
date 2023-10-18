@@ -39,9 +39,11 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/glue/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -104,18 +106,18 @@ type hooks struct {
 }
 
 func (h *hooks) preDelete(ctx context.Context, cr *svcapitypes.Crawler, obj *svcsdk.DeleteCrawlerInput) (bool, error) {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 
 	// delete-requests to AWS will throw an error while the crawler is still working
 
 	// a currently running Crawler cannot be deleted. Need to stop first
-	if awsclients.StringValue(cr.Status.AtProvider.State) == svcsdk.CrawlerStateRunning {
+	if pointer.StringValue(cr.Status.AtProvider.State) == svcsdk.CrawlerStateRunning {
 		_, err := h.client.StopCrawlerWithContext(ctx, &svcsdk.StopCrawlerInput{Name: obj.Name})
 
-		return true, awsclients.Wrap(err, errDelete)
+		return true, errorutils.Wrap(err, errDelete)
 	}
 	// wait with delete-request while Crawler is stopping
-	if awsclients.StringValue(cr.Status.AtProvider.State) == svcsdk.CrawlerStateStopping {
+	if pointer.StringValue(cr.Status.AtProvider.State) == svcsdk.CrawlerStateStopping {
 
 		return true, nil
 	}
@@ -123,7 +125,7 @@ func (h *hooks) preDelete(ctx context.Context, cr *svcapitypes.Crawler, obj *svc
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCrawlerInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -140,10 +142,10 @@ func postObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCraw
 	cr.Status.AtProvider.CreationTime = fromTimePtr(obj.Crawler.CreationTime)
 	cr.Status.AtProvider.LastUpdated = fromTimePtr(obj.Crawler.LastUpdated)
 
-	switch awsclients.StringValue(obj.Crawler.State) {
+	switch pointer.StringValue(obj.Crawler.State) {
 	case svcsdk.CrawlerStateRunning,
 		svcsdk.CrawlerStateStopping:
-		cr.SetConditions(xpv1.Unavailable().WithMessage(awsclients.StringValue(obj.Crawler.State)))
+		cr.SetConditions(xpv1.Unavailable().WithMessage(pointer.StringValue(obj.Crawler.State)))
 		// Prevent Update() call during Running/Stopping state - which will fail.
 		obs.ResourceUpToDate = true
 	default:
@@ -156,30 +158,30 @@ func postObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCraw
 //nolint:gocyclo
 func lateInitialize(spec *svcapitypes.CrawlerParameters, resp *svcsdk.GetCrawlerOutput) error {
 
-	spec.Configuration = awsclients.LateInitializeStringPtr(spec.Configuration, resp.Crawler.Configuration)
+	spec.Configuration = pointer.LateInitializeStringPtr(spec.Configuration, resp.Crawler.Configuration)
 
 	if spec.LineageConfiguration == nil {
 		spec.LineageConfiguration = &svcapitypes.LineageConfiguration{}
 	}
-	spec.LineageConfiguration.CrawlerLineageSettings = awsclients.LateInitializeStringPtr(spec.LineageConfiguration.CrawlerLineageSettings, resp.Crawler.LineageConfiguration.CrawlerLineageSettings)
+	spec.LineageConfiguration.CrawlerLineageSettings = pointer.LateInitializeStringPtr(spec.LineageConfiguration.CrawlerLineageSettings, resp.Crawler.LineageConfiguration.CrawlerLineageSettings)
 
 	if spec.RecrawlPolicy == nil {
 		spec.RecrawlPolicy = &svcapitypes.RecrawlPolicy{}
 	}
-	spec.RecrawlPolicy.RecrawlBehavior = awsclients.LateInitializeStringPtr(spec.RecrawlPolicy.RecrawlBehavior, resp.Crawler.RecrawlPolicy.RecrawlBehavior)
+	spec.RecrawlPolicy.RecrawlBehavior = pointer.LateInitializeStringPtr(spec.RecrawlPolicy.RecrawlBehavior, resp.Crawler.RecrawlPolicy.RecrawlBehavior)
 
 	if spec.SchemaChangePolicy == nil {
 		spec.SchemaChangePolicy = &svcapitypes.SchemaChangePolicy{}
 	}
-	spec.SchemaChangePolicy.DeleteBehavior = awsclients.LateInitializeStringPtr(spec.SchemaChangePolicy.DeleteBehavior, resp.Crawler.SchemaChangePolicy.DeleteBehavior)
-	spec.SchemaChangePolicy.UpdateBehavior = awsclients.LateInitializeStringPtr(spec.SchemaChangePolicy.UpdateBehavior, resp.Crawler.SchemaChangePolicy.UpdateBehavior)
+	spec.SchemaChangePolicy.DeleteBehavior = pointer.LateInitializeStringPtr(spec.SchemaChangePolicy.DeleteBehavior, resp.Crawler.SchemaChangePolicy.DeleteBehavior)
+	spec.SchemaChangePolicy.UpdateBehavior = pointer.LateInitializeStringPtr(spec.SchemaChangePolicy.UpdateBehavior, resp.Crawler.SchemaChangePolicy.UpdateBehavior)
 
 	if resp.Crawler.Targets.JdbcTargets != nil && spec.Targets.JDBCTargets != nil {
 
 		for i, jdbcTarsIter := range resp.Crawler.Targets.JdbcTargets {
 
 			if spec.Targets.JDBCTargets[i] != nil {
-				spec.Targets.JDBCTargets[i].Path = awsclients.LateInitializeStringPtr(spec.Targets.JDBCTargets[i].Path, jdbcTarsIter.Path)
+				spec.Targets.JDBCTargets[i].Path = pointer.LateInitializeStringPtr(spec.Targets.JDBCTargets[i].Path, jdbcTarsIter.Path)
 			}
 		}
 	}
@@ -187,7 +189,7 @@ func lateInitialize(spec *svcapitypes.CrawlerParameters, resp *svcsdk.GetCrawler
 
 		for i, monTarsIter := range resp.Crawler.Targets.MongoDBTargets {
 			if spec.Targets.MongoDBTargets[i] != nil {
-				spec.Targets.MongoDBTargets[i].ScanAll = awsclients.LateInitializeBoolPtr(spec.Targets.MongoDBTargets[i].ScanAll, monTarsIter.ScanAll)
+				spec.Targets.MongoDBTargets[i].ScanAll = pointer.LateInitializeBoolPtr(spec.Targets.MongoDBTargets[i].ScanAll, monTarsIter.ScanAll)
 			}
 		}
 	}
@@ -205,7 +207,7 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Crawler, resp *svc
 	currentParams := customGenerateCrawler(resp).Spec.ForProvider
 
 	// separate check bc: 1.lowercase handling 2.field Schedule has different input/output shapes (see generator-config.yaml)
-	if !strings.EqualFold(awsclients.StringValue(cr.Spec.ForProvider.Schedule), awsclients.StringValue(currentParams.Schedule)) {
+	if !strings.EqualFold(pointer.StringValue(cr.Spec.ForProvider.Schedule), pointer.StringValue(currentParams.Schedule)) {
 
 		return false, "", nil
 	}
@@ -242,12 +244,12 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Crawler, resp *svc
 
 //nolint:gocyclo
 func preUpdate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.UpdateCrawlerInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 
 	obj.SetClassifiers(cr.Spec.ForProvider.Classifiers)
 	obj.CrawlerSecurityConfiguration = cr.Spec.ForProvider.CrawlerSecurityConfiguration
 	obj.DatabaseName = cr.Spec.ForProvider.DatabaseName
-	obj.Role = awsclients.String(cr.Spec.ForProvider.Role)
+	obj.Role = pointer.String(cr.Spec.ForProvider.Role)
 
 	obj.Targets = &svcsdk.CrawlerTargets{}
 
@@ -256,7 +258,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.UpdateCra
 		for _, catTarsIter := range cr.Spec.ForProvider.Targets.CatalogTargets {
 			catTarsElem := &svcsdk.CatalogTarget{
 				DatabaseName: ptr.To(catTarsIter.DatabaseName),
-				Tables:       awsclients.StringSliceToPtr(catTarsIter.Tables),
+				Tables:       pointer.StringSliceToPtr(catTarsIter.Tables),
 			}
 			catTars = append(catTars, catTarsElem)
 		}
@@ -332,9 +334,9 @@ func (h *hooks) postUpdate(ctx context.Context, cr *svcapitypes.Crawler, obj *sv
 
 //nolint:gocyclo
 func preCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCrawlerInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 
-	obj.Role = awsclients.String(cr.Spec.ForProvider.Role)
+	obj.Role = pointer.String(cr.Spec.ForProvider.Role)
 	obj.SetClassifiers(cr.Spec.ForProvider.Classifiers)
 	obj.CrawlerSecurityConfiguration = cr.Spec.ForProvider.CrawlerSecurityConfiguration
 	obj.DatabaseName = cr.Spec.ForProvider.DatabaseName
@@ -346,7 +348,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCra
 		for _, catTarsIter := range cr.Spec.ForProvider.Targets.CatalogTargets {
 			catTarsElem := &svcsdk.CatalogTarget{
 				DatabaseName: ptr.To(catTarsIter.DatabaseName),
-				Tables:       awsclients.StringSliceToPtr(catTarsIter.Tables),
+				Tables:       pointer.StringSliceToPtr(catTarsIter.Tables),
 			}
 			catTars = append(catTars, catTarsElem)
 		}
@@ -426,7 +428,7 @@ func (h *hooks) postCreate(ctx context.Context, cr *svcapitypes.Crawler, obj *sv
 		return managed.ExternalCreation{}, err
 	}
 	annotation := map[string]string{
-		annotationARN: awsclients.StringValue(crawlerARN),
+		annotationARN: pointer.StringValue(crawlerARN),
 	}
 	meta.AddAnnotations(cr, annotation)
 
@@ -443,15 +445,15 @@ func customGenerateCrawler(resp *svcsdk.GetCrawlerOutput) *svcapitypes.Crawler {
 	cr.Spec.ForProvider.Classifiers = resp.Crawler.Classifiers
 	cr.Spec.ForProvider.CrawlerSecurityConfiguration = resp.Crawler.CrawlerSecurityConfiguration
 	cr.Spec.ForProvider.DatabaseName = resp.Crawler.DatabaseName
-	cr.Spec.ForProvider.Role = awsclients.StringValue(resp.Crawler.Role)
+	cr.Spec.ForProvider.Role = pointer.StringValue(resp.Crawler.Role)
 	cr.Spec.ForProvider.Targets = svcapitypes.CustomCrawlerTargets{}
 
 	if resp.Crawler.Targets.CatalogTargets != nil {
 		catTars := []*svcapitypes.CustomCatalogTarget{}
 		for _, catTarsIter := range resp.Crawler.Targets.CatalogTargets {
 			catTarsElem := &svcapitypes.CustomCatalogTarget{
-				DatabaseName: awsclients.StringValue(catTarsIter.DatabaseName),
-				Tables:       awsclients.StringPtrSliceToValue(catTarsIter.Tables),
+				DatabaseName: pointer.StringValue(catTarsIter.DatabaseName),
+				Tables:       pointer.StringPtrSliceToValue(catTarsIter.Tables),
 			}
 			catTars = append(catTars, catTarsElem)
 		}
@@ -553,9 +555,9 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Crawler) (*string,
 
 	var accountID string
 
-	sess, err := awsclients.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
+	sess, err := connectaws.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
-		return nil, awsclients.Wrap(err, errBuildARN)
+		return nil, errorutils.Wrap(err, errBuildARN)
 	}
 
 	stsclient := svcsdksts.New(sess)
@@ -564,7 +566,7 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Crawler) (*string,
 	if err != nil {
 		return nil, err
 	}
-	accountID = awsclients.StringValue(callerID.Account)
+	accountID = pointer.StringValue(callerID.Account)
 
 	crawlerARN := ("arn:aws:glue:" +
 		cr.Spec.ForProvider.Region + ":" +

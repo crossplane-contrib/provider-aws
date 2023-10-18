@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/autoscaling"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -19,9 +20,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/autoscaling/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupAutoScalingGroup adds a controller that reconciles AutoScalingGroup.
@@ -241,23 +241,23 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 
 func lateInitialize(in *svcapitypes.AutoScalingGroupParameters, asg *svcsdk.DescribeAutoScalingGroupsOutput) error {
 	obs := asg.AutoScalingGroups[0]
-	in.AvailabilityZones = awsclients.LateInitializeStringPtrSlice(in.AvailabilityZones, obs.AvailabilityZones)
-	in.Context = awsclients.LateInitializeStringPtr(in.Context, obs.Context)
-	in.CapacityRebalance = awsclients.LateInitializeBoolPtr(in.CapacityRebalance, obs.CapacityRebalance)
-	in.DefaultCooldown = awsclients.LateInitializeInt64Ptr(in.DefaultCooldown, obs.DefaultCooldown)
-	in.DefaultInstanceWarmup = awsclients.LateInitializeInt64Ptr(in.DefaultInstanceWarmup, obs.DefaultInstanceWarmup)
-	in.DesiredCapacity = awsclients.LateInitializeInt64Ptr(in.DesiredCapacity, obs.DesiredCapacity)
-	in.DesiredCapacityType = awsclients.LateInitializeStringPtr(in.DesiredCapacityType, obs.DesiredCapacityType)
-	in.HealthCheckGracePeriod = awsclients.LateInitializeInt64Ptr(in.HealthCheckGracePeriod, obs.HealthCheckGracePeriod)
-	in.HealthCheckType = awsclients.LateInitializeStringPtr(in.HealthCheckType, obs.HealthCheckType)
-	in.LoadBalancerNames = awsclients.LateInitializeStringPtrSlice(in.LoadBalancerNames, obs.LoadBalancerNames)
-	in.MaxInstanceLifetime = awsclients.LateInitializeInt64Ptr(in.MaxInstanceLifetime, obs.MaxInstanceLifetime)
-	in.NewInstancesProtectedFromScaleIn = awsclients.LateInitializeBoolPtr(in.NewInstancesProtectedFromScaleIn, obs.NewInstancesProtectedFromScaleIn)
-	in.PlacementGroup = awsclients.LateInitializeStringPtr(in.PlacementGroup, obs.PlacementGroup)
-	in.ServiceLinkedRoleARN = awsclients.LateInitializeStringPtr(in.ServiceLinkedRoleARN, obs.ServiceLinkedRoleARN)
-	in.TargetGroupARNs = awsclients.LateInitializeStringPtrSlice(in.TargetGroupARNs, obs.TargetGroupARNs)
-	in.TerminationPolicies = awsclients.LateInitializeStringPtrSlice(in.TerminationPolicies, obs.TerminationPolicies)
-	in.VPCZoneIdentifier = awsclients.LateInitializeStringPtr(in.VPCZoneIdentifier, obs.VPCZoneIdentifier)
+	in.AvailabilityZones = pointer.LateInitializeStringPtrSlice(in.AvailabilityZones, obs.AvailabilityZones)
+	in.Context = pointer.LateInitializeStringPtr(in.Context, obs.Context)
+	in.CapacityRebalance = pointer.LateInitializeBoolPtr(in.CapacityRebalance, obs.CapacityRebalance)
+	in.DefaultCooldown = pointer.LateInitializeInt64Ptr(in.DefaultCooldown, obs.DefaultCooldown)
+	in.DefaultInstanceWarmup = pointer.LateInitializeInt64Ptr(in.DefaultInstanceWarmup, obs.DefaultInstanceWarmup)
+	in.DesiredCapacity = pointer.LateInitializeInt64Ptr(in.DesiredCapacity, obs.DesiredCapacity)
+	in.DesiredCapacityType = pointer.LateInitializeStringPtr(in.DesiredCapacityType, obs.DesiredCapacityType)
+	in.HealthCheckGracePeriod = pointer.LateInitializeInt64Ptr(in.HealthCheckGracePeriod, obs.HealthCheckGracePeriod)
+	in.HealthCheckType = pointer.LateInitializeStringPtr(in.HealthCheckType, obs.HealthCheckType)
+	in.LoadBalancerNames = pointer.LateInitializeStringPtrSlice(in.LoadBalancerNames, obs.LoadBalancerNames)
+	in.MaxInstanceLifetime = pointer.LateInitializeInt64Ptr(in.MaxInstanceLifetime, obs.MaxInstanceLifetime)
+	in.NewInstancesProtectedFromScaleIn = pointer.LateInitializeBoolPtr(in.NewInstancesProtectedFromScaleIn, obs.NewInstancesProtectedFromScaleIn)
+	in.PlacementGroup = pointer.LateInitializeStringPtr(in.PlacementGroup, obs.PlacementGroup)
+	in.ServiceLinkedRoleARN = pointer.LateInitializeStringPtr(in.ServiceLinkedRoleARN, obs.ServiceLinkedRoleARN)
+	in.TargetGroupARNs = pointer.LateInitializeStringPtrSlice(in.TargetGroupARNs, obs.TargetGroupARNs)
+	in.TerminationPolicies = pointer.LateInitializeStringPtrSlice(in.TerminationPolicies, obs.TerminationPolicies)
+	in.VPCZoneIdentifier = pointer.LateInitializeStringPtr(in.VPCZoneIdentifier, obs.VPCZoneIdentifier)
 
 	return nil
 }

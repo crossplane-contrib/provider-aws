@@ -20,9 +20,10 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -82,7 +83,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +111,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		NatGatewayIds: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -139,7 +140,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: v1beta1.CompareTags(cr.Spec.ForProvider.Tags, observed.Tags),
+		ResourceUpToDate: ec2.CompareTagsV1Beta1(cr.Spec.ForProvider.Tags, observed.Tags),
 	}, nil
 }
 
@@ -160,13 +161,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.Tags != nil {
 		input.TagSpecifications = []awsec2types.TagSpecification{{
 			ResourceType: "natgateway",
-			Tags:         v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+			Tags:         ec2.GenerateEC2TagsV1Beta1(cr.Spec.ForProvider.Tags),
 		}}
 	}
 
 	nat, err := e.client.CreateNatGateway(ctx, input)
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, aws.ToString(nat.NatGateway.NatGatewayId))
 	return managed.ExternalCreation{}, nil
@@ -182,7 +183,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		NatGatewayIds: []string{meta.GetExternalName(cr)},
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -192,13 +193,13 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	observed := response.NatGateways[0]
 
-	addTags, RemoveTags := ec2.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), observed.Tags)
+	addTags, RemoveTags := ec2.DiffEC2Tags(ec2.GenerateEC2TagsV1Beta1(cr.Spec.ForProvider.Tags), observed.Tags)
 	if len(RemoveTags) > 0 {
 		if _, err := e.client.DeleteTags(ctx, &awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      RemoveTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errDeleteTags)
 		}
 	}
 	if len(addTags) > 0 {
@@ -206,7 +207,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      addTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateTags)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -228,5 +229,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		NatGatewayId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDelete)
 }

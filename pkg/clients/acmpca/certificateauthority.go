@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 
 	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // Client defines the CertificateManager operations
@@ -55,8 +56,8 @@ func GenerateCreateCertificateAuthorityInput(p *v1beta1.CertificateAuthorityPara
 	m.Tags = make([]types.Tag, len(p.Tags))
 	for i, val := range p.Tags {
 		m.Tags[i] = types.Tag{
-			Key:   aws.String(val.Key),
-			Value: aws.String(val.Value),
+			Key:   pointer.String(val.Key),
+			Value: pointer.String(val.Value),
 		}
 	}
 
@@ -68,18 +69,18 @@ func GenerateCertificateAuthorityConfiguration(p v1beta1.CertificateAuthorityCon
 
 	m := &types.CertificateAuthorityConfiguration{
 		Subject: &types.ASN1Subject{
-			CommonName:                 aws.String(p.Subject.CommonName),
-			Country:                    aws.String(p.Subject.Country),
+			CommonName:                 pointer.String(p.Subject.CommonName),
+			Country:                    pointer.String(p.Subject.Country),
 			DistinguishedNameQualifier: p.Subject.DistinguishedNameQualifier,
 			GenerationQualifier:        p.Subject.GenerationQualifier,
 			GivenName:                  p.Subject.GivenName,
 			Initials:                   p.Subject.Initials,
-			Locality:                   aws.String(p.Subject.Locality),
-			Organization:               aws.String(p.Subject.Organization),
-			OrganizationalUnit:         aws.String(p.Subject.OrganizationalUnit),
+			Locality:                   pointer.String(p.Subject.Locality),
+			Organization:               pointer.String(p.Subject.Organization),
+			OrganizationalUnit:         pointer.String(p.Subject.OrganizationalUnit),
 			Pseudonym:                  p.Subject.Pseudonym,
 			SerialNumber:               p.Subject.SerialNumber,
-			State:                      aws.String(p.Subject.State),
+			State:                      pointer.String(p.Subject.State),
 			Surname:                    p.Subject.Surname,
 			Title:                      p.Subject.Title,
 		},
@@ -123,7 +124,7 @@ func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParamete
 	// so these are the only variants we support in spec. The current status
 	// in the status.atProvider.
 	if aws.ToString(in.Status) == "" && (certificateAuthority.Status == types.CertificateAuthorityStatusActive || certificateAuthority.Status == types.CertificateAuthorityStatusDisabled) {
-		in.Status = aws.String(string(certificateAuthority.Status))
+		in.Status = pointer.String(string(certificateAuthority.Status))
 	}
 
 	if certificateAuthority.RevocationConfiguration.CrlConfiguration.Enabled {

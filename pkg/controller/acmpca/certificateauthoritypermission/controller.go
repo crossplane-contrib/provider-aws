@@ -36,9 +36,11 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -94,7 +96,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.client, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.client, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -127,12 +129,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		CertificateAuthorityArn: &caARN,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
 	}
 
 	var attachedPermission *awsacmpcatypes.Permission
 	for i := range response.Permissions {
-		if awsclient.StringValue(response.Permissions[i].Principal) == principal {
+		if pointer.StringValue(response.Permissions[i].Principal) == principal {
 			attachedPermission = &response.Permissions[i]
 			break
 		}
@@ -168,13 +170,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	_, err := e.client.CreatePermission(ctx, in)
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	// This resource is interesting in that it's a binding without its own
 	// external identity. We therefore derive an external name from the
 	// identity of the CA it applies to, and the principal it applies.
-	meta.SetExternalName(cr, cr.Spec.ForProvider.Principal+"/"+awsclient.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN))
+	meta.SetExternalName(cr, cr.Spec.ForProvider.Principal+"/"+pointer.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN))
 
 	return managed.ExternalCreation{}, nil
 
@@ -194,5 +196,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		Principal:               aws.String(cr.Spec.ForProvider.Principal),
 	})
 
-	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 }

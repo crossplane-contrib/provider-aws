@@ -11,7 +11,7 @@ import (
 	"github.com/aws/smithy-go"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -68,24 +68,24 @@ func GenerateVpcCIDRBlockObservation(associationID string, vpc ec2types.Vpc) v1b
 	IPv4, IPv6 := FindCIDRAssociation(associationID, vpc)
 
 	if IPv4 != nil {
-		o.AssociationID = awsclient.StringValue(IPv4.AssociationId)
+		o.AssociationID = pointer.StringValue(IPv4.AssociationId)
 		o.CIDRBlockState = v1beta1.VPCCIDRBlockState{
 			State:         string(IPv4.CidrBlockState.State),
-			StatusMessage: awsclient.StringValue(IPv4.CidrBlockState.StatusMessage),
+			StatusMessage: pointer.StringValue(IPv4.CidrBlockState.StatusMessage),
 		}
-		o.CIDRBlock = awsclient.StringValue(IPv4.CidrBlock)
+		o.CIDRBlock = pointer.StringValue(IPv4.CidrBlock)
 		return o
 	}
 
 	if IPv6 != nil {
-		o.AssociationID = awsclient.StringValue(IPv6.AssociationId)
+		o.AssociationID = pointer.StringValue(IPv6.AssociationId)
 		o.IPv6CIDRBlockState = v1beta1.VPCCIDRBlockState{
 			State:         string(IPv6.Ipv6CidrBlockState.State),
-			StatusMessage: awsclient.StringValue(IPv6.Ipv6CidrBlockState.StatusMessage),
+			StatusMessage: pointer.StringValue(IPv6.Ipv6CidrBlockState.StatusMessage),
 		}
-		o.IPv6CIDRBlock = awsclient.StringValue(IPv6.Ipv6CidrBlock)
-		o.IPv6Pool = awsclient.StringValue(IPv6.Ipv6Pool)
-		o.NetworkBorderGroup = awsclient.StringValue(IPv6.NetworkBorderGroup)
+		o.IPv6CIDRBlock = pointer.StringValue(IPv6.Ipv6CidrBlock)
+		o.IPv6Pool = pointer.StringValue(IPv6.Ipv6Pool)
+		o.NetworkBorderGroup = pointer.StringValue(IPv6.NetworkBorderGroup)
 		return o
 	}
 	return o

@@ -11,9 +11,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 func TestPublicAccessBlockClient_Observe(t *testing.T) {
@@ -42,7 +43,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, publicAccessBlockGetFailed),
+				err:    errorutils.Wrap(errBoom, publicAccessBlockGetFailed),
 			},
 		},
 		"NotFoundNotNeeded": {
@@ -68,10 +69,10 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls:       awsclient.Bool(false),
-								IgnorePublicAcls:      awsclient.Bool(false),
-								BlockPublicPolicy:     awsclient.Bool(false),
-								RestrictPublicBuckets: awsclient.Bool(false),
+								BlockPublicAcls:       pointer.Bool(false),
+								IgnorePublicAcls:      pointer.Bool(false),
+								BlockPublicPolicy:     pointer.Bool(false),
+								RestrictPublicBuckets: pointer.Bool(false),
 							},
 						},
 					},
@@ -92,7 +93,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls: awsclient.Bool(true),
+								BlockPublicAcls: pointer.Bool(true),
 							},
 						},
 					},
@@ -115,10 +116,10 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls:       awsclient.Bool(false),
-								IgnorePublicAcls:      awsclient.Bool(false),
-								BlockPublicPolicy:     awsclient.Bool(false),
-								RestrictPublicBuckets: awsclient.Bool(false),
+								BlockPublicAcls:       pointer.Bool(false),
+								IgnorePublicAcls:      pointer.Bool(false),
+								BlockPublicPolicy:     pointer.Bool(false),
+								RestrictPublicBuckets: pointer.Bool(false),
 							},
 						},
 					},
@@ -141,7 +142,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls: awsclient.Bool(true),
+								BlockPublicAcls: pointer.Bool(true),
 							},
 						},
 					},
@@ -165,7 +166,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls: awsclient.Bool(true),
+								BlockPublicAcls: pointer.Bool(true),
 							},
 						},
 					},
@@ -233,7 +234,7 @@ func TestPublicAccessBlockClient_CreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, publicAccessBlockPutFailed),
+				err: errorutils.Wrap(errBoom, publicAccessBlockPutFailed),
 			},
 		},
 	}
@@ -272,7 +273,7 @@ func TestPublicAccessBlockClient_Delete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, publicAccessBlockDeleteFailed),
+				err: errorutils.Wrap(errBoom, publicAccessBlockDeleteFailed),
 			},
 		},
 		"GoneAlready": {
@@ -321,7 +322,7 @@ func TestPublicAccessBlockClient_LateInitialize(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, publicAccessBlockGetFailed),
+				err: errorutils.Wrap(errBoom, publicAccessBlockGetFailed),
 			},
 		},
 		"NotFoundSkip": {

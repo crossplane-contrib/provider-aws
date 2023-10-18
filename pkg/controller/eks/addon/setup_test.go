@@ -31,8 +31,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	mockeksiface "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/eksiface"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -114,7 +115,7 @@ func TestObserve(t *testing.T) {
 						).
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
-								Status: awsclient.String(awseks.AddonStatusActive),
+								Status: pointer.String(awseks.AddonStatusActive),
 							},
 						}, nil)
 				}),
@@ -127,7 +128,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testExternalName),
 					withConditions(xpv1.Available()),
 					withStatus(v1alpha1.AddonObservation{
-						Status: awsclient.String(awseks.AddonStatusActive),
+						Status: pointer.String(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -155,7 +156,7 @@ func TestObserve(t *testing.T) {
 				cr: addon(
 					withExternalName(testExternalName),
 				),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 		"LateInitSuccess": {
@@ -169,7 +170,7 @@ func TestObserve(t *testing.T) {
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
 								ServiceAccountRoleArn: &testServiceAccountRoleArn,
-								Status:                awsclient.String(awseks.AddonStatusActive),
+								Status:                pointer.String(awseks.AddonStatusActive),
 							},
 						}, nil)
 				}),
@@ -187,7 +188,7 @@ func TestObserve(t *testing.T) {
 						},
 					),
 					withStatus(v1alpha1.AddonObservation{
-						Status: awsclient.String(awseks.AddonStatusActive),
+						Status: pointer.String(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -324,7 +325,7 @@ func TestCreate(t *testing.T) {
 					}),
 					withConditions(xpv1.Creating()),
 				),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -490,7 +491,7 @@ func TestUpdate(t *testing.T) {
 						},
 					}),
 				),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 		"FailedDescribeAddon": {
@@ -544,7 +545,7 @@ func TestUpdate(t *testing.T) {
 						},
 					}),
 				),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 		"FailedTagResource": {
@@ -626,7 +627,7 @@ func TestUpdate(t *testing.T) {
 						v1alpha1.AddonObservation{AddonARN: &testExternalName},
 					),
 				),
-				err: awsclient.Wrap(errBoom, errTagResource),
+				err: errorutils.Wrap(errBoom, errTagResource),
 			},
 		},
 		"UntagResource": {
@@ -716,7 +717,7 @@ func TestUpdate(t *testing.T) {
 						v1alpha1.AddonObservation{AddonARN: &testExternalName},
 					),
 				),
-				err: awsclient.Wrap(errBoom, errUntagResource),
+				err: errorutils.Wrap(errBoom, errUntagResource),
 			},
 		},
 	}
@@ -815,7 +816,7 @@ func TestDelete(t *testing.T) {
 					}),
 					withConditions(xpv1.Deleting()),
 				),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 	}

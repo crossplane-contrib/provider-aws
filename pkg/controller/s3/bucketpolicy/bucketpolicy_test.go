@@ -31,9 +31,10 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1alpha3"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -144,7 +145,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  bucketPolicy(withPolicy(&params)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -229,7 +230,7 @@ func TestCreate(t *testing.T) {
 				cr: bucketPolicy(
 					withPolicy(&params),
 					withConditions(xpv1.Creating())),
-				err: awsclient.Wrap(errBoom, errAttach),
+				err: errorutils.Wrap(errBoom, errAttach),
 			},
 		},
 	}
@@ -343,7 +344,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: bucketPolicy(withPolicy(&params),
 					withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -433,7 +434,7 @@ func TestFormat(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.str, awsclient.StringValue(str)); diff != "" {
+			if diff := cmp.Diff(tc.want.str, pointer.StringValue(str)); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

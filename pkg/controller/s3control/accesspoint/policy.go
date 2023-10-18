@@ -26,8 +26,9 @@ import (
 	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/s3control/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // policyStatus represents the current status if the policy is updated.
@@ -64,7 +65,7 @@ func (p *policyClient) observe(cr *svcapitypes.AccessPoint) (policyStatus, error
 			}
 			return needsUpdate, nil
 		}
-		return needsUpdate, aws.Wrap(err, errDescribePolicy)
+		return needsUpdate, errorutils.Wrap(err, errDescribePolicy)
 	}
 
 	if cr.Spec.ForProvider.Policy == nil {
@@ -87,7 +88,7 @@ func (p *policyClient) createOrUpdate(ctx context.Context, cr *svcapitypes.Acces
 		return nil
 	}
 	input := &svcsdk.PutAccessPointPolicyInput{}
-	input.Name = aws.String(meta.GetExternalName(cr))
+	input.Name = pointer.String(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.AccountID != nil {
 		input.SetAccountId(*cr.Spec.ForProvider.AccountID)
@@ -99,13 +100,13 @@ func (p *policyClient) createOrUpdate(ctx context.Context, cr *svcapitypes.Acces
 	}
 	input.SetPolicy(*policy)
 	_, err = p.client.PutAccessPointPolicyWithContext(ctx, input)
-	return aws.Wrap(err, errPutPolicy)
+	return errorutils.Wrap(err, errPutPolicy)
 }
 
 // delete deletes the Access Point policy.
 func (p *policyClient) delete(ctx context.Context, cr *svcapitypes.AccessPoint) error {
 	_, err := p.client.DeleteAccessPointPolicyWithContext(ctx, generateDeleteAccessPointPolicyInput(cr))
-	return aws.Wrap(err, errDeletePolicy)
+	return errorutils.Wrap(err, errDeletePolicy)
 }
 
 // isErrorPolicyNotFound returns whether the given error is of type NotFound or not.
@@ -117,7 +118,7 @@ func isErrorPolicyNotFound(err error) bool {
 // generateGetAccessPointPolicyInput returns a get input.
 func generateGetAccessPointPolicyInput(cr *svcapitypes.AccessPoint) *svcsdk.GetAccessPointPolicyInput {
 	input := &svcsdk.GetAccessPointPolicyInput{}
-	input.Name = aws.String(meta.GetExternalName(cr))
+	input.Name = pointer.String(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.AccountID != nil {
 		input.SetAccountId(*cr.Spec.ForProvider.AccountID)
@@ -129,7 +130,7 @@ func generateGetAccessPointPolicyInput(cr *svcapitypes.AccessPoint) *svcsdk.GetA
 // generateDeleteAccessPointPolicyInput returns a deletion input.
 func generateDeleteAccessPointPolicyInput(cr *svcapitypes.AccessPoint) *svcsdk.DeleteAccessPointPolicyInput {
 	input := &svcsdk.DeleteAccessPointPolicyInput{}
-	input.Name = aws.String(meta.GetExternalName(cr))
+	input.Name = pointer.String(meta.GetExternalName(cr))
 	if cr.Spec.ForProvider.AccountID != nil {
 		input.SetAccountId(*cr.Spec.ForProvider.AccountID)
 	}

@@ -36,9 +36,11 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/eks"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -96,7 +98,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotEKSIdentityProviderConfig)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +133,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 			cr.Status.AtProvider.Status = ""
 			return managed.ExternalObservation{}, nil
 		}
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribeFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errDescribeFailed)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -170,7 +172,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, nil
 	}
 	_, err := e.client.AssociateIdentityProviderConfig(ctx, eks.GenerateAssociateIdentityProviderConfigInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreateFailed)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -190,17 +192,17 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		ClusterName: &cr.Spec.ForProvider.ClusterName})
 
 	if err != nil || rsp.IdentityProviderConfig == nil || rsp.IdentityProviderConfig.Oidc == nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribeFailed)
 	}
-	add, remove := awsclient.DiffTags(cr.Spec.ForProvider.Tags, rsp.IdentityProviderConfig.Oidc.Tags)
+	add, remove := tagutils.DiffTags(cr.Spec.ForProvider.Tags, rsp.IdentityProviderConfig.Oidc.Tags)
 	if len(remove) != 0 {
 		if _, err := e.client.UntagResource(ctx, &awseks.UntagResourceInput{ResourceArn: rsp.IdentityProviderConfig.Oidc.IdentityProviderConfigArn, TagKeys: remove}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if len(add) != 0 {
 		if _, err := e.client.TagResource(ctx, &awseks.TagResourceInput{ResourceArn: rsp.IdentityProviderConfig.Oidc.IdentityProviderConfigArn, Tags: add}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -216,7 +218,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return nil
 	}
 	_, err := e.client.DisassociateIdentityProviderConfig(ctx, eks.GenerateDisassociateIdentityProviderConfigInput(meta.GetExternalName(cr), cr.Spec.ForProvider.ClusterName))
-	return awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+	return errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
 }
 
 type tagger struct {

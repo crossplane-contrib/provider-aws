@@ -28,8 +28,9 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -50,13 +51,13 @@ func NewWebsiteConfigurationClient(client s3.BucketClient) *WebsiteConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
-	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.WebsiteConfiguration
 	if err != nil {
 		if s3.WebsiteConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
+		return NeedsUpdate, errorutils.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
 	}
 
 	switch {
@@ -88,25 +89,25 @@ func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	}
 	input := GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.WebsiteConfiguration)
 	_, err := in.client.PutBucketWebsite(ctx, input)
-	return awsclient.Wrap(err, websitePutFailed)
+	return errorutils.Wrap(err, websitePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketWebsite(ctx,
 		&awss3.DeleteBucketWebsiteInput{
-			Bucket: awsclient.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.String(meta.GetExternalName(bucket)),
 		},
 	)
-	return awsclient.Wrap(err, websiteDeleteFailed)
+	return errorutils.Wrap(err, websiteDeleteFailed)
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *WebsiteConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
+		return errorutils.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
 	}
 
 	if external == nil || (len(external.RoutingRules) == 0 &&
@@ -134,14 +135,14 @@ func (in *WebsiteConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) 
 func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *types.WebsiteConfiguration {
 	wi := &types.WebsiteConfiguration{}
 	if config.ErrorDocument != nil {
-		wi.ErrorDocument = &types.ErrorDocument{Key: awsclient.String(config.ErrorDocument.Key)}
+		wi.ErrorDocument = &types.ErrorDocument{Key: pointer.String(config.ErrorDocument.Key)}
 	}
 	if config.IndexDocument != nil {
-		wi.IndexDocument = &types.IndexDocument{Suffix: awsclient.String(config.IndexDocument.Suffix)}
+		wi.IndexDocument = &types.IndexDocument{Suffix: pointer.String(config.IndexDocument.Suffix)}
 	}
 	if config.RedirectAllRequestsTo != nil {
 		wi.RedirectAllRequestsTo = &types.RedirectAllRequestsTo{
-			HostName: awsclient.String(config.RedirectAllRequestsTo.HostName),
+			HostName: pointer.String(config.RedirectAllRequestsTo.HostName),
 			Protocol: types.Protocol(config.RedirectAllRequestsTo.Protocol),
 		}
 	}
@@ -173,7 +174,7 @@ func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *types.W
 // GeneratePutBucketWebsiteInput creates the input for the PutBucketWebsite request for the S3 Client
 func GeneratePutBucketWebsiteInput(name string, config *v1beta1.WebsiteConfiguration) *awss3.PutBucketWebsiteInput {
 	wi := &awss3.PutBucketWebsiteInput{
-		Bucket:               awsclient.String(name),
+		Bucket:               pointer.String(name),
 		WebsiteConfiguration: GenerateWebsiteConfiguration(config),
 	}
 	return wi
@@ -184,25 +185,25 @@ func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, con
 		if config.ErrorDocument == nil {
 			config.ErrorDocument = &v1beta1.ErrorDocument{}
 		}
-		config.ErrorDocument.Key = awsclient.LateInitializeString(config.ErrorDocument.Key, external.ErrorDocument.Key)
+		config.ErrorDocument.Key = pointer.LateInitializeString(config.ErrorDocument.Key, external.ErrorDocument.Key)
 	}
 	if external.IndexDocument != nil {
 		if config.IndexDocument == nil {
 			config.IndexDocument = &v1beta1.IndexDocument{}
 		}
-		config.IndexDocument.Suffix = awsclient.LateInitializeString(config.IndexDocument.Suffix, external.IndexDocument.Suffix)
+		config.IndexDocument.Suffix = pointer.LateInitializeString(config.IndexDocument.Suffix, external.IndexDocument.Suffix)
 	}
 	if external.RedirectAllRequestsTo != nil {
 		if config.RedirectAllRequestsTo == nil {
 			config.RedirectAllRequestsTo = &v1beta1.RedirectAllRequestsTo{}
 		}
 		if external.RedirectAllRequestsTo.Protocol != "" {
-			config.RedirectAllRequestsTo.Protocol = awsclient.LateInitializeString(
+			config.RedirectAllRequestsTo.Protocol = pointer.LateInitializeString(
 				config.RedirectAllRequestsTo.Protocol,
-				awsclient.String(string(external.RedirectAllRequestsTo.Protocol)),
+				pointer.String(string(external.RedirectAllRequestsTo.Protocol)),
 			)
 		}
-		config.RedirectAllRequestsTo.HostName = awsclient.LateInitializeString(
+		config.RedirectAllRequestsTo.HostName = pointer.LateInitializeString(
 			config.RedirectAllRequestsTo.HostName,
 			external.RedirectAllRequestsTo.HostName,
 		)
@@ -211,26 +212,26 @@ func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, con
 		config.RoutingRules = make([]v1beta1.RoutingRule, len(external.RoutingRules))
 		for i, rr := range external.RoutingRules {
 			if rr.Redirect != nil {
-				config.RoutingRules[i].Redirect.HostName = awsclient.LateInitializeStringPtr(
+				config.RoutingRules[i].Redirect.HostName = pointer.LateInitializeStringPtr(
 					config.RoutingRules[i].Redirect.HostName,
 					rr.Redirect.HostName,
 				)
-				config.RoutingRules[i].Redirect.HTTPRedirectCode = awsclient.LateInitializeStringPtr(
+				config.RoutingRules[i].Redirect.HTTPRedirectCode = pointer.LateInitializeStringPtr(
 					config.RoutingRules[i].Redirect.HTTPRedirectCode,
 					rr.Redirect.HttpRedirectCode,
 				)
-				config.RoutingRules[i].Redirect.ReplaceKeyPrefixWith = awsclient.LateInitializeStringPtr(
+				config.RoutingRules[i].Redirect.ReplaceKeyPrefixWith = pointer.LateInitializeStringPtr(
 					config.RoutingRules[i].Redirect.ReplaceKeyPrefixWith,
 					rr.Redirect.ReplaceKeyPrefixWith,
 				)
-				config.RoutingRules[i].Redirect.ReplaceKeyWith = awsclient.LateInitializeStringPtr(
+				config.RoutingRules[i].Redirect.ReplaceKeyWith = pointer.LateInitializeStringPtr(
 					config.RoutingRules[i].Redirect.ReplaceKeyWith,
 					rr.Redirect.ReplaceKeyWith,
 				)
 				if rr.Redirect.Protocol != "" {
-					config.RoutingRules[i].Redirect.Protocol = awsclient.LateInitializeString(
+					config.RoutingRules[i].Redirect.Protocol = pointer.LateInitializeString(
 						config.RoutingRules[i].Redirect.Protocol,
-						awsclient.String(string(rr.Redirect.Protocol)),
+						pointer.String(string(rr.Redirect.Protocol)),
 					)
 				}
 			}
@@ -238,11 +239,11 @@ func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, con
 				if config.RoutingRules[i].Condition == nil {
 					config.RoutingRules[i].Condition = &v1beta1.Condition{}
 				}
-				config.RoutingRules[i].Condition.HTTPErrorCodeReturnedEquals = awsclient.LateInitializeStringPtr(
+				config.RoutingRules[i].Condition.HTTPErrorCodeReturnedEquals = pointer.LateInitializeStringPtr(
 					config.RoutingRules[i].Condition.HTTPErrorCodeReturnedEquals,
 					rr.Condition.HttpErrorCodeReturnedEquals,
 				)
-				config.RoutingRules[i].Condition.KeyPrefixEquals = awsclient.LateInitializeStringPtr(
+				config.RoutingRules[i].Condition.KeyPrefixEquals = pointer.LateInitializeStringPtr(
 					config.RoutingRules[i].Condition.KeyPrefixEquals,
 					rr.Condition.KeyPrefixEquals,
 				)

@@ -28,8 +28,9 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -50,13 +51,13 @@ func NewTaggingConfigurationClient(client s3.BucketClient) *TaggingConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.BucketTagging
 	if err != nil {
 		if s3.TaggingNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
+		return NeedsUpdate, errorutils.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
 
 	switch {
@@ -78,25 +79,25 @@ func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	}
 	input := GeneratePutBucketTagging(meta.GetExternalName(bucket), bucket.Spec.ForProvider.BucketTagging)
 	_, err := in.client.PutBucketTagging(ctx, input)
-	return awsclient.Wrap(err, taggingPutFailed)
+	return errorutils.Wrap(err, taggingPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketTagging(ctx,
 		&awss3.DeleteBucketTaggingInput{
-			Bucket: awsclient.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.String(meta.GetExternalName(bucket)),
 		},
 	)
-	return awsclient.Wrap(err, taggingDeleteFailed)
+	return errorutils.Wrap(err, taggingDeleteFailed)
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *TaggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
+		return errorutils.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
 
 	// We need the second check here because by default the tags are not set
@@ -140,7 +141,7 @@ func GenerateLocalTagging(config []types.Tag) *v1beta1.Tagging {
 // GeneratePutBucketTagging creates the PutBucketTaggingInput for the aws SDK
 func GeneratePutBucketTagging(name string, config *v1beta1.Tagging) *awss3.PutBucketTaggingInput {
 	return &awss3.PutBucketTaggingInput{
-		Bucket:  awsclient.String(name),
+		Bucket:  pointer.String(name),
 		Tagging: GenerateTagging(config),
 	}
 }

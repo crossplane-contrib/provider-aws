@@ -29,9 +29,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -141,7 +141,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  csg(),
-				err: awsclient.Wrap(errBoom, errDescribeSubnetGroup),
+				err: errorutils.Wrap(errBoom, errDescribeSubnetGroup),
 			},
 		},
 	}
@@ -211,7 +211,7 @@ func TestCreate(t *testing.T) {
 					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})), withConditions(xpv1.Creating())),
-				err: awsclient.Wrap(errBoom, errCreateSubnetGroup),
+				err: errorutils.Wrap(errBoom, errCreateSubnetGroup),
 			},
 		},
 	}
@@ -281,7 +281,7 @@ func TestUpdate(t *testing.T) {
 					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				}))),
-				err: awsclient.Wrap(errBoom, errModifySubnetGroup),
+				err: errorutils.Wrap(errBoom, errModifySubnetGroup),
 			},
 		},
 	}
@@ -350,7 +350,7 @@ func TestDelete(t *testing.T) {
 					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})), withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDeleteSubnetGroup),
+				err: errorutils.Wrap(errBoom, errDeleteSubnetGroup),
 			},
 		},
 	}

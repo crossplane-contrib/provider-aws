@@ -38,9 +38,10 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -103,7 +104,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +133,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -177,7 +178,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.ToString(result.Subnet.SubnetId))
@@ -196,7 +197,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
 	}
 
 	if response.Subnets == nil {
@@ -205,13 +206,13 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	subnet := response.Subnets[0]
 
-	add, remove := ec2.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), subnet.Tags)
+	add, remove := ec2.DiffEC2Tags(ec2.GenerateEC2TagsV1Beta1(cr.Spec.ForProvider.Tags), subnet.Tags)
 	if len(remove) > 0 {
 		if _, err := e.client.DeleteTags(ctx, &awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      remove,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errDeleteTags)
 		}
 	}
 
@@ -220,7 +221,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      add,
 		}); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreateTags)
 		}
 	}
 
@@ -232,7 +233,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			SubnetId: aws.String(meta.GetExternalName(cr)),
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -245,7 +246,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		})
 	}
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -260,7 +261,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		SubnetId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDelete)
 }
 
 type tagger struct {

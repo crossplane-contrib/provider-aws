@@ -36,9 +36,10 @@ import (
 
 	redshiftv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/redshift/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/redshift"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -96,7 +97,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		ClusterIdentifier: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(redshift.IsNotFound, err), errDescribeFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(redshift.IsNotFound, err), errDescribeFailed)
 	}
 
 	// Describe requests can be used with filters, which then returns a list.
@@ -176,7 +177,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	input := redshift.GenerateCreateClusterInput(&cr.Spec.ForProvider, aws.String(meta.GetExternalName(cr)), aws.String(pw))
 	_, err = e.client.CreateCluster(ctx, input)
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreateFailed)
 	}
 
 	conn := managed.ConnectionDetails{
@@ -201,7 +202,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		ClusterIdentifier: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(redshift.IsNotFound, err), errDescribeFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(redshift.IsNotFound, err), errDescribeFailed)
 	}
 
 	_, err = e.client.ModifyCluster(ctx, redshift.GenerateModifyClusterInput(&cr.Spec.ForProvider, rsp.Clusters[0]))
@@ -214,7 +215,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 	}
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyFailed)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyFailed)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -229,5 +230,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	_, err := e.client.DeleteCluster(ctx, redshift.GenerateDeleteClusterInput(&cr.Spec.ForProvider, aws.String(meta.GetExternalName(cr))))
 
-	return awsclient.Wrap(resource.Ignore(redshift.IsNotFound, err), errDeleteFailed)
+	return errorutils.Wrap(resource.Ignore(redshift.IsNotFound, err), errDeleteFailed)
 }

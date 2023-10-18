@@ -35,8 +35,10 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/elbv2/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -91,7 +93,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotElasticloadbalancingv2Target)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -111,20 +113,20 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// Set the external-name to the LambdARN if not set.
 	if meta.GetExternalName(cr) == "" {
-		meta.SetExternalName(cr, awsclient.StringValue(cr.Spec.ForProvider.LambdaARN))
+		meta.SetExternalName(cr, pointer.StringValue(cr.Spec.ForProvider.LambdaARN))
 	}
 	res, err := e.client.DescribeTargetHealth(ctx, &awselasticloadbalancingv2.DescribeTargetHealthInput{
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               awsclient.String(meta.GetExternalName(cr)),
+				Id:               pointer.String(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
 		},
 	})
 	if err != nil || len(res.TargetHealthDescriptions) == 0 {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribeTargetHealthFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errDescribeTargetHealthFailed)
 	}
 
 	cr.Status.AtProvider = generateTargetObservation(res)
@@ -155,13 +157,13 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               awsclient.String(meta.GetExternalName(cr)),
+				Id:               pointer.String(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
 		},
 	})
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errRegisterTargetFailed)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errRegisterTargetFailed)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -176,20 +178,20 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	cr.SetConditions(xpv1.Deleting())
 	// Check if the target is already unregistered.
-	if cr.Status.AtProvider.TargetHealth != nil && awsclient.StringValue(cr.Status.AtProvider.TargetHealth.State) == manualv1alpha1.TargetStatusDraining {
+	if cr.Status.AtProvider.TargetHealth != nil && pointer.StringValue(cr.Status.AtProvider.TargetHealth.State) == manualv1alpha1.TargetStatusDraining {
 		return nil
 	}
 	_, err := e.client.DeregisterTargets(ctx, &awselasticloadbalancingv2.DeregisterTargetsInput{
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               awsclient.String(meta.GetExternalName(cr)),
+				Id:               pointer.String(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
 		},
 	})
-	return awsclient.Wrap(err, errDeregisterTargetFailed)
+	return errorutils.Wrap(err, errDeregisterTargetFailed)
 }
 
 func generateTargetObservation(i *awselasticloadbalancingv2.DescribeTargetHealthOutput) manualv1alpha1.TargetObservation {

@@ -19,9 +19,11 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -77,7 +79,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, pointer.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +199,7 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 		if result != nil {
 			if len(result.SecurityGroupRules) > 0 && result.SecurityGroupRules[0].SecurityGroupRuleId != nil {
 				sgrID := result.SecurityGroupRules[0].SecurityGroupRuleId
-				meta.SetExternalName(sgr, awsclient.StringValue(sgrID))
+				meta.SetExternalName(sgr, pointer.StringValue(sgrID))
 			}
 		}
 	} else if *sgr.Spec.ForProvider.Type == egressType {
@@ -262,7 +264,7 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 		if result != nil {
 			if len(result.SecurityGroupRules) > 0 && result.SecurityGroupRules[0].SecurityGroupRuleId != nil {
 				sgrID := result.SecurityGroupRules[0].SecurityGroupRuleId
-				meta.SetExternalName(sgr, awsclient.StringValue(sgrID))
+				meta.SetExternalName(sgr, pointer.StringValue(sgrID))
 			}
 		}
 	}
@@ -291,14 +293,14 @@ func (e *external) deleteSgrForType(ctx context.Context, sgr *manualv1alpha1.Sec
 			GroupId:              sgr.Spec.ForProvider.SecurityGroupID,
 		})
 
-		return awsclient.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
+		return errorutils.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
 	} else if sgrType == egressType {
 		_, err := e.client.RevokeSecurityGroupEgress(ctx, &awsec2.RevokeSecurityGroupEgressInput{
 			SecurityGroupRuleIds: []string{meta.GetExternalName(sgr)},
 			GroupId:              sgr.Spec.ForProvider.SecurityGroupID,
 		})
 
-		return awsclient.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
+		return errorutils.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDelete)
 	}
 	return nil
 }
@@ -382,36 +384,36 @@ func compareSgr(desired *manualv1alpha1.SecurityGroupRuleParameters, actual *man
 	needsUpdate = false
 	recreate = false
 	typechange = false
-	if awsclient.StringValue(desired.CidrBlock) != awsclient.StringValue(actual.CidrBlock) {
+	if pointer.StringValue(desired.CidrBlock) != pointer.StringValue(actual.CidrBlock) {
 		needsUpdate = true
 	}
 
-	if awsclient.StringValue(desired.Description) != awsclient.StringValue(actual.Description) {
+	if pointer.StringValue(desired.Description) != pointer.StringValue(actual.Description) {
 		needsUpdate = true
 	}
 
-	if awsclient.Int32Value(desired.FromPort) != awsclient.Int32Value(actual.FromPort) {
+	if pointer.Int32Value(desired.FromPort) != pointer.Int32Value(actual.FromPort) {
 		needsUpdate = true
 	}
 
-	if awsclient.Int32Value(desired.ToPort) != awsclient.Int32Value(actual.ToPort) {
+	if pointer.Int32Value(desired.ToPort) != pointer.Int32Value(actual.ToPort) {
 		needsUpdate = true
 	}
 
-	if awsclient.StringValue(desired.Protocol) != awsclient.StringValue(actual.Protocol) {
+	if pointer.StringValue(desired.Protocol) != pointer.StringValue(actual.Protocol) {
 		needsUpdate = true
 		recreate = true
 	}
 
-	if awsclient.StringValue(desired.SourceSecurityGroupID) != awsclient.StringValue(actual.SourceSecurityGroupID) {
+	if pointer.StringValue(desired.SourceSecurityGroupID) != pointer.StringValue(actual.SourceSecurityGroupID) {
 		needsUpdate = true
 	}
 
-	if awsclient.StringValue(desired.PrefixListID) != awsclient.StringValue(actual.PrefixListID) {
+	if pointer.StringValue(desired.PrefixListID) != pointer.StringValue(actual.PrefixListID) {
 		needsUpdate = true
 	}
 
-	if awsclient.StringValue(desired.Type) != awsclient.StringValue(actual.Type) {
+	if pointer.StringValue(desired.Type) != pointer.StringValue(actual.Type) {
 		needsUpdate = true
 		recreate = true
 		typechange = true
@@ -431,7 +433,7 @@ func (e *external) getExternalSgr(ctx context.Context, externalName string) (*ma
 	}
 	existingSgr := response.SecurityGroupRules[0]
 	crType := ingressType
-	if awsclient.BoolValue(existingSgr.IsEgress) {
+	if pointer.BoolValue(existingSgr.IsEgress) {
 		crType = egressType
 	}
 	cr := &manualv1alpha1.SecurityGroupRuleParameters{

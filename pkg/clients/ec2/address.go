@@ -11,7 +11,7 @@ import (
 	"github.com/aws/smithy-go"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -60,11 +60,11 @@ func LateInitializeAddress(in *v1beta1.AddressParameters, a *ec2types.Address) {
 	if a == nil {
 		return
 	}
-	in.Address = awsclients.LateInitializeStringPtr(in.Address, a.PublicIp)
-	in.Domain = awsclients.LateInitializeStringPtr(in.Domain, aws.String(string(a.Domain)))
-	in.CustomerOwnedIPv4Pool = awsclients.LateInitializeStringPtr(in.CustomerOwnedIPv4Pool, a.CustomerOwnedIpv4Pool)
-	in.NetworkBorderGroup = awsclients.LateInitializeStringPtr(in.NetworkBorderGroup, a.NetworkBorderGroup)
-	in.PublicIPv4Pool = awsclients.LateInitializeStringPtr(in.PublicIPv4Pool, a.PublicIpv4Pool)
+	in.Address = pointer.LateInitializeStringPtr(in.Address, a.PublicIp)
+	in.Domain = pointer.LateInitializeStringPtr(in.Domain, aws.String(string(a.Domain)))
+	in.CustomerOwnedIPv4Pool = pointer.LateInitializeStringPtr(in.CustomerOwnedIPv4Pool, a.CustomerOwnedIpv4Pool)
+	in.NetworkBorderGroup = pointer.LateInitializeStringPtr(in.NetworkBorderGroup, a.NetworkBorderGroup)
+	in.PublicIPv4Pool = pointer.LateInitializeStringPtr(in.PublicIPv4Pool, a.PublicIpv4Pool)
 	if len(in.Tags) == 0 && len(a.Tags) != 0 {
 		in.Tags = BuildFromEC2Tags(a.Tags)
 	}

@@ -15,8 +15,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ecr/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // SetupLifecyclePolicy adds a controller that reconciles LifecyclePolicy.
@@ -98,5 +98,5 @@ func (e *updateClient) update(ctx context.Context, mg resource.Managed) (managed
 	input.RepositoryName = cr.Spec.ForProvider.RepositoryName
 
 	_, err := e.client.PutLifecyclePolicyWithContext(ctx, input)
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }

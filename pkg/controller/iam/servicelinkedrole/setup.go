@@ -31,8 +31,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iam/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/arn"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -87,7 +88,7 @@ func (e *hooks) observe(ctx context.Context, mg resource.Managed) (managed.Exter
 	}
 
 	res, err := e.client.GetRoleWithContext(ctx, &svcsdk.GetRoleInput{
-		RoleName: awsclients.String(meta.GetExternalName(cr)),
+		RoleName: pointer.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound, err), errGetRole)
@@ -109,7 +110,7 @@ func (e *hooks) observe(ctx context.Context, mg resource.Managed) (managed.Exter
 }
 
 func isServiceLinkedRole(role *svcsdk.Role) error {
-	arn, err := awsclients.ParseARN(awsclients.StringValue(role.Arn))
+	arn, err := arn.ParseARN(pointer.StringValue(role.Arn))
 	if err != nil {
 		return err
 	}
@@ -123,7 +124,7 @@ func generateServiceLinkedRoleObservation(role *svcsdk.Role) svcapitypes.Service
 	o := svcapitypes.ServiceLinkedRoleObservation{
 		ARN:                      role.Arn,
 		AssumeRolePolicyDocument: role.AssumeRolePolicyDocument,
-		CreateDate:               awsclients.TimeToMetaTime(role.CreateDate),
+		CreateDate:               pointer.TimeToMetaTime(role.CreateDate),
 		MaxSessionDuration:       role.MaxSessionDuration,
 		Path:                     role.Path,
 		RoleID:                   role.RoleId,
@@ -137,7 +138,7 @@ func generateServiceLinkedRoleObservation(role *svcsdk.Role) svcapitypes.Service
 	}
 	if role.RoleLastUsed != nil {
 		o.RoleLastUsed = &svcapitypes.RoleLastUsed{
-			LastUsedDate: awsclients.TimeToMetaTime(role.RoleLastUsed.LastUsedDate),
+			LastUsedDate: pointer.TimeToMetaTime(role.RoleLastUsed.LastUsedDate),
 			Region:       role.RoleLastUsed.Region,
 		}
 	}
@@ -156,12 +157,12 @@ func postCreate(ctx context.Context, cr *svcapitypes.ServiceLinkedRole, obj *svc
 		return managed.ExternalCreation{}, err
 	}
 
-	nn := strings.Split(awsclients.StringValue(obj.Role.Arn), "/")
+	nn := strings.Split(pointer.StringValue(obj.Role.Arn), "/")
 	meta.SetExternalName(cr, nn[3])
 	return managed.ExternalCreation{}, nil
 }
 
 func preDelete(ctx context.Context, cr *svcapitypes.ServiceLinkedRole, obj *svcsdk.DeleteServiceLinkedRoleInput) (bool, error) {
-	obj.RoleName = awsclients.String(meta.GetExternalName(cr))
+	obj.RoleName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }

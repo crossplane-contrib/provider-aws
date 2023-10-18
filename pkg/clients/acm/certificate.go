@@ -10,7 +10,7 @@ import (
 	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 
 	"github.com/crossplane-contrib/provider-aws/apis/acm/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // Client defines the CertificateManager operations
@@ -100,7 +100,7 @@ func GenerateCertificateStatus(certificate types.CertificateDetail) v1beta1.Cert
 // LateInitializeCertificate fills the empty fields in *v1beta1.CertificateParameters with
 // the values seen in iam.Certificate.
 func LateInitializeCertificate(in *v1beta1.CertificateParameters, certificate *types.CertificateDetail) {
-	in.CertificateAuthorityARN = awsclients.LateInitializeStringPtr(in.CertificateAuthorityARN, certificate.CertificateAuthorityArn)
+	in.CertificateAuthorityARN = pointer.LateInitializeStringPtr(in.CertificateAuthorityARN, certificate.CertificateAuthorityArn)
 	if in.Options == nil && certificate.Options != nil {
 		in.Options = &v1beta1.CertificateOptions{
 			CertificateTransparencyLoggingPreference: string(certificate.Options.CertificateTransparencyLoggingPreference),
@@ -118,8 +118,8 @@ func LateInitializeCertificate(in *v1beta1.CertificateParameters, certificate *t
 		in.DomainValidationOptions = make([]*v1beta1.DomainValidationOption, len(certificate.DomainValidationOptions))
 		for i, val := range certificate.DomainValidationOptions {
 			in.DomainValidationOptions[i] = &v1beta1.DomainValidationOption{
-				DomainName:       awsclients.StringValue(val.DomainName),
-				ValidationDomain: awsclients.StringValue(val.ValidationDomain),
+				DomainName:       pointer.StringValue(val.DomainName),
+				ValidationDomain: pointer.StringValue(val.ValidationDomain),
 			}
 		}
 	}

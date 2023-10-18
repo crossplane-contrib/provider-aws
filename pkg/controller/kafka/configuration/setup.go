@@ -29,8 +29,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kafka/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupConfiguration adds a controller that reconciles Configuration.
@@ -77,7 +77,7 @@ func SetupConfiguration(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.CreateConfigurationInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	serverProperties := strings.Join(cr.Spec.ForProvider.Properties, "\n")
 	obj.ServerProperties = []byte(serverProperties)
 	return nil
@@ -87,12 +87,12 @@ func postCreate(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.Cr
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.Arn))
+	meta.SetExternalName(cr, pointer.StringValue(obj.Arn))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DescribeConfigurationInput) error {
-	obj.Arn = awsclients.String(meta.GetExternalName(cr))
+	obj.Arn = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -101,7 +101,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.D
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclients.StringValue(obj.State) {
+	switch pointer.StringValue(obj.State) {
 	case string(svcapitypes.ConfigurationState_ACTIVE):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.ConfigurationState_DELETING):
@@ -112,7 +112,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.D
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DeleteConfigurationInput) (bool, error) {
-	obj.Arn = awsclients.String(meta.GetExternalName(cr))
+	obj.Arn = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 

@@ -27,10 +27,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clientss3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var _ SubresourceClient = &CORSConfigurationClient{}
@@ -87,7 +87,7 @@ func TestCORSObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, corsGetFailed),
+				err:    errorutils.Wrap(errBoom, corsGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -198,7 +198,7 @@ func TestCORSCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, corsPutFailed),
+				err: errorutils.Wrap(errBoom, corsPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -263,7 +263,7 @@ func TestCORSDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, corsDeleteFailed),
+				err: errorutils.Wrap(errBoom, corsDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {
@@ -317,7 +317,7 @@ func TestCORSLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, corsGetFailed),
+				err: errorutils.Wrap(errBoom, corsGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

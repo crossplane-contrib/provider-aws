@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package errors
 
 import (
 	"testing"
@@ -25,6 +25,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+)
+
+const (
+	errBoom = "boom"
+	errMsg  = "example err msg"
 )
 
 func TestWrap(t *testing.T) {

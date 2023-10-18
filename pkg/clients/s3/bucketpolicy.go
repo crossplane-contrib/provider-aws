@@ -29,7 +29,7 @@ import (
 	errors2 "github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
@@ -71,11 +71,11 @@ func DiffParsedPolicies(spec *common.BucketPolicyBody, external *string) (string
 	if err != nil {
 		return "", errors2.Wrap(err, policyFormatFailed)
 	}
-	specParsed, err := policyutils.ParsePolicyString(awsclient.StringValue(specRaw))
+	specParsed, err := policyutils.ParsePolicyString(pointer.StringValue(specRaw))
 	if err != nil {
 		return "", errors2.Wrap(err, policyParseSpec)
 	}
-	externalParsed, err := policyutils.ParsePolicyString(awsclient.StringValue(external))
+	externalParsed, err := policyutils.ParsePolicyString(pointer.StringValue(external))
 	if err != nil {
 		return "", errors2.Wrap(err, policyParseExternal)
 	}

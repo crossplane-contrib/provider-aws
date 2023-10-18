@@ -13,7 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -43,10 +44,10 @@ type RepositoryClient interface {
 // ecr.Repository
 func GenerateRepositoryObservation(repo ecrtypes.Repository) v1beta1.RepositoryObservation {
 	o := v1beta1.RepositoryObservation{
-		RegistryID:     awsclient.StringValue(repo.RegistryId),
-		RepositoryArn:  awsclient.StringValue(repo.RepositoryArn),
-		RepositoryName: awsclient.StringValue(repo.RepositoryName),
-		RepositoryURI:  awsclient.StringValue(repo.RepositoryUri),
+		RegistryID:     pointer.StringValue(repo.RegistryId),
+		RepositoryArn:  pointer.StringValue(repo.RepositoryArn),
+		RepositoryName: pointer.StringValue(repo.RepositoryName),
+		RepositoryURI:  pointer.StringValue(repo.RepositoryUri),
 	}
 
 	if repo.CreatedAt != nil {
@@ -67,7 +68,7 @@ func LateInitializeRepository(in *v1beta1.RepositoryParameters, r *ecrtypes.Repo
 		}
 		in.ImageScanningConfiguration = &scanConfig
 	}
-	in.ImageTagMutability = awsclient.LateInitializeStringPtr(in.ImageTagMutability, aws.String(string(r.ImageTagMutability)))
+	in.ImageTagMutability = pointer.LateInitializeStringPtr(in.ImageTagMutability, pointer.String(string(r.ImageTagMutability)))
 }
 
 // CreatePatch creates a *v1alpha1.RepositoryParameters that has only the changed
@@ -77,7 +78,7 @@ func CreatePatch(in *ecrtypes.Repository, target *v1beta1.RepositoryParameters) 
 	currentParams := &v1beta1.RepositoryParameters{}
 	LateInitializeRepository(currentParams, in)
 
-	jsonPatch, err := awsclient.CreateJSONPatch(currentParams, target)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +101,7 @@ func IsRepositoryUpToDate(e *v1beta1.RepositoryParameters, tags []ecrtypes.Tag, 
 	case e.ImageScanningConfiguration == nil && repo.ImageScanningConfiguration != nil:
 		return false
 	}
-	return strings.EqualFold(awsclient.StringValue(e.ImageTagMutability), string(repo.ImageTagMutability)) &&
+	return strings.EqualFold(pointer.StringValue(e.ImageTagMutability), string(repo.ImageTagMutability)) &&
 		CompareTags(e.Tags, tags)
 }
 
@@ -113,8 +114,8 @@ func IsRepoNotFoundErr(err error) bool {
 // GenerateCreateRepositoryInput Generates the CreateRepositoryInput from the RepositoryParameters
 func GenerateCreateRepositoryInput(name string, params *v1beta1.RepositoryParameters) *ecr.CreateRepositoryInput {
 	c := &ecr.CreateRepositoryInput{
-		RepositoryName:     awsclient.String(name),
-		ImageTagMutability: ecrtypes.ImageTagMutability(awsclient.StringValue(params.ImageTagMutability)),
+		RepositoryName:     pointer.String(name),
+		ImageTagMutability: ecrtypes.ImageTagMutability(pointer.StringValue(params.ImageTagMutability)),
 	}
 	if params.ImageScanningConfiguration != nil {
 		scanConfig := ecrtypes.ImageScanningConfiguration{

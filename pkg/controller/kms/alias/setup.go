@@ -28,8 +28,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kms/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupAlias adds a controller that reconciles Alias.
@@ -77,7 +77,7 @@ func SetupAlias(mgr ctrl.Manager, o controller.Options) error {
 
 func filterList(cr *svcapitypes.Alias, list *svcsdk.ListAliasesOutput) *svcsdk.ListAliasesOutput {
 	for i := range list.Aliases {
-		if awsclients.StringValue(list.Aliases[i].AliasName) == "alias/"+meta.GetExternalName(cr) {
+		if pointer.StringValue(list.Aliases[i].AliasName) == "alias/"+meta.GetExternalName(cr) {
 			return &svcsdk.ListAliasesOutput{
 				Aliases: []*svcsdk.AliasListEntry{
 					list.Aliases[i],
@@ -93,19 +93,19 @@ func preObserve(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.ListAliase
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.CreateAliasInput) error {
-	obj.AliasName = awsclients.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
 	obj.TargetKeyId = cr.Spec.ForProvider.TargetKeyID
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.UpdateAliasInput) error {
-	obj.AliasName = awsclients.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
 	obj.TargetKeyId = cr.Spec.ForProvider.TargetKeyID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.DeleteAliasInput) (bool, error) {
-	obj.AliasName = awsclients.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
 	return false, nil
 }
 

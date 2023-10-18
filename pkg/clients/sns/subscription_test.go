@@ -25,7 +25,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -161,7 +161,7 @@ func TestGenerateSubscribeInput(t *testing.T) {
 				Protocol: subEmailProtocol,
 			},
 			out: sns.SubscribeInput{
-				TopicArn:              aws.String(topicArn),
+				TopicArn:              pointer.String(topicArn),
 				Endpoint:              &subEmailEndpoint,
 				Protocol:              &subEmailProtocol,
 				ReturnSubscriptionArn: subBoolTrue,

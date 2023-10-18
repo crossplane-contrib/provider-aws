@@ -37,9 +37,11 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -101,7 +103,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, pointer.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +140,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	if err != nil {
 		return managed.ExternalObservation{},
-			awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
+			errorutils.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -168,7 +170,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		})
 
 		if err != nil {
-			return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
+			return managed.ExternalObservation{}, errorutils.Wrap(err, errDescribe)
 		}
 
 		if r.DisableApiTermination != nil {
@@ -247,19 +249,19 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		ec2.GenerateEC2RunInstancesInput(mgd.GetName(), &cr.Spec.ForProvider),
 	)
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
 	instance := result.Instances[0]
 
 	if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
-		Resources: []string{awsclient.StringValue(instance.InstanceId)},
-		Tags:      svcapitypes.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		Resources: []string{pointer.StringValue(instance.InstanceId)},
+		Tags:      ec2.GenerateEC2TagsManualV1alpha1(cr.Spec.ForProvider.Tags),
 	}); err != nil {
-		return managed.ExternalCreation{ExternalNameAssigned: false}, awsclient.Wrap(err, errCreateTags)
+		return managed.ExternalCreation{ExternalNameAssigned: false}, errorutils.Wrap(err, errCreateTags)
 	}
 
-	meta.SetExternalName(cr, awsclient.StringValue(instance.InstanceId))
+	meta.SetExternalName(cr, pointer.StringValue(instance.InstanceId))
 
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
@@ -280,7 +282,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyInstanceAttributes)
 		}
 	}
 
@@ -294,7 +296,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyInstanceAttributes)
 		}
 	}
 
@@ -308,7 +310,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyInstanceAttributes)
 		}
 	}
 
@@ -322,7 +324,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyInstanceAttributes)
 		}
 	}
 
@@ -336,16 +338,16 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyInstanceAttributes)
 		}
 	}
 
 	_, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 		Resources: []string{meta.GetExternalName(cr)},
-		Tags:      svcapitypes.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		Tags:      ec2.GenerateEC2TagsManualV1alpha1(cr.Spec.ForProvider.Tags),
 	})
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -360,7 +362,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		InstanceIds: []string{meta.GetExternalName(cr)},
 	})
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
 }
 
 type tagger struct {

@@ -31,9 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ecr/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -165,7 +165,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  repositoryPolicy(withPolicy(&params)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -255,7 +255,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: repositoryPolicy(
 					withPolicy(&params)),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -314,7 +314,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  repositoryPolicy(withPolicy(&params)),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -381,7 +381,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  repositoryPolicy(withPolicy(&params)),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {

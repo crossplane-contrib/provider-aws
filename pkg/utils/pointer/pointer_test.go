@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2023 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package pointer
 
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -46,17 +45,17 @@ func TestLateInitStringPtrSlice(t *testing.T) {
 		},
 		"FromNil": {
 			args: args{
-				in:   aws.StringSlice([]string{"hi!"}),
+				in:   StringSliceToPtr([]string{"hi!"}),
 				from: nil,
 			},
-			want: aws.StringSlice([]string{"hi!"}),
+			want: StringSliceToPtr([]string{"hi!"}),
 		},
 		"InNil": {
 			args: args{
 				in:   nil,
-				from: aws.StringSlice([]string{"hi!"}),
+				from: StringSliceToPtr([]string{"hi!"}),
 			},
-			want: aws.StringSlice([]string{"hi!"}),
+			want: StringSliceToPtr([]string{"hi!"}),
 		},
 	}
 
@@ -93,17 +92,17 @@ func TestLateInitInt64PtrSlice(t *testing.T) {
 		},
 		"FromNil": {
 			args: args{
-				in:   aws.Int64Slice([]int64{1}),
+				in:   Int64Slice([]int64{1}),
 				from: nil,
 			},
-			want: aws.Int64Slice([]int64{1}),
+			want: Int64Slice([]int64{1}),
 		},
 		"InNil": {
 			args: args{
 				in:   nil,
-				from: aws.Int64Slice([]int64{1}),
+				from: Int64Slice([]int64{1}),
 			},
-			want: aws.Int64Slice([]int64{1}),
+			want: Int64Slice([]int64{1}),
 		},
 	}
 

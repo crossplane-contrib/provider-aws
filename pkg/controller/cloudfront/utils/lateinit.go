@@ -27,7 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
 )
 
 const fmtCanonical = "%s.%s"
@@ -406,7 +406,7 @@ func IsUpToDate(actual, desired interface{}, opts ...LateInitOption) (bool, stri
 		return false, "", err
 	}
 
-	jsonPatch, err := awsclients.CreateJSONPatch(actualConfig, desired)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(actualConfig, desired)
 	if err != nil {
 		return false, "", err
 	}

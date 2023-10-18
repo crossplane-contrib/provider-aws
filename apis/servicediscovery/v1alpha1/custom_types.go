@@ -3,8 +3,7 @@ package v1alpha1
 import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"k8s.io/utils/ptr"
 )
 
 // AnnotationKeyOperationID is the key in the annotations map of a
@@ -61,7 +60,7 @@ func (in *HTTPNamespace) GetOperationID() *string {
 
 // SetOperationID sets the last operation id.
 func (in *HTTPNamespace) SetOperationID(id *string) {
-	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: aws.StringValue(id)})
+	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: ptr.Deref(id, "")})
 }
 
 // GetDescription returns the description.
@@ -89,7 +88,7 @@ func (in *PrivateDNSNamespace) GetOperationID() *string {
 
 // SetOperationID sets the last operation id.
 func (in *PrivateDNSNamespace) SetOperationID(id *string) {
-	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: aws.StringValue(id)})
+	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: ptr.Deref(id, "")})
 }
 
 // GetDescription returns the description.
@@ -120,7 +119,7 @@ func (in *PublicDNSNamespace) GetOperationID() *string {
 
 // SetOperationID sets the last operation id.
 func (in *PublicDNSNamespace) SetOperationID(id *string) {
-	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: aws.StringValue(id)})
+	meta.AddAnnotations(in, map[string]string{AnnotationKeyOperationID: ptr.Deref(id, "")})
 }
 
 // GetDescription returns the description.

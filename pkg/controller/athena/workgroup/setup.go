@@ -28,8 +28,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/athena/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupWorkGroup adds a controller that reconciles WorkGroup.
@@ -74,12 +74,12 @@ func SetupWorkGroup(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.WorkGroup, obj *svcsdk.DeleteWorkGroupInput) (bool, error) {
-	obj.WorkGroup = awsclients.String(meta.GetExternalName(cr))
+	obj.WorkGroup = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.WorkGroup, obj *svcsdk.GetWorkGroupInput) error {
-	obj.WorkGroup = awsclients.String(meta.GetExternalName(cr))
+	obj.WorkGroup = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -88,7 +88,7 @@ func postObserve(_ context.Context, cr *svcapitypes.WorkGroup, obj *svcsdk.GetWo
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclients.StringValue(obj.WorkGroup.State) {
+	switch pointer.StringValue(obj.WorkGroup.State) {
 	case string(svcapitypes.WorkGroupState_ENABLED):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.WorkGroupState_DISABLED):
@@ -99,7 +99,7 @@ func postObserve(_ context.Context, cr *svcapitypes.WorkGroup, obj *svcsdk.GetWo
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.WorkGroup, obj *svcsdk.CreateWorkGroupInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 

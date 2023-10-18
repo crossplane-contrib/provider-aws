@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+// Deprecated use the policy package that contains better parser support.
+package legacypolicy
 
 import (
 	"bytes"
@@ -23,6 +24,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/utils/ptr"
 )
 
 // CompactAndEscapeJSON removes space characters and URL-encodes the JSON string.
@@ -40,11 +42,11 @@ func IsPolicyUpToDate(local, remote *string) bool {
 	var remoteUnmarshalled interface{}
 
 	var err error
-	err = json.Unmarshal([]byte(StringValue(local)), &localUnmarshalled)
+	err = json.Unmarshal([]byte(ptr.Deref(local, "")), &localUnmarshalled)
 	if err != nil {
 		return false
 	}
-	err = json.Unmarshal([]byte(StringValue(remote)), &remoteUnmarshalled)
+	err = json.Unmarshal([]byte(ptr.Deref(remote, "")), &remoteUnmarshalled)
 	if err != nil {
 		return false
 	}

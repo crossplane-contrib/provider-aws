@@ -9,7 +9,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -27,12 +27,12 @@ var (
 func natTags() []ec2types.Tag {
 	return []ec2types.Tag{
 		{
-			Key:   aws.String("key1"),
-			Value: aws.String("value1"),
+			Key:   pointer.String("key1"),
+			Value: pointer.String("value1"),
 		},
 		{
-			Key:   aws.String("key2"),
-			Value: aws.String("value2"),
+			Key:   pointer.String("key2"),
+			Value: pointer.String("value2"),
 		},
 	}
 }
@@ -40,10 +40,10 @@ func natTags() []ec2types.Tag {
 func natAddresses() []ec2types.NatGatewayAddress {
 	return []ec2types.NatGatewayAddress{
 		{
-			AllocationId:       aws.String(natAllocationID),
-			NetworkInterfaceId: aws.String(natNetworkInterfaceID),
-			PrivateIp:          aws.String(natPrivateIP),
-			PublicIp:           aws.String(natPublicIP),
+			AllocationId:       pointer.String(natAllocationID),
+			NetworkInterfaceId: pointer.String(natNetworkInterfaceID),
+			PrivateIp:          pointer.String(natPrivateIP),
+			PublicIp:           pointer.String(natPublicIP),
 		},
 	}
 }
@@ -69,11 +69,11 @@ func TestGenerateNATGatewayObservation(t *testing.T) {
 			in: ec2types.NatGateway{
 				CreateTime:          &time,
 				NatGatewayAddresses: natAddresses(),
-				NatGatewayId:        aws.String(natGatewayID),
+				NatGatewayId:        pointer.String(natGatewayID),
 				State:               v1beta1.NatGatewayStatusAvailable,
-				SubnetId:            aws.String(natSubnetID),
+				SubnetId:            pointer.String(natSubnetID),
 				Tags:                natTags(),
-				VpcId:               aws.String(natVpcID),
+				VpcId:               pointer.String(natVpcID),
 			},
 			out: v1beta1.NATGatewayObservation{
 				CreateTime:          &v1.Time{Time: time},
@@ -88,11 +88,11 @@ func TestGenerateNATGatewayObservation(t *testing.T) {
 				CreateTime:          &time,
 				DeleteTime:          &time,
 				NatGatewayAddresses: natAddresses(),
-				NatGatewayId:        aws.String(natGatewayID),
+				NatGatewayId:        pointer.String(natGatewayID),
 				State:               v1beta1.NatGatewayStatusPending,
-				SubnetId:            aws.String(natSubnetID),
+				SubnetId:            pointer.String(natSubnetID),
 				Tags:                natTags(),
-				VpcId:               aws.String(natVpcID),
+				VpcId:               pointer.String(natVpcID),
 			},
 			out: v1beta1.NATGatewayObservation{
 				CreateTime:          &v1.Time{Time: time},
@@ -107,14 +107,14 @@ func TestGenerateNATGatewayObservation(t *testing.T) {
 			in: ec2types.NatGateway{
 				CreateTime:          &time,
 				DeleteTime:          &time,
-				FailureCode:         aws.String(natFailureCode),
-				FailureMessage:      aws.String(natFailureMessage),
+				FailureCode:         pointer.String(natFailureCode),
+				FailureMessage:      pointer.String(natFailureMessage),
 				NatGatewayAddresses: natAddresses(),
-				NatGatewayId:        aws.String(natGatewayID),
+				NatGatewayId:        pointer.String(natGatewayID),
 				State:               v1beta1.NatGatewayStatusFailed,
-				SubnetId:            aws.String(natSubnetID),
+				SubnetId:            pointer.String(natSubnetID),
 				Tags:                natTags(),
-				VpcId:               aws.String(natVpcID),
+				VpcId:               pointer.String(natVpcID),
 			},
 			out: v1beta1.NATGatewayObservation{
 				CreateTime:          &v1.Time{Time: time},

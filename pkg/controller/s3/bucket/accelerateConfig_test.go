@@ -27,10 +27,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clientss3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -66,7 +66,7 @@ func TestAccelerateObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, accelGetFailed),
+				err:    errorutils.Wrap(errBoom, accelGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -150,7 +150,7 @@ func TestAccelerateCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, accelPutFailed),
+				err: errorutils.Wrap(errBoom, accelPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -216,7 +216,7 @@ func TestAccelLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, accelGetFailed),
+				err: errorutils.Wrap(errBoom, accelGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

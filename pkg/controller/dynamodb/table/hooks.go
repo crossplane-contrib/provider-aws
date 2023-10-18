@@ -42,8 +42,11 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -98,7 +101,7 @@ func (c *customConnector) Connect(ctx context.Context, mg cpresource.Managed) (m
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	sess, err := aws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
@@ -127,7 +130,7 @@ func (c *customConnector) Connect(ctx context.Context, mg cpresource.Managed) (m
 
 func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.UpdateTableOutput, _ managed.ExternalUpdate, _ error) (managed.ExternalUpdate, error) {
 	cbresult, err := e.client.DescribeContinuousBackups(&svcsdk.DescribeContinuousBackupsInput{
-		TableName: aws.String(meta.GetExternalName(cr)),
+		TableName: pointer.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalUpdate{}, err
@@ -139,7 +142,7 @@ func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj 
 		pitrSpecEnabled := ptr.Deref(cr.Spec.ForProvider.PointInTimeRecoveryEnabled, false)
 
 		pitrInput := &svcsdk.UpdateContinuousBackupsInput{
-			TableName: aws.String(meta.GetExternalName(cr)),
+			TableName: pointer.String(meta.GetExternalName(cr)),
 			PointInTimeRecoverySpecification: (&svcsdk.PointInTimeRecoverySpecification{
 				PointInTimeRecoveryEnabled: &pitrSpecEnabled,
 			}),
@@ -155,16 +158,16 @@ func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj 
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DescribeTableInput) error {
-	obj.TableName = aws.String(meta.GetExternalName(cr))
+	obj.TableName = pointer.String(meta.GetExternalName(cr))
 
 	return nil
 }
 func preCreate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.CreateTableInput) error {
-	obj.TableName = aws.String(meta.GetExternalName(cr))
+	obj.TableName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) (bool, error) {
-	obj.TableName = aws.String(meta.GetExternalName(cr))
+	obj.TableName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -186,7 +189,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.Describe
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-	switch aws.StringValue(resp.Table.TableStatus) {
+	switch pointer.StringValue(resp.Table.TableStatus) {
 	case string(svcapitypes.TableStatus_SDK_CREATING):
 		cr.SetConditions(xpv1.Creating())
 	case string(svcapitypes.TableStatus_SDK_DELETING):
@@ -199,9 +202,9 @@ func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.Describe
 
 	obs.ConnectionDetails = managed.ConnectionDetails{
 		"tableName":         []byte(meta.GetExternalName(cr)),
-		"tableArn":          []byte(aws.StringValue(resp.Table.TableArn)),
-		"latestStreamArn":   []byte(aws.StringValue(resp.Table.LatestStreamArn)),
-		"latestStreamLabel": []byte(aws.StringValue(resp.Table.LatestStreamLabel)),
+		"tableArn":          []byte(pointer.StringValue(resp.Table.TableArn)),
+		"latestStreamArn":   []byte(pointer.StringValue(resp.Table.LatestStreamArn)),
+		"latestStreamLabel": []byte(pointer.StringValue(resp.Table.LatestStreamLabel)),
 	}
 
 	return obs, nil
@@ -218,17 +221,17 @@ func (e *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 	}
 	tagMap := map[string]string{}
 	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
+		tagMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
 	}
 	for k, v := range resource.GetExternalTags(cr) {
 		tagMap[k] = v
 	}
 	tags := make([]*svcapitypes.Tag, 0)
 	for k, v := range tagMap {
-		tags = append(tags, &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)})
+		tags = append(tags, &svcapitypes.Tag{Key: pointer.String(k), Value: pointer.String(v)})
 	}
 	sort.Slice(tags, func(i, j int) bool {
-		return aws.StringValue(tags[i].Key) < aws.StringValue(tags[j].Key)
+		return pointer.StringValue(tags[i].Key) < pointer.StringValue(tags[j].Key)
 	})
 	if cmp.Equal(cr.Spec.ForProvider.Tags, tags) {
 		return nil
@@ -266,7 +269,7 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 		// in our IsUpToDate logic which would otherwise detect a diff
 		// between our desired state (PROVISIONED) and the actual state
 		// (unspecified).
-		in.BillingMode = aws.String(svcsdk.BillingModeProvisioned)
+		in.BillingMode = pointer.String(svcsdk.BillingModeProvisioned)
 		if t.Table.BillingModeSummary != nil {
 			in.BillingMode = t.Table.BillingModeSummary.BillingMode
 		}
@@ -282,7 +285,7 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			in.SSESpecification = &svcapitypes.SSESpecification{}
 		}
 		if in.SSESpecification.Enabled == nil && t.Table.SSEDescription.Status != nil {
-			in.SSESpecification.Enabled = aws.Bool(*t.Table.SSEDescription.Status == string(svcapitypes.SSEStatus_ENABLED))
+			in.SSESpecification.Enabled = pointer.Bool(*t.Table.SSEDescription.Status == string(svcapitypes.SSEStatus_ENABLED))
 		}
 		if in.SSESpecification.KMSMasterKeyID == nil && t.Table.SSEDescription.KMSMasterKeyArn != nil {
 			in.SSESpecification.KMSMasterKeyID = t.Table.SSEDescription.KMSMasterKeyArn
@@ -296,7 +299,7 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 		// avoid IsUpToDate thinking it needs to explicitly make an
 		// update to set StreamEnabled to false. DescribeTableOutput
 		// omits StreamSpecification entirely when it's not enabled.
-		in.StreamSpecification = &svcapitypes.StreamSpecification{StreamEnabled: aws.Bool(false, aws.FieldRequired)}
+		in.StreamSpecification = &svcapitypes.StreamSpecification{StreamEnabled: pointer.Bool(false, pointer.FieldRequired)}
 		if t.Table.StreamSpecification != nil {
 			in.StreamSpecification = &svcapitypes.StreamSpecification{
 				StreamEnabled:  t.Table.StreamSpecification.StreamEnabled,
@@ -394,7 +397,7 @@ func (e *updateClient) createPatch(ctx context.Context, in *svcsdk.DescribeTable
 		target.SSESpecification.KMSMasterKeyID = kmsMasterKeyArn
 	}
 
-	jsonPatch, err := aws.CreateJSONPatch(currentParams, target)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}
@@ -466,14 +469,14 @@ func (e *updateClient) isUpToDate(ctx context.Context, cr *svcapitypes.Table, re
 	// A table that's currently creating, deleting, or updating can't be
 	// updated, so we temporarily consider it to be up-to-date no matter
 	// what.
-	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
+	switch pointer.StringValue(cr.Status.AtProvider.TableStatus) {
 	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING), string(svcapitypes.TableStatus_SDK_DELETING):
 		return true, "", nil
 	}
 
 	// Similarly, a table that's currently updating its SSE status can't be
 	// updated, so we temporarily consider it to be up-to-date.
-	if cr.Status.AtProvider.SSEDescription != nil && aws.StringValue(cr.Status.AtProvider.SSEDescription.Status) == string(svcapitypes.SSEStatus_UPDATING) {
+	if cr.Status.AtProvider.SSEDescription != nil && pointer.StringValue(cr.Status.AtProvider.SSEDescription.Status) == string(svcapitypes.SSEStatus_UPDATING) {
 		return true, "", nil
 	}
 
@@ -487,7 +490,7 @@ func (e *updateClient) isUpToDate(ctx context.Context, cr *svcapitypes.Table, re
 
 	// point in time recovery status
 	cbresult, err := e.client.DescribeContinuousBackupsWithContext(ctx, &svcsdk.DescribeContinuousBackupsInput{
-		TableName: aws.String(meta.GetExternalName(cr)),
+		TableName: pointer.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return false, "", err
@@ -513,7 +516,7 @@ type updateClient struct {
 
 func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
 	filtered := &svcsdk.UpdateTableInput{
-		TableName:            aws.String(meta.GetExternalName(cr)),
+		TableName:            pointer.String(meta.GetExternalName(cr)),
 		AttributeDefinitions: u.AttributeDefinitions,
 	}
 
@@ -529,9 +532,9 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 	// the observed state in a cache during postObserve then read it here,
 	// but we typically prefer to be as stateless as possible even if it
 	// means redundant API calls.
-	out, err := e.client.DescribeTableWithContext(ctx, &svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
+	out, err := e.client.DescribeTableWithContext(ctx, &svcsdk.DescribeTableInput{TableName: pointer.String(meta.GetExternalName(cr))})
 	if err != nil {
-		return aws.Wrap(err, errDescribe)
+		return errorutils.Wrap(err, errDescribe)
 	}
 
 	p, err := e.createPatch(ctx, out, &cr.Spec.ForProvider)
@@ -545,7 +548,7 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 
 		// NOTE(negz): You must include provisioned throughput when
 		// updating the billing mode to PROVISIONED.
-		if aws.StringValue(u.BillingMode) == string(svcapitypes.BillingMode_PROVISIONED) {
+		if pointer.StringValue(u.BillingMode) == string(svcapitypes.BillingMode_PROVISIONED) {
 			filtered.ProvisionedThroughput = u.ProvisionedThroughput
 		}
 	case p.ProvisionedThroughput != nil:
@@ -580,14 +583,14 @@ func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndexDescription, 
 	desired := map[string]*svcsdk.GlobalSecondaryIndexDescription{}
 	desiredKeys := make([]string, len(spec))
 	for i, gsi := range spec {
-		desired[aws.StringValue(gsi.IndexName)] = gsi
-		desiredKeys[i] = aws.StringValue(gsi.IndexName)
+		desired[pointer.StringValue(gsi.IndexName)] = gsi
+		desiredKeys[i] = pointer.StringValue(gsi.IndexName)
 	}
 	existing := map[string]*svcsdk.GlobalSecondaryIndexDescription{}
 	existingKeys := make([]string, len(obs))
 	for i, gsi := range obs {
-		existing[aws.StringValue(gsi.IndexName)] = gsi
-		existingKeys[i] = aws.StringValue(gsi.IndexName)
+		existing[pointer.StringValue(gsi.IndexName)] = gsi
+		existingKeys[i] = pointer.StringValue(gsi.IndexName)
 	}
 	sort.Strings(desiredKeys)
 	sort.Strings(existingKeys)
@@ -616,8 +619,8 @@ func diffGlobalSecondaryIndexes(spec []*svcsdk.GlobalSecondaryIndexDescription, 
 			return gsi
 		}
 		if desired[k].ProvisionedThroughput != nil {
-			if aws.Int64Value(desired[k].ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(existingGSI.ProvisionedThroughput.WriteCapacityUnits) ||
-				aws.Int64Value(desired[k].ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(existingGSI.ProvisionedThroughput.ReadCapacityUnits) {
+			if pointer.Int64Value(desired[k].ProvisionedThroughput.WriteCapacityUnits) != pointer.Int64Value(existingGSI.ProvisionedThroughput.WriteCapacityUnits) ||
+				pointer.Int64Value(desired[k].ProvisionedThroughput.ReadCapacityUnits) != pointer.Int64Value(existingGSI.ProvisionedThroughput.ReadCapacityUnits) {
 				u := &svcsdk.GlobalSecondaryIndexUpdate{
 					Update: &svcsdk.UpdateGlobalSecondaryIndexAction{
 						IndexName: desired[k].IndexName,

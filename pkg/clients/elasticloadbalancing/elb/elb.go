@@ -31,7 +31,8 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/elasticloadbalancing/v1alpha1"
-	clients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // A Client handles CRUD operations for Elastic Load Balancing resources.
@@ -81,7 +82,7 @@ func LateInitializeELB(in *v1alpha1.ELBParameters, v *elbtypes.LoadBalancerDescr
 		return
 	}
 
-	in.Scheme = clients.LateInitializeStringPtr(in.Scheme, v.Scheme)
+	in.Scheme = pointer.LateInitializeStringPtr(in.Scheme, v.Scheme)
 
 	if len(in.AvailabilityZones) == 0 && len(v.AvailabilityZones) != 0 {
 		in.AvailabilityZones = v.AvailabilityZones
@@ -179,7 +180,7 @@ func CreatePatch(in elbtypes.LoadBalancerDescription, target v1alpha1.ELBParamet
 		return targetCopy.Listeners[i].LoadBalancerPort < targetCopy.Listeners[j].LoadBalancerPort
 	})
 
-	jsonPatch, err := clients.CreateJSONPatch(currentParams, targetCopy)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, targetCopy)
 	if err != nil {
 		return nil, err
 	}

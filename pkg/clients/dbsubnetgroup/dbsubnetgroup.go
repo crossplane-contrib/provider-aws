@@ -26,7 +26,7 @@ import (
 	rdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // Client is the external client used for DBSubnetGroup Custom Resource
@@ -52,7 +52,7 @@ func IsDBSubnetGroupNotFoundErr(err error) bool {
 
 // IsDBSubnetGroupUpToDate checks whether there is a change in any of the modifiable fields.
 func IsDBSubnetGroupUpToDate(p v1beta1.DBSubnetGroupParameters, sg rdstypes.DBSubnetGroup, tags []rdstypes.Tag) bool { //nolint:gocyclo
-	if p.Description != awsclients.StringValue(sg.DBSubnetGroupDescription) {
+	if p.Description != pointer.StringValue(sg.DBSubnetGroupDescription) {
 		return false
 	}
 
@@ -114,7 +114,7 @@ func LateInitialize(in *v1beta1.DBSubnetGroupParameters, sg *rdstypes.DBSubnetGr
 		return
 	}
 
-	in.Description = awsclients.LateInitializeString(in.Description, sg.DBSubnetGroupDescription)
+	in.Description = pointer.LateInitializeString(in.Description, sg.DBSubnetGroupDescription)
 	if len(in.SubnetIDs) == 0 && len(sg.Subnets) != 0 {
 		in.SubnetIDs = make([]string, len(sg.Subnets))
 		for i, val := range sg.Subnets {

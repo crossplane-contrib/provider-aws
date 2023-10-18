@@ -37,9 +37,10 @@ import (
 
 	route53v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/hostedzone"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -96,7 +97,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, connectaws.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		Id: hostedZoneID,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errGet)
 	}
 
 	resTags, err := e.client.ListTagsForResource(ctx, &route53.ListTagsForResourceInput{
@@ -136,7 +137,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		ResourceType: route53types.TagResourceTypeHostedzone,
 	})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errListTags)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errListTags)
 	}
 	if resTags.ResourceTagSet == nil {
 		resTags.ResourceTagSet = &route53types.ResourceTagSet{}
@@ -165,7 +166,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	res, err := e.client.CreateHostedZone(ctx, hostedzone.GenerateCreateHostedZoneInput(cr))
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 	id := strings.SplitAfter(aws.ToString(res.HostedZone.Id), hostedzone.IDPrefix)
 	if len(id) < 2 {
@@ -186,7 +187,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		hostedzone.GenerateUpdateHostedZoneCommentInput(cr.Spec.ForProvider, hostedZoneID),
 	)
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// Update tags if necessary
@@ -207,7 +208,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 		_, err := e.client.ChangeTagsForResource(ctx, changeTagsInput)
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateTags)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateTags)
 		}
 	}
 
@@ -226,5 +227,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		Id: aws.String(hostedzone.GetHostedZoneID(cr)),
 	})
 
-	return awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)
 }

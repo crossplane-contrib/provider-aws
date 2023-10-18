@@ -34,9 +34,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 var (
@@ -82,7 +84,7 @@ func withArn(s string) roleModifier {
 
 func withPolicy() roleModifier {
 	return func(r *v1beta1.Role) {
-		p, err := awsclient.CompactAndEscapeJSON(policy)
+		p, err := legacypolicy.CompactAndEscapeJSON(policy)
 		if err != nil {
 			return
 		}
@@ -141,7 +143,7 @@ func TestObserve(t *testing.T) {
 					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
 						return &awsiam.GetRoleOutput{
 							Role: &awsiamtypes.Role{
-								Arn: awsclient.String(arn),
+								Arn: pointer.String(arn),
 							},
 						}, nil
 					},
@@ -182,7 +184,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withRoleName(&roleName)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -265,7 +267,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withConditions(xpv1.Creating())),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -343,7 +345,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withDescription()),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 		"ClientUpdatePolicyError": {
@@ -365,7 +367,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withPolicy()),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -433,7 +435,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {

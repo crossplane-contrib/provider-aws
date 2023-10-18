@@ -27,14 +27,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/labels"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // GenerateCreateNodeGroupInput from NodeGroupParameters.
 func GenerateCreateNodeGroupInput(name string, p *manualv1alpha1.NodeGroupParameters) *eks.CreateNodegroupInput {
 	c := &eks.CreateNodegroupInput{
 		NodegroupName:  &name,
-		AmiType:        ekstypes.AMITypes(awsclient.StringValue(p.AMIType)),
+		AmiType:        ekstypes.AMITypes(pointer.StringValue(p.AMIType)),
 		ClusterName:    &p.ClusterName,
 		DiskSize:       p.DiskSize,
 		InstanceTypes:  p.InstanceTypes,
@@ -144,7 +145,7 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *manualv1alpha1.NodeGroup
 	}
 
 	if len(p.Labels) > 0 {
-		addOrModify, remove := awsclient.DiffLabels(p.Labels, ng.Labels)
+		addOrModify, remove := labels.DiffLabels(p.Labels, ng.Labels)
 		// error: both or either addOrUpdateLabels or removeLabels must not be empty
 		if len(addOrModify) > 0 || len(remove) > 0 {
 			u.Labels = &ekstypes.UpdateLabelsPayload{
@@ -191,9 +192,9 @@ func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGro
 		return manualv1alpha1.NodeGroupObservation{}
 	}
 	o := manualv1alpha1.NodeGroupObservation{
-		NodeGroupArn:   awsclient.StringValue(ng.NodegroupArn),
-		Version:        awsclient.StringValue(ng.Version),
-		ReleaseVersion: awsclient.StringValue(ng.ReleaseVersion),
+		NodeGroupArn:   pointer.StringValue(ng.NodegroupArn),
+		Version:        pointer.StringValue(ng.Version),
+		ReleaseVersion: pointer.StringValue(ng.ReleaseVersion),
 		Status:         manualv1alpha1.NodeGroupStatusType(ng.Status),
 	}
 	if ng.CreatedAt != nil {
@@ -206,7 +207,7 @@ func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGro
 		for c, i := range ng.Health.Issues {
 			o.Health.Issues[c] = manualv1alpha1.Issue{
 				Code:        string(i.Code),
-				Message:     awsclient.StringValue(i.Message),
+				Message:     pointer.StringValue(i.Message),
 				ResourceIDs: i.ResourceIds,
 			}
 		}
@@ -216,12 +217,12 @@ func GenerateNodeGroupObservation(ng *ekstypes.Nodegroup) manualv1alpha1.NodeGro
 	}
 	if ng.Resources != nil {
 		o.Resources = manualv1alpha1.NodeGroupResources{
-			RemoteAccessSecurityGroup: awsclient.StringValue(ng.Resources.RemoteAccessSecurityGroup),
+			RemoteAccessSecurityGroup: pointer.StringValue(ng.Resources.RemoteAccessSecurityGroup),
 		}
 		if len(ng.Resources.AutoScalingGroups) > 0 {
 			asg := make([]manualv1alpha1.AutoScalingGroup, len(ng.Resources.AutoScalingGroups))
 			for c, a := range ng.Resources.AutoScalingGroups {
-				asg[c] = manualv1alpha1.AutoScalingGroup{Name: awsclient.StringValue(a.Name)}
+				asg[c] = manualv1alpha1.AutoScalingGroup{Name: pointer.StringValue(a.Name)}
 			}
 			o.Resources.AutoScalingGroups = asg
 		}
@@ -248,9 +249,9 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 	if ng == nil {
 		return
 	}
-	in.AMIType = awsclient.LateInitializeStringPtr(in.AMIType, awsclient.String(string(ng.AmiType)))
-	in.CapacityType = awsclient.LateInitializeStringPtr(in.CapacityType, awsclient.String(string(ng.CapacityType)))
-	in.DiskSize = awsclient.LateInitializeInt32Ptr(in.DiskSize, ng.DiskSize)
+	in.AMIType = pointer.LateInitializeStringPtr(in.AMIType, pointer.String(string(ng.AmiType)))
+	in.CapacityType = pointer.LateInitializeStringPtr(in.CapacityType, pointer.String(string(ng.CapacityType)))
+	in.DiskSize = pointer.LateInitializeInt32Ptr(in.DiskSize, ng.DiskSize)
 	if len(in.InstanceTypes) == 0 && len(ng.InstanceTypes) > 0 {
 		in.InstanceTypes = ng.InstanceTypes
 	}
@@ -278,15 +279,15 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 	if in.UpdateConfig == nil {
 		in.UpdateConfig = &manualv1alpha1.NodeGroupUpdateConfig{}
 	}
-	in.UpdateConfig.Force = awsclient.LateInitializeBoolPtr(in.UpdateConfig.Force, aws.Bool(false))
+	in.UpdateConfig.Force = pointer.LateInitializeBoolPtr(in.UpdateConfig.Force, aws.Bool(false))
 	if ng.UpdateConfig != nil {
-		in.UpdateConfig.MaxUnavailable = awsclient.LateInitializeInt32Ptr(in.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable)
+		in.UpdateConfig.MaxUnavailable = pointer.LateInitializeInt32Ptr(in.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable)
 	}
 	if in.LaunchTemplate != nil && ng.LaunchTemplate != nil && ng.LaunchTemplate.Version != nil {
-		in.LaunchTemplate.Version = awsclient.LateInitializeStringPtr(in.LaunchTemplate.Version, ng.LaunchTemplate.Version)
+		in.LaunchTemplate.Version = pointer.LateInitializeStringPtr(in.LaunchTemplate.Version, ng.LaunchTemplate.Version)
 	}
-	in.ReleaseVersion = awsclient.LateInitializeStringPtr(in.ReleaseVersion, ng.ReleaseVersion)
-	in.Version = awsclient.LateInitializeStringPtr(in.Version, ng.Version)
+	in.ReleaseVersion = pointer.LateInitializeStringPtr(in.ReleaseVersion, ng.ReleaseVersion)
+	in.Version = pointer.LateInitializeStringPtr(in.Version, ng.Version)
 	// NOTE(hasheddan): we always will set the default Crossplane tags in
 	// practice during initialization in the controller, but we check if no tags
 	// exist for consistency with expected late initialization behavior.

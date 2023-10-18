@@ -32,8 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/docdb/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -73,13 +73,13 @@ func withExternalName(value string) docDBModifier {
 
 func withDBSubnetGroupName(value string) docDBModifier {
 	return func(o *svcapitypes.DBSubnetGroup) {
-		o.Status.AtProvider.DBSubnetGroupName = awsclient.String(value)
+		o.Status.AtProvider.DBSubnetGroupName = pointer.String(value)
 	}
 }
 
 func withDescription(value string) docDBModifier {
 	return func(o *svcapitypes.DBSubnetGroup) {
-		o.Spec.ForProvider.DBSubnetGroupDescription = awsclient.String(value)
+		o.Spec.ForProvider.DBSubnetGroupDescription = pointer.String(value)
 	}
 }
 
@@ -87,7 +87,7 @@ func withSubnetIds(values ...string) docDBModifier {
 	return func(o *svcapitypes.DBSubnetGroup) {
 		strArr := make([]*string, len(values))
 		for i, val := range values {
-			strArr[i] = awsclient.String(val)
+			strArr[i] = pointer.String(val)
 		}
 		o.Spec.ForProvider.SubnetIDs = strArr
 	}
@@ -98,7 +98,7 @@ func withSubnetIDStatus(values ...string) docDBModifier {
 		subnetArr := make([]*svcapitypes.Subnet, len(values))
 		for i, val := range values {
 			subnetArr[i] = &svcapitypes.Subnet{
-				SubnetIdentifier: awsclient.String(val),
+				SubnetIdentifier: pointer.String(val),
 			}
 		}
 		o.Status.AtProvider.Subnets = subnetArr
@@ -130,7 +130,7 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBSubnetGroupsOutput{
 							DBSubnetGroups: []*docdb.DBSubnetGroup{
 								{
-									DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+									DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 								},
 							},
 						}, nil
@@ -159,7 +159,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -178,8 +178,8 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBSubnetGroupsOutput{
 							DBSubnetGroups: []*docdb.DBSubnetGroup{
 								{
-									DBSubnetGroupName:        awsclient.String(testDBSubnetGroupName),
-									DBSubnetGroupDescription: awsclient.String(testDescription),
+									DBSubnetGroupName:        pointer.String(testDBSubnetGroupName),
+									DBSubnetGroupDescription: pointer.String(testDescription),
 								},
 							},
 						}, nil
@@ -207,7 +207,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -221,9 +221,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBSubnetGroupsOutput{
 							DBSubnetGroups: []*docdb.DBSubnetGroup{
 								{
-									DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+									DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 									Subnets: []*docdb.Subnet{
-										{SubnetIdentifier: awsclient.String(testSubnetID)},
+										{SubnetIdentifier: pointer.String(testSubnetID)},
 									},
 								},
 							},
@@ -256,7 +256,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -275,9 +275,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBSubnetGroupsOutput{
 							DBSubnetGroups: []*docdb.DBSubnetGroup{
 								{
-									DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+									DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 									Subnets: []*docdb.Subnet{
-										{SubnetIdentifier: awsclient.String(testSubnetID)},
+										{SubnetIdentifier: pointer.String(testSubnetID)},
 									},
 								},
 							},
@@ -307,7 +307,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -338,7 +338,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -373,7 +373,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -422,7 +422,7 @@ func TestCreate(t *testing.T) {
 					MockCreateDBSubnetGroupWithContext: func(c context.Context, cdgi *docdb.CreateDBSubnetGroupInput, o []request.Option) (*docdb.CreateDBSubnetGroupOutput, error) {
 						return &docdb.CreateDBSubnetGroupOutput{
 							DBSubnetGroup: &docdb.DBSubnetGroup{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						}, nil
 					},
@@ -444,7 +444,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBSubnetGroupInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -476,7 +476,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBSubnetGroupInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -541,7 +541,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBSubnetGroupInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -572,7 +572,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBSubnetGroupInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -618,7 +618,7 @@ func TestModify(t *testing.T) {
 					MockModifyDBSubnetGroupWithContext: func(c context.Context, mdgi *docdb.ModifyDBSubnetGroupInput, o []request.Option) (*docdb.ModifyDBSubnetGroupOutput, error) {
 						return &docdb.ModifyDBSubnetGroupOutput{
 							DBSubnetGroup: &docdb.DBSubnetGroup{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						}, nil
 					},
@@ -645,8 +645,8 @@ func TestModify(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBSubnetGroupInput{
-								DBSubnetGroupName:        awsclient.String(testDBSubnetGroupName),
-								DBSubnetGroupDescription: awsclient.String(testDescription),
+								DBSubnetGroupName:        pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupDescription: pointer.String(testDescription),
 							},
 						},
 					},
@@ -664,9 +664,9 @@ func TestModify(t *testing.T) {
 					MockModifyDBSubnetGroupWithContext: func(c context.Context, mdgi *docdb.ModifyDBSubnetGroupInput, o []request.Option) (*docdb.ModifyDBSubnetGroupOutput, error) {
 						return &docdb.ModifyDBSubnetGroupOutput{
 							DBSubnetGroup: &docdb.DBSubnetGroup{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 								Subnets: []*docdb.Subnet{
-									{SubnetIdentifier: awsclient.String(testSubnetID)},
+									{SubnetIdentifier: pointer.String(testSubnetID)},
 								},
 							},
 						}, nil
@@ -694,9 +694,9 @@ func TestModify(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBSubnetGroupInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 								SubnetIds: []*string{
-									awsclient.String(testSubnetID),
+									pointer.String(testSubnetID),
 								},
 							},
 						},
@@ -733,7 +733,7 @@ func TestModify(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBSubnetGroupInput{
-								DBSubnetGroupName: awsclient.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
 							},
 						},
 					},

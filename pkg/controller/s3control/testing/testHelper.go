@@ -7,7 +7,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/s3control/v1alpha1"
-	awsClient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // AccessPointModifier is a function which modifies the AccessPoint for testing
@@ -29,9 +29,9 @@ func AccessPoint(m ...AccessPointModifier) *svcapitypes.AccessPoint {
 		Spec: svcapitypes.AccessPointSpec{
 			ForProvider: svcapitypes.AccessPointParameters{
 				Region:    "us-east-1",
-				AccountID: awsClient.String("1234567890"),
+				AccountID: pointer.String("1234567890"),
 				CustomAccessPointParameters: svcapitypes.CustomAccessPointParameters{
-					BucketName: awsClient.String("test.bucket.name"),
+					BucketName: pointer.String("test.bucket.name"),
 				},
 			},
 		},

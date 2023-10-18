@@ -26,9 +26,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -39,7 +40,7 @@ var (
 func generateVersioningConfig() *v1beta1.VersioningConfiguration {
 	return &v1beta1.VersioningConfiguration{
 		MFADelete: &mfadelete,
-		Status:    awsclient.String(enabled),
+		Status:    pointer.String(enabled),
 	}
 }
 
@@ -76,7 +77,7 @@ func TestVersioningObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, versioningGetFailed),
+				err:    errorutils.Wrap(errBoom, versioningGetFailed),
 			},
 		},
 		"UpdateNeededFull": {
@@ -163,7 +164,7 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, versioningPutFailed),
+				err: errorutils.Wrap(errBoom, versioningPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -229,7 +230,7 @@ func TestVersioningLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, versioningGetFailed),
+				err: errorutils.Wrap(errBoom, versioningGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

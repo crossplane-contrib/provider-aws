@@ -38,9 +38,10 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/database"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -106,7 +107,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +130,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// the tags map of the RDS instance, you have to make ListTagsForResourceRequest
 	rsp, err := e.client.DescribeDBInstances(ctx, &awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
 	}
 
 	// Describe requests can be used with filters, which then returns a list.
@@ -152,7 +153,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 	upToDate, diff, err := rds.IsUpToDate(ctx, e.kube, cr, instance)
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errUpToDateFailed)
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errUpToDateFailed)
 	}
 
 	return managed.ExternalObservation{
@@ -202,7 +203,7 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 	if cr.Spec.ForProvider.RestoreFrom == nil {
 		_, err := e.client.CreateDBInstance(ctx, rds.GenerateCreateRDSInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
-			return awsclient.Wrap(err, errCreateFailed)
+			return errorutils.Wrap(err, errCreateFailed)
 		}
 		return nil
 	}
@@ -211,12 +212,12 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 	case "S3":
 		_, err := e.client.RestoreDBInstanceFromS3(ctx, rds.GenerateRestoreRDSInstanceFromS3Input(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 		if err != nil {
-			return awsclient.Wrap(err, errS3RestoreFailed)
+			return errorutils.Wrap(err, errS3RestoreFailed)
 		}
 	case "Snapshot":
 		_, err := e.client.RestoreDBInstanceFromDBSnapshot(ctx, rds.GenerateRestoreRDSInstanceFromSnapshotInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 		if err != nil {
-			return awsclient.Wrap(err, errSnapshotRestoreFailed)
+			return errorutils.Wrap(err, errSnapshotRestoreFailed)
 		}
 	case "PointInTime":
 		if cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceIdentifier == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDbiResourceID == nil && cr.Spec.ForProvider.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn == nil {
@@ -224,7 +225,7 @@ func (e *external) RestoreOrCreate(ctx context.Context, cr *v1beta1.RDSInstance,
 		}
 		_, err := e.client.RestoreDBInstanceToPointInTime(ctx, rds.GenerateRestoreRDSInstanceToPointInTimeInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 		if err != nil {
-			return awsclient.Wrap(err, errPointInTimeRestoreFailed)
+			return errorutils.Wrap(err, errPointInTimeRestoreFailed)
 		}
 	default:
 		return errors.New(errUnknownRestoreSource)
@@ -248,7 +249,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// to make a DescribeDBInstancesRequest to get the current state.
 	rsp, err := e.client.DescribeDBInstances(ctx, &awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errDescribeFailed)
 	}
 	patch, err := rds.CreatePatch(&rsp.DBInstances[0], &cr.Spec.ForProvider)
 	if err != nil {
@@ -269,7 +270,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyFailed)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyFailed)
 	}
 	if len(patch.Tags) > 0 {
 		tags := make([]awsrdstypes.Tag, len(patch.Tags))
@@ -281,7 +282,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			Tags:         tags,
 		})
 		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errAddTagsFailed)
 		}
 	}
 	return managed.ExternalUpdate{ConnectionDetails: conn}, nil
@@ -314,7 +315,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		FinalDBSnapshotIdentifier: cr.Spec.ForProvider.FinalDBSnapshotIdentifier,
 	}
 	_, err = e.client.DeleteDBInstance(ctx, &input)
-	return awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
+	return errorutils.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
 }
 
 type tagger struct {

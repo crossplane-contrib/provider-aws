@@ -16,9 +16,10 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -92,7 +93,7 @@ func (e *external) observer(ctx context.Context, mg cpresource.Managed) (managed
 		return managed.ExternalObservation{ResourceExists: false}, nil //nolint:nilerr
 	}
 
-	if awsclients.StringValue(route.State) == svcsdk.RouteStateActive {
+	if pointer.StringValue(route.State) == svcsdk.RouteStateActive {
 		cr.SetConditions(xpv1.Available())
 	}
 
@@ -116,7 +117,7 @@ func (e *external) findRouteByDestination(ctx context.Context, cr *svcapitypes.R
 	})
 
 	if err != nil {
-		return nil, awsclients.Wrap(cpresource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
+		return nil, errorutils.Wrap(cpresource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -125,8 +126,8 @@ func (e *external) findRouteByDestination(ctx context.Context, cr *svcapitypes.R
 	}
 
 	for _, route := range response.RouteTables[0].Routes {
-		if awsclients.StringValue(route.Origin) == svcsdk.RouteOriginCreateRoute {
-			if ec2.CIDRBlocksEqual(awsclients.StringValue(route.DestinationCidrBlock), awsclients.StringValue(cr.Spec.ForProvider.DestinationCIDRBlock)) {
+		if pointer.StringValue(route.Origin) == svcsdk.RouteOriginCreateRoute {
+			if ec2.CIDRBlocksEqual(pointer.StringValue(route.DestinationCidrBlock), pointer.StringValue(cr.Spec.ForProvider.DestinationCIDRBlock)) {
 				return route, nil
 			}
 		}

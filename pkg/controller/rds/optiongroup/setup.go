@@ -3,6 +3,7 @@ package optiongroup
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -17,9 +18,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/rds/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 // SetupOptionGroup adds a controller that reconciles OptionGroup.
@@ -126,7 +127,7 @@ func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.OptionGroup, obj
 	if !tagsUpToDate {
 		err := svcutils.UpdateTagsForResource(ctx, e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.OptionGroupARN)
 		if err != nil {
-			return true, "", aws.Wrap(err, errDescribe)
+			return true, "", errorutils.Wrap(err, errDescribe)
 		}
 	}
 
@@ -139,7 +140,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.OptionGroup, obj 
 		OptionGroupName: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return aws.Wrap(err, errDescribe)
+		return errorutils.Wrap(err, errDescribe)
 	}
 
 	optionsToAdd, optionsToRemove := diffOptions(cr.Spec.ForProvider.Option, describe.OptionGroupsList[0].Options)

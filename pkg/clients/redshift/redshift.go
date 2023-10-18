@@ -32,7 +32,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/redshift/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // Client defines Redshift client operations
@@ -54,23 +55,23 @@ func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) {
 	if cl == nil {
 		return
 	}
-	in.AllowVersionUpgrade = awsclients.LateInitializeBoolPtr(in.AllowVersionUpgrade, &cl.AllowVersionUpgrade)
-	in.AutomatedSnapshotRetentionPeriod = awsclients.LateInitializeInt32Ptr(in.AutomatedSnapshotRetentionPeriod, &cl.AutomatedSnapshotRetentionPeriod)
-	in.AvailabilityZone = awsclients.LateInitializeStringPtr(in.AvailabilityZone, cl.AvailabilityZone)
-	in.ClusterVersion = awsclients.LateInitializeStringPtr(in.ClusterVersion, cl.ClusterVersion)
-	in.ClusterSubnetGroupName = awsclients.LateInitializeStringPtr(in.ClusterSubnetGroupName, cl.ClusterSubnetGroupName)
-	in.DBName = awsclients.LateInitializeStringPtr(in.DBName, cl.DBName)
-	in.Encrypted = awsclients.LateInitializeBoolPtr(in.Encrypted, &cl.Encrypted)
-	in.EnhancedVPCRouting = awsclients.LateInitializeBoolPtr(in.EnhancedVPCRouting, &cl.EnhancedVpcRouting)
-	in.KMSKeyID = awsclients.LateInitializeStringPtr(in.KMSKeyID, cl.KmsKeyId)
-	in.MaintenanceTrackName = awsclients.LateInitializeStringPtr(in.MaintenanceTrackName, cl.MaintenanceTrackName)
-	in.ManualSnapshotRetentionPeriod = awsclients.LateInitializeInt32Ptr(in.ManualSnapshotRetentionPeriod, &cl.ManualSnapshotRetentionPeriod)
-	in.MasterUsername = awsclients.LateInitializeString(in.MasterUsername, cl.MasterUsername)
-	in.NodeType = awsclients.LateInitializeString(in.NodeType, cl.NodeType)
-	in.NumberOfNodes = awsclients.LateInitializeInt32Ptr(in.NumberOfNodes, &cl.NumberOfNodes)
-	in.PreferredMaintenanceWindow = awsclients.LateInitializeStringPtr(in.PreferredMaintenanceWindow, cl.PreferredMaintenanceWindow)
-	in.PubliclyAccessible = awsclients.LateInitializeBoolPtr(in.PubliclyAccessible, &cl.PubliclyAccessible)
-	in.SnapshotScheduleIdentifier = awsclients.LateInitializeStringPtr(in.SnapshotScheduleIdentifier, cl.SnapshotScheduleIdentifier)
+	in.AllowVersionUpgrade = pointer.LateInitializeBoolPtr(in.AllowVersionUpgrade, &cl.AllowVersionUpgrade)
+	in.AutomatedSnapshotRetentionPeriod = pointer.LateInitializeInt32Ptr(in.AutomatedSnapshotRetentionPeriod, &cl.AutomatedSnapshotRetentionPeriod)
+	in.AvailabilityZone = pointer.LateInitializeStringPtr(in.AvailabilityZone, cl.AvailabilityZone)
+	in.ClusterVersion = pointer.LateInitializeStringPtr(in.ClusterVersion, cl.ClusterVersion)
+	in.ClusterSubnetGroupName = pointer.LateInitializeStringPtr(in.ClusterSubnetGroupName, cl.ClusterSubnetGroupName)
+	in.DBName = pointer.LateInitializeStringPtr(in.DBName, cl.DBName)
+	in.Encrypted = pointer.LateInitializeBoolPtr(in.Encrypted, &cl.Encrypted)
+	in.EnhancedVPCRouting = pointer.LateInitializeBoolPtr(in.EnhancedVPCRouting, &cl.EnhancedVpcRouting)
+	in.KMSKeyID = pointer.LateInitializeStringPtr(in.KMSKeyID, cl.KmsKeyId)
+	in.MaintenanceTrackName = pointer.LateInitializeStringPtr(in.MaintenanceTrackName, cl.MaintenanceTrackName)
+	in.ManualSnapshotRetentionPeriod = pointer.LateInitializeInt32Ptr(in.ManualSnapshotRetentionPeriod, &cl.ManualSnapshotRetentionPeriod)
+	in.MasterUsername = pointer.LateInitializeString(in.MasterUsername, cl.MasterUsername)
+	in.NodeType = pointer.LateInitializeString(in.NodeType, cl.NodeType)
+	in.NumberOfNodes = pointer.LateInitializeInt32Ptr(in.NumberOfNodes, &cl.NumberOfNodes)
+	in.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(in.PreferredMaintenanceWindow, cl.PreferredMaintenanceWindow)
+	in.PubliclyAccessible = pointer.LateInitializeBoolPtr(in.PubliclyAccessible, &cl.PubliclyAccessible)
+	in.SnapshotScheduleIdentifier = pointer.LateInitializeStringPtr(in.SnapshotScheduleIdentifier, cl.SnapshotScheduleIdentifier)
 
 	// If ClusterType is not provided by the user then set it to it's default value.
 	// As redshift.Cluster type doesn't hold this info.
@@ -83,14 +84,14 @@ func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) {
 		}
 	}
 	if cl.Endpoint != nil {
-		in.Port = awsclients.LateInitializeInt32Ptr(in.Port, &cl.Endpoint.Port)
+		in.Port = pointer.LateInitializeInt32Ptr(in.Port, &cl.Endpoint.Port)
 	}
 	if cl.HsmStatus != nil {
-		in.HSMClientCertificateIdentifier = awsclients.LateInitializeStringPtr(in.HSMClientCertificateIdentifier, cl.HsmStatus.HsmClientCertificateIdentifier)
-		in.HSMConfigurationIdentifier = awsclients.LateInitializeStringPtr(in.HSMConfigurationIdentifier, cl.HsmStatus.HsmConfigurationIdentifier)
+		in.HSMClientCertificateIdentifier = pointer.LateInitializeStringPtr(in.HSMClientCertificateIdentifier, cl.HsmStatus.HsmClientCertificateIdentifier)
+		in.HSMConfigurationIdentifier = pointer.LateInitializeStringPtr(in.HSMConfigurationIdentifier, cl.HsmStatus.HsmConfigurationIdentifier)
 	}
 	if cl.ElasticIpStatus != nil {
-		in.ElasticIP = awsclients.LateInitializeStringPtr(in.ElasticIP, cl.ElasticIpStatus.ElasticIp)
+		in.ElasticIP = pointer.LateInitializeStringPtr(in.ElasticIP, cl.ElasticIpStatus.ElasticIp)
 	}
 
 	if len(cl.ClusterSecurityGroups) != 0 {
@@ -172,7 +173,7 @@ func CreatePatch(target *v1alpha1.ClusterParameters, in *redshifttypes.Cluster) 
 	initializeModifyandDeleteParameters(target, currentParams)
 	LateInitialize(currentParams, in)
 
-	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
+	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}

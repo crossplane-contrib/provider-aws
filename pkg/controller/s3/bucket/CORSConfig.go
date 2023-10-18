@@ -23,8 +23,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -45,9 +46,9 @@ func NewCORSConfigurationClient(client s3.BucketClient) *CORSConfigurationClient
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *CORSConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	result, err := in.client.GetBucketCors(ctx, &awss3.GetBucketCorsInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	result, err := in.client.GetBucketCors(ctx, &awss3.GetBucketCorsInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if resource.Ignore(s3.CORSConfigurationNotFound, err) != nil {
-		return NeedsUpdate, awsclient.Wrap(err, corsGetFailed)
+		return NeedsUpdate, errorutils.Wrap(err, corsGetFailed)
 	}
 	var local []v1beta1.CORSRule
 	if bucket.Spec.ForProvider.CORSConfiguration != nil {
@@ -67,25 +68,25 @@ func (in *CORSConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v
 	}
 	input := GeneratePutBucketCorsInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.CORSConfiguration)
 	_, err := in.client.PutBucketCors(ctx, input)
-	return awsclient.Wrap(err, corsPutFailed)
+	return errorutils.Wrap(err, corsPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *CORSConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketCors(ctx,
 		&awss3.DeleteBucketCorsInput{
-			Bucket: awsclient.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.String(meta.GetExternalName(bucket)),
 		},
 	)
-	return awsclient.Wrap(err, corsDeleteFailed)
+	return errorutils.Wrap(err, corsDeleteFailed)
 }
 
 // LateInitialize does nothing because CORSConfiguration might have been deleted
 // by the user.
 func (in *CORSConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketCors(ctx, &awss3.GetBucketCorsInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketCors(ctx, &awss3.GetBucketCorsInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(resource.Ignore(s3.CORSConfigurationNotFound, err), corsGetFailed)
+		return errorutils.Wrap(resource.Ignore(s3.CORSConfigurationNotFound, err), corsGetFailed)
 	}
 
 	// We need the second check here because by default the CORS is not set
@@ -114,7 +115,7 @@ func (in *CORSConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) boo
 // GeneratePutBucketCorsInput creates the input for the PutBucketCors request for the S3 Client
 func GeneratePutBucketCorsInput(name string, config *v1beta1.CORSConfiguration) *awss3.PutBucketCorsInput {
 	bci := &awss3.PutBucketCorsInput{
-		Bucket:            awsclient.String(name),
+		Bucket:            pointer.String(name),
 		CORSConfiguration: &types.CORSConfiguration{CORSRules: make([]types.CORSRule, 0)},
 	}
 	for _, cors := range config.CORSRules {

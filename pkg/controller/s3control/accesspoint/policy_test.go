@@ -28,9 +28,9 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
 	"github.com/crossplane-contrib/provider-aws/apis/s3control/v1alpha1"
-	awsClient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3control/fake"
 	s3controlTesting "github.com/crossplane-contrib/provider-aws/pkg/controller/s3control/testing"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -38,11 +38,11 @@ var (
 		Version: "2012-10-17",
 		Statements: []common.BucketPolicyStatement{
 			{
-				SID:    awsClient.String("AllowPublicRead"),
+				SID:    pointer.String("AllowPublicRead"),
 				Effect: "Allow",
 				Principal: &common.BucketPrincipal{
 					AWSPrincipals: []common.AWSPrincipal{
-						{IAMRoleARN: awsClient.String("arn:aws:iam::1234567890:role/sso/role")},
+						{IAMRoleARN: pointer.String("arn:aws:iam::1234567890:role/sso/role")},
 					},
 				},
 				Action:   []string{"s3:GetObject"},
@@ -55,11 +55,11 @@ var (
 		Version: "2012-10-17",
 		Statements: []common.BucketPolicyStatement{
 			{
-				SID:    awsClient.String("AllowPublicWrite"),
+				SID:    pointer.String("AllowPublicWrite"),
 				Effect: "Allow",
 				Principal: &common.BucketPrincipal{
 					AWSPrincipals: []common.AWSPrincipal{
-						{IAMRoleARN: awsClient.String("arn:aws:iam::1234567890:role/sso/role")},
+						{IAMRoleARN: pointer.String("arn:aws:iam::1234567890:role/sso/role")},
 					},
 				},
 				Action:   []string{"s3:GetObject"},

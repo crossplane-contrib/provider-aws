@@ -36,8 +36,8 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -189,7 +189,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: oidcProvider(withURL(url),
 					withExternalName(providerArn)),
-				err: awsclient.Wrap(errBoom, errGet),
+				err: errorutils.Wrap(errBoom, errGet),
 			},
 		},
 		"NoExternalNameExistingResource": {
@@ -245,7 +245,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  oidcProvider(withURL(url)),
-				err: awsclient.Wrap(errBoom, errList),
+				err: errorutils.Wrap(errBoom, errList),
 				result: managed.ExternalObservation{
 					ResourceExists: false,
 				},
@@ -362,7 +362,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  oidcProvider(withURL(url)),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 		"ValidInput": {
@@ -472,7 +472,7 @@ func TestUpdate(t *testing.T) {
 					func(provider *svcapitypes.OpenIDConnectProvider) {
 						provider.Spec.ForProvider.ThumbprintList = []string{"a"}
 					}),
-				err: awsclient.Wrap(errBoom, errUpdateThumbprint),
+				err: errorutils.Wrap(errBoom, errUpdateThumbprint),
 			},
 		},
 		"AddClientError": {
@@ -496,7 +496,7 @@ func TestUpdate(t *testing.T) {
 					func(provider *svcapitypes.OpenIDConnectProvider) {
 						provider.Spec.ForProvider.ClientIDList = []string{"a", "b"}
 					}),
-				err: awsclient.Wrap(errBoom, errAddClientID),
+				err: errorutils.Wrap(errBoom, errAddClientID),
 			},
 		},
 		"RemoveClientError": {
@@ -522,7 +522,7 @@ func TestUpdate(t *testing.T) {
 					func(provider *svcapitypes.OpenIDConnectProvider) {
 						provider.Spec.ForProvider.ClientIDList = []string{"a"}
 					}),
-				err: awsclient.Wrap(errBoom, errRemoveClientID),
+				err: errorutils.Wrap(errBoom, errRemoveClientID),
 			},
 		},
 		"SuccessfulUpdate": {
@@ -608,7 +608,7 @@ func TestUpdate_Tags(t *testing.T) {
 			},
 			want: want{
 				cr:  oidcProvider(withTags(map[string]string{key1: value1})),
-				err: awsclient.Wrap(errBoom, errAddTags),
+				err: errorutils.Wrap(errBoom, errAddTags),
 			},
 		},
 		"AddTagsSuccess": {
@@ -684,7 +684,7 @@ func TestUpdate_Tags(t *testing.T) {
 			},
 			want: want{
 				cr:  oidcProvider(withTags(map[string]string{key1: value1})),
-				err: awsclient.Wrap(errBoom, errRemoveTags),
+				err: errorutils.Wrap(errBoom, errRemoveTags),
 			},
 		},
 		"RemoveTagsSuccess": {
@@ -771,7 +771,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  oidcProvider(withURL(url)),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 		"ValidInput": {

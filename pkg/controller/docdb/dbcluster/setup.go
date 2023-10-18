@@ -40,9 +40,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -110,7 +110,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersInput) error {
-	obj.DBClusterIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -127,7 +127,7 @@ func (e *hooks) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, resp
 		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
 	}
 
-	switch awsclient.StringValue(cr.Status.AtProvider.Status) {
+	switch pointer.StringValue(cr.Status.AtProvider.Status) {
 	case svcapitypes.DocDBInstanceStateAvailable:
 		cr.Status.SetConditions(xpv1.Available())
 	case svcapitypes.DocDBInstanceStateCreating:
@@ -147,16 +147,16 @@ func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDB
 		cr.AvailabilityZones = cluster.AvailabilityZones
 	}
 
-	cr.BackupRetentionPeriod = awsclient.LateInitializeInt64Ptr(cr.BackupRetentionPeriod, cluster.BackupRetentionPeriod)
-	cr.DBClusterParameterGroupName = awsclient.LateInitializeStringPtr(cr.DBClusterParameterGroupName, cluster.DBClusterParameterGroup)
-	cr.DBSubnetGroupName = awsclient.LateInitializeStringPtr(cr.DBSubnetGroupName, cluster.DBSubnetGroup)
-	cr.DeletionProtection = awsclient.LateInitializeBoolPtr(cr.DeletionProtection, cluster.DeletionProtection)
-	cr.EngineVersion = awsclient.LateInitializeStringPtr(cr.EngineVersion, cluster.EngineVersion)
-	cr.KMSKeyID = awsclient.LateInitializeStringPtr(cr.KMSKeyID, cluster.KmsKeyId)
-	cr.Port = awsclient.LateInitializeInt64Ptr(cr.Port, cluster.Port)
-	cr.PreferredBackupWindow = awsclient.LateInitializeStringPtr(cr.PreferredBackupWindow, cluster.PreferredBackupWindow)
-	cr.PreferredMaintenanceWindow = awsclient.LateInitializeStringPtr(cr.PreferredMaintenanceWindow, cluster.PreferredMaintenanceWindow)
-	cr.StorageEncrypted = awsclient.LateInitializeBoolPtr(cr.StorageEncrypted, cluster.StorageEncrypted)
+	cr.BackupRetentionPeriod = pointer.LateInitializeInt64Ptr(cr.BackupRetentionPeriod, cluster.BackupRetentionPeriod)
+	cr.DBClusterParameterGroupName = pointer.LateInitializeStringPtr(cr.DBClusterParameterGroupName, cluster.DBClusterParameterGroup)
+	cr.DBSubnetGroupName = pointer.LateInitializeStringPtr(cr.DBSubnetGroupName, cluster.DBSubnetGroup)
+	cr.DeletionProtection = pointer.LateInitializeBoolPtr(cr.DeletionProtection, cluster.DeletionProtection)
+	cr.EngineVersion = pointer.LateInitializeStringPtr(cr.EngineVersion, cluster.EngineVersion)
+	cr.KMSKeyID = pointer.LateInitializeStringPtr(cr.KMSKeyID, cluster.KmsKeyId)
+	cr.Port = pointer.LateInitializeInt64Ptr(cr.Port, cluster.Port)
+	cr.PreferredBackupWindow = pointer.LateInitializeStringPtr(cr.PreferredBackupWindow, cluster.PreferredBackupWindow)
+	cr.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(cr.PreferredMaintenanceWindow, cluster.PreferredMaintenanceWindow)
+	cr.StorageEncrypted = pointer.LateInitializeBoolPtr(cr.StorageEncrypted, cluster.StorageEncrypted)
 
 	if cr.EnableCloudwatchLogsExports == nil {
 		cr.EnableCloudwatchLogsExports = cluster.EnabledCloudwatchLogsExports
@@ -184,13 +184,13 @@ func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp 
 	}
 
 	switch {
-	case awsclient.Int64Value(cr.Spec.ForProvider.BackupRetentionPeriod) != awsclient.Int64Value(cluster.BackupRetentionPeriod),
-		awsclient.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) != awsclient.StringValue(cluster.DBClusterParameterGroup),
-		awsclient.BoolValue(cr.Spec.ForProvider.DeletionProtection) != awsclient.BoolValue(cluster.DeletionProtection),
+	case pointer.Int64Value(cr.Spec.ForProvider.BackupRetentionPeriod) != pointer.Int64Value(cluster.BackupRetentionPeriod),
+		pointer.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) != pointer.StringValue(cluster.DBClusterParameterGroup),
+		pointer.BoolValue(cr.Spec.ForProvider.DeletionProtection) != pointer.BoolValue(cluster.DeletionProtection),
 		!areSameElements(cr.Spec.ForProvider.EnableCloudwatchLogsExports, cluster.EnabledCloudwatchLogsExports),
-		awsclient.Int64Value(cr.Spec.ForProvider.Port) != awsclient.Int64Value(cluster.Port),
-		awsclient.StringValue(cr.Spec.ForProvider.PreferredBackupWindow) != awsclient.StringValue(cluster.PreferredBackupWindow),
-		awsclient.StringValue(cr.Spec.ForProvider.PreferredMaintenanceWindow) != awsclient.StringValue(cluster.PreferredMaintenanceWindow):
+		pointer.Int64Value(cr.Spec.ForProvider.Port) != pointer.Int64Value(cluster.Port),
+		pointer.StringValue(cr.Spec.ForProvider.PreferredBackupWindow) != pointer.StringValue(cluster.PreferredBackupWindow),
+		pointer.StringValue(cr.Spec.ForProvider.PreferredMaintenanceWindow) != pointer.StringValue(cluster.PreferredMaintenanceWindow):
 		return false, "", nil
 	}
 
@@ -199,7 +199,7 @@ func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp 
 }
 
 func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
-	obj.DBClusterIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = pointer.String(meta.GetExternalName(cr))
 	obj.CloudwatchLogsExportConfiguration = generateCloudWatchExportConfiguration(
 		cr.Spec.ForProvider.EnableCloudwatchLogsExports,
 		cr.Status.AtProvider.EnabledCloudwatchLogsExports)
@@ -224,7 +224,7 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.DBCluster, resp *s
 }
 
 func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error { //nolint:gocyclo
-	obj.DBClusterIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = pointer.String(meta.GetExternalName(cr))
 
 	pw, _, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if resource.IgnoreNotFound(err) != nil {
@@ -240,7 +240,7 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *s
 		}
 	}
 
-	obj.MasterUserPassword = awsclient.String(pw)
+	obj.MasterUserPassword = pointer.String(pw)
 	if cr.Spec.ForProvider.RestoreFrom != nil {
 		switch cr.Spec.ForProvider.RestoreFrom.Source {
 		case svcapitypes.RestoreSourceSnapshot:
@@ -280,7 +280,7 @@ func (e *hooks) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, resp 
 		cre.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
 	}
 
-	cre.ConnectionDetails[xpv1.ResourceCredentialsSecretUserKey] = []byte(awsclient.StringValue(cr.Spec.ForProvider.MasterUsername))
+	cre.ConnectionDetails[xpv1.ResourceCredentialsSecretUserKey] = []byte(pointer.StringValue(cr.Spec.ForProvider.MasterUsername))
 	// Tags are added during update
 	return cre, nil
 }
@@ -369,7 +369,7 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterInput) (bool, error) {
-	obj.DBClusterIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = pointer.String(meta.GetExternalName(cr))
 	obj.FinalDBSnapshotIdentifier = cr.Spec.ForProvider.FinalDBSnapshotIdentifier
 	obj.SkipFinalSnapshot = cr.Spec.ForProvider.SkipFinalSnapshot
 	return false, nil
@@ -378,7 +378,7 @@ func preDelete(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteD
 func filterList(cr *svcapitypes.DBCluster, list *svcsdk.DescribeDBClustersOutput) *svcsdk.DescribeDBClustersOutput {
 	id := meta.GetExternalName(cr)
 	for _, instance := range list.DBClusters {
-		if awsclient.StringValue(instance.DBClusterIdentifier) == id {
+		if pointer.StringValue(instance.DBClusterIdentifier) == id {
 			return &svcsdk.DescribeDBClustersOutput{
 				Marker:     list.Marker,
 				DBClusters: []*svcsdk.DBCluster{instance},
@@ -398,12 +398,12 @@ func generateCloudWatchExportConfiguration(spec, current []*string) *svcsdk.Clou
 
 	currentMap := make(map[string]struct{}, len(current))
 	for _, currentID := range current {
-		currentMap[awsclient.StringValue(currentID)] = struct{}{}
+		currentMap[pointer.StringValue(currentID)] = struct{}{}
 	}
 
 	specMap := make(map[string]struct{}, len(spec))
 	for _, specID := range spec {
-		key := awsclient.StringValue(specID)
+		key := pointer.StringValue(specID)
 		specMap[key] = struct{}{}
 
 		if _, exists := currentMap[key]; !exists {
@@ -412,7 +412,7 @@ func generateCloudWatchExportConfiguration(spec, current []*string) *svcsdk.Clou
 	}
 
 	for _, currentID := range current {
-		if _, exists := specMap[awsclient.StringValue(currentID)]; !exists {
+		if _, exists := specMap[pointer.StringValue(currentID)]; !exists {
 			toDisable = append(toDisable, currentID)
 		}
 	}
@@ -430,11 +430,11 @@ func areSameElements(a1, a2 []*string) bool {
 
 	m2 := make(map[string]struct{}, len(a2))
 	for _, s2 := range a2 {
-		m2[awsclient.StringValue(s2)] = struct{}{}
+		m2[pointer.StringValue(s2)] = struct{}{}
 	}
 
 	for _, s1 := range a1 {
-		v1 := awsclient.StringValue(s1)
+		v1 := pointer.StringValue(s1)
 		if _, exists := m2[v1]; !exists {
 			return false
 		}
@@ -477,10 +477,10 @@ func (e *hooks) getPasswordFromRef(ctx context.Context, in *xpv1.SecretKeySelect
 
 func getConnectionDetails(cr *svcapitypes.DBCluster) managed.ConnectionDetails {
 	return managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretUserKey:     []byte(awsclient.StringValue(cr.Spec.ForProvider.MasterUsername)),
-		xpv1.ResourceCredentialsSecretEndpointKey: []byte(awsclient.StringValue(cr.Status.AtProvider.Endpoint)),
-		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(awsclient.Int64Value(cr.Spec.ForProvider.Port)))),
-		"readerEndpoint":                          []byte(awsclient.StringValue(cr.Status.AtProvider.ReaderEndpoint)),
+		xpv1.ResourceCredentialsSecretUserKey:     []byte(pointer.StringValue(cr.Spec.ForProvider.MasterUsername)),
+		xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint)),
+		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(pointer.Int64Value(cr.Spec.ForProvider.Port)))),
+		"readerEndpoint":                          []byte(pointer.StringValue(cr.Status.AtProvider.ReaderEndpoint)),
 	}
 }
 

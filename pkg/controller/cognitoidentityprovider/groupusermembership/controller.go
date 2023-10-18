@@ -36,9 +36,10 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/manualv1alpha1"
 	awsv1alpha1 "github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	awscognitoidpclient "github.com/crossplane-contrib/provider-aws/pkg/clients/cognitoidentityprovider"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -99,7 +100,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.New(errUnexpectedObject)
 	}
 
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +198,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalCreation{}, awsclient.Wrap(err, errAdd)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errAdd)
 	}
 
 	// This resource is interesting in that it's a binding without its own
@@ -241,5 +242,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		UserPoolId: &cr.Spec.ForProvider.UserPoolID,
 	})
 
-	return awsclient.Wrap(err, errRemove)
+	return errorutils.Wrap(err, errRemove)
 }

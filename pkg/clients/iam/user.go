@@ -8,7 +8,7 @@ import (
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // UserClient is the external client used for IAM User Custom Resource
@@ -35,9 +35,9 @@ func LateInitializeUser(in *v1beta1.UserParameters, user *iamtypes.User) {
 		return
 	}
 
-	in.Path = awsclients.LateInitializeStringPtr(in.Path, user.Path)
+	in.Path = pointer.LateInitializeStringPtr(in.Path, user.Path)
 	if user.PermissionsBoundary != nil {
-		in.PermissionsBoundary = awsclients.LateInitializeStringPtr(in.PermissionsBoundary, user.PermissionsBoundary.PermissionsBoundaryArn)
+		in.PermissionsBoundary = pointer.LateInitializeStringPtr(in.PermissionsBoundary, user.PermissionsBoundary.PermissionsBoundaryArn)
 	}
 
 	if in.Tags == nil && user.Tags != nil {

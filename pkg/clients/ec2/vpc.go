@@ -10,7 +10,7 @@ import (
 	"github.com/aws/smithy-go"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -53,7 +53,7 @@ func IsVpcUpToDate(spec v1beta1.VPCParameters, vpc ec2types.Vpc, attributes ec2.
 		return false
 	}
 
-	return v1beta1.CompareTags(spec.Tags, vpc.Tags)
+	return CompareTagsV1Beta1(spec.Tags, vpc.Tags)
 }
 
 // GenerateVpcObservation is used to produce v1beta1.VPCObservation from
@@ -107,16 +107,16 @@ func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2types.Vpc, attributes *e
 		return
 	}
 
-	in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, v.CidrBlock)
-	in.InstanceTenancy = awsclients.LateInitializeStringPtr(in.InstanceTenancy, aws.String(string(v.InstanceTenancy)))
+	in.CIDRBlock = pointer.LateInitializeString(in.CIDRBlock, v.CidrBlock)
+	in.InstanceTenancy = pointer.LateInitializeStringPtr(in.InstanceTenancy, pointer.String(string(v.InstanceTenancy)))
 	if len(v.Ipv6CidrBlockAssociationSet) != 0 {
 		ipv6Association := v.Ipv6CidrBlockAssociationSet[0]
-		in.Ipv6CIDRBlock = awsclients.LateInitializeStringPtr(in.Ipv6CIDRBlock, ipv6Association.Ipv6CidrBlock)
+		in.Ipv6CIDRBlock = pointer.LateInitializeStringPtr(in.Ipv6CIDRBlock, ipv6Association.Ipv6CidrBlock)
 	}
 	if attributes.EnableDnsHostnames != nil {
-		in.EnableDNSHostNames = awsclients.LateInitializeBoolPtr(in.EnableDNSHostNames, attributes.EnableDnsHostnames.Value)
+		in.EnableDNSHostNames = pointer.LateInitializeBoolPtr(in.EnableDNSHostNames, attributes.EnableDnsHostnames.Value)
 	}
 	if attributes.EnableDnsHostnames != nil {
-		in.EnableDNSSupport = awsclients.LateInitializeBoolPtr(in.EnableDNSSupport, attributes.EnableDnsSupport.Value)
+		in.EnableDNSSupport = pointer.LateInitializeBoolPtr(in.EnableDNSSupport, attributes.EnableDnsSupport.Value)
 	}
 }

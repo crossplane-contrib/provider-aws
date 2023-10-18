@@ -24,13 +24,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
 	// an arbitrary managed resource
 	effect      = "Allow"
-	statementID = aws.String("1")
+	statementID = pointer.String("1")
 )
 
 type statementModifier func(statement *common.BucketPolicyStatement)
@@ -95,13 +95,13 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 				withPrincipal(&common.BucketPrincipal{
 					AWSPrincipals: []common.AWSPrincipal{
 						{
-							UserARN: aws.String("arn:aws:iam::111122223333:userARN"),
+							UserARN: pointer.String("arn:aws:iam::111122223333:userARN"),
 						},
 						{
-							AWSAccountID: aws.String("111122223333"),
+							AWSAccountID: pointer.String("111122223333"),
 						},
 						{
-							IAMRoleARN: aws.String("arn:aws:iam::111122223333:roleARN"),
+							IAMRoleARN: pointer.String("arn:aws:iam::111122223333:roleARN"),
 						},
 					},
 				}),
@@ -113,11 +113,11 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 						Conditions: []common.ConditionPair{
 							{
 								ConditionKey:         "test",
-								ConditionStringValue: aws.String("testKey"),
+								ConditionStringValue: pointer.String("testKey"),
 							},
 							{
 								ConditionKey:         "test2",
-								ConditionStringValue: aws.String("testKey2"),
+								ConditionStringValue: pointer.String("testKey2"),
 							},
 						},
 					},

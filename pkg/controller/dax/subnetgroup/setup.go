@@ -14,8 +14,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupSubnetGroup adds a controller that reconciles SubnetGroup.
@@ -57,7 +57,7 @@ func SetupSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.DescribeSubnetGroupsInput) error {
-	obj.SubnetGroupNames = append(obj.SubnetGroupNames, awsclients.String(meta.GetExternalName(cr)))
+	obj.SubnetGroupNames = append(obj.SubnetGroupNames, pointer.String(meta.GetExternalName(cr)))
 	return nil
 }
 
@@ -71,23 +71,23 @@ func postObserve(_ context.Context, cr *svcapitypes.SubnetGroup, _ *svcsdk.Descr
 
 func preCreate(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.CreateSubnetGroupInput) error {
 	meta.SetExternalName(cr, cr.Name)
-	obj.SubnetGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.SubnetGroupName = pointer.String(meta.GetExternalName(cr))
 	for _, s := range cr.Spec.ForProvider.SubnetIds {
-		obj.SubnetIds = append(obj.SubnetIds, awsclients.String(*s))
+		obj.SubnetIds = append(obj.SubnetIds, pointer.String(*s))
 	}
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.UpdateSubnetGroupInput) error {
-	obj.SubnetGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.SubnetGroupName = pointer.String(meta.GetExternalName(cr))
 	for _, s := range cr.Spec.ForProvider.SubnetIds {
-		obj.SubnetIds = append(obj.SubnetIds, awsclients.String(*s))
+		obj.SubnetIds = append(obj.SubnetIds, pointer.String(*s))
 	}
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.DeleteSubnetGroupInput) (bool, error) {
-	obj.SubnetGroupName = awsclients.String(meta.GetExternalName(cr))
+	obj.SubnetGroupName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 

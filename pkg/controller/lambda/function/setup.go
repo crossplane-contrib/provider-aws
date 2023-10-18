@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -20,8 +21,10 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -84,8 +87,8 @@ func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
 // LateInitialize fills the empty fields in *svcapitypes.FunctionParameters with
 // the values seen in svcsdk.GetFunctionOutput.
 func LateInitialize(cr *svcapitypes.FunctionParameters, resp *svcsdk.GetFunctionOutput) error {
-	cr.MemorySize = aws.LateInitializeInt64Ptr(cr.MemorySize, resp.Configuration.MemorySize)
-	cr.Timeout = aws.LateInitializeInt64Ptr(cr.Timeout, resp.Configuration.Timeout)
+	cr.MemorySize = pointer.LateInitializeInt64Ptr(cr.MemorySize, resp.Configuration.MemorySize)
+	cr.Timeout = pointer.LateInitializeInt64Ptr(cr.Timeout, resp.Configuration.Timeout)
 	if cr.TracingConfig == nil {
 		cr.TracingConfig = &svcapitypes.TracingConfig{Mode: resp.Configuration.TracingConfig.Mode}
 	}
@@ -207,7 +210,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.GetFunc
 		return false, "", nil
 	}
 
-	addTags, removeTags := aws.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, obj.Tags)
+	addTags, removeTags := tagutils.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, obj.Tags)
 	return len(addTags) == 0 && len(removeTags) == 0, "", nil
 
 }
@@ -366,23 +369,23 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 	// LastUpdateStatus must be Successful before running UpdateFunctionCode
 	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.UpdateFunctionCode
 	updateFunctionCodeInput := GenerateUpdateFunctionCodeInput(cr)
 	if _, err := u.client.UpdateFunctionCodeWithContext(ctx, updateFunctionCodeInput); err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// LastUpdateStatus must be Successful before running UpdateFunctionConfiguration
 	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	updateFunctionConfigurationInput := GenerateUpdateFunctionConfigurationInput(cr)
 	if _, err := u.client.UpdateFunctionConfigurationWithContext(ctx, updateFunctionConfigurationInput); err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// Should store the ARN somewhere else?
@@ -390,7 +393,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		FunctionName: aws.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
 	// Tags
@@ -398,17 +401,17 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		Resource: functionConfiguration.FunctionArn,
 	})
 	if err != nil {
-		return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
-	addTags, removeTags := aws.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
+	addTags, removeTags := tagutils.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, tags.Tags)
 	// Remove old tags before adding new tags in case values change for keys
 	if len(removeTags) > 0 {
 		if _, err := u.client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{
 			Resource: functionConfiguration.FunctionArn,
 			TagKeys:  removeTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 
@@ -417,7 +420,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			Resource: functionConfiguration.FunctionArn,
 			Tags:     addTags,
 		}); err != nil {
-			return managed.ExternalUpdate{}, aws.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	}
 

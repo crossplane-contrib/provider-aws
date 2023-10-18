@@ -32,8 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/dax/fake"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -91,27 +91,27 @@ func withName(value string) daxModifier {
 
 func withDescription(value string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
-		o.Spec.ForProvider.Description = awsclient.String(value)
+		o.Spec.ForProvider.Description = pointer.String(value)
 	}
 }
 
 func withSubnetID(value string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
-		o.Spec.ForProvider.SubnetIds = append(o.Spec.ForProvider.SubnetIds, awsclient.String(value))
+		o.Spec.ForProvider.SubnetIds = append(o.Spec.ForProvider.SubnetIds, pointer.String(value))
 	}
 }
 
 func withStatusSubnetGroupName(value string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
-		o.Status.AtProvider.SubnetGroupName = awsclient.String(value)
+		o.Status.AtProvider.SubnetGroupName = pointer.String(value)
 	}
 }
 
 func withStatusSubnets(k, v string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
 		o.Status.AtProvider.Subnets = append(o.Status.AtProvider.Subnets, &svcapitypes.Subnet{
-			SubnetIdentifier:       awsclient.String(k),
-			SubnetAvailabilityZone: awsclient.String(v),
+			SubnetIdentifier:       pointer.String(k),
+			SubnetAvailabilityZone: pointer.String(v),
 		})
 	}
 }
@@ -140,11 +140,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeSubnetGroupsWithContext: func(c context.Context, dsgi *dax.DescribeSubnetGroupsInput, o []request.Option) (*dax.DescribeSubnetGroupsOutput, error) {
 						return &dax.DescribeSubnetGroupsOutput{SubnetGroups: []*dax.SubnetGroup{
 							{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								Description:     awsclient.String(testDescription),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								Description:     pointer.String(testDescription),
 								Subnets: []*dax.Subnet{{
-									SubnetIdentifier:       awsclient.String(testSubnetIdentifier),
-									SubnetAvailabilityZone: awsclient.String(testSubnetAvailabilityZone)}},
+									SubnetIdentifier:       pointer.String(testSubnetIdentifier),
+									SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone)}},
 							},
 						}}, nil
 					},
@@ -187,11 +187,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeSubnetGroupsWithContext: func(c context.Context, dsgi *dax.DescribeSubnetGroupsInput, o []request.Option) (*dax.DescribeSubnetGroupsOutput, error) {
 						return &dax.DescribeSubnetGroupsOutput{SubnetGroups: []*dax.SubnetGroup{
 							{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								Description:     awsclient.String(testDescription),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								Description:     pointer.String(testDescription),
 								Subnets: []*dax.Subnet{{
-									SubnetIdentifier:       awsclient.String(testSubnetIdentifier),
-									SubnetAvailabilityZone: awsclient.String(testSubnetAvailabilityZone)}},
+									SubnetIdentifier:       pointer.String(testSubnetIdentifier),
+									SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone)}},
 							},
 						}}, nil
 					},
@@ -234,11 +234,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeSubnetGroupsWithContext: func(c context.Context, dsgi *dax.DescribeSubnetGroupsInput, o []request.Option) (*dax.DescribeSubnetGroupsOutput, error) {
 						return &dax.DescribeSubnetGroupsOutput{SubnetGroups: []*dax.SubnetGroup{
 							{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								Description:     awsclient.String(testDescription),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								Description:     pointer.String(testDescription),
 								Subnets: []*dax.Subnet{{
-									SubnetIdentifier:       awsclient.String(testSubnetIdentifier),
-									SubnetAvailabilityZone: awsclient.String(testSubnetAvailabilityZone)}},
+									SubnetIdentifier:       pointer.String(testSubnetIdentifier),
+									SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone)}},
 							},
 						}}, nil
 					},
@@ -350,8 +350,8 @@ func TestUpdate(t *testing.T) {
 					MockUpdateSubnetGroupWithContext: func(c context.Context, usgi *dax.UpdateSubnetGroupInput, o []request.Option) (*dax.UpdateSubnetGroupOutput, error) {
 						return &dax.UpdateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								Subnets:         []*dax.Subnet{{SubnetIdentifier: awsclient.String(testSubnetIdentifier)}},
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								Subnets:         []*dax.Subnet{{SubnetIdentifier: pointer.String(testSubnetIdentifier)}},
 							},
 						}, nil
 					},
@@ -372,8 +372,8 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								SubnetIds:       []*string{awsclient.String(testSubnetIdentifier)},
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetIds:       []*string{pointer.String(testSubnetIdentifier)},
 							},
 						},
 					},
@@ -386,16 +386,16 @@ func TestUpdate(t *testing.T) {
 					MockUpdateSubnetGroupWithContext: func(c context.Context, usgi *dax.UpdateSubnetGroupInput, o []request.Option) (*dax.UpdateSubnetGroupOutput, error) {
 						return &dax.UpdateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								Description:     awsclient.String(testDescription),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								Description:     pointer.String(testDescription),
 								Subnets: []*dax.Subnet{
 									{
-										SubnetIdentifier:       awsclient.String(testSubnetIdentifier),
-										SubnetAvailabilityZone: awsclient.String(testSubnetAvailabilityZone),
+										SubnetIdentifier:       pointer.String(testSubnetIdentifier),
+										SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone),
 									},
 									{
-										SubnetIdentifier:       awsclient.String(testOtherSubnetIdentifier),
-										SubnetAvailabilityZone: awsclient.String(testOtherSubnetAvailabilityZone),
+										SubnetIdentifier:       pointer.String(testOtherSubnetIdentifier),
+										SubnetAvailabilityZone: pointer.String(testOtherSubnetAvailabilityZone),
 									},
 								},
 							},
@@ -422,11 +422,11 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								Description:     awsclient.String(testDescription),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								Description:     pointer.String(testDescription),
 								SubnetIds: []*string{
-									awsclient.String(testSubnetIdentifier),
-									awsclient.String(testOtherSubnetIdentifier),
+									pointer.String(testSubnetIdentifier),
+									pointer.String(testOtherSubnetIdentifier),
 								},
 							},
 						},
@@ -458,7 +458,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
 							},
 						},
 					},
@@ -506,7 +506,7 @@ func TestCreate(t *testing.T) {
 					MockCreateSubnetGroupWithContext: func(c context.Context, csgi *dax.CreateSubnetGroupInput, o []request.Option) (*dax.CreateSubnetGroupOutput, error) {
 						return &dax.CreateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
 							},
 						}, nil
 					},
@@ -529,7 +529,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
 							},
 						},
 					},
@@ -542,15 +542,15 @@ func TestCreate(t *testing.T) {
 					MockCreateSubnetGroupWithContext: func(c context.Context, csgi *dax.CreateSubnetGroupInput, o []request.Option) (*dax.CreateSubnetGroupOutput, error) {
 						return &dax.CreateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
 								Subnets: []*dax.Subnet{
 									{
-										SubnetIdentifier:       awsclient.String(testSubnetIdentifier),
-										SubnetAvailabilityZone: awsclient.String(testSubnetAvailabilityZone),
+										SubnetIdentifier:       pointer.String(testSubnetIdentifier),
+										SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone),
 									},
 									{
-										SubnetIdentifier:       awsclient.String(testOtherSubnetIdentifier),
-										SubnetAvailabilityZone: awsclient.String(testOtherSubnetAvailabilityZone),
+										SubnetIdentifier:       pointer.String(testOtherSubnetIdentifier),
+										SubnetAvailabilityZone: pointer.String(testOtherSubnetAvailabilityZone),
 									},
 								},
 							},
@@ -580,8 +580,8 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								SubnetIds:       []*string{awsclient.String(testSubnetIdentifier), awsclient.String(testOtherSubnetIdentifier)},
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetIds:       []*string{pointer.String(testSubnetIdentifier), pointer.String(testOtherSubnetIdentifier)},
 							},
 						},
 					},
@@ -612,7 +612,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
 							},
 						},
 					},
@@ -647,8 +647,8 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
-								SubnetIds:       []*string{awsclient.String(testSubnetIdentifier), awsclient.String(testOtherSubnetIdentifier)},
+								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetIds:       []*string{pointer.String(testSubnetIdentifier), pointer.String(testOtherSubnetIdentifier)},
 							},
 						},
 					},
@@ -711,7 +711,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DeleteSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
 							},
 						},
 					},
@@ -740,7 +740,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DeleteSubnetGroupInput{
-								SubnetGroupName: awsclient.String(testSubnetGroupName),
+								SubnetGroupName: pointer.String(testSubnetGroupName),
 							},
 						},
 					},

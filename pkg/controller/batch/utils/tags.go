@@ -23,7 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/batch/batchiface"
 	"github.com/pkg/errors"
 
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -54,7 +55,7 @@ func UpdateTagsForResource(ctx context.Context, client batchiface.BatchAPI, spec
 		return err
 	}
 
-	add, remove := awsclient.DiffTagsMapPtr(spec, current)
+	add, remove := tags.DiffTagsMapPtr(spec, current)
 
 	if len(remove) > 0 {
 		_, err := client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{
@@ -62,7 +63,7 @@ func UpdateTagsForResource(ctx context.Context, client batchiface.BatchAPI, spec
 			TagKeys:     remove,
 		})
 		if err != nil {
-			return awsclient.Wrap(err, errUntagResource)
+			return errorutils.Wrap(err, errUntagResource)
 		}
 	}
 	// remove before add for case where we just simply update a tag
@@ -74,7 +75,7 @@ func UpdateTagsForResource(ctx context.Context, client batchiface.BatchAPI, spec
 			Tags:        add,
 		})
 		if err != nil {
-			return awsclient.Wrap(err, errTagResource)
+			return errorutils.Wrap(err, errTagResource)
 		}
 	}
 

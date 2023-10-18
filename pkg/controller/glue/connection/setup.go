@@ -37,9 +37,11 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/glue/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -101,12 +103,12 @@ type hooks struct {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.DeleteConnectionInput) (bool, error) {
-	obj.ConnectionName = awsclients.String(meta.GetExternalName(cr))
+	obj.ConnectionName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.GetConnectionInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -151,13 +153,13 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Connection, resp *
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.UpdateConnectionInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.CustomConnectionInput != nil {
 		obj.ConnectionInput = &svcsdk.ConnectionInput{
-			Name:                 awsclients.String(meta.GetExternalName(cr)),
+			Name:                 pointer.String(meta.GetExternalName(cr)),
 			ConnectionProperties: cr.Spec.ForProvider.CustomConnectionInput.ConnectionProperties,
-			ConnectionType:       awsclients.String(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
+			ConnectionType:       pointer.String(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
 			Description:          cr.Spec.ForProvider.CustomConnectionInput.Description,
 			MatchCriteria:        cr.Spec.ForProvider.CustomConnectionInput.MatchCriteria,
 		}
@@ -194,9 +196,9 @@ func preCreate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomConnectionInput != nil {
 		obj.ConnectionInput = &svcsdk.ConnectionInput{
-			Name:                 awsclients.String(meta.GetExternalName(cr)),
+			Name:                 pointer.String(meta.GetExternalName(cr)),
 			ConnectionProperties: cr.Spec.ForProvider.CustomConnectionInput.ConnectionProperties,
-			ConnectionType:       awsclients.String(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
+			ConnectionType:       pointer.String(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
 			Description:          cr.Spec.ForProvider.CustomConnectionInput.Description,
 			MatchCriteria:        cr.Spec.ForProvider.CustomConnectionInput.MatchCriteria,
 		}
@@ -234,7 +236,7 @@ func (h *hooks) postCreate(ctx context.Context, cr *svcapitypes.Connection, obj 
 		return managed.ExternalCreation{}, err
 	}
 	annotation := map[string]string{
-		annotationARN: awsclients.StringValue(connectionARN),
+		annotationARN: pointer.StringValue(connectionARN),
 	}
 	meta.AddAnnotations(cr, annotation)
 
@@ -254,7 +256,7 @@ func customGenerateConnection(resp *svcsdk.GetConnectionOutput) *svcapitypes.Con
 	}
 
 	if resp.Connection.ConnectionType != nil {
-		cr.Spec.ForProvider.CustomConnectionInput.ConnectionType = awsclients.StringValue(resp.Connection.ConnectionType)
+		cr.Spec.ForProvider.CustomConnectionInput.ConnectionType = pointer.StringValue(resp.Connection.ConnectionType)
 	}
 
 	if resp.Connection.Description != nil {
@@ -326,11 +328,11 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Connection) (*stri
 	var accountID string
 	// when CatalogID is provided, fetching the CallerID is unneeded
 	if cr.Spec.ForProvider.CatalogID != nil {
-		accountID = awsclients.StringValue(cr.Spec.ForProvider.CatalogID)
+		accountID = pointer.StringValue(cr.Spec.ForProvider.CatalogID)
 	} else {
-		sess, err := awsclients.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
+		sess, err := connectaws.GetConfigV1(ctx, h.kube, cr, cr.Spec.ForProvider.Region)
 		if err != nil {
-			return nil, awsclients.Wrap(err, errBuildARN)
+			return nil, errorutils.Wrap(err, errBuildARN)
 		}
 
 		stsclient := svcsdksts.New(sess)
@@ -339,7 +341,7 @@ func (h *hooks) buildARN(ctx context.Context, cr *svcapitypes.Connection) (*stri
 		if err != nil {
 			return nil, err
 		}
-		accountID = awsclients.StringValue(callerID.Account)
+		accountID = pointer.StringValue(callerID.Account)
 	}
 	connectionARN := ("arn:aws:glue:" +
 		cr.Spec.ForProvider.Region + ":" +

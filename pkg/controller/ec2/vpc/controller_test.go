@@ -34,9 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/ec2/fake"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -193,7 +193,7 @@ func TestObserve(t *testing.T) {
 					InstanceTenancy: aws.String(tenancyDefault),
 					CIDRBlock:       cidr,
 				}), withExternalName(vpcID)),
-				err: awsclient.Wrap(errBoom, errDescribe),
+				err: errorutils.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -284,7 +284,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  vpc(),
-				err: awsclient.Wrap(errBoom, errCreate),
+				err: errorutils.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -376,7 +376,7 @@ func TestUpdate(t *testing.T) {
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
 				})),
-				err: awsclient.Wrap(errBoom, errUpdate),
+				err: errorutils.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -433,7 +433,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  vpc(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(errBoom, errDelete),
+				err: errorutils.Wrap(errBoom, errDelete),
 			},
 		},
 	}

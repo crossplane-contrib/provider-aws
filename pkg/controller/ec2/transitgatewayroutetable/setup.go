@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -20,8 +21,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -75,7 +76,7 @@ func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error
 func filterList(cr *svcapitypes.TransitGatewayRouteTable, obj *svcsdk.DescribeTransitGatewayRouteTablesOutput) *svcsdk.DescribeTransitGatewayRouteTablesOutput {
 	resp := &svcsdk.DescribeTransitGatewayRouteTablesOutput{}
 	for _, TransitGatewayRouteTable := range obj.TransitGatewayRouteTables {
-		if aws.StringValue(TransitGatewayRouteTable.TransitGatewayRouteTableId) == meta.GetExternalName(cr) {
+		if pointer.StringValue(TransitGatewayRouteTable.TransitGatewayRouteTableId) == meta.GetExternalName(cr) {
 			resp.TransitGatewayRouteTables = append(resp.TransitGatewayRouteTables, TransitGatewayRouteTable)
 			break
 		}
@@ -98,8 +99,8 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.TransitGatewayRo
 		return err
 	}
 
-	if aws.StringValue(tgwState.TransitGateways[0].State) != string(svcapitypes.TransitGatewayState_available) {
-		return errors.New("referenced transitgateway is not available for routetable " + aws.StringValue(tgwState.TransitGateways[0].State))
+	if pointer.StringValue(tgwState.TransitGateways[0].State) != string(svcapitypes.TransitGatewayState_available) {
+		return errors.New("referenced transitgateway is not available for routetable " + pointer.StringValue(tgwState.TransitGateways[0].State))
 	}
 
 	obj.TransitGatewayId = cr.Spec.ForProvider.TransitGatewayID
@@ -111,7 +112,7 @@ func postCreate(ctx context.Context, cr *svcapitypes.TransitGatewayRouteTable, o
 		return managed.ExternalCreation{}, err
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(obj.TransitGatewayRouteTable.TransitGatewayRouteTableId))
+	meta.SetExternalName(cr, pointer.StringValue(obj.TransitGatewayRouteTable.TransitGatewayRouteTableId))
 	return cre, nil
 }
 
@@ -120,7 +121,7 @@ func postObserve(_ context.Context, cr *svcapitypes.TransitGatewayRouteTable, ob
 		return managed.ExternalObservation{}, err
 	}
 
-	switch aws.StringValue(obj.TransitGatewayRouteTables[0].State) {
+	switch pointer.StringValue(obj.TransitGatewayRouteTables[0].State) {
 	case string(svcapitypes.TransitGatewayRouteTableState_available):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.TransitGatewayRouteTableState_pending):
@@ -159,7 +160,7 @@ func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
 	}
 	var transitGatewayRouteTableTags svcapitypes.TagSpecification
 	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if aws.StringValue(tagSpecification.ResourceType) == "transit-gateway-route-table" {
+		if pointer.StringValue(tagSpecification.ResourceType) == "transit-gateway-route-table" {
 			transitGatewayRouteTableTags = *tagSpecification
 		}
 	}
@@ -167,7 +168,7 @@ func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
 	tagMap := map[string]string{}
 	tagMap["Name"] = cr.Name
 	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
+		tagMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
 	}
 	for k, v := range cpresource.GetExternalTags(mgd) {
 		tagMap[k] = v
@@ -180,7 +181,7 @@ func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
 		i++
 	}
 	sort.Slice(transitGatewayRouteTableTags.Tags, func(i, j int) bool {
-		return aws.StringValue(transitGatewayRouteTableTags.Tags[i].Key) < aws.StringValue(transitGatewayRouteTableTags.Tags[j].Key)
+		return pointer.StringValue(transitGatewayRouteTableTags.Tags[i].Key) < pointer.StringValue(transitGatewayRouteTableTags.Tags[j].Key)
 	})
 
 	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&transitGatewayRouteTableTags}

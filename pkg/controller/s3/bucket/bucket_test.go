@@ -36,10 +36,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -86,7 +86,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  s3Testing.Bucket(),
-				err: awsclient.Wrap(errBoom, errHead),
+				err: errorutils.Wrap(errBoom, errHead),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -326,7 +326,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  s3Testing.Bucket(),
-				err: awsclient.Wrap(errors.New("api error boom: "), errCreate),
+				err: errorutils.Wrap(errors.New("api error boom: "), errCreate),
 			},
 		},
 		"ValidInputLateInitialize": {
@@ -373,7 +373,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr:     s3Testing.Bucket(),
 				result: managed.ExternalCreation{},
-				err:    k8serrors.NewAggregate([]error{awsclient.Wrap(errBoom, "cannot get request payment configuration"), awsclient.Wrap(errBoom, "cannot get encryption configuration")}),
+				err:    k8serrors.NewAggregate([]error{errorutils.Wrap(errBoom, "cannot get request payment configuration"), errorutils.Wrap(errBoom, "cannot get encryption configuration")}),
 			},
 		},
 		"ExternalDiffersFromLocalNoLateInit": {
@@ -451,7 +451,7 @@ func TestCreate(t *testing.T) {
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
 				result: managed.ExternalCreation{},
-				err:    k8serrors.NewAggregate([]error{awsclient.Wrap(errBoom, errKubeUpdateFailed)}),
+				err:    k8serrors.NewAggregate([]error{errorutils.Wrap(errBoom, errKubeUpdateFailed)}),
 			},
 		},
 	}
@@ -544,7 +544,7 @@ func TestUpdate(t *testing.T) {
 				cr: s3Testing.Bucket(
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
-				err:    awsclient.Wrap(awsclient.Wrap(errBoom, "cannot put Bucket payment"), errCreateOrUpdate),
+				err:    errorutils.Wrap(errorutils.Wrap(errBoom, "cannot put Bucket payment"), errCreateOrUpdate),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -563,10 +563,10 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.ReconcileError(awsclient.Wrap(errBoom, "cannot get request payment configuration"))),
+					s3Testing.WithConditions(xpv1.ReconcileError(errorutils.Wrap(errBoom, "cannot get request payment configuration"))),
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
-				err:    awsclient.Wrap(errBoom, "cannot get request payment configuration"),
+				err:    errorutils.Wrap(errBoom, "cannot get request payment configuration"),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -628,7 +628,7 @@ func TestUpdate(t *testing.T) {
 				cr: s3Testing.Bucket(
 					s3Testing.WithSSEConfig(nil),
 				),
-				err:    awsclient.Wrap(awsclient.Wrap(errBoom, "cannot delete encryption configuration"), errDelete),
+				err:    errorutils.Wrap(errorutils.Wrap(errBoom, "cannot delete encryption configuration"), errDelete),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -646,10 +646,10 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.ReconcileError(awsclient.Wrap(errBoom, "cannot get encryption configuration"))),
+					s3Testing.WithConditions(xpv1.ReconcileError(errorutils.Wrap(errBoom, "cannot get encryption configuration"))),
 					s3Testing.WithSSEConfig(nil),
 				),
-				err:    awsclient.Wrap(errBoom, "cannot get encryption configuration"),
+				err:    errorutils.Wrap(errBoom, "cannot get encryption configuration"),
 				result: managed.ExternalUpdate{},
 			},
 		},

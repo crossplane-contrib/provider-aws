@@ -19,8 +19,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -85,7 +85,7 @@ func postObserve(_ context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk.
 		return managed.ExternalObservation{}, err
 	}
 
-	switch awsclients.StringValue(obj.TransitGateways[0].State) {
+	switch pointer.StringValue(obj.TransitGateways[0].State) {
 	case string(svcapitypes.TransitGatewayState_available):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.TransitGatewayState_pending):

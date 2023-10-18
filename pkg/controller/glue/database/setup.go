@@ -34,8 +34,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/glue/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -89,12 +89,12 @@ func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.DeleteDatabaseInput) (bool, error) {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.GetDatabaseInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -111,7 +111,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.GetDat
 
 func lateInitialize(spec *svcapitypes.DatabaseParameters, resp *svcsdk.GetDatabaseOutput) error {
 
-	spec.CatalogID = awsclients.LateInitializeStringPtr(spec.CatalogID, resp.Database.CatalogId)
+	spec.CatalogID = pointer.LateInitializeStringPtr(spec.CatalogID, resp.Database.CatalogId)
 
 	if spec.CustomDatabaseInput == nil {
 		spec.CustomDatabaseInput = &svcapitypes.CustomDatabaseInput{}
@@ -147,11 +147,11 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Database, resp *svcsdk.GetDat
 
 		// sorting both just to be safe
 		sort.SliceStable(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions, func(i, j int) bool {
-			return awsclients.StringValue(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions[i].Principal.DataLakePrincipalIdentifier) > awsclients.StringValue(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions[j].Principal.DataLakePrincipalIdentifier)
+			return pointer.StringValue(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions[i].Principal.DataLakePrincipalIdentifier) > pointer.StringValue(currentParams.CustomDatabaseInput.CreateTableDefaultPermissions[j].Principal.DataLakePrincipalIdentifier)
 		})
 
 		sort.SliceStable(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions, func(i, j int) bool {
-			return awsclients.StringValue(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions[i].Principal.DataLakePrincipalIdentifier) > awsclients.StringValue(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions[j].Principal.DataLakePrincipalIdentifier)
+			return pointer.StringValue(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions[i].Principal.DataLakePrincipalIdentifier) > pointer.StringValue(cr.Spec.ForProvider.CustomDatabaseInput.CreateTableDefaultPermissions[j].Principal.DataLakePrincipalIdentifier)
 		})
 
 		// check all CreateTableDefaultPermissions entries if they are uptodate
@@ -163,7 +163,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Database, resp *svcsdk.GetDat
 				return false, "", errors.New(errUpdateNoPrincipal)
 			}
 			// check if this entry is uptodate
-			if awsclients.StringValue(prins.Principal.DataLakePrincipalIdentifier) != awsclients.StringValue(currPrins.Principal.DataLakePrincipalIdentifier) {
+			if pointer.StringValue(prins.Principal.DataLakePrincipalIdentifier) != pointer.StringValue(currPrins.Principal.DataLakePrincipalIdentifier) {
 				// both should be sorted the same way, so if we land here that would mean that
 				// at least one entry has been added to spec and one has been removed from spec
 				// or aka one entry was simply changed /"updated"
@@ -171,7 +171,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Database, resp *svcsdk.GetDat
 			}
 
 			sortOpts := cmpopts.SortSlices(func(a, b *string) bool {
-				return awsclients.StringValue(a) < awsclients.StringValue(b)
+				return pointer.StringValue(a) < pointer.StringValue(b)
 			})
 
 			// check if the permissions of this entry are uptodate
@@ -190,12 +190,12 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Database, resp *svcsdk.GetDat
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.UpdateDatabaseInput) error {
-	obj.Name = awsclients.String(meta.GetExternalName(cr))
+	obj.Name = pointer.String(meta.GetExternalName(cr))
 
 	obj.DatabaseInput = &svcsdk.DatabaseInput{
 		Description: cr.Spec.ForProvider.CustomDatabaseInput.Description,
 		LocationUri: cr.Spec.ForProvider.CustomDatabaseInput.LocationURI,
-		Name:        awsclients.String(meta.GetExternalName(cr)),
+		Name:        pointer.String(meta.GetExternalName(cr)),
 		Parameters:  cr.Spec.ForProvider.CustomDatabaseInput.Parameters,
 	}
 
@@ -219,7 +219,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.UpdateDa
 				// check for identical previous PrincipalIdentifiers
 				for i3 := 0; i3 < i; i3++ {
 					if obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal != nil &&
-						awsclients.StringValue(obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal.DataLakePrincipalIdentifier) == awsclients.StringValue(sdkPrins.Principal.DataLakePrincipalIdentifier) {
+						pointer.StringValue(obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal.DataLakePrincipalIdentifier) == pointer.StringValue(sdkPrins.Principal.DataLakePrincipalIdentifier) {
 						return errors.New(errCreateSameIdentifier)
 					}
 				}
@@ -251,11 +251,11 @@ func preCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateDa
 
 	if cr.Spec.ForProvider.CustomDatabaseInput == nil {
 		obj.DatabaseInput = &svcsdk.DatabaseInput{
-			Name: awsclients.String(meta.GetExternalName(cr)),
+			Name: pointer.String(meta.GetExternalName(cr)),
 		}
 	} else {
 		obj.DatabaseInput = &svcsdk.DatabaseInput{
-			Name:        awsclients.String(meta.GetExternalName(cr)),
+			Name:        pointer.String(meta.GetExternalName(cr)),
 			Description: cr.Spec.ForProvider.CustomDatabaseInput.Description,
 			LocationUri: cr.Spec.ForProvider.CustomDatabaseInput.LocationURI,
 			Parameters:  cr.Spec.ForProvider.CustomDatabaseInput.Parameters,
@@ -281,7 +281,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateDa
 					// check for identical previous PrincipalIdentifiers
 					for i3 := 0; i3 < i; i3++ {
 						if obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal != nil &&
-							awsclients.StringValue(obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal.DataLakePrincipalIdentifier) == awsclients.StringValue(sdkPrins.Principal.DataLakePrincipalIdentifier) {
+							pointer.StringValue(obj.DatabaseInput.CreateTableDefaultPermissions[i3].Principal.DataLakePrincipalIdentifier) == pointer.StringValue(sdkPrins.Principal.DataLakePrincipalIdentifier) {
 							return errors.New(errCreateSameIdentifier)
 						}
 					}

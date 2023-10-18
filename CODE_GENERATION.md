@@ -284,22 +284,22 @@ func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DescribeStageInput) error {
-	obj.StageName = aws.String(meta.GetExternalName(cr))
+	obj.StageName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.CreateStageInput) error {
-	obj.StageName = aws.String(meta.GetExternalName(cr))
+	obj.StageName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.UpdateStageInput) error {
-	obj.StageName = aws.String(meta.GetExternalName(cr))
+	obj.StageName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) error {
-	obj.StageName = aws.String(meta.GetExternalName(cr))
+	obj.StageName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 ```
@@ -344,7 +344,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.Describ
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-	switch aws.StringValue(resp.BackupDescription.BackupDetails.BackupStatus) {
+	switch pointer.StringValue(resp.BackupDescription.BackupDetails.BackupStatus) {
 	case string(svcapitypes.BackupStatus_SDK_AVAILABLE):
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.BackupStatus_SDK_CREATING):

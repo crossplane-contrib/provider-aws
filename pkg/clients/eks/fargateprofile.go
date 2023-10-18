@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // GenerateCreateFargateProfileInput from FargateProfileInputParameters.
@@ -55,7 +55,7 @@ func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) v1beta1.Farg
 		return v1beta1.FargateProfileObservation{}
 	}
 	o := v1beta1.FargateProfileObservation{
-		FargateProfileArn: awsclients.StringValue(fp.FargateProfileArn),
+		FargateProfileArn: pointer.StringValue(fp.FargateProfileArn),
 		Status:            v1beta1.FargateProfileStatusType(fp.Status),
 	}
 	if fp.CreatedAt != nil {

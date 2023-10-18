@@ -29,7 +29,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupEmailTemplate adds a controller that reconciles SES EmailTemplate.
@@ -65,13 +65,13 @@ func isUpToDate(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.G
 	}
 
 	if cr.Spec.ForProvider.TemplateContent != nil && resp.TemplateContent != nil {
-		if awsclient.StringValue(cr.Spec.ForProvider.TemplateContent.HTML) != awsclient.StringValue(resp.TemplateContent.Html) {
+		if pointer.StringValue(cr.Spec.ForProvider.TemplateContent.HTML) != pointer.StringValue(resp.TemplateContent.Html) {
 			return false, "", nil
 		}
-		if awsclient.StringValue(cr.Spec.ForProvider.TemplateContent.Subject) != awsclient.StringValue(resp.TemplateContent.Subject) {
+		if pointer.StringValue(cr.Spec.ForProvider.TemplateContent.Subject) != pointer.StringValue(resp.TemplateContent.Subject) {
 			return false, "", nil
 		}
-		if awsclient.StringValue(cr.Spec.ForProvider.TemplateContent.Text) != awsclient.StringValue(resp.TemplateContent.Text) {
+		if pointer.StringValue(cr.Spec.ForProvider.TemplateContent.Text) != pointer.StringValue(resp.TemplateContent.Text) {
 			return false, "", nil
 		}
 	}
@@ -79,7 +79,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.G
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.GetEmailTemplateInput) error {
-	obj.TemplateName = awsclient.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -94,16 +94,16 @@ func postObserve(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.CreateEmailTemplateInput) error {
-	obj.TemplateName = awsclient.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.UpdateEmailTemplateInput) error {
-	obj.TemplateName = awsclient.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.DeleteEmailTemplateInput) (bool, error) {
-	obj.TemplateName = awsclient.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }

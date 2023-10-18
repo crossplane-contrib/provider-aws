@@ -16,8 +16,9 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -92,7 +93,7 @@ func (e *external) observer(ctx context.Context, mg cpresource.Managed) (managed
 	input := GenerateDescribeDBInstancesInput(cr)
 	resp, err := e.client.DescribeDBInstancesWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribeAssoc)
+		return managed.ExternalObservation{ResourceExists: false}, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDescribeAssoc)
 	}
 	if len(resp.DBInstances) == 0 {
 		return managed.ExternalObservation{ResourceExists: false}, nil
@@ -100,7 +101,7 @@ func (e *external) observer(ctx context.Context, mg cpresource.Managed) (managed
 
 	var status *string
 	for _, role := range resp.DBInstances[0].AssociatedRoles {
-		if awsclient.StringValue(role.FeatureName) == awsclient.StringValue(cr.Spec.ForProvider.FeatureName) && awsclient.StringValue(role.RoleArn) == awsclient.StringValue(cr.Spec.ForProvider.RoleARN) {
+		if pointer.StringValue(role.FeatureName) == pointer.StringValue(cr.Spec.ForProvider.FeatureName) && pointer.StringValue(role.RoleArn) == pointer.StringValue(cr.Spec.ForProvider.RoleARN) {
 			status = role.Status
 			break
 		}

@@ -33,9 +33,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/apigateway/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupResource adds a controller that reconciles Resource.
@@ -102,7 +103,7 @@ func (c *custom) preCreate(ctx context.Context, cr *svcapitypes.Resource, obj *s
 func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.Resource, obj *svcsdk.UpdateResourceInput) error {
 	in := &svcsdk.GetResourceInput{
 		RestApiId:  cr.Spec.ForProvider.RestAPIID,
-		ResourceId: aws.String(meta.GetExternalName(cr)),
+		ResourceId: pointer.String(meta.GetExternalName(cr)),
 	}
 
 	cur := &svcapitypes.ResourceParameters{
@@ -128,7 +129,7 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.Resource, obj *s
 
 func preObserve(_ context.Context, cr *svcapitypes.Resource, obj *svcsdk.GetResourceInput) error {
 	obj.RestApiId = cr.Spec.ForProvider.RestAPIID
-	obj.ResourceId = aws.String(meta.GetExternalName(cr))
+	obj.ResourceId = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -145,25 +146,25 @@ func postCreate(_ context.Context, cr *svcapitypes.Resource, resp *svcsdk.Resour
 		return managed.ExternalCreation{}, err
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(resp.Id))
+	meta.SetExternalName(cr, pointer.StringValue(resp.Id))
 	return cre, nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Resource, obj *svcsdk.DeleteResourceInput) (bool, error) {
-	obj.ResourceId = aws.String(meta.GetExternalName(cr))
+	obj.ResourceId = pointer.String(meta.GetExternalName(cr))
 	obj.RestApiId = cr.Spec.ForProvider.RestAPIID
 
 	return false, nil
 }
 
 func lateInitialize(cr *svcapitypes.ResourceParameters, cur *svcsdk.Resource) error {
-	cr.PathPart = aws.LateInitializeStringPtr(cr.PathPart, cur.PathPart)
-	cr.ParentResourceID = aws.LateInitializeStringPtr(cr.ParentResourceID, cur.ParentId)
+	cr.PathPart = pointer.LateInitializeStringPtr(cr.PathPart, cur.PathPart)
+	cr.ParentResourceID = pointer.LateInitializeStringPtr(cr.ParentResourceID, cur.ParentId)
 	return nil
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.Resource, cur *svcsdk.Resource) (bool, string, error) {
-	patchJSON, err := aws.CreateJSONPatch(cr.Spec.ForProvider, cur)
+	patchJSON, err := jsonpatch.CreateJSONPatch(cr.Spec.ForProvider, cur)
 	if err != nil {
 		return true, "", errors.Wrap(err, "error checking up to date")
 	}

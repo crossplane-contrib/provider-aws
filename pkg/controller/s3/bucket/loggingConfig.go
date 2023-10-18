@@ -28,8 +28,9 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -49,9 +50,9 @@ func NewLoggingConfigurationClient(client s3.BucketClient) *LoggingConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketLogging(ctx, &awss3.GetBucketLoggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketLogging(ctx, &awss3.GetBucketLoggingInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return NeedsUpdate, awsclient.Wrap(err, loggingGetFailed)
+		return NeedsUpdate, errorutils.Wrap(err, loggingGetFailed)
 	}
 	if !cmp.Equal(GenerateAWSLogging(bucket.Spec.ForProvider.LoggingConfiguration), external.LoggingEnabled,
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}), cmpopts.IgnoreTypes(document.NoSerde{})) {
@@ -67,7 +68,7 @@ func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	}
 	input := GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.LoggingConfiguration)
 	_, err := in.client.PutBucketLogging(ctx, input)
-	return awsclient.Wrap(err, loggingPutFailed)
+	return errorutils.Wrap(err, loggingPutFailed)
 }
 
 // Delete does nothing because there is no deletion call for logging config.
@@ -77,9 +78,9 @@ func (*LoggingConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) 
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketLogging(ctx, &awss3.GetBucketLoggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketLogging(ctx, &awss3.GetBucketLoggingInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
 	if err != nil {
-		return awsclient.Wrap(err, loggingGetFailed)
+		return errorutils.Wrap(err, loggingGetFailed)
 	}
 
 	if external == nil || external.LoggingEnabled == nil {
@@ -94,8 +95,8 @@ func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket
 
 	config := bucket.Spec.ForProvider.LoggingConfiguration
 	// Late initialize the target Bucket and target prefix
-	config.TargetBucket = awsclient.LateInitializeStringPtr(config.TargetBucket, external.LoggingEnabled.TargetBucket)
-	config.TargetPrefix = awsclient.LateInitializeString(config.TargetPrefix, external.LoggingEnabled.TargetPrefix)
+	config.TargetBucket = pointer.LateInitializeStringPtr(config.TargetBucket, external.LoggingEnabled.TargetBucket)
+	config.TargetPrefix = pointer.LateInitializeString(config.TargetPrefix, external.LoggingEnabled.TargetPrefix)
 	// If the there is an external target grant list, and the local one does not exist
 	// we create the target grant list
 	if len(external.LoggingEnabled.TargetGrants) != 0 && config.TargetGrants == nil {
@@ -124,11 +125,11 @@ func (in *LoggingConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) 
 // GeneratePutBucketLoggingInput creates the input for the PutBucketLogging request for the S3 Client
 func GeneratePutBucketLoggingInput(name string, config *v1beta1.LoggingConfiguration) *awss3.PutBucketLoggingInput {
 	bci := &awss3.PutBucketLoggingInput{
-		Bucket: awsclient.String(name),
+		Bucket: pointer.String(name),
 		BucketLoggingStatus: &types.BucketLoggingStatus{LoggingEnabled: &types.LoggingEnabled{
 			TargetBucket: config.TargetBucket,
 			TargetGrants: make([]types.TargetGrant, 0),
-			TargetPrefix: awsclient.String(config.TargetPrefix),
+			TargetPrefix: pointer.String(config.TargetPrefix),
 		}},
 	}
 	for _, grant := range config.TargetGrants {
@@ -153,7 +154,7 @@ func GenerateAWSLogging(local *v1beta1.LoggingConfiguration) *types.LoggingEnabl
 	}
 	output := types.LoggingEnabled{
 		TargetBucket: local.TargetBucket,
-		TargetPrefix: awsclient.String(local.TargetPrefix),
+		TargetPrefix: pointer.String(local.TargetPrefix),
 	}
 	if local.TargetGrants != nil {
 		output.TargetGrants = make([]types.TargetGrant, len(local.TargetGrants))

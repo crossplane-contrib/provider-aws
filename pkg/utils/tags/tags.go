@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package tags
+
+import "k8s.io/utils/ptr"
 
 // DiffTags returns tags that should be added or removed.
 func DiffTags(local, remote map[string]string) (add map[string]string, remove []string) {
@@ -42,13 +44,13 @@ func DiffTagsMapPtr(spec map[string]*string, current map[string]*string) (map[st
 	addMap := make(map[string]*string, len(spec))
 	removeTags := make([]*string, 0)
 	for k, v := range current {
-		if StringValue(spec[k]) == StringValue(v) {
+		if ptr.Deref(spec[k], "") == ptr.Deref(v, "") {
 			continue
 		}
-		removeTags = append(removeTags, String(k))
+		removeTags = append(removeTags, ptr.To(k))
 	}
 	for k, v := range spec {
-		if StringValue(current[k]) == StringValue(v) {
+		if ptr.Deref(current[k], "") == ptr.Deref(v, "") {
 			continue
 		}
 		addMap[k] = v

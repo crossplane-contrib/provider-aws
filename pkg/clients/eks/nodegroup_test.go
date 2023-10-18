@@ -28,7 +28,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -585,8 +585,8 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 						SourceSecurityGroups: []string{"cool-group"},
 					},
 					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
-						MaxSize: awsclients.Int32(10),
-						MinSize: awsclients.Int32(6),
+						MaxSize: pointer.Int32(10),
+						MinSize: pointer.Int32(6),
 					},
 					Subnets: []string{"cool-subnet"},
 					Tags:    map[string]string{"cool": "tag"},
@@ -597,9 +597,9 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 					NodegroupName: &ngName,
 					Labels:        map[string]string{"cool": "label"},
 					ScalingConfig: &ekstypes.NodegroupScalingConfig{
-						DesiredSize: awsclients.Int32(5),
-						MaxSize:     awsclients.Int32(10),
-						MinSize:     awsclients.Int32(3),
+						DesiredSize: pointer.Int32(5),
+						MaxSize:     pointer.Int32(10),
+						MinSize:     pointer.Int32(3),
 					},
 				},
 			},
@@ -608,9 +608,9 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				Labels:        nil,
 				NodegroupName: &ngName,
 				ScalingConfig: &ekstypes.NodegroupScalingConfig{
-					DesiredSize: awsclients.Int32(6),
-					MaxSize:     awsclients.Int32(10),
-					MinSize:     awsclients.Int32(6),
+					DesiredSize: pointer.Int32(6),
+					MaxSize:     pointer.Int32(10),
+					MinSize:     pointer.Int32(6),
 				},
 			},
 		},

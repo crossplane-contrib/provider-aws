@@ -28,8 +28,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ram/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupResourceShare adds a controller that reconciles ResourceShare.
@@ -79,14 +79,14 @@ func preDelete(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.Del
 	// IdempotentParameterMismatchException: com.amazonaws.carsservice.IdempotentParameterMismatchException:
 	// The request has the same client token as a previous request, but the requests are not the same.
 	// client token cannot exceed 64 characters.
-	obj.ClientToken = awsclients.String(cr.ResourceVersion)
-	obj.ResourceShareArn = awsclients.String(meta.GetExternalName(cr))
+	obj.ClientToken = pointer.String(cr.ResourceVersion)
+	obj.ResourceShareArn = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.GetResourceSharesInput) error {
-	obj.MaxResults = awsclients.Int64(100)
-	obj.ResourceOwner = awsclients.String(svcsdk.ResourceOwnerSelf)
+	obj.MaxResults = pointer.Int64(100)
+	obj.ResourceOwner = pointer.String(svcsdk.ResourceOwnerSelf)
 	return nil
 }
 
@@ -96,8 +96,8 @@ func postObserve(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.G
 	}
 
 	for _, resourceShare := range obj.ResourceShares {
-		if awsclients.StringValue(resourceShare.ResourceShareArn) == meta.GetExternalName(cr) {
-			switch awsclients.StringValue(resourceShare.Status) {
+		if pointer.StringValue(resourceShare.ResourceShareArn) == meta.GetExternalName(cr) {
+			switch pointer.StringValue(resourceShare.Status) {
 			case string(svcapitypes.ResourceShareStatus_SDK_ACTIVE):
 				cr.SetConditions(xpv1.Available())
 			case string(svcapitypes.ResourceShareStatus_SDK_PENDING):
@@ -120,7 +120,7 @@ func postObserve(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.G
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.CreateResourceShareInput) error {
-	obj.ClientToken = awsclients.String(string(cr.UID))
+	obj.ClientToken = pointer.String(string(cr.UID))
 	return nil
 }
 
@@ -129,6 +129,6 @@ func postCreate(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.Cr
 		return managed.ExternalCreation{}, err
 	}
 
-	meta.SetExternalName(cr, awsclients.StringValue(obj.ResourceShare.ResourceShareArn))
+	meta.SetExternalName(cr, pointer.StringValue(obj.ResourceShare.ResourceShareArn))
 	return managed.ExternalCreation{}, nil
 }

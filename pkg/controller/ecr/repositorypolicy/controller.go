@@ -33,9 +33,11 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/apis/ecr/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	ecr "github.com/crossplane-contrib/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 const (
@@ -90,7 +92,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := connectaws.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +116,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.IgnoreAny(err, ecr.IsRepoNotFoundErr, ecr.IsPolicyNotFoundErr), errGet)
+		return managed.ExternalObservation{}, errorutils.Wrap(resource.IgnoreAny(err, ecr.IsRepoNotFoundErr, ecr.IsPolicyNotFoundErr), errGet)
 	}
 
 	policyData, err := ecr.RawPolicyData(cr)
@@ -130,7 +132,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        awsclient.IsPolicyUpToDate(&policyData, response.PolicyText),
+		ResourceUpToDate:        legacypolicy.IsPolicyUpToDate(&policyData, response.PolicyText),
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
@@ -147,7 +149,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 	_, err = e.client.SetRepositoryPolicy(ctx, ecr.GenerateSetRepositoryPolicyInput(&cr.Spec.ForProvider, &policyData))
 
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -161,7 +163,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 	}
 	_, err = e.client.SetRepositoryPolicy(ctx, ecr.GenerateSetRepositoryPolicyInput(&cr.Spec.ForProvider, &policyData))
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -175,5 +177,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		RegistryId:     cr.Spec.ForProvider.RegistryID,
 	})
 
-	return awsclient.Wrap(resource.Ignore(ecr.IsPolicyNotFoundErr, err), errDelete)
+	return errorutils.Wrap(resource.Ignore(ecr.IsPolicyNotFoundErr, err), errDelete)
 }

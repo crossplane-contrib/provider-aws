@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package connectaws
 
 import (
 	"context"
@@ -22,7 +22,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	stscreds "github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -36,13 +35,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
 	awsCredentialsFileFormat = "[%s]\naws_access_key_id = %s\naws_secret_access_key = %s"
-
-	errBoom = "boom"
-	errMsg  = "example err msg"
 )
 
 func TestCredentialsIdSecret(t *testing.T) {
@@ -178,7 +175,7 @@ func TestGetAssumeRoleARN(t *testing.T) {
 				t.Errorf("Wrap: -want, +got:\n%s", diff)
 			}
 
-			if diff := cmp.Diff(tc.want.arn, StringValue(roleArn)); diff != "" {
+			if diff := cmp.Diff(tc.want.arn, pointer.StringValue(roleArn)); diff != "" {
 				t.Errorf("Wrap: -want, +got:\n%s", diff)
 			}
 		})
@@ -239,7 +236,7 @@ func TestGetAssumeRoleWithWebIdentityARN(t *testing.T) {
 				t.Errorf("Wrap: -want, +got:\n%s", diff)
 			}
 
-			if diff := cmp.Diff(tc.want.arn, StringValue(roleArn)); diff != "" {
+			if diff := cmp.Diff(tc.want.arn, pointer.StringValue(roleArn)); diff != "" {
 				t.Errorf("Wrap: -want, +got:\n%s", diff)
 			}
 		})
@@ -459,10 +456,10 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 				region:  "us-east-1",
 				service: "iam",
 				endpointConfig: &v1beta1.EndpointConfig{
-					HostnameImmutable: aws.Bool(true),
+					HostnameImmutable: pointer.Bool(true),
 					URL: v1beta1.URLConfig{
 						Type:   "Static",
-						Static: aws.String("http://localstack:4566"),
+						Static: pointer.String("http://localstack:4566"),
 					},
 				},
 			},
@@ -558,7 +555,7 @@ func TestUsePodServiceAccountAssumeRole(t *testing.T) {
 	providerConfig := v1beta1.ProviderConfig{
 		Spec: v1beta1.ProviderConfigSpec{
 			AssumeRole: &v1beta1.AssumeRoleOptions{
-				RoleARN: aws.String("arn:aws:iam::123456789:role/crossplane-role"),
+				RoleARN: pointer.String("arn:aws:iam::123456789:role/crossplane-role"),
 			},
 			Credentials: v1beta1.ProviderCredentials{Source: xpv1.CredentialsSourceInjectedIdentity},
 		},

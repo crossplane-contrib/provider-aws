@@ -16,9 +16,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/apigateway/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupMethod adds a controller that reconciles Method.
@@ -69,7 +69,7 @@ type custom struct {
 func getResourceIDFromExternalName(cr *svcapitypes.Method) *string {
 	ext := meta.GetExternalName(cr)
 	spl := strings.Split(ext, "-")
-	val := aws.StringValue(&spl[1])
+	val := pointer.StringValue(&spl[1])
 
 	return &val
 }
@@ -97,9 +97,9 @@ func postCreate(_ context.Context, cr *svcapitypes.Method, resp *svcsdk.Method, 
 
 	meta.SetExternalName(cr, fmt.Sprintf(
 		"%s-%s-%s",
-		aws.StringValue(cr.Spec.ForProvider.RestAPIID),
-		aws.StringValue(cr.Spec.ForProvider.ResourceID),
-		aws.StringValue(cr.Spec.ForProvider.HTTPMethod),
+		pointer.StringValue(cr.Spec.ForProvider.RestAPIID),
+		pointer.StringValue(cr.Spec.ForProvider.ResourceID),
+		pointer.StringValue(cr.Spec.ForProvider.HTTPMethod),
 	))
 	return cre, nil
 }
@@ -139,10 +139,10 @@ func (c *custom) lateInitialize(cr *svcapitypes.MethodParameters, cur *svcsdk.Me
 		}
 		cr.ResourceID = resourceID
 	}
-	cr.APIKeyRequired = aws.LateInitializeBoolPtr(cr.APIKeyRequired, cur.ApiKeyRequired)
-	cr.AuthorizationScopes = aws.LateInitializeStringPtrSlice(cr.AuthorizationScopes, cur.AuthorizationScopes)
-	cr.AuthorizationType = aws.LateInitializeStringPtr(cr.AuthorizationType, cur.AuthorizationType)
-	cr.OperationName = aws.LateInitializeStringPtr(cr.OperationName, cur.OperationName)
+	cr.APIKeyRequired = pointer.LateInitializeBoolPtr(cr.APIKeyRequired, cur.ApiKeyRequired)
+	cr.AuthorizationScopes = pointer.LateInitializeStringPtrSlice(cr.AuthorizationScopes, cur.AuthorizationScopes)
+	cr.AuthorizationType = pointer.LateInitializeStringPtr(cr.AuthorizationType, cur.AuthorizationType)
+	cr.OperationName = pointer.LateInitializeStringPtr(cr.OperationName, cur.OperationName)
 
 	if cr.RequestModels == nil && cur.RequestModels != nil {
 		cr.RequestModels = cur.RequestModels

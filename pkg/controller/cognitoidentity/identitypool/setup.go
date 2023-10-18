@@ -29,8 +29,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentity/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupIdentityPool adds a controller that reconciles IdentityPool.
@@ -80,7 +80,7 @@ func SetupIdentityPool(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.DescribeIdentityPoolInput) error {
-	obj.IdentityPoolId = awsclients.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -116,12 +116,12 @@ func postCreate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.Ide
 		return managed.ExternalCreation{}, err
 	}
 
-	meta.SetExternalName(cr, awsclients.StringValue(obj.IdentityPoolId))
+	meta.SetExternalName(cr, pointer.StringValue(obj.IdentityPoolId))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.IdentityPool) error {
-	obj.IdentityPoolId = awsclients.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
 	obj.OpenIdConnectProviderARNs = cr.Spec.ForProvider.OpenIDConnectProviderARNs
 	if cr.Spec.ForProvider.CognitoIdentityProviders != nil {
 		providers := make([]*svcsdk.Provider, len(cr.Spec.ForProvider.CognitoIdentityProviders))
@@ -139,7 +139,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.Iden
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.DeleteIdentityPoolInput) (bool, error) {
-	obj.IdentityPoolId = awsclients.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
 	return false, nil
 }
 

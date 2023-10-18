@@ -27,10 +27,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clientss3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 var (
@@ -139,7 +140,7 @@ func TestReplicationObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, replicationGetFailed),
+				err:    errorutils.Wrap(errBoom, replicationGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -251,7 +252,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, replicationPutFailed),
+				err: errorutils.Wrap(errBoom, replicationPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -316,7 +317,7 @@ func TestReplicationDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, replicationDeleteFailed),
+				err: errorutils.Wrap(errBoom, replicationDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {
@@ -369,7 +370,7 @@ func TestReplicationLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, replicationGetFailed),
+				err: errorutils.Wrap(errBoom, replicationGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},
@@ -554,7 +555,7 @@ func TestIsUpToDate(t *testing.T) {
 						Destination: v1beta1.Destination{
 							AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
 							Account:                  &accountID,
-							Bucket:                   awsclient.String("bucket-1"),
+							Bucket:                   pointer.String("bucket-1"),
 							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &v1beta1.Metrics{
 								EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
@@ -573,7 +574,7 @@ func TestIsUpToDate(t *testing.T) {
 								Tags:   tags,
 							},
 						},
-						ID:                      awsclient.String("rule-1"),
+						ID:                      pointer.String("rule-1"),
 						Priority:                priority,
 						SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
 						Status:                  enabled,
@@ -583,7 +584,7 @@ func TestIsUpToDate(t *testing.T) {
 							Destination: v1beta1.Destination{
 								AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
 								Account:                  &accountID,
-								Bucket:                   awsclient.String("bucket-2"),
+								Bucket:                   pointer.String("bucket-2"),
 								EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 								Metrics: &v1beta1.Metrics{
 									EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
@@ -602,7 +603,7 @@ func TestIsUpToDate(t *testing.T) {
 									Tags:   tags,
 								},
 							},
-							ID:                      awsclient.String("rule-2"),
+							ID:                      pointer.String("rule-2"),
 							Priority:                priority,
 							SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
 							Status:                  enabled,
@@ -615,7 +616,7 @@ func TestIsUpToDate(t *testing.T) {
 						Destination: &s3types.Destination{
 							AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
 							Account:                  &accountID,
-							Bucket:                   awsclient.String("bucket-2"),
+							Bucket:                   pointer.String("bucket-2"),
 							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &s3types.Metrics{
 								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
@@ -634,7 +635,7 @@ func TestIsUpToDate(t *testing.T) {
 								Tags:   awsTags,
 							},
 						},
-						ID:                      awsclient.String("rule-2"),
+						ID:                      pointer.String("rule-2"),
 						Priority:                priority,
 						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 						Status:                  s3types.ReplicationRuleStatusEnabled,
@@ -644,7 +645,7 @@ func TestIsUpToDate(t *testing.T) {
 							Destination: &s3types.Destination{
 								AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
 								Account:                  &accountID,
-								Bucket:                   awsclient.String("bucket-1"),
+								Bucket:                   pointer.String("bucket-1"),
 								EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 								Metrics: &s3types.Metrics{
 									EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
@@ -663,7 +664,7 @@ func TestIsUpToDate(t *testing.T) {
 									Tags:   awsTags,
 								},
 							},
-							ID:                      awsclient.String("rule-1"),
+							ID:                      pointer.String("rule-1"),
 							Priority:                priority,
 							SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 							Status:                  s3types.ReplicationRuleStatusEnabled,
@@ -740,12 +741,12 @@ func TestIsUpToDate(t *testing.T) {
 								Prefix: &prefix,
 								Tags: []s3types.Tag{
 									{
-										Key:   awsclient.String("xyz"),
-										Value: awsclient.String("abc"),
+										Key:   pointer.String("xyz"),
+										Value: pointer.String("abc"),
 									},
 									{
-										Key:   awsclient.String("test"),
-										Value: awsclient.String("value"),
+										Key:   pointer.String("test"),
+										Value: pointer.String("value"),
 									},
 								},
 							},

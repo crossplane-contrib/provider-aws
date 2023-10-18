@@ -21,8 +21,8 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/opensearchservice/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	awsclients "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 // SetupDomain adds a controller that reconciles Domain.
@@ -129,12 +129,12 @@ func postObserve(_ context.Context, cr *svcapitypes.Domain, resp *svcsdk.Describ
 
 	cr.Status.AtProvider = GenerateObservation(resp.DomainStatus)
 	obs.ConnectionDetails = managed.ConnectionDetails{
-		"arn": []byte(awsclients.StringValue(resp.DomainStatus.ARN)),
+		"arn": []byte(pointer.StringValue(resp.DomainStatus.ARN)),
 	}
 
 	// public endpoints
 	if resp.DomainStatus.Endpoint != nil {
-		obs.ConnectionDetails["endpoint"] = []byte(awsclients.StringValue(resp.DomainStatus.Endpoint))
+		obs.ConnectionDetails["endpoint"] = []byte(pointer.StringValue(resp.DomainStatus.Endpoint))
 	}
 
 	// vpc endpoints
@@ -144,7 +144,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Domain, resp *svcsdk.Describ
 			keys = append(keys, key)
 		}
 		for _, key := range keys {
-			obs.ConnectionDetails[key+"Endpoint"] = []byte(awsclients.StringValue(resp.DomainStatus.Endpoints[key]))
+			obs.ConnectionDetails[key+"Endpoint"] = []byte(pointer.StringValue(resp.DomainStatus.Endpoints[key]))
 		}
 	}
 

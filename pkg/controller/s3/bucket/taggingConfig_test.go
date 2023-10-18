@@ -20,6 +20,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
@@ -27,11 +28,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
-	awsclient "github.com/crossplane-contrib/provider-aws/pkg/clients"
 	clientss3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3/fake"
 	s3testing "github.com/crossplane-contrib/provider-aws/pkg/controller/s3/testing"
+	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 var (
@@ -102,7 +102,7 @@ func TestTaggingObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    awsclient.Wrap(errBoom, taggingGetFailed),
+				err:    errorutils.Wrap(errBoom, taggingGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -228,7 +228,7 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, taggingPutFailed),
+				err: errorutils.Wrap(errBoom, taggingPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -293,7 +293,7 @@ func TestTaggingDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, taggingDeleteFailed),
+				err: errorutils.Wrap(errBoom, taggingDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {
@@ -346,7 +346,7 @@ func TestTaggingLateInit(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: awsclient.Wrap(errBoom, taggingGetFailed),
+				err: errorutils.Wrap(errBoom, taggingGetFailed),
 				cr:  s3testing.Bucket(),
 			},
 		},

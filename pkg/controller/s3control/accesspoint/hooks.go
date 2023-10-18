@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/s3control/v1alpha1"
-	aws "github.com/crossplane-contrib/provider-aws/pkg/clients"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 type hooks struct {
@@ -74,18 +74,18 @@ func (h *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 }
 
 func preDelete(_ context.Context, point *svcapitypes.AccessPoint, input *svcsdk.DeleteAccessPointInput) (bool, error) {
-	input.Name = aws.String(meta.GetExternalName(point))
+	input.Name = pointer.String(meta.GetExternalName(point))
 	return false, nil
 }
 
 func preCreate(_ context.Context, point *svcapitypes.AccessPoint, input *svcsdk.CreateAccessPointInput) error {
-	input.Name = aws.String(meta.GetExternalName(point))
+	input.Name = pointer.String(meta.GetExternalName(point))
 	input.Bucket = point.Spec.ForProvider.BucketName
 	return nil
 }
 
 func preObserve(_ context.Context, point *svcapitypes.AccessPoint, input *svcsdk.GetAccessPointInput) error {
-	input.Name = aws.String(meta.GetExternalName(point))
+	input.Name = pointer.String(meta.GetExternalName(point))
 	return nil
 }
 
