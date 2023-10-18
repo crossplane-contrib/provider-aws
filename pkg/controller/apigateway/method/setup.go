@@ -139,10 +139,10 @@ func (c *custom) lateInitialize(cr *svcapitypes.MethodParameters, cur *svcsdk.Me
 		}
 		cr.ResourceID = resourceID
 	}
-	cr.APIKeyRequired = pointer.LateInitializeBoolPtr(cr.APIKeyRequired, cur.ApiKeyRequired)
-	cr.AuthorizationScopes = pointer.LateInitializeStringPtrSlice(cr.AuthorizationScopes, cur.AuthorizationScopes)
-	cr.AuthorizationType = pointer.LateInitializeStringPtr(cr.AuthorizationType, cur.AuthorizationType)
-	cr.OperationName = pointer.LateInitializeStringPtr(cr.OperationName, cur.OperationName)
+	cr.APIKeyRequired = pointer.LateInitialize(cr.APIKeyRequired, cur.ApiKeyRequired)
+	cr.AuthorizationScopes = pointer.LateInitializeSlice(cr.AuthorizationScopes, cur.AuthorizationScopes)
+	cr.AuthorizationType = pointer.LateInitialize(cr.AuthorizationType, cur.AuthorizationType)
+	cr.OperationName = pointer.LateInitialize(cr.OperationName, cur.OperationName)
 
 	if cr.RequestModels == nil && cur.RequestModels != nil {
 		cr.RequestModels = cur.RequestModels

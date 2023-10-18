@@ -85,7 +85,7 @@ func preObserve(_ context.Context, cr *svcapitypes.MountTarget, obj *svcsdk.Desc
 	obj.Marker = nil
 	obj.MaxItems = nil
 	obj.FileSystemId = nil
-	obj.MountTargetId = pointer.String(meta.GetExternalName(cr))
+	obj.MountTargetId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 

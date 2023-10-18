@@ -114,7 +114,7 @@ func LateInitialize(in *v1beta1.DBSubnetGroupParameters, sg *rdstypes.DBSubnetGr
 		return
 	}
 
-	in.Description = pointer.LateInitializeString(in.Description, sg.DBSubnetGroupDescription)
+	in.Description = pointer.LateInitializeValueFromPtr(in.Description, sg.DBSubnetGroupDescription)
 	if len(in.SubnetIDs) == 0 && len(sg.Subnets) != 0 {
 		in.SubnetIDs = make([]string, len(sg.Subnets))
 		for i, val := range sg.Subnets {

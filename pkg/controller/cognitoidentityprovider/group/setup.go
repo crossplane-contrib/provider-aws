@@ -78,13 +78,13 @@ func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.GetGroupInput) error {
-	obj.GroupName = pointer.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.DeleteGroupInput) (bool, error) {
-	obj.GroupName = pointer.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return false, nil
 }
@@ -102,14 +102,14 @@ func postObserve(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.GetGroupO
 func preCreate(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.CreateGroupInput) error {
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	obj.RoleArn = cr.Spec.ForProvider.RoleARN
-	obj.GroupName = pointer.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.UpdateGroupInput) error {
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	obj.RoleArn = cr.Spec.ForProvider.RoleARN
-	obj.GroupName = pointer.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 

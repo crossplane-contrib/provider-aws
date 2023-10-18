@@ -103,7 +103,7 @@ func (c *custom) preCreate(ctx context.Context, cr *svcapitypes.Resource, obj *s
 func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.Resource, obj *svcsdk.UpdateResourceInput) error {
 	in := &svcsdk.GetResourceInput{
 		RestApiId:  cr.Spec.ForProvider.RestAPIID,
-		ResourceId: pointer.String(meta.GetExternalName(cr)),
+		ResourceId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}
 
 	cur := &svcapitypes.ResourceParameters{
@@ -129,7 +129,7 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.Resource, obj *s
 
 func preObserve(_ context.Context, cr *svcapitypes.Resource, obj *svcsdk.GetResourceInput) error {
 	obj.RestApiId = cr.Spec.ForProvider.RestAPIID
-	obj.ResourceId = pointer.String(meta.GetExternalName(cr))
+	obj.ResourceId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -151,15 +151,15 @@ func postCreate(_ context.Context, cr *svcapitypes.Resource, resp *svcsdk.Resour
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Resource, obj *svcsdk.DeleteResourceInput) (bool, error) {
-	obj.ResourceId = pointer.String(meta.GetExternalName(cr))
+	obj.ResourceId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.RestApiId = cr.Spec.ForProvider.RestAPIID
 
 	return false, nil
 }
 
 func lateInitialize(cr *svcapitypes.ResourceParameters, cur *svcsdk.Resource) error {
-	cr.PathPart = pointer.LateInitializeStringPtr(cr.PathPart, cur.PathPart)
-	cr.ParentResourceID = pointer.LateInitializeStringPtr(cr.ParentResourceID, cur.ParentId)
+	cr.PathPart = pointer.LateInitialize(cr.PathPart, cur.PathPart)
+	cr.ParentResourceID = pointer.LateInitialize(cr.ParentResourceID, cur.ParentId)
 	return nil
 }
 

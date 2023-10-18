@@ -103,12 +103,12 @@ type hooks struct {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.DeleteConnectionInput) (bool, error) {
-	obj.ConnectionName = pointer.String(meta.GetExternalName(cr))
+	obj.ConnectionName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.GetConnectionInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -153,13 +153,13 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Connection, resp *
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.UpdateConnectionInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.CustomConnectionInput != nil {
 		obj.ConnectionInput = &svcsdk.ConnectionInput{
-			Name:                 pointer.String(meta.GetExternalName(cr)),
+			Name:                 pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			ConnectionProperties: cr.Spec.ForProvider.CustomConnectionInput.ConnectionProperties,
-			ConnectionType:       pointer.String(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
+			ConnectionType:       pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
 			Description:          cr.Spec.ForProvider.CustomConnectionInput.Description,
 			MatchCriteria:        cr.Spec.ForProvider.CustomConnectionInput.MatchCriteria,
 		}
@@ -196,9 +196,9 @@ func preCreate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomConnectionInput != nil {
 		obj.ConnectionInput = &svcsdk.ConnectionInput{
-			Name:                 pointer.String(meta.GetExternalName(cr)),
+			Name:                 pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			ConnectionProperties: cr.Spec.ForProvider.CustomConnectionInput.ConnectionProperties,
-			ConnectionType:       pointer.String(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
+			ConnectionType:       pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
 			Description:          cr.Spec.ForProvider.CustomConnectionInput.Description,
 			MatchCriteria:        cr.Spec.ForProvider.CustomConnectionInput.MatchCriteria,
 		}

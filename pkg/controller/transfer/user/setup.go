@@ -76,13 +76,13 @@ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUserInput) error {
-	obj.UserName = pointer.String(meta.GetExternalName(cr))
+	obj.UserName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ServerId = cr.Spec.ForProvider.ServerID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DeleteUserInput) (bool, error) {
-	obj.UserName = pointer.String(meta.GetExternalName(cr))
+	obj.UserName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ServerId = cr.Spec.ForProvider.ServerID
 	return false, nil
 }
@@ -100,6 +100,6 @@ func postObserve(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUs
 func preCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserInput) error {
 	obj.ServerId = cr.Spec.ForProvider.ServerID
 	obj.Role = cr.Spec.ForProvider.Role
-	obj.UserName = pointer.String(meta.GetExternalName(cr))
+	obj.UserName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }

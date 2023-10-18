@@ -77,7 +77,7 @@ func SetupConfiguration(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.CreateConfigurationInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	serverProperties := strings.Join(cr.Spec.ForProvider.Properties, "\n")
 	obj.ServerProperties = []byte(serverProperties)
 	return nil
@@ -92,7 +92,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.Cr
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DescribeConfigurationInput) error {
-	obj.Arn = pointer.String(meta.GetExternalName(cr))
+	obj.Arn = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -112,7 +112,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.D
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DeleteConfigurationInput) (bool, error) {
-	obj.Arn = pointer.String(meta.GetExternalName(cr))
+	obj.Arn = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

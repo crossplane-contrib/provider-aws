@@ -555,7 +555,7 @@ func TestIsUpToDate(t *testing.T) {
 						Destination: v1beta1.Destination{
 							AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
 							Account:                  &accountID,
-							Bucket:                   pointer.String("bucket-1"),
+							Bucket:                   pointer.ToOrNilIfZeroValue("bucket-1"),
 							EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &v1beta1.Metrics{
 								EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
@@ -574,7 +574,7 @@ func TestIsUpToDate(t *testing.T) {
 								Tags:   tags,
 							},
 						},
-						ID:                      pointer.String("rule-1"),
+						ID:                      pointer.ToOrNilIfZeroValue("rule-1"),
 						Priority:                priority,
 						SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
 						Status:                  enabled,
@@ -584,7 +584,7 @@ func TestIsUpToDate(t *testing.T) {
 							Destination: v1beta1.Destination{
 								AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
 								Account:                  &accountID,
-								Bucket:                   pointer.String("bucket-2"),
+								Bucket:                   pointer.ToOrNilIfZeroValue("bucket-2"),
 								EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 								Metrics: &v1beta1.Metrics{
 									EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
@@ -603,7 +603,7 @@ func TestIsUpToDate(t *testing.T) {
 									Tags:   tags,
 								},
 							},
-							ID:                      pointer.String("rule-2"),
+							ID:                      pointer.ToOrNilIfZeroValue("rule-2"),
 							Priority:                priority,
 							SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
 							Status:                  enabled,
@@ -616,7 +616,7 @@ func TestIsUpToDate(t *testing.T) {
 						Destination: &s3types.Destination{
 							AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
 							Account:                  &accountID,
-							Bucket:                   pointer.String("bucket-2"),
+							Bucket:                   pointer.ToOrNilIfZeroValue("bucket-2"),
 							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &s3types.Metrics{
 								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
@@ -635,7 +635,7 @@ func TestIsUpToDate(t *testing.T) {
 								Tags:   awsTags,
 							},
 						},
-						ID:                      pointer.String("rule-2"),
+						ID:                      pointer.ToOrNilIfZeroValue("rule-2"),
 						Priority:                priority,
 						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 						Status:                  s3types.ReplicationRuleStatusEnabled,
@@ -645,7 +645,7 @@ func TestIsUpToDate(t *testing.T) {
 							Destination: &s3types.Destination{
 								AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
 								Account:                  &accountID,
-								Bucket:                   pointer.String("bucket-1"),
+								Bucket:                   pointer.ToOrNilIfZeroValue("bucket-1"),
 								EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 								Metrics: &s3types.Metrics{
 									EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
@@ -664,7 +664,7 @@ func TestIsUpToDate(t *testing.T) {
 									Tags:   awsTags,
 								},
 							},
-							ID:                      pointer.String("rule-1"),
+							ID:                      pointer.ToOrNilIfZeroValue("rule-1"),
 							Priority:                priority,
 							SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 							Status:                  s3types.ReplicationRuleStatusEnabled,
@@ -741,12 +741,12 @@ func TestIsUpToDate(t *testing.T) {
 								Prefix: &prefix,
 								Tags: []s3types.Tag{
 									{
-										Key:   pointer.String("xyz"),
-										Value: pointer.String("abc"),
+										Key:   pointer.ToOrNilIfZeroValue("xyz"),
+										Value: pointer.ToOrNilIfZeroValue("abc"),
 									},
 									{
-										Key:   pointer.String("test"),
-										Value: pointer.String("value"),
+										Key:   pointer.ToOrNilIfZeroValue("test"),
+										Value: pointer.ToOrNilIfZeroValue("value"),
 									},
 								},
 							},

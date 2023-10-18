@@ -94,7 +94,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DescribeDBClusterParameterGroupsInput) error {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -110,13 +110,13 @@ func (c *custom) preCreate(ctx context.Context, cr *svcapitypes.DBClusterParamet
 	if err := c.ensureParameterGroupFamily(ctx, cr); err != nil {
 		return errors.Wrap(err, errDetermineDBParameterGroupFamily)
 	}
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.DBParameterGroupFamily = cr.Spec.ForProvider.DBParameterGroupFamily
 	return nil
 }
 
 func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.ModifyDBClusterParameterGroupInput) error {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	currentParameters, err := c.getCurrentDBClusterParameters(ctx, cr)
 
 	if err != nil {
@@ -129,7 +129,7 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBClusterParamet
 	if len(parametersToReset) > 0 {
 		if _, err := c.client.ResetDBClusterParameterGroupWithContext(ctx, &svcsdk.ResetDBClusterParameterGroupInput{
 			DBClusterParameterGroupName: obj.DBClusterParameterGroupName,
-			ResetAllParameters:          pointer.Bool(false),
+			ResetAllParameters:          pointer.ToOrNilIfZeroValue(false),
 			Parameters:                  parametersToReset,
 		}); err != nil {
 			return err
@@ -185,7 +185,7 @@ func (c *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBClusterParame
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DeleteDBClusterParameterGroupInput) (bool, error) {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -218,8 +218,8 @@ func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBClusterParame
 
 func (c *custom) getCurrentDBClusterParameters(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup) ([]*svcsdk.Parameter, error) {
 	input := &svcsdk.DescribeDBClusterParametersInput{
-		DBClusterParameterGroupName: pointer.String(meta.GetExternalName(cr)),
-		MaxRecords:                  pointer.Int64(100),
+		DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+		MaxRecords:                  pointer.ToIntAsInt64(100),
 	}
 	var results []*svcsdk.Parameter
 	err := c.client.DescribeDBClusterParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeDBClusterParametersOutput, lastPage bool) bool {
@@ -251,7 +251,7 @@ func (c *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.D
 	resp, err := c.client.DescribeDBEngineVersionsWithContext(ctx, &svcsdk.DescribeDBEngineVersionsInput{
 		Engine:        &selector.Engine,
 		EngineVersion: selector.EngineVersion,
-		DefaultOnly:   pointer.Bool(selector.EngineVersion == nil),
+		DefaultOnly:   pointer.ToOrNilIfZeroValue(selector.EngineVersion == nil),
 	})
 	if err != nil {
 		return nil, err

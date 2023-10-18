@@ -91,27 +91,27 @@ func withName(value string) daxModifier {
 
 func withDescription(value string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
-		o.Spec.ForProvider.Description = pointer.String(value)
+		o.Spec.ForProvider.Description = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withSubnetID(value string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
-		o.Spec.ForProvider.SubnetIds = append(o.Spec.ForProvider.SubnetIds, pointer.String(value))
+		o.Spec.ForProvider.SubnetIds = append(o.Spec.ForProvider.SubnetIds, pointer.ToOrNilIfZeroValue(value))
 	}
 }
 
 func withStatusSubnetGroupName(value string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
-		o.Status.AtProvider.SubnetGroupName = pointer.String(value)
+		o.Status.AtProvider.SubnetGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withStatusSubnets(k, v string) daxModifier {
 	return func(o *svcapitypes.SubnetGroup) {
 		o.Status.AtProvider.Subnets = append(o.Status.AtProvider.Subnets, &svcapitypes.Subnet{
-			SubnetIdentifier:       pointer.String(k),
-			SubnetAvailabilityZone: pointer.String(v),
+			SubnetIdentifier:       pointer.ToOrNilIfZeroValue(k),
+			SubnetAvailabilityZone: pointer.ToOrNilIfZeroValue(v),
 		})
 	}
 }
@@ -140,11 +140,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeSubnetGroupsWithContext: func(c context.Context, dsgi *dax.DescribeSubnetGroupsInput, o []request.Option) (*dax.DescribeSubnetGroupsOutput, error) {
 						return &dax.DescribeSubnetGroupsOutput{SubnetGroups: []*dax.SubnetGroup{
 							{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								Description:     pointer.String(testDescription),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								Description:     pointer.ToOrNilIfZeroValue(testDescription),
 								Subnets: []*dax.Subnet{{
-									SubnetIdentifier:       pointer.String(testSubnetIdentifier),
-									SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone)}},
+									SubnetIdentifier:       pointer.ToOrNilIfZeroValue(testSubnetIdentifier),
+									SubnetAvailabilityZone: pointer.ToOrNilIfZeroValue(testSubnetAvailabilityZone)}},
 							},
 						}}, nil
 					},
@@ -187,11 +187,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeSubnetGroupsWithContext: func(c context.Context, dsgi *dax.DescribeSubnetGroupsInput, o []request.Option) (*dax.DescribeSubnetGroupsOutput, error) {
 						return &dax.DescribeSubnetGroupsOutput{SubnetGroups: []*dax.SubnetGroup{
 							{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								Description:     pointer.String(testDescription),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								Description:     pointer.ToOrNilIfZeroValue(testDescription),
 								Subnets: []*dax.Subnet{{
-									SubnetIdentifier:       pointer.String(testSubnetIdentifier),
-									SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone)}},
+									SubnetIdentifier:       pointer.ToOrNilIfZeroValue(testSubnetIdentifier),
+									SubnetAvailabilityZone: pointer.ToOrNilIfZeroValue(testSubnetAvailabilityZone)}},
 							},
 						}}, nil
 					},
@@ -234,11 +234,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeSubnetGroupsWithContext: func(c context.Context, dsgi *dax.DescribeSubnetGroupsInput, o []request.Option) (*dax.DescribeSubnetGroupsOutput, error) {
 						return &dax.DescribeSubnetGroupsOutput{SubnetGroups: []*dax.SubnetGroup{
 							{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								Description:     pointer.String(testDescription),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								Description:     pointer.ToOrNilIfZeroValue(testDescription),
 								Subnets: []*dax.Subnet{{
-									SubnetIdentifier:       pointer.String(testSubnetIdentifier),
-									SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone)}},
+									SubnetIdentifier:       pointer.ToOrNilIfZeroValue(testSubnetIdentifier),
+									SubnetAvailabilityZone: pointer.ToOrNilIfZeroValue(testSubnetAvailabilityZone)}},
 							},
 						}}, nil
 					},
@@ -350,8 +350,8 @@ func TestUpdate(t *testing.T) {
 					MockUpdateSubnetGroupWithContext: func(c context.Context, usgi *dax.UpdateSubnetGroupInput, o []request.Option) (*dax.UpdateSubnetGroupOutput, error) {
 						return &dax.UpdateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								Subnets:         []*dax.Subnet{{SubnetIdentifier: pointer.String(testSubnetIdentifier)}},
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								Subnets:         []*dax.Subnet{{SubnetIdentifier: pointer.ToOrNilIfZeroValue(testSubnetIdentifier)}},
 							},
 						}, nil
 					},
@@ -372,8 +372,8 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								SubnetIds:       []*string{pointer.String(testSubnetIdentifier)},
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								SubnetIds:       []*string{pointer.ToOrNilIfZeroValue(testSubnetIdentifier)},
 							},
 						},
 					},
@@ -386,16 +386,16 @@ func TestUpdate(t *testing.T) {
 					MockUpdateSubnetGroupWithContext: func(c context.Context, usgi *dax.UpdateSubnetGroupInput, o []request.Option) (*dax.UpdateSubnetGroupOutput, error) {
 						return &dax.UpdateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								Description:     pointer.String(testDescription),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								Description:     pointer.ToOrNilIfZeroValue(testDescription),
 								Subnets: []*dax.Subnet{
 									{
-										SubnetIdentifier:       pointer.String(testSubnetIdentifier),
-										SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone),
+										SubnetIdentifier:       pointer.ToOrNilIfZeroValue(testSubnetIdentifier),
+										SubnetAvailabilityZone: pointer.ToOrNilIfZeroValue(testSubnetAvailabilityZone),
 									},
 									{
-										SubnetIdentifier:       pointer.String(testOtherSubnetIdentifier),
-										SubnetAvailabilityZone: pointer.String(testOtherSubnetAvailabilityZone),
+										SubnetIdentifier:       pointer.ToOrNilIfZeroValue(testOtherSubnetIdentifier),
+										SubnetAvailabilityZone: pointer.ToOrNilIfZeroValue(testOtherSubnetAvailabilityZone),
 									},
 								},
 							},
@@ -422,11 +422,11 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								Description:     pointer.String(testDescription),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								Description:     pointer.ToOrNilIfZeroValue(testDescription),
 								SubnetIds: []*string{
-									pointer.String(testSubnetIdentifier),
-									pointer.String(testOtherSubnetIdentifier),
+									pointer.ToOrNilIfZeroValue(testSubnetIdentifier),
+									pointer.ToOrNilIfZeroValue(testOtherSubnetIdentifier),
 								},
 							},
 						},
@@ -458,7 +458,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 							},
 						},
 					},
@@ -506,7 +506,7 @@ func TestCreate(t *testing.T) {
 					MockCreateSubnetGroupWithContext: func(c context.Context, csgi *dax.CreateSubnetGroupInput, o []request.Option) (*dax.CreateSubnetGroupOutput, error) {
 						return &dax.CreateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 							},
 						}, nil
 					},
@@ -529,7 +529,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 							},
 						},
 					},
@@ -542,15 +542,15 @@ func TestCreate(t *testing.T) {
 					MockCreateSubnetGroupWithContext: func(c context.Context, csgi *dax.CreateSubnetGroupInput, o []request.Option) (*dax.CreateSubnetGroupOutput, error) {
 						return &dax.CreateSubnetGroupOutput{
 							SubnetGroup: &dax.SubnetGroup{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 								Subnets: []*dax.Subnet{
 									{
-										SubnetIdentifier:       pointer.String(testSubnetIdentifier),
-										SubnetAvailabilityZone: pointer.String(testSubnetAvailabilityZone),
+										SubnetIdentifier:       pointer.ToOrNilIfZeroValue(testSubnetIdentifier),
+										SubnetAvailabilityZone: pointer.ToOrNilIfZeroValue(testSubnetAvailabilityZone),
 									},
 									{
-										SubnetIdentifier:       pointer.String(testOtherSubnetIdentifier),
-										SubnetAvailabilityZone: pointer.String(testOtherSubnetAvailabilityZone),
+										SubnetIdentifier:       pointer.ToOrNilIfZeroValue(testOtherSubnetIdentifier),
+										SubnetAvailabilityZone: pointer.ToOrNilIfZeroValue(testOtherSubnetAvailabilityZone),
 									},
 								},
 							},
@@ -580,8 +580,8 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								SubnetIds:       []*string{pointer.String(testSubnetIdentifier), pointer.String(testOtherSubnetIdentifier)},
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								SubnetIds:       []*string{pointer.ToOrNilIfZeroValue(testSubnetIdentifier), pointer.ToOrNilIfZeroValue(testOtherSubnetIdentifier)},
 							},
 						},
 					},
@@ -612,7 +612,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 							},
 						},
 					},
@@ -647,8 +647,8 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
-								SubnetIds:       []*string{pointer.String(testSubnetIdentifier), pointer.String(testOtherSubnetIdentifier)},
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+								SubnetIds:       []*string{pointer.ToOrNilIfZeroValue(testSubnetIdentifier), pointer.ToOrNilIfZeroValue(testOtherSubnetIdentifier)},
 							},
 						},
 					},
@@ -711,7 +711,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DeleteSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 							},
 						},
 					},
@@ -740,7 +740,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DeleteSubnetGroupInput{
-								SubnetGroupName: pointer.String(testSubnetGroupName),
+								SubnetGroupName: pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 							},
 						},
 					},

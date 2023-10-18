@@ -87,8 +87,8 @@ func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
 // LateInitialize fills the empty fields in *svcapitypes.FunctionParameters with
 // the values seen in svcsdk.GetFunctionOutput.
 func LateInitialize(cr *svcapitypes.FunctionParameters, resp *svcsdk.GetFunctionOutput) error {
-	cr.MemorySize = pointer.LateInitializeInt64Ptr(cr.MemorySize, resp.Configuration.MemorySize)
-	cr.Timeout = pointer.LateInitializeInt64Ptr(cr.Timeout, resp.Configuration.Timeout)
+	cr.MemorySize = pointer.LateInitialize(cr.MemorySize, resp.Configuration.MemorySize)
+	cr.Timeout = pointer.LateInitialize(cr.Timeout, resp.Configuration.Timeout)
 	if cr.TracingConfig == nil {
 		cr.TracingConfig = &svcapitypes.TracingConfig{Mode: resp.Configuration.TracingConfig.Mode}
 	}

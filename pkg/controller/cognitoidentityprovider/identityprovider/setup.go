@@ -91,13 +91,13 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.IdentityProvider, obj *svcsdk.DescribeIdentityProviderInput) error {
-	obj.ProviderName = pointer.String(meta.GetExternalName(cr))
+	obj.ProviderName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.IdentityProvider, obj *svcsdk.DeleteIdentityProviderInput) (bool, error) {
-	obj.ProviderName = pointer.String(meta.GetExternalName(cr))
+	obj.ProviderName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return false, nil
 }
@@ -114,7 +114,7 @@ func postObserve(_ context.Context, cr *svcapitypes.IdentityProvider, obj *svcsd
 
 func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.IdentityProvider, obj *svcsdk.CreateIdentityProviderInput) error {
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
-	obj.ProviderName = pointer.String(meta.GetExternalName(cr))
+	obj.ProviderName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	providerDetails, err := e.resolver.GetProviderDetails(ctx, e.kube, &cr.Spec.ForProvider.ProviderDetailsSecretRef)
 	if err != nil {
@@ -127,7 +127,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.IdentityProvider
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.IdentityProvider, obj *svcsdk.UpdateIdentityProviderInput) error {
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
-	obj.ProviderName = pointer.String(meta.GetExternalName(cr))
+	obj.ProviderName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	providerDetails, err := e.resolver.GetProviderDetails(ctx, e.kube, &cr.Spec.ForProvider.ProviderDetailsSecretRef)
 	if err != nil {

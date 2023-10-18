@@ -100,15 +100,15 @@ func GenerateCreateTopicInput(p *v1beta1.TopicParameters) *sns.CreateTopicInput 
 // LateInitializeTopicAttr fills the empty fields in *v1beta1.TopicParameters with the
 // values seen in sns.Topic.
 func LateInitializeTopicAttr(in *v1beta1.TopicParameters, attrs map[string]string) {
-	in.DisplayName = pointer.LateInitializeStringPtr(in.DisplayName, aws.String(attrs[string(TopicDisplayName)]))
-	in.DeliveryPolicy = pointer.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(attrs[string(TopicDeliveryPolicy)]))
-	in.KMSMasterKeyID = pointer.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs[string(TopicKmsMasterKeyID)]))
-	in.Policy = pointer.LateInitializeStringPtr(in.Policy, aws.String(attrs[string(TopicPolicy)]))
+	in.DisplayName = pointer.LateInitialize(in.DisplayName, aws.String(attrs[string(TopicDisplayName)]))
+	in.DeliveryPolicy = pointer.LateInitialize(in.DeliveryPolicy, aws.String(attrs[string(TopicDeliveryPolicy)]))
+	in.KMSMasterKeyID = pointer.LateInitialize(in.KMSMasterKeyID, aws.String(attrs[string(TopicKmsMasterKeyID)]))
+	in.Policy = pointer.LateInitialize(in.Policy, aws.String(attrs[string(TopicPolicy)]))
 
 	in.FifoTopic = nil
 	fifoTopic, err := strconv.ParseBool(attrs[string(TopicFifoTopic)])
 	if err == nil && fifoTopic {
-		in.FifoTopic = pointer.LateInitializeBoolPtr(in.FifoTopic, aws.Bool(fifoTopic))
+		in.FifoTopic = pointer.LateInitialize(in.FifoTopic, aws.Bool(fifoTopic))
 	}
 }
 

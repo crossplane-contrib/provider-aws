@@ -139,7 +139,7 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags = map[string]*string{}
 	}
 	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = pointer.String(v)
+		cr.Spec.ForProvider.Tags[k] = pointer.ToOrNilIfZeroValue(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

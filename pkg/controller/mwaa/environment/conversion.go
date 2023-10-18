@@ -17,8 +17,8 @@ func generateEnvironment(obj *svcsdk.GetEnvironmentOutput) *svcapitypes.Environm
 
 	if obj.Environment.NetworkConfiguration != nil {
 		res.Spec.ForProvider.NetworkConfiguration = svcapitypes.CustomNetworkConfiguration{
-			SecurityGroupIDs: pointer.StringPtrSliceToValue(obj.Environment.NetworkConfiguration.SecurityGroupIds),
-			SubnetIDs:        pointer.StringPtrSliceToValue(obj.Environment.NetworkConfiguration.SubnetIds),
+			SecurityGroupIDs: pointer.SlicePtrToValue(obj.Environment.NetworkConfiguration.SecurityGroupIds),
+			SubnetIDs:        pointer.SlicePtrToValue(obj.Environment.NetworkConfiguration.SubnetIds),
 		}
 	}
 

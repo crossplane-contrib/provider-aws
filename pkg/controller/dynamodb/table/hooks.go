@@ -130,7 +130,7 @@ func (c *customConnector) Connect(ctx context.Context, mg cpresource.Managed) (m
 
 func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.UpdateTableOutput, _ managed.ExternalUpdate, _ error) (managed.ExternalUpdate, error) {
 	cbresult, err := e.client.DescribeContinuousBackups(&svcsdk.DescribeContinuousBackupsInput{
-		TableName: pointer.String(meta.GetExternalName(cr)),
+		TableName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalUpdate{}, err
@@ -142,7 +142,7 @@ func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj 
 		pitrSpecEnabled := ptr.Deref(cr.Spec.ForProvider.PointInTimeRecoveryEnabled, false)
 
 		pitrInput := &svcsdk.UpdateContinuousBackupsInput{
-			TableName: pointer.String(meta.GetExternalName(cr)),
+			TableName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			PointInTimeRecoverySpecification: (&svcsdk.PointInTimeRecoverySpecification{
 				PointInTimeRecoveryEnabled: &pitrSpecEnabled,
 			}),
@@ -158,16 +158,16 @@ func (e *updateClient) postUpdate(_ context.Context, cr *svcapitypes.Table, obj 
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DescribeTableInput) error {
-	obj.TableName = pointer.String(meta.GetExternalName(cr))
+	obj.TableName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	return nil
 }
 func preCreate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.CreateTableInput) error {
-	obj.TableName = pointer.String(meta.GetExternalName(cr))
+	obj.TableName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) (bool, error) {
-	obj.TableName = pointer.String(meta.GetExternalName(cr))
+	obj.TableName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -228,7 +228,7 @@ func (e *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 	}
 	tags := make([]*svcapitypes.Tag, 0)
 	for k, v := range tagMap {
-		tags = append(tags, &svcapitypes.Tag{Key: pointer.String(k), Value: pointer.String(v)})
+		tags = append(tags, &svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
 	}
 	sort.Slice(tags, func(i, j int) bool {
 		return pointer.StringValue(tags[i].Key) < pointer.StringValue(tags[j].Key)
@@ -269,7 +269,7 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 		// in our IsUpToDate logic which would otherwise detect a diff
 		// between our desired state (PROVISIONED) and the actual state
 		// (unspecified).
-		in.BillingMode = pointer.String(svcsdk.BillingModeProvisioned)
+		in.BillingMode = pointer.ToOrNilIfZeroValue(svcsdk.BillingModeProvisioned)
 		if t.Table.BillingModeSummary != nil {
 			in.BillingMode = t.Table.BillingModeSummary.BillingMode
 		}
@@ -285,7 +285,7 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			in.SSESpecification = &svcapitypes.SSESpecification{}
 		}
 		if in.SSESpecification.Enabled == nil && t.Table.SSEDescription.Status != nil {
-			in.SSESpecification.Enabled = pointer.Bool(*t.Table.SSEDescription.Status == string(svcapitypes.SSEStatus_ENABLED))
+			in.SSESpecification.Enabled = pointer.ToOrNilIfZeroValue(*t.Table.SSEDescription.Status == string(svcapitypes.SSEStatus_ENABLED))
 		}
 		if in.SSESpecification.KMSMasterKeyID == nil && t.Table.SSEDescription.KMSMasterKeyArn != nil {
 			in.SSESpecification.KMSMasterKeyID = t.Table.SSEDescription.KMSMasterKeyArn
@@ -299,7 +299,7 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 		// avoid IsUpToDate thinking it needs to explicitly make an
 		// update to set StreamEnabled to false. DescribeTableOutput
 		// omits StreamSpecification entirely when it's not enabled.
-		in.StreamSpecification = &svcapitypes.StreamSpecification{StreamEnabled: pointer.Bool(false, pointer.FieldRequired)}
+		in.StreamSpecification = &svcapitypes.StreamSpecification{StreamEnabled: ptr.To(false)}
 		if t.Table.StreamSpecification != nil {
 			in.StreamSpecification = &svcapitypes.StreamSpecification{
 				StreamEnabled:  t.Table.StreamSpecification.StreamEnabled,
@@ -490,7 +490,7 @@ func (e *updateClient) isUpToDate(ctx context.Context, cr *svcapitypes.Table, re
 
 	// point in time recovery status
 	cbresult, err := e.client.DescribeContinuousBackupsWithContext(ctx, &svcsdk.DescribeContinuousBackupsInput{
-		TableName: pointer.String(meta.GetExternalName(cr)),
+		TableName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return false, "", err
@@ -516,7 +516,7 @@ type updateClient struct {
 
 func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
 	filtered := &svcsdk.UpdateTableInput{
-		TableName:            pointer.String(meta.GetExternalName(cr)),
+		TableName:            pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		AttributeDefinitions: u.AttributeDefinitions,
 	}
 
@@ -532,7 +532,7 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 	// the observed state in a cache during postObserve then read it here,
 	// but we typically prefer to be as stateless as possible even if it
 	// means redundant API calls.
-	out, err := e.client.DescribeTableWithContext(ctx, &svcsdk.DescribeTableInput{TableName: pointer.String(meta.GetExternalName(cr))})
+	out, err := e.client.DescribeTableWithContext(ctx, &svcsdk.DescribeTableInput{TableName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))})
 	if err != nil {
 		return errorutils.Wrap(err, errDescribe)
 	}

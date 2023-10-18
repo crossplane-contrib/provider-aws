@@ -178,7 +178,7 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //no
 			HostnameImmutable: pointer.BoolValue(pc.Spec.Endpoint.HostnameImmutable),
 			PartitionID:       pointer.StringValue(pc.Spec.Endpoint.PartitionID),
 			SigningName:       pointer.StringValue(pc.Spec.Endpoint.SigningName),
-			SigningRegion:     pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningRegion:     pointer.StringValue(pointer.LateInitialize(pc.Spec.Endpoint.SigningRegion, &region)),
 			SigningMethod:     pointer.StringValue(pc.Spec.Endpoint.SigningMethod),
 		}
 		// Only IAM does not have a region parameter and "aws-global" is used in
@@ -187,7 +187,7 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //no
 		if region == "aws-global" {
 			switch pointer.StringValue(pc.Spec.Endpoint.PartitionID) {
 			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
-				e.SigningRegion = pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+				e.SigningRegion = pointer.StringValue(pointer.LateInitialize(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
 			}
@@ -692,7 +692,7 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 			URL:           fullURL,
 			PartitionID:   pointer.StringValue(pc.Spec.Endpoint.PartitionID),
 			SigningName:   pointer.StringValue(pc.Spec.Endpoint.SigningName),
-			SigningRegion: pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningRegion: pointer.StringValue(pointer.LateInitialize(pc.Spec.Endpoint.SigningRegion, &region)),
 			SigningMethod: pointer.StringValue(pc.Spec.Endpoint.SigningMethod),
 		}
 		// Only IAM does not have a region parameter and "aws-global" is used in
@@ -701,7 +701,7 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		if region == "aws-global" {
 			switch pointer.StringValue(pc.Spec.Endpoint.PartitionID) {
 			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
-				e.SigningRegion = pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+				e.SigningRegion = pointer.StringValue(pointer.LateInitialize(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
 			}

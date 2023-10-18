@@ -129,7 +129,7 @@ type hooks struct {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterInput) (bool, error) {
-	obj.ClusterArn = pointer.String(meta.GetExternalName(cr))
+	obj.ClusterArn = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -145,7 +145,7 @@ func postDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteCl
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterInput) error {
-	obj.ClusterArn = pointer.String(meta.GetExternalName(cr))
+	obj.ClusterArn = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -168,7 +168,7 @@ func (u *hooks) postObserve(ctx context.Context, cr *svcapitypes.Cluster, obj *s
 		// see: https://docs.aws.amazon.com/msk/latest/developerguide/msk-get-bootstrap-brokers.html
 		// retrieve cluster bootstrap brokers (endpoints)
 		// not possible in every cluster state (e.g. "You can't get bootstrap broker nodes for a cluster in DELETING state.")
-		endpoints, err := u.client.GetBootstrapBrokersWithContext(ctx, &svcsdk.GetBootstrapBrokersInput{ClusterArn: pointer.String(meta.GetExternalName(cr))})
+		endpoints, err := u.client.GetBootstrapBrokersWithContext(ctx, &svcsdk.GetBootstrapBrokersInput{ClusterArn: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))})
 		if err != nil {
 			return obs, errorutils.Wrap(err, errGetBootstrapBrokers)
 		}
@@ -224,7 +224,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateCl
 func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClusterOutput) error { //nolint:gocyclo
 
 	if cr.EnhancedMonitoring == nil && obj.ClusterInfo.EnhancedMonitoring != nil {
-		cr.EnhancedMonitoring = pointer.LateInitializeStringPtr(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
+		cr.EnhancedMonitoring = pointer.LateInitialize(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
 	}
 
 	if cr.CustomBrokerNodeGroupInfo.SecurityGroups == nil && obj.ClusterInfo.BrokerNodeGroupInfo.SecurityGroups != nil {
@@ -239,7 +239,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 			if cr.EncryptionInfo.EncryptionAtRest == nil {
 				cr.EncryptionInfo.EncryptionAtRest = &svcapitypes.EncryptionAtRest{}
 			}
-			cr.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID = pointer.LateInitializeStringPtr(
+			cr.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID = pointer.LateInitialize(
 				cr.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyID,
 				obj.ClusterInfo.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyId,
 			)
@@ -248,11 +248,11 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 			if cr.EncryptionInfo.EncryptionInTransit == nil {
 				cr.EncryptionInfo.EncryptionInTransit = &svcapitypes.EncryptionInTransit{}
 			}
-			cr.EncryptionInfo.EncryptionInTransit.ClientBroker = pointer.LateInitializeStringPtr(
+			cr.EncryptionInfo.EncryptionInTransit.ClientBroker = pointer.LateInitialize(
 				cr.EncryptionInfo.EncryptionInTransit.ClientBroker,
 				obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.ClientBroker,
 			)
-			cr.EncryptionInfo.EncryptionInTransit.InCluster = pointer.LateInitializeBoolPtr(
+			cr.EncryptionInfo.EncryptionInTransit.InCluster = pointer.LateInitialize(
 				cr.EncryptionInfo.EncryptionInTransit.InCluster,
 				obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.InCluster,
 			)
@@ -268,7 +268,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 				if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess == nil {
 					cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess = &svcapitypes.CustomPublicAccess{}
 				}
-				cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type = pointer.LateInitializeStringPtr(
+				cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type = pointer.LateInitialize(
 					cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type,
 					obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.PublicAccess.Type,
 				)
@@ -289,7 +289,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 							if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM == nil {
 								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM = &svcapitypes.VPCConnectivityIAM{}
 							}
-							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM.Enabled = pointer.LateInitializeBoolPtr(
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM.Enabled = pointer.LateInitialize(
 								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.IAM.Enabled,
 								obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl.Iam.Enabled,
 							)
@@ -298,7 +298,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 							if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM == nil {
 								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM = &svcapitypes.VPCConnectivitySCRAM{}
 							}
-							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM.Enabled = pointer.LateInitializeBoolPtr(
+							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM.Enabled = pointer.LateInitialize(
 								cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.SASL.SCRAM.Enabled,
 								obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Sasl.Scram.Enabled,
 							)
@@ -308,7 +308,7 @@ func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClust
 						if cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS == nil {
 							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS = &svcapitypes.VPCConnectivityTLS{}
 						}
-						cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS.Enabled = pointer.LateInitializeBoolPtr(
+						cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS.Enabled = pointer.LateInitialize(
 							cr.CustomBrokerNodeGroupInfo.ConnectivityInfo.VPCConnectivity.ClientAuthentication.TLS.Enabled,
 							obj.ClusterInfo.BrokerNodeGroupInfo.ConnectivityInfo.VpcConnectivity.ClientAuthentication.Tls.Enabled,
 						)
@@ -372,7 +372,7 @@ func (u *hooks) isUpToDate(ctx context.Context, wanted *svcapitypes.Cluster, cur
 
 func (u *hooks) getClusterPolicyState(ctx context.Context, wanted *svcapitypes.Cluster) (subResourceState, string, error) {
 	res, err := u.client.GetClusterPolicyWithContext(ctx, &svcsdk.GetClusterPolicyInput{
-		ClusterArn: pointer.String(meta.GetExternalName(wanted)),
+		ClusterArn: pointer.ToOrNilIfZeroValue(meta.GetExternalName(wanted)),
 	})
 	if IsNotFound(err) {
 		if wanted.Spec.ForProvider.ClusterPolicy == nil {

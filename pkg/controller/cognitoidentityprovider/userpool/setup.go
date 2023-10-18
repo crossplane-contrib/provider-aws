@@ -96,7 +96,7 @@ type hooks struct {
 
 func preObserve(_ context.Context, cr *svcapitypes.UserPool, obj *svcsdk.DescribeUserPoolInput) error {
 	if meta.GetExternalName(cr) != "" {
-		obj.UserPoolId = pointer.String(meta.GetExternalName(cr))
+		obj.UserPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	}
 	return nil
 }
@@ -112,7 +112,7 @@ func postObserve(_ context.Context, cr *svcapitypes.UserPool, obj *svcsdk.Descri
 }
 
 func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.UserPool, obj *svcsdk.UpdateUserPoolInput) error {
-	obj.UserPoolId = pointer.String(meta.GetExternalName(cr))
+	obj.UserPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	// "Cannot turn MFA functionality ON, once the user pool has been created"
 	// -> concerns UpdateUserPool, not SetUserPoolMfaConfig
@@ -121,7 +121,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.UserPool, obj *sv
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.UserPool, obj *svcsdk.DeleteUserPoolInput) (bool, error) {
-	obj.UserPoolId = pointer.String(meta.GetExternalName(cr))
+	obj.UserPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -129,7 +129,7 @@ func preCreate(_ context.Context, cr *svcapitypes.UserPool, obj *svcsdk.CreateUs
 	// for Creation need to set MFA to OFF,
 	// bc if MFA ON and no SmsConfiguration provided, AWS throws error
 	// in first Update, we can use SetUserPoolMfaConfig to set all MFA stuff (e.g. Token)
-	obj.MfaConfiguration = pointer.String(svcsdk.UserPoolMfaTypeOff)
+	obj.MfaConfiguration = pointer.ToOrNilIfZeroValue(svcsdk.UserPoolMfaTypeOff)
 
 	return nil
 }
@@ -431,7 +431,7 @@ func areVerificationMessageTemplateEqual(spec *svcapitypes.VerificationMessageTe
 
 func (e *hooks) areMFAConfigEqual(cr *svcapitypes.UserPool) (bool, error) {
 
-	out, err := e.client.GetUserPoolMfaConfig(&svcsdk.GetUserPoolMfaConfigInput{UserPoolId: pointer.String(meta.GetExternalName(cr))})
+	out, err := e.client.GetUserPoolMfaConfig(&svcsdk.GetUserPoolMfaConfigInput{UserPoolId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))})
 	if err != nil {
 		return true, errors.Wrap(err, errFailedGetMFARequest)
 	}
@@ -461,20 +461,20 @@ func (e *hooks) areMFAConfigEqual(cr *svcapitypes.UserPool) (bool, error) {
 func lateInitialize(cr *svcapitypes.UserPoolParameters, resp *svcsdk.DescribeUserPoolOutput) error {
 	instance := resp.UserPool
 
-	cr.MFAConfiguration = pointer.LateInitializeStringPtr(cr.MFAConfiguration, instance.MfaConfiguration)
+	cr.MFAConfiguration = pointer.LateInitialize(cr.MFAConfiguration, instance.MfaConfiguration)
 
 	if instance.AdminCreateUserConfig != nil {
 		if cr.AdminCreateUserConfig == nil {
 			cr.AdminCreateUserConfig = &svcapitypes.AdminCreateUserConfigType{}
 		}
-		cr.AdminCreateUserConfig.AllowAdminCreateUserOnly = pointer.LateInitializeBoolPtr(cr.AdminCreateUserConfig.AllowAdminCreateUserOnly, instance.AdminCreateUserConfig.AllowAdminCreateUserOnly)
+		cr.AdminCreateUserConfig.AllowAdminCreateUserOnly = pointer.LateInitialize(cr.AdminCreateUserConfig.AllowAdminCreateUserOnly, instance.AdminCreateUserConfig.AllowAdminCreateUserOnly)
 	}
 
 	if instance.EmailConfiguration != nil {
 		if cr.EmailConfiguration == nil {
 			cr.EmailConfiguration = &svcapitypes.EmailConfigurationType{}
 		}
-		cr.EmailConfiguration.EmailSendingAccount = pointer.LateInitializeStringPtr(cr.EmailConfiguration.EmailSendingAccount, instance.EmailConfiguration.EmailSendingAccount)
+		cr.EmailConfiguration.EmailSendingAccount = pointer.LateInitialize(cr.EmailConfiguration.EmailSendingAccount, instance.EmailConfiguration.EmailSendingAccount)
 	}
 
 	if instance.Policies != nil {
@@ -482,12 +482,12 @@ func lateInitialize(cr *svcapitypes.UserPoolParameters, resp *svcsdk.DescribeUse
 			cr.Policies = &svcapitypes.UserPoolPolicyType{PasswordPolicy: &svcapitypes.PasswordPolicyType{}}
 		}
 		if instance.Policies.PasswordPolicy != nil {
-			cr.Policies.PasswordPolicy.MinimumLength = pointer.LateInitializeInt64Ptr(cr.Policies.PasswordPolicy.MinimumLength, instance.Policies.PasswordPolicy.MinimumLength)
-			cr.Policies.PasswordPolicy.RequireLowercase = pointer.LateInitializeBoolPtr(cr.Policies.PasswordPolicy.RequireLowercase, instance.Policies.PasswordPolicy.RequireLowercase)
-			cr.Policies.PasswordPolicy.RequireNumbers = pointer.LateInitializeBoolPtr(cr.Policies.PasswordPolicy.RequireNumbers, instance.Policies.PasswordPolicy.RequireNumbers)
-			cr.Policies.PasswordPolicy.RequireSymbols = pointer.LateInitializeBoolPtr(cr.Policies.PasswordPolicy.RequireSymbols, instance.Policies.PasswordPolicy.RequireSymbols)
-			cr.Policies.PasswordPolicy.RequireUppercase = pointer.LateInitializeBoolPtr(cr.Policies.PasswordPolicy.RequireUppercase, instance.Policies.PasswordPolicy.RequireUppercase)
-			cr.Policies.PasswordPolicy.TemporaryPasswordValidityDays = pointer.LateInitializeInt64Ptr(cr.Policies.PasswordPolicy.TemporaryPasswordValidityDays, instance.Policies.PasswordPolicy.TemporaryPasswordValidityDays)
+			cr.Policies.PasswordPolicy.MinimumLength = pointer.LateInitialize(cr.Policies.PasswordPolicy.MinimumLength, instance.Policies.PasswordPolicy.MinimumLength)
+			cr.Policies.PasswordPolicy.RequireLowercase = pointer.LateInitialize(cr.Policies.PasswordPolicy.RequireLowercase, instance.Policies.PasswordPolicy.RequireLowercase)
+			cr.Policies.PasswordPolicy.RequireNumbers = pointer.LateInitialize(cr.Policies.PasswordPolicy.RequireNumbers, instance.Policies.PasswordPolicy.RequireNumbers)
+			cr.Policies.PasswordPolicy.RequireSymbols = pointer.LateInitialize(cr.Policies.PasswordPolicy.RequireSymbols, instance.Policies.PasswordPolicy.RequireSymbols)
+			cr.Policies.PasswordPolicy.RequireUppercase = pointer.LateInitialize(cr.Policies.PasswordPolicy.RequireUppercase, instance.Policies.PasswordPolicy.RequireUppercase)
+			cr.Policies.PasswordPolicy.TemporaryPasswordValidityDays = pointer.LateInitialize(cr.Policies.PasswordPolicy.TemporaryPasswordValidityDays, instance.Policies.PasswordPolicy.TemporaryPasswordValidityDays)
 		}
 	}
 
@@ -495,7 +495,7 @@ func lateInitialize(cr *svcapitypes.UserPoolParameters, resp *svcsdk.DescribeUse
 		if cr.VerificationMessageTemplate == nil {
 			cr.VerificationMessageTemplate = &svcapitypes.VerificationMessageTemplateType{}
 		}
-		cr.VerificationMessageTemplate.DefaultEmailOption = pointer.LateInitializeStringPtr(cr.VerificationMessageTemplate.DefaultEmailOption, instance.VerificationMessageTemplate.DefaultEmailOption)
+		cr.VerificationMessageTemplate.DefaultEmailOption = pointer.LateInitialize(cr.VerificationMessageTemplate.DefaultEmailOption, instance.VerificationMessageTemplate.DefaultEmailOption)
 	}
 
 	// Info: to avoid redundancy+problems, do not lateInit conflicting fields
@@ -511,7 +511,7 @@ func (e *hooks) setMfaConfiguration(ctx context.Context, cr *svcapitypes.UserPoo
 	if pointer.StringValue(cr.Spec.ForProvider.MFAConfiguration) != svcsdk.UserPoolMfaTypeOff {
 		mfaConfig := &svcsdk.SetUserPoolMfaConfigInput{
 			MfaConfiguration: cr.Spec.ForProvider.MFAConfiguration,
-			UserPoolId:       pointer.String(meta.GetExternalName(cr)),
+			UserPoolId:       pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}
 
 		// even without setting it here,

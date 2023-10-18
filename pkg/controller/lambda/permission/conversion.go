@@ -46,7 +46,7 @@ func generateAddPermissionInput(cr *svcapitypes.Permission) *svcsdk.AddPermissio
 		Action:           &cr.Spec.ForProvider.Action,
 		FunctionName:     cr.Spec.ForProvider.FunctionName,
 		Principal:        &cr.Spec.ForProvider.Principal,
-		StatementId:      pointer.String(meta.GetExternalName(cr)),
+		StatementId:      pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		EventSourceToken: cr.Spec.ForProvider.EventSourceToken,
 		PrincipalOrgID:   cr.Spec.ForProvider.PrincipalOrgID,
 		SourceArn:        cr.Spec.ForProvider.SourceArn,
@@ -57,6 +57,6 @@ func generateAddPermissionInput(cr *svcapitypes.Permission) *svcsdk.AddPermissio
 func generateRemovePermissionInput(cr *svcapitypes.Permission) *svcsdk.RemovePermissionInput {
 	return &svcsdk.RemovePermissionInput{
 		FunctionName: cr.Spec.ForProvider.FunctionName,
-		StatementId:  pointer.String(meta.GetExternalName(cr)),
+		StatementId:  pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}
 }

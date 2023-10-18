@@ -127,7 +127,7 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	}
 
 	nsInput := &svcsdk.GetNamespaceInput{
-		Id: pointer.String(meta.GetExternalName(cr)),
+		Id: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}
 	nsReqResp, err := h.client.GetNamespaceWithContext(ctx, nsInput)
 	if err != nil {
@@ -196,7 +196,7 @@ func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 	input := &svcsdk.DeleteNamespaceInput{
-		Id: pointer.String(meta.GetExternalName(cr)),
+		Id: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}
 	op, err := h.client.DeleteNamespaceWithContext(ctx, input)
 	if cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest) != nil {
@@ -236,7 +236,7 @@ func AreTagsUpToDate(client servicediscoveryiface.ServiceDiscoveryAPI, spec []*v
 func UpdateTagsForResource(client servicediscoveryiface.ServiceDiscoveryAPI, spec []*v1alpha1.Tag, cr v1.Object) error {
 
 	nsInput := &svcsdk.GetNamespaceInput{
-		Id: pointer.String(meta.GetExternalName(cr)),
+		Id: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}
 
 	nsReqResp, err := client.GetNamespace(nsInput)
@@ -301,14 +301,14 @@ func DiffTags(spec []*v1alpha1.Tag, current []*svcsdk.Tag) (addTags []*svcsdk.Ta
 			if currentVal != val {
 				removeTags = append(removeTags, t.Key)
 				addTags = append(addTags, &svcsdk.Tag{
-					Key:   pointer.String(key),
-					Value: pointer.String(val),
+					Key:   pointer.ToOrNilIfZeroValue(key),
+					Value: pointer.ToOrNilIfZeroValue(val),
 				})
 			}
 		} else {
 			addTags = append(addTags, &svcsdk.Tag{
-				Key:   pointer.String(key),
-				Value: pointer.String(val),
+				Key:   pointer.ToOrNilIfZeroValue(key),
+				Value: pointer.ToOrNilIfZeroValue(val),
 			})
 		}
 	}
@@ -316,7 +316,7 @@ func DiffTags(spec []*v1alpha1.Tag, current []*svcsdk.Tag) (addTags []*svcsdk.Ta
 	for _, t := range current {
 		key := pointer.StringValue(t.Key)
 		if _, exists := specMap[key]; !exists {
-			removeTags = append(removeTags, pointer.String(key))
+			removeTags = append(removeTags, pointer.ToOrNilIfZeroValue(key))
 		}
 	}
 

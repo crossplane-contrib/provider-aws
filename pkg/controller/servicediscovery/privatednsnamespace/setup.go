@@ -88,7 +88,7 @@ type hooks struct {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, obj *svcsdk.CreatePrivateDnsNamespaceInput) error {
-	obj.CreatorRequestId = pointer.String(string(cr.UID))
+	obj.CreatorRequestId = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	obj.Vpc = cr.Spec.ForProvider.VPC
 	return nil
 }
@@ -99,8 +99,8 @@ func postCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, resp *sv
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, obj *svcsdk.UpdatePrivateDnsNamespaceInput) error {
-	obj.UpdaterRequestId = pointer.String(string(cr.UID))
-	obj.Id = pointer.String(meta.GetExternalName(cr))
+	obj.UpdaterRequestId = pointer.ToOrNilIfZeroValue(string(cr.UID))
+	obj.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	// Description and TTL are required
 	obj.Namespace = &svcsdk.PrivateDnsNamespaceChange{

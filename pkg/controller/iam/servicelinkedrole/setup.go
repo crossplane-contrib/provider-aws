@@ -88,7 +88,7 @@ func (e *hooks) observe(ctx context.Context, mg resource.Managed) (managed.Exter
 	}
 
 	res, err := e.client.GetRoleWithContext(ctx, &svcsdk.GetRoleInput{
-		RoleName: pointer.String(meta.GetExternalName(cr)),
+		RoleName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound, err), errGetRole)
@@ -163,6 +163,6 @@ func postCreate(ctx context.Context, cr *svcapitypes.ServiceLinkedRole, obj *svc
 }
 
 func preDelete(ctx context.Context, cr *svcapitypes.ServiceLinkedRole, obj *svcsdk.DeleteServiceLinkedRoleInput) (bool, error) {
-	obj.RoleName = pointer.String(meta.GetExternalName(cr))
+	obj.RoleName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }

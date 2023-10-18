@@ -46,7 +46,7 @@ func NewAccelerateConfigurationClient(client s3.BucketClient) *AccelerateConfigu
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketAccelerateConfiguration(ctx, &awss3.GetBucketAccelerateConfigurationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketAccelerateConfiguration(ctx, &awss3.GetBucketAccelerateConfigurationInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		// Short stop method for requests in a region without Acceleration Support
 		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
@@ -78,7 +78,7 @@ func (*AccelerateConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucke
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketAccelerateConfiguration(ctx, &awss3.GetBucketAccelerateConfigurationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketAccelerateConfiguration(ctx, &awss3.GetBucketAccelerateConfigurationInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		// Short stop method for requests without Acceleration Support
 		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
@@ -96,9 +96,9 @@ func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, buc
 		bucket.Spec.ForProvider.AccelerateConfiguration = &v1beta1.AccelerateConfiguration{}
 	}
 
-	bucket.Spec.ForProvider.AccelerateConfiguration.Status = pointer.LateInitializeString(
+	bucket.Spec.ForProvider.AccelerateConfiguration.Status = pointer.LateInitializeValueFromPtr(
 		bucket.Spec.ForProvider.AccelerateConfiguration.Status,
-		pointer.String(string(external.Status)))
+		pointer.ToOrNilIfZeroValue(string(external.Status)))
 	return nil
 }
 
@@ -110,7 +110,7 @@ func (in *AccelerateConfigurationClient) SubresourceExists(bucket *v1beta1.Bucke
 // GenerateAccelerateConfigurationInput creates the input for the AccelerateConfiguration request for the S3 Client
 func GenerateAccelerateConfigurationInput(name string, config *v1beta1.AccelerateConfiguration) *awss3.PutBucketAccelerateConfigurationInput {
 	return &awss3.PutBucketAccelerateConfigurationInput{
-		Bucket:                  pointer.String(name),
+		Bucket:                  pointer.ToOrNilIfZeroValue(name),
 		AccelerateConfiguration: &awss3types.AccelerateConfiguration{Status: awss3types.BucketAccelerateStatus(config.Status)},
 	}
 }

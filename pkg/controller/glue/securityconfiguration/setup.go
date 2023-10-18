@@ -77,12 +77,12 @@ func SetupSecurityConfiguration(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.DeleteSecurityConfigurationInput) (bool, error) {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.GetSecurityConfigurationInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -108,7 +108,7 @@ func postCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *s
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.CreateSecurityConfigurationInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.CustomEncryptionConfiguration != nil {
 

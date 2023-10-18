@@ -53,7 +53,7 @@ func NewLifecycleConfigurationClient(client s3.BucketClient) *LifecycleConfigura
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	response, err := in.client.GetBucketLifecycleConfiguration(ctx, &awss3.GetBucketLifecycleConfigurationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	response, err := in.client.GetBucketLifecycleConfiguration(ctx, &awss3.GetBucketLifecycleConfigurationInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if bucket.Spec.ForProvider.LifecycleConfiguration == nil && s3.LifecycleConfigurationNotFound(err) {
 		return Updated, nil
 	}
@@ -98,7 +98,7 @@ func (in *LifecycleConfigurationClient) CreateOrUpdate(ctx context.Context, buck
 func (in *LifecycleConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketLifecycle(ctx,
 		&awss3.DeleteBucketLifecycleInput{
-			Bucket: pointer.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)),
 		},
 	)
 	return errorutils.Wrap(err, lifecycleDeleteFailed)
@@ -107,7 +107,7 @@ func (in *LifecycleConfigurationClient) Delete(ctx context.Context, bucket *v1be
 // LateInitialize does nothing because LifecycleConfiguration might have been be
 // deleted by the user.
 func (in *LifecycleConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketLifecycleConfiguration(ctx, &awss3.GetBucketLifecycleConfigurationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketLifecycleConfiguration(ctx, &awss3.GetBucketLifecycleConfigurationInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(resource.Ignore(s3.LifecycleConfigurationNotFound, err), lifecycleGetFailed)
 	}
@@ -140,7 +140,7 @@ func GenerateLifecycleConfiguration(name string, config *v1beta1.BucketLifecycle
 		return nil
 	}
 	return &awss3.PutBucketLifecycleConfigurationInput{
-		Bucket:                 pointer.String(name),
+		Bucket:                 pointer.ToOrNilIfZeroValue(name),
 		LifecycleConfiguration: &types.BucketLifecycleConfiguration{Rules: GenerateLifecycleRules(config.Rules)},
 	}
 }
@@ -200,7 +200,7 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 				rule.Filter = &types.LifecycleRuleFilterMemberPrefix{Value: *local.Filter.Prefix}
 			}
 			if local.Filter.Tag != nil {
-				rule.Filter = &types.LifecycleRuleFilterMemberTag{Value: types.Tag{Key: pointer.String(local.Filter.Tag.Key), Value: pointer.String(local.Filter.Tag.Value)}}
+				rule.Filter = &types.LifecycleRuleFilterMemberTag{Value: types.Tag{Key: pointer.ToOrNilIfZeroValue(local.Filter.Tag.Key), Value: pointer.ToOrNilIfZeroValue(local.Filter.Tag.Value)}}
 			}
 			if local.Filter.And != nil {
 				andOperator := types.LifecycleRuleAndOperator{

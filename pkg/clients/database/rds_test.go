@@ -117,7 +117,7 @@ func TestCreatePatch(t *testing.T) {
 					DBName:           &dbName,
 				},
 				p: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: pointer.IntAddress(pointer.Int64(20)),
+					AllocatedStorage: ptr.To(20),
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
@@ -135,7 +135,7 @@ func TestCreatePatch(t *testing.T) {
 					AvailabilityZone: ptr.To("az1"),
 				},
 				p: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
+					AllocatedStorage: ptr.To(30),
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 					AvailabilityZone: ptr.To("az2"),
@@ -143,7 +143,7 @@ func TestCreatePatch(t *testing.T) {
 			},
 			want: want{
 				patch: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
+					AllocatedStorage: ptr.To(30),
 					AvailabilityZone: ptr.To("az2"),
 				},
 			},
@@ -267,7 +267,7 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage: pointer.IntAddress(pointer.Int64(20)),
+							AllocatedStorage: ptr.To(20),
 							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
 						},
@@ -286,12 +286,12 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage:                pointer.IntAddress(pointer.Int64(20)),
+							AllocatedStorage:                ptr.To(20),
 							CharacterSetName:                &characterSetName,
 							DBName:                          &dbName,
-							DeleteAutomatedBackups:          pointer.Bool(true),
-							SkipFinalSnapshotBeforeDeletion: pointer.Bool(true),
-							FinalDBSnapshotIdentifier:       pointer.String("final"),
+							DeleteAutomatedBackups:          pointer.ToOrNilIfZeroValue(true),
+							SkipFinalSnapshotBeforeDeletion: pointer.ToOrNilIfZeroValue(true),
+							FinalDBSnapshotIdentifier:       pointer.ToOrNilIfZeroValue("final"),
 						},
 					},
 				},
@@ -308,7 +308,7 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
+							AllocatedStorage: ptr.To(30),
 							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
 						},

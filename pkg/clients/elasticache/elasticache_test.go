@@ -29,6 +29,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 
 	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
@@ -158,46 +159,46 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 			params:    replicationGroupParams(),
 			authToken: &authToken,
 			want: &elasticache.CreateReplicationGroupInput{
-				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
-				ReplicationGroupDescription: pointer.String(description, pointer.FieldRequired),
-				Engine:                      pointer.String(v1beta1.CacheEngineRedis, pointer.FieldRequired),
-				CacheNodeType:               pointer.String(cacheNodeType, pointer.FieldRequired),
-				AtRestEncryptionEnabled:     pointer.Bool(atRestEncryptionEnabled),
-				AuthToken:                   pointer.String(authToken),
-				AutomaticFailoverEnabled:    pointer.Bool(autoFailoverEnabled),
-				CacheParameterGroupName:     pointer.String(cacheParameterGroupName),
+				ReplicationGroupId:          ptr.To(name),
+				ReplicationGroupDescription: ptr.To(description),
+				Engine:                      ptr.To(v1beta1.CacheEngineRedis),
+				CacheNodeType:               ptr.To(cacheNodeType),
+				AtRestEncryptionEnabled:     pointer.ToOrNilIfZeroValue(atRestEncryptionEnabled),
+				AuthToken:                   pointer.ToOrNilIfZeroValue(authToken),
+				AutomaticFailoverEnabled:    pointer.ToOrNilIfZeroValue(autoFailoverEnabled),
+				CacheParameterGroupName:     pointer.ToOrNilIfZeroValue(cacheParameterGroupName),
 				CacheSecurityGroupNames:     cacheSecurityGroupNames,
-				CacheSubnetGroupName:        pointer.String(cacheSubnetGroupName),
-				EngineVersion:               pointer.String(engineVersion),
-				MultiAZEnabled:              pointer.Bool(multiAZ),
+				CacheSubnetGroupName:        pointer.ToOrNilIfZeroValue(cacheSubnetGroupName),
+				EngineVersion:               pointer.ToOrNilIfZeroValue(engineVersion),
+				MultiAZEnabled:              pointer.ToOrNilIfZeroValue(multiAZ),
 				NodeGroupConfiguration: []elasticachetypes.NodeGroupConfiguration{
 					{
-						PrimaryAvailabilityZone:  pointer.String(nodeGroupPrimaryAZ),
+						PrimaryAvailabilityZone:  pointer.ToOrNilIfZeroValue(nodeGroupPrimaryAZ),
 						ReplicaAvailabilityZones: nodeGroupAZs,
-						ReplicaCount:             pointer.Int32Address(&nodeGroupReplicaCount),
-						Slots:                    pointer.String(nodeGroupSlots),
+						ReplicaCount:             pointer.ToIntAsInt32Ptr(&nodeGroupReplicaCount),
+						Slots:                    pointer.ToOrNilIfZeroValue(nodeGroupSlots),
 					},
 				},
-				NotificationTopicArn:       pointer.String(notificationTopicARN),
-				NumCacheClusters:           pointer.Int32Address(&numCacheClusters),
-				NumNodeGroups:              pointer.Int32Address(&numNodeGroups),
-				Port:                       pointer.Int32Address(&port),
+				NotificationTopicArn:       pointer.ToOrNilIfZeroValue(notificationTopicARN),
+				NumCacheClusters:           pointer.ToIntAsInt32Ptr(&numCacheClusters),
+				NumNodeGroups:              pointer.ToIntAsInt32Ptr(&numNodeGroups),
+				Port:                       pointer.ToIntAsInt32Ptr(&port),
 				PreferredCacheClusterAZs:   preferredCacheClusterAZs,
-				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
-				PrimaryClusterId:           pointer.String(primaryClusterID),
-				ReplicasPerNodeGroup:       pointer.Int32Address(&replicasPerNodeGroup),
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
+				PrimaryClusterId:           pointer.ToOrNilIfZeroValue(primaryClusterID),
+				ReplicasPerNodeGroup:       pointer.ToIntAsInt32Ptr(&replicasPerNodeGroup),
 				SecurityGroupIds:           securityGroupIDs,
 				SnapshotArns:               snapshotARNs,
-				SnapshotName:               pointer.String(snapshotName),
-				SnapshotRetentionLimit:     pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:             pointer.String(snapshotWindow),
+				SnapshotName:               pointer.ToOrNilIfZeroValue(snapshotName),
+				SnapshotRetentionLimit:     pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:             pointer.ToOrNilIfZeroValue(snapshotWindow),
 				Tags: []elasticachetypes.Tag{
 					{
 						Key:   &tagKey,
 						Value: &tagValue,
 					},
 				},
-				TransitEncryptionEnabled: pointer.Bool(transitEncryptionEnabled),
+				TransitEncryptionEnabled: pointer.ToOrNilIfZeroValue(transitEncryptionEnabled),
 			},
 		},
 		{
@@ -208,10 +209,10 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 				Engine:                      engine,
 			},
 			want: &elasticache.CreateReplicationGroupInput{
-				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
-				ReplicationGroupDescription: pointer.String(description, pointer.FieldRequired),
-				Engine:                      pointer.String(engine, pointer.FieldRequired),
-				CacheNodeType:               pointer.String(cacheNodeType, pointer.FieldRequired),
+				ReplicationGroupId:          ptr.To(name),
+				ReplicationGroupDescription: ptr.To(description),
+				Engine:                      ptr.To(engine),
+				CacheNodeType:               ptr.To(cacheNodeType),
 			},
 		},
 	}
@@ -237,23 +238,23 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 			name:   "AllPossibleFields",
 			params: replicationGroupParams(),
 			want: &elasticache.ModifyReplicationGroupInput{
-				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
+				ReplicationGroupId:          ptr.To(name),
 				ApplyImmediately:            true,
-				AutomaticFailoverEnabled:    pointer.Bool(autoFailoverEnabled),
-				CacheNodeType:               pointer.String(cacheNodeType),
-				CacheParameterGroupName:     pointer.String(cacheParameterGroupName),
+				AutomaticFailoverEnabled:    pointer.ToOrNilIfZeroValue(autoFailoverEnabled),
+				CacheNodeType:               pointer.ToOrNilIfZeroValue(cacheNodeType),
+				CacheParameterGroupName:     pointer.ToOrNilIfZeroValue(cacheParameterGroupName),
 				CacheSecurityGroupNames:     cacheSecurityGroupNames,
-				EngineVersion:               pointer.String(engineVersion),
-				MultiAZEnabled:              pointer.Bool(true),
-				NotificationTopicArn:        pointer.String(notificationTopicARN),
-				NotificationTopicStatus:     pointer.String(notificationTopicStatus),
-				PreferredMaintenanceWindow:  pointer.String(maintenanceWindow),
-				PrimaryClusterId:            pointer.String(primaryClusterID),
-				ReplicationGroupDescription: pointer.String(description),
+				EngineVersion:               pointer.ToOrNilIfZeroValue(engineVersion),
+				MultiAZEnabled:              pointer.ToOrNilIfZeroValue(true),
+				NotificationTopicArn:        pointer.ToOrNilIfZeroValue(notificationTopicARN),
+				NotificationTopicStatus:     pointer.ToOrNilIfZeroValue(notificationTopicStatus),
+				PreferredMaintenanceWindow:  pointer.ToOrNilIfZeroValue(maintenanceWindow),
+				PrimaryClusterId:            pointer.ToOrNilIfZeroValue(primaryClusterID),
+				ReplicationGroupDescription: pointer.ToOrNilIfZeroValue(description),
 				SecurityGroupIds:            securityGroupIDs,
-				SnapshotRetentionLimit:      pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:              pointer.String(snapshotWindow),
-				SnapshottingClusterId:       pointer.String(snapshottingClusterID),
+				SnapshotRetentionLimit:      pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:              pointer.ToOrNilIfZeroValue(snapshotWindow),
+				SnapshottingClusterId:       pointer.ToOrNilIfZeroValue(snapshottingClusterID),
 			},
 		},
 		{
@@ -263,10 +264,10 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				ReplicationGroupDescription: description,
 			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ApplyImmediately:            *pointer.Bool(false, pointer.FieldRequired),
-				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
-				ReplicationGroupDescription: pointer.String(description, pointer.FieldRequired),
-				CacheNodeType:               pointer.String(cacheNodeType, pointer.FieldRequired),
+				ApplyImmediately:            false,
+				ReplicationGroupId:          ptr.To(name),
+				ReplicationGroupDescription: ptr.To(description),
+				CacheNodeType:               ptr.To(cacheNodeType),
 			},
 		},
 		{
@@ -277,10 +278,10 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				ReplicationGroupDescription: description,
 			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ApplyImmediately:            *pointer.Bool(false, pointer.FieldRequired),
-				ReplicationGroupId:          pointer.String(name, pointer.FieldRequired),
-				ReplicationGroupDescription: pointer.String(description, pointer.FieldRequired),
-				CacheNodeType:               pointer.String(cacheNodeType, pointer.FieldRequired),
+				ApplyImmediately:            false,
+				ReplicationGroupId:          ptr.To(name),
+				ReplicationGroupDescription: ptr.To(description),
+				CacheNodeType:               ptr.To(cacheNodeType),
 			},
 		},
 	}
@@ -309,14 +310,14 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 			observed: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{
 					{
-						NodeGroupId: pointer.String("ng-01"),
+						NodeGroupId: pointer.ToOrNilIfZeroValue("ng-01"),
 					},
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
 				ApplyImmediately:   true,
 				NodeGroupCount:     2,
-				ReplicationGroupId: pointer.String(name, pointer.FieldRequired),
+				ReplicationGroupId: ptr.To(name),
 			},
 		},
 		{
@@ -324,16 +325,16 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 			params: replicationGroupParams(),
 			observed: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{
-					{NodeGroupId: pointer.String("ng-01")},
-					{NodeGroupId: pointer.String("ng-02")},
-					{NodeGroupId: pointer.String("ng-03")},
+					{NodeGroupId: pointer.ToOrNilIfZeroValue("ng-01")},
+					{NodeGroupId: pointer.ToOrNilIfZeroValue("ng-02")},
+					{NodeGroupId: pointer.ToOrNilIfZeroValue("ng-03")},
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
 				ApplyImmediately:   true,
 				NodeGroupCount:     2,
 				NodeGroupsToRemove: []string{"ng-01"},
-				ReplicationGroupId: pointer.String(name),
+				ReplicationGroupId: pointer.ToOrNilIfZeroValue(name),
 			},
 		},
 		{
@@ -344,16 +345,16 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 			},
 			observed: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{
-					{NodeGroupId: pointer.String("ng-01")},
-					{NodeGroupId: pointer.String("ng-02")},
-					{NodeGroupId: pointer.String("ng-03")},
+					{NodeGroupId: pointer.ToOrNilIfZeroValue("ng-01")},
+					{NodeGroupId: pointer.ToOrNilIfZeroValue("ng-02")},
+					{NodeGroupId: pointer.ToOrNilIfZeroValue("ng-03")},
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
 				ApplyImmediately:   false,
 				NodeGroupCount:     2,
 				NodeGroupsToRemove: []string{"ng-01"},
-				ReplicationGroupId: pointer.String(name),
+				ReplicationGroupId: pointer.ToOrNilIfZeroValue(name),
 			},
 		},
 	}
@@ -376,7 +377,7 @@ func TestNewDeleteReplicationGroupInput(t *testing.T) {
 	}{
 		{
 			name: "Successful",
-			want: &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: pointer.String(name, pointer.FieldRequired)},
+			want: &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: ptr.To(name)},
 		},
 	}
 
@@ -398,7 +399,7 @@ func TestNewDescribeReplicationGroupsInput(t *testing.T) {
 	}{
 		{
 			name: "Successful",
-			want: &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: pointer.String(name, pointer.FieldRequired)},
+			want: &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: ptr.To(name)},
 		},
 	}
 
@@ -421,7 +422,7 @@ func TestNewDescribeCacheClustersInput(t *testing.T) {
 		{
 			name:    "Successful",
 			cluster: cacheClusterID,
-			want:    &elasticache.DescribeCacheClustersInput{CacheClusterId: pointer.String(cacheClusterID, pointer.FieldRequired)},
+			want:    &elasticache.DescribeCacheClustersInput{CacheClusterId: ptr.To(cacheClusterID)},
 		},
 	}
 
@@ -465,27 +466,27 @@ func TestLateInitialize(t *testing.T) {
 				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
 				AuthTokenEnabled:         &authEnabled,
 				AutomaticFailover:        elasticachetypes.AutomaticFailoverStatusEnabled,
-				SnapshotRetentionLimit:   pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:           pointer.String(snapshotWindow),
-				SnapshottingClusterId:    pointer.String(snapshottingClusterID),
+				SnapshotRetentionLimit:   pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:           pointer.ToOrNilIfZeroValue(snapshotWindow),
+				SnapshottingClusterId:    pointer.ToOrNilIfZeroValue(snapshottingClusterID),
 				TransitEncryptionEnabled: &transitEncryptionEnabled,
 			},
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:       pointer.String(engineVersion),
-				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				EngineVersion:       pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
 				NotificationConfiguration: &elasticachetypes.NotificationConfiguration{
-					TopicArn:    pointer.String(notificationTopicARN),
-					TopicStatus: pointer.String(notificationTopicStatus),
+					TopicArn:    pointer.ToOrNilIfZeroValue(notificationTopicARN),
+					TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus),
 				},
-				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
 					{
-						SecurityGroupId: pointer.String(securityGroupIDs[0]),
+						SecurityGroupId: pointer.ToOrNilIfZeroValue(securityGroupIDs[0]),
 					},
 				},
 				CacheSecurityGroups: []elasticachetypes.CacheSecurityGroupMembership{
 					{
-						CacheSecurityGroupName: pointer.String(cacheSecurityGroupNames[0]),
+						CacheSecurityGroupName: pointer.ToOrNilIfZeroValue(cacheSecurityGroupNames[0]),
 					},
 				},
 			},
@@ -513,27 +514,27 @@ func TestLateInitialize(t *testing.T) {
 				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
 				AuthTokenEnabled:         &authEnabled,
 				AutomaticFailover:        elasticachetypes.AutomaticFailoverStatusEnabled,
-				SnapshotRetentionLimit:   pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:           pointer.String(snapshotWindow),
-				SnapshottingClusterId:    pointer.String(snapshottingClusterID),
+				SnapshotRetentionLimit:   pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:           pointer.ToOrNilIfZeroValue(snapshotWindow),
+				SnapshottingClusterId:    pointer.ToOrNilIfZeroValue(snapshottingClusterID),
 				TransitEncryptionEnabled: &transitEncryptionEnabled,
 			},
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:       pointer.String(engineVersion),
-				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
+				EngineVersion:       pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
 				NotificationConfiguration: &elasticachetypes.NotificationConfiguration{
-					TopicArn:    pointer.String(notificationTopicARN),
-					TopicStatus: pointer.String(notificationTopicStatus),
+					TopicArn:    pointer.ToOrNilIfZeroValue(notificationTopicARN),
+					TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus),
 				},
-				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
 					{
-						SecurityGroupId: pointer.String(securityGroupIDs[0]),
+						SecurityGroupId: pointer.ToOrNilIfZeroValue(securityGroupIDs[0]),
 					},
 				},
 				CacheSecurityGroups: []elasticachetypes.CacheSecurityGroupMembership{
 					{
-						CacheSecurityGroupName: pointer.String(cacheSecurityGroupNames[0]),
+						CacheSecurityGroupName: pointer.ToOrNilIfZeroValue(cacheSecurityGroupNames[0]),
 					},
 				},
 			},
@@ -570,28 +571,28 @@ func TestGenerateObservation(t *testing.T) {
 	automaticFailover := elasticachetypes.AutomaticFailoverStatusEnabled
 	clusterEnabled := true
 	configurationEndpoint := &elasticachetypes.Endpoint{
-		Address: pointer.String("istanbul"),
+		Address: pointer.ToOrNilIfZeroValue("istanbul"),
 		Port:    34,
 	}
 	memberClusters := []string{"member-1", "member-2"}
 	status := "creating"
 	nodeGroups := []elasticachetypes.NodeGroup{
 		{
-			NodeGroupId: pointer.String("my-id"),
-			Slots:       pointer.String("special-slots"),
-			Status:      pointer.String("creating"),
+			NodeGroupId: pointer.ToOrNilIfZeroValue("my-id"),
+			Slots:       pointer.ToOrNilIfZeroValue("special-slots"),
+			Status:      pointer.ToOrNilIfZeroValue("creating"),
 			PrimaryEndpoint: &elasticachetypes.Endpoint{
-				Address: pointer.String("random-12"),
+				Address: pointer.ToOrNilIfZeroValue("random-12"),
 				Port:    124,
 			},
 			NodeGroupMembers: []elasticachetypes.NodeGroupMember{
 				{
-					CacheClusterId:            pointer.String("my-cache-cluster"),
-					CacheNodeId:               pointer.String("cluster-0001"),
-					CurrentRole:               pointer.String("secret-role"),
-					PreferredAvailabilityZone: pointer.String("us-east-1"),
+					CacheClusterId:            pointer.ToOrNilIfZeroValue("my-cache-cluster"),
+					CacheNodeId:               pointer.ToOrNilIfZeroValue("cluster-0001"),
+					CurrentRole:               pointer.ToOrNilIfZeroValue("secret-role"),
+					PreferredAvailabilityZone: pointer.ToOrNilIfZeroValue("us-east-1"),
 					ReadEndpoint: &elasticachetypes.Endpoint{
-						Address: pointer.String("random-1"),
+						Address: pointer.ToOrNilIfZeroValue("random-1"),
 						Port:    23,
 					},
 				},
@@ -601,7 +602,7 @@ func TestGenerateObservation(t *testing.T) {
 	percentage := float64(54)
 	rgpmdv := elasticachetypes.ReplicationGroupPendingModifiedValues{
 		AutomaticFailoverStatus: elasticachetypes.PendingAutomaticFailoverStatusEnabled,
-		PrimaryClusterId:        pointer.String("my-coolest-cluster"),
+		PrimaryClusterId:        pointer.ToOrNilIfZeroValue("my-coolest-cluster"),
 		Resharding: &elasticachetypes.ReshardingStatus{
 			SlotMigration: &elasticachetypes.SlotMigration{
 				ProgressPercentage: percentage,
@@ -666,7 +667,7 @@ func TestGenerateObservation(t *testing.T) {
 			name: "non-cluster-mode",
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:     automaticFailover,
-				ClusterEnabled:        pointer.Bool(false),
+				ClusterEnabled:        pointer.ToOrNilIfZeroValue(false),
 				ConfigurationEndpoint: configurationEndpoint,
 				MemberClusters:        memberClusters,
 				Status:                &status,
@@ -692,7 +693,7 @@ func TestGenerateObservation(t *testing.T) {
 			name: "non-cluster-mode-no-nodes",
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:     automaticFailover,
-				ClusterEnabled:        pointer.Bool(false),
+				ClusterEnabled:        pointer.ToOrNilIfZeroValue(false),
 				ConfigurationEndpoint: configurationEndpoint,
 				MemberClusters:        memberClusters,
 				Status:                &status,
@@ -739,7 +740,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover: elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:     pointer.String("n1.insufficiently.cool"),
+				CacheNodeType:     pointer.ToOrNilIfZeroValue("n1.insufficiently.cool"),
 			},
 			want: true,
 		},
@@ -748,8 +749,8 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          pointer.String(cacheNodeType),
-				SnapshotRetentionLimit: pointer.Int32Address(&newSnapshotRetentionLimit),
+				CacheNodeType:          pointer.ToOrNilIfZeroValue(cacheNodeType),
+				SnapshotRetentionLimit: pointer.ToIntAsInt32Ptr(&newSnapshotRetentionLimit),
 			},
 			want: true,
 		},
@@ -758,9 +759,9 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          pointer.String(cacheNodeType),
-				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         pointer.String("yesterday"),
+				CacheNodeType:          pointer.ToOrNilIfZeroValue(cacheNodeType),
+				SnapshotRetentionLimit: pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.ToOrNilIfZeroValue("yesterday"),
 			},
 			want: true,
 		},
@@ -769,13 +770,13 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          pointer.String(cacheNodeType),
-				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         pointer.String(snapshotWindow),
+				CacheNodeType:          pointer.ToOrNilIfZeroValue(cacheNodeType),
+				SnapshotRetentionLimit: pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.ToOrNilIfZeroValue(snapshotWindow),
 			},
 			ccList: []elasticachetypes.CacheCluster{
 				{
-					EngineVersion: pointer.String("4.0.0"),
+					EngineVersion: pointer.ToOrNilIfZeroValue("4.0.0"),
 				},
 			},
 			want: true,
@@ -785,28 +786,28 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          pointer.String(cacheNodeType),
+				CacheNodeType:          pointer.ToOrNilIfZeroValue(cacheNodeType),
 				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
-				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         pointer.String(snapshotWindow),
+				SnapshotRetentionLimit: pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.ToOrNilIfZeroValue(snapshotWindow),
 			},
 			ccList: []elasticachetypes.CacheCluster{
 				{
-					EngineVersion:              pointer.String(engineVersion),
-					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-					PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+					EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+					PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 					SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 						ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 						for i, id := range securityGroupIDs {
-							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
+							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.ToOrNilIfZeroValue(id)}
 						}
 						return ids
 					}(),
 					CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
 						names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
 						for i, n := range cacheSecurityGroupNames {
-							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.String(n)}
+							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.ToOrNilIfZeroValue(n)}
 						}
 						return names
 					}(),
@@ -819,28 +820,28 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          pointer.String(cacheNodeType),
+				CacheNodeType:          pointer.ToOrNilIfZeroValue(cacheNodeType),
 				MultiAZ:                elasticachetypes.MultiAZStatusDisabled, // trigger Update
-				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         pointer.String(snapshotWindow),
+				SnapshotRetentionLimit: pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.ToOrNilIfZeroValue(snapshotWindow),
 			},
 			ccList: []elasticachetypes.CacheCluster{
 				{
-					EngineVersion:              pointer.String(engineVersion),
-					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-					PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+					EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+					PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 					SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 						ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 						for i, id := range securityGroupIDs {
-							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
+							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.ToOrNilIfZeroValue(id)}
 						}
 						return ids
 					}(),
 					CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
 						names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
 						for i, n := range cacheSecurityGroupNames {
-							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.String(n)}
+							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.ToOrNilIfZeroValue(n)}
 						}
 						return names
 					}(),
@@ -853,10 +854,10 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			kube: replicationGroupParams(),
 			rg: elasticachetypes.ReplicationGroup{
 				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
-				CacheNodeType:          pointer.String(cacheNodeType),
+				CacheNodeType:          pointer.ToOrNilIfZeroValue(cacheNodeType),
 				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
-				SnapshotRetentionLimit: pointer.Int32Address(&snapshotRetentionLimit),
-				SnapshotWindow:         pointer.String(snapshotWindow),
+				SnapshotRetentionLimit: pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.ToOrNilIfZeroValue(snapshotWindow),
 			},
 			ccList: []elasticachetypes.CacheCluster{},
 			want:   true,
@@ -930,7 +931,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewEngineVersion",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion: pointer.String("4.0.0"),
+				EngineVersion: pointer.ToOrNilIfZeroValue("4.0.0"),
 			},
 			want: true,
 		},
@@ -938,8 +939,8 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewCacheParameterGroup",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:       pointer.String(engineVersion),
-				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String("okaygroupiguess")},
+				EngineVersion:       pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup: &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue("okaygroupiguess")},
 			},
 			want: true,
 		},
@@ -947,9 +948,9 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewNotificationTopicARN",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:             pointer.String(engineVersion),
-				CacheParameterGroup:       &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-				NotificationConfiguration: &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String("aws:arn:sqs:nope"), TopicStatus: pointer.String(notificationTopicStatus)},
+				EngineVersion:             pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:       &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration: &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue("aws:arn:sqs:nope"), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
 			},
 			want: true,
 		},
@@ -957,10 +958,10 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewMaintenanceWindow",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              pointer.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: pointer.String("never!"),
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue("never!"),
 			},
 			want: true,
 		},
@@ -968,13 +969,13 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewSecurityGroupIDs",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              pointer.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
-					{SecurityGroupId: pointer.String("notaverysecuregroupid")},
-					{SecurityGroupId: pointer.String("evenlesssecuregroupid")},
+					{SecurityGroupId: pointer.ToOrNilIfZeroValue("notaverysecuregroupid")},
+					{SecurityGroupId: pointer.ToOrNilIfZeroValue("evenlesssecuregroupid")},
 				},
 			},
 			want: true,
@@ -983,10 +984,10 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsSecurityGroupIDs",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              pointer.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 			},
 			want: true,
 		},
@@ -994,20 +995,20 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNewSecurityGroupNames",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              pointer.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
-						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.ToOrNilIfZeroValue(id)}
 					}
 					return ids
 				}(),
 				CacheSecurityGroups: []elasticachetypes.CacheSecurityGroupMembership{
-					{CacheSecurityGroupName: pointer.String("notaverysecuregroup")},
-					{CacheSecurityGroupName: pointer.String("evenlesssecuregroup")},
+					{CacheSecurityGroupName: pointer.ToOrNilIfZeroValue("notaverysecuregroup")},
+					{CacheSecurityGroupName: pointer.ToOrNilIfZeroValue("evenlesssecuregroup")},
 				},
 			},
 			want: true,
@@ -1016,14 +1017,14 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsSecurityGroupNames",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              pointer.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
-						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.ToOrNilIfZeroValue(id)}
 					}
 					return ids
 				}(),
@@ -1034,21 +1035,21 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NeedsNoUpdate",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              pointer.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: pointer.String(maintenanceWindow),
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
-						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.ToOrNilIfZeroValue(id)}
 					}
 					return ids
 				}(),
 				CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
 					names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
 					for i, n := range cacheSecurityGroupNames {
-						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.String(n)}
+						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.ToOrNilIfZeroValue(n)}
 					}
 					return names
 				}(),
@@ -1058,25 +1059,25 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		{
 			name: "NeedsNoUpdateNormalizedMaintenanceWindow",
 			kube: replicationGroupParams(func(p *v1beta1.ReplicationGroupParameters) {
-				p.PreferredMaintenanceWindow = pointer.String("Mon:00:00-Fri:23:59")
+				p.PreferredMaintenanceWindow = pointer.ToOrNilIfZeroValue("Mon:00:00-Fri:23:59")
 
 			}),
 			cc: elasticachetypes.CacheCluster{
-				EngineVersion:              pointer.String(engineVersion),
-				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.String(notificationTopicARN), TopicStatus: pointer.String(notificationTopicStatus)},
-				PreferredMaintenanceWindow: pointer.String("mon:00:00-fri:23:59"),
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue("mon:00:00-fri:23:59"),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
-						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.String(id)}
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.ToOrNilIfZeroValue(id)}
 					}
 					return ids
 				}(),
 				CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
 					names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
 					for i, n := range cacheSecurityGroupNames {
-						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.String(n)}
+						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.ToOrNilIfZeroValue(n)}
 					}
 					return names
 				}(),
@@ -1104,9 +1105,9 @@ func TestConnectionEndpoint(t *testing.T) {
 		{
 			name: "ClusterModeEnabled",
 			rg: elasticachetypes.ReplicationGroup{
-				ClusterEnabled: pointer.Bool(true),
+				ClusterEnabled: pointer.ToOrNilIfZeroValue(true),
 				ConfigurationEndpoint: &elasticachetypes.Endpoint{
-					Address: pointer.String(host),
+					Address: pointer.ToOrNilIfZeroValue(host),
 					Port:    int32(port),
 				},
 			},
@@ -1118,7 +1119,7 @@ func TestConnectionEndpoint(t *testing.T) {
 		{
 			name: "ClusterModeEnabledMissingConfigurationEndpoint",
 			rg: elasticachetypes.ReplicationGroup{
-				ClusterEnabled: pointer.Bool(true),
+				ClusterEnabled: pointer.ToOrNilIfZeroValue(true),
 			},
 			want: nil,
 		},
@@ -1127,7 +1128,7 @@ func TestConnectionEndpoint(t *testing.T) {
 			rg: elasticachetypes.ReplicationGroup{
 				NodeGroups: []elasticachetypes.NodeGroup{{
 					PrimaryEndpoint: &elasticachetypes.Endpoint{
-						Address: pointer.String(host),
+						Address: pointer.ToOrNilIfZeroValue(host),
 						Port:    int32(port),
 					}},
 				},
@@ -1171,13 +1172,13 @@ func TestIsSubnetGroupUpToDate(t *testing.T) {
 		"SameFields": {
 			args: args{
 				subnetGroup: elasticachetypes.CacheSubnetGroup{
-					CacheSubnetGroupDescription: pointer.String(subnetGroupDesc),
+					CacheSubnetGroupDescription: pointer.ToOrNilIfZeroValue(subnetGroupDesc),
 					Subnets: []elasticachetypes.Subnet{
 						{
-							SubnetIdentifier: pointer.String(subnetID1),
+							SubnetIdentifier: pointer.ToOrNilIfZeroValue(subnetID1),
 						},
 						{
-							SubnetIdentifier: pointer.String(subnetID2),
+							SubnetIdentifier: pointer.ToOrNilIfZeroValue(subnetID2),
 						},
 					},
 				},
@@ -1191,13 +1192,13 @@ func TestIsSubnetGroupUpToDate(t *testing.T) {
 		"DifferentFields": {
 			args: args{
 				subnetGroup: elasticachetypes.CacheSubnetGroup{
-					CacheSubnetGroupDescription: pointer.String(subnetGroupDesc),
+					CacheSubnetGroupDescription: pointer.ToOrNilIfZeroValue(subnetGroupDesc),
 					Subnets: []elasticachetypes.Subnet{
 						{
-							SubnetIdentifier: pointer.String(subnetID1),
+							SubnetIdentifier: pointer.ToOrNilIfZeroValue(subnetID1),
 						},
 						{
-							SubnetIdentifier: pointer.String(subnetID2),
+							SubnetIdentifier: pointer.ToOrNilIfZeroValue(subnetID2),
 						},
 					},
 				},
@@ -1229,14 +1230,14 @@ func TestVersionMatches(t *testing.T) {
 	}{
 		{
 			name:        "Same value",
-			kubeVersion: pointer.String("5.0.8"),
-			awsVersion:  pointer.String("5.0.8"),
+			kubeVersion: pointer.ToOrNilIfZeroValue("5.0.8"),
+			awsVersion:  pointer.ToOrNilIfZeroValue("5.0.8"),
 			want:        true,
 		},
 		{
 			name:        "Same pattern", // currently this will never happen, but if it does it should match..
-			kubeVersion: pointer.String("6.x"),
-			awsVersion:  pointer.String("6.x"),
+			kubeVersion: pointer.ToOrNilIfZeroValue("6.x"),
+			awsVersion:  pointer.ToOrNilIfZeroValue("6.x"),
 			want:        true,
 		},
 		{
@@ -1248,37 +1249,37 @@ func TestVersionMatches(t *testing.T) {
 		{
 			name:        "nil in kubernetes",
 			kubeVersion: nil,
-			awsVersion:  pointer.String("5.0.8"),
+			awsVersion:  pointer.ToOrNilIfZeroValue("5.0.8"),
 			want:        false,
 		},
 		{
 			name:        "nil from aws",
-			kubeVersion: pointer.String("5.0.8"),
+			kubeVersion: pointer.ToOrNilIfZeroValue("5.0.8"),
 			awsVersion:  nil,
 			want:        false,
 		},
 		{
 			name:        "mismatch",
-			kubeVersion: pointer.String("5.0.8"),
-			awsVersion:  pointer.String("5.0.9"),
+			kubeVersion: pointer.ToOrNilIfZeroValue("5.0.8"),
+			awsVersion:  pointer.ToOrNilIfZeroValue("5.0.9"),
 			want:        false,
 		},
 		{
 			name:        "pattern match",
-			kubeVersion: pointer.String("6.x"),
-			awsVersion:  pointer.String("6.0.5"),
+			kubeVersion: pointer.ToOrNilIfZeroValue("6.x"),
+			awsVersion:  pointer.ToOrNilIfZeroValue("6.0.5"),
 			want:        true,
 		},
 		{
 			name:        "minor match",
-			kubeVersion: pointer.String("6.2"),
-			awsVersion:  pointer.String("6.2.6"),
+			kubeVersion: pointer.ToOrNilIfZeroValue("6.2"),
+			awsVersion:  pointer.ToOrNilIfZeroValue("6.2.6"),
 			want:        true,
 		},
 		{
 			name:        "zero major mismatch",
-			kubeVersion: pointer.String("0.2"),
-			awsVersion:  pointer.String("6.2.6"),
+			kubeVersion: pointer.ToOrNilIfZeroValue("0.2"),
+			awsVersion:  pointer.ToOrNilIfZeroValue("6.2.6"),
 			want:        false,
 		},
 	}
@@ -1314,50 +1315,50 @@ func TestParseVersion(t *testing.T) {
 		},
 		{
 			name:    "bad version",
-			version: pointer.String("badversion"),
+			version: pointer.ToOrNilIfZeroValue("badversion"),
 			parsed:  nil,
 			wantErr: errors.New("major version must be a number"),
 		},
 		{
 			name:    "major only",
-			version: pointer.String("6"),
-			parsed:  &PartialSemanticVersion{Major: pointer.Int64(6)},
+			version: pointer.ToOrNilIfZeroValue("6"),
+			parsed:  &PartialSemanticVersion{Major: ptr.To[int64](6)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.minor",
-			version: pointer.String("6.2"),
-			parsed:  &PartialSemanticVersion{Major: pointer.Int64(6), Minor: pointer.Int64(2)},
+			version: pointer.ToOrNilIfZeroValue("6.2"),
+			parsed:  &PartialSemanticVersion{Major: ptr.To[int64](6), Minor: ptr.To[int64](2)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.x",
-			version: pointer.String("6.x"),
-			parsed:  &PartialSemanticVersion{Major: pointer.Int64(6)},
+			version: pointer.ToOrNilIfZeroValue("6.x"),
+			parsed:  &PartialSemanticVersion{Major: ptr.To[int64](6)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.",
-			version: pointer.String("6."),
-			parsed:  &PartialSemanticVersion{Major: pointer.Int64(6)},
+			version: pointer.ToOrNilIfZeroValue("6."),
+			parsed:  &PartialSemanticVersion{Major: ptr.To[int64](6)},
 			wantErr: nil,
 		},
 		{
 			name:    "majorLarge.",
-			version: pointer.String("999."),
-			parsed:  &PartialSemanticVersion{Major: pointer.Int64(999)},
+			version: pointer.ToOrNilIfZeroValue("999."),
+			parsed:  &PartialSemanticVersion{Major: ptr.To[int64](999)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.minor.patch",
-			version: pointer.String("5.0.9"),
-			parsed:  &PartialSemanticVersion{Major: pointer.Int64(5), Minor: pointer.Int64(0, pointer.FieldRequired), Patch: pointer.Int64(9)},
+			version: pointer.ToOrNilIfZeroValue("5.0.9"),
+			parsed:  &PartialSemanticVersion{Major: ptr.To[int64](5), Minor: ptr.To[int64](0), Patch: ptr.To[int64](9)},
 			wantErr: nil,
 		},
 		{
 			name:    "major.minor.x",
-			version: pointer.String("5.0.x"),
-			parsed:  &PartialSemanticVersion{Major: pointer.Int64(5), Minor: pointer.Int64(0, pointer.FieldRequired)},
+			version: pointer.ToOrNilIfZeroValue("5.0.x"),
+			parsed:  &PartialSemanticVersion{Major: ptr.To[int64](5), Minor: ptr.To[int64](0)},
 			wantErr: nil,
 		},
 	}
@@ -1456,7 +1457,7 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
 				},
 			},
 			want: want{
@@ -1475,9 +1476,9 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
-					{Key: pointer.String("key1"), Value: pointer.String("val1")},
-					{Key: pointer.String("key2"), Value: pointer.String("val2")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key1"), Value: pointer.ToOrNilIfZeroValue("val1")},
+					{Key: pointer.ToOrNilIfZeroValue("key2"), Value: pointer.ToOrNilIfZeroValue("val2")},
 				},
 			},
 			want: want{
@@ -1488,9 +1489,9 @@ func TestDiffTags(t *testing.T) {
 		"RemoveAll": {
 			args: args{
 				remote: []elasticachetypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
-					{Key: pointer.String("key1"), Value: pointer.String("val1")},
-					{Key: pointer.String("key2"), Value: pointer.String("val2")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key1"), Value: pointer.ToOrNilIfZeroValue("val1")},
+					{Key: pointer.ToOrNilIfZeroValue("key2"), Value: pointer.ToOrNilIfZeroValue("val2")},
 				},
 			},
 			want: want{
@@ -1558,7 +1559,7 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
 				},
 			},
 			want: want{
@@ -1573,9 +1574,9 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
-					{Key: pointer.String("key1"), Value: pointer.String("val1")},
-					{Key: pointer.String("key2"), Value: pointer.String("val2")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key1"), Value: pointer.ToOrNilIfZeroValue("val1")},
+					{Key: pointer.ToOrNilIfZeroValue("key2"), Value: pointer.ToOrNilIfZeroValue("val2")},
 				},
 			},
 			want: want{
@@ -1589,8 +1590,8 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []elasticachetypes.Tag{
-					{Key: pointer.String("key1"), Value: pointer.String("val1")},
-					{Key: pointer.String("key2"), Value: pointer.String("val2")},
+					{Key: pointer.ToOrNilIfZeroValue("key1"), Value: pointer.ToOrNilIfZeroValue("val1")},
+					{Key: pointer.ToOrNilIfZeroValue("key2"), Value: pointer.ToOrNilIfZeroValue("val2")},
 				},
 			},
 			want: want{
@@ -1609,9 +1610,9 @@ func TestReplicationGroupTagsNeedsUpdate(t *testing.T) {
 		"RemoveAll": {
 			args: args{
 				remote: []elasticachetypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
-					{Key: pointer.String("key1"), Value: pointer.String("val1")},
-					{Key: pointer.String("key2"), Value: pointer.String("val2")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key1"), Value: pointer.ToOrNilIfZeroValue("val1")},
+					{Key: pointer.ToOrNilIfZeroValue("key2"), Value: pointer.ToOrNilIfZeroValue("val2")},
 				},
 			},
 			want: want{
@@ -1649,7 +1650,7 @@ func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
 					NumCacheClusters: &numCacheClusters,
 				},
 				ccList: []elasticachetypes.CacheCluster{
-					{EngineVersion: pointer.String(engineVersion)},
+					{EngineVersion: pointer.ToOrNilIfZeroValue(engineVersion)},
 				},
 			},
 			want: want{res: false},
@@ -1660,7 +1661,7 @@ func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
 					NumCacheClusters: &numCacheClusters5,
 				},
 				ccList: []elasticachetypes.CacheCluster{
-					{EngineVersion: pointer.String(engineVersion)},
+					{EngineVersion: pointer.ToOrNilIfZeroValue(engineVersion)},
 				},
 			},
 			want: want{res: true},
@@ -1676,7 +1677,7 @@ func TestReplicationGroupNumCacheClustersNeedsUpdate(t *testing.T) {
 			args: args{
 				kube: v1beta1.ReplicationGroupParameters{},
 				ccList: []elasticachetypes.CacheCluster{
-					{EngineVersion: pointer.String(engineVersion)},
+					{EngineVersion: pointer.ToOrNilIfZeroValue(engineVersion)},
 				},
 			},
 			want: want{res: false},

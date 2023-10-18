@@ -83,8 +83,8 @@ func AreTagsUpToDate(spec map[string]string, obs []route53types.Tag) ([]route53t
 	addedTags := make([]route53types.Tag, 0, len(added))
 	for k, v := range added {
 		addedTags = append(addedTags, route53types.Tag{
-			Key:   pointer.String(k),
-			Value: pointer.String(v),
+			Key:   pointer.ToOrNilIfZeroValue(k),
+			Value: pointer.ToOrNilIfZeroValue(v),
 		})
 	}
 	return addedTags, removed, len(addedTags) == 0 && len(removed) == 0
@@ -97,14 +97,14 @@ func LateInitialize(spec *v1alpha1.HostedZoneParameters, obs *route53.GetHostedZ
 		return
 	}
 	if obs.DelegationSet != nil {
-		spec.DelegationSetID = pointer.LateInitializeStringPtr(spec.DelegationSetID, obs.DelegationSet.Id)
+		spec.DelegationSetID = pointer.LateInitialize(spec.DelegationSetID, obs.DelegationSet.Id)
 	}
 	if spec.Config == nil && obs.HostedZone != nil {
 		spec.Config = &v1alpha1.Config{}
 	}
 	if spec.Config != nil && obs.HostedZone.Config != nil {
-		spec.Config.Comment = pointer.LateInitializeStringPtr(spec.Config.Comment, obs.HostedZone.Config.Comment)
-		spec.Config.PrivateZone = pointer.LateInitializeBoolPtr(spec.Config.PrivateZone, &obs.HostedZone.Config.PrivateZone)
+		spec.Config.Comment = pointer.LateInitialize(spec.Config.Comment, obs.HostedZone.Config.Comment)
+		spec.Config.PrivateZone = pointer.LateInitialize(spec.Config.PrivateZone, &obs.HostedZone.Config.PrivateZone)
 	}
 }
 

@@ -134,7 +134,7 @@ func postObserve(_ context.Context, cr *eksv1alpha1.Addon, _ *awseks.DescribeAdd
 
 func lateInitialize(spec *eksv1alpha1.AddonParameters, resp *awseks.DescribeAddonOutput) error {
 	if resp.Addon != nil {
-		spec.ServiceAccountRoleARN = pointer.LateInitializeStringPtr(spec.ServiceAccountRoleARN, resp.Addon.ServiceAccountRoleArn)
+		spec.ServiceAccountRoleARN = pointer.LateInitialize(spec.ServiceAccountRoleARN, resp.Addon.ServiceAccountRoleArn)
 	}
 	return nil
 }
@@ -220,7 +220,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *eksv1alpha1.Addon, resp *aws
 	add, remove := tags.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, desc.Addon.Tags)
 	if len(add) > 0 {
 		_, err := h.client.TagResourceWithContext(ctx, &awseks.TagResourceInput{
-			ResourceArn: pointer.String(meta.GetExternalName(cr)),
+			ResourceArn: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			Tags:        add,
 		})
 		if err != nil {
@@ -229,7 +229,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *eksv1alpha1.Addon, resp *aws
 	}
 	if len(remove) > 0 {
 		_, err := h.client.UntagResourceWithContext(ctx, &awseks.UntagResourceInput{
-			ResourceArn: pointer.String(meta.GetExternalName(cr)),
+			ResourceArn: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			TagKeys:     remove,
 		})
 		if err != nil {
@@ -273,7 +273,7 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags = map[string]*string{}
 	}
 	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = pointer.String(v)
+		cr.Spec.ForProvider.Tags[k] = pointer.ToOrNilIfZeroValue(v)
 	}
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

@@ -68,7 +68,7 @@ func LateInitializeRepository(in *v1beta1.RepositoryParameters, r *ecrtypes.Repo
 		}
 		in.ImageScanningConfiguration = &scanConfig
 	}
-	in.ImageTagMutability = pointer.LateInitializeStringPtr(in.ImageTagMutability, pointer.String(string(r.ImageTagMutability)))
+	in.ImageTagMutability = pointer.LateInitialize(in.ImageTagMutability, pointer.ToOrNilIfZeroValue(string(r.ImageTagMutability)))
 }
 
 // CreatePatch creates a *v1alpha1.RepositoryParameters that has only the changed
@@ -114,7 +114,7 @@ func IsRepoNotFoundErr(err error) bool {
 // GenerateCreateRepositoryInput Generates the CreateRepositoryInput from the RepositoryParameters
 func GenerateCreateRepositoryInput(name string, params *v1beta1.RepositoryParameters) *ecr.CreateRepositoryInput {
 	c := &ecr.CreateRepositoryInput{
-		RepositoryName:     pointer.String(name),
+		RepositoryName:     pointer.ToOrNilIfZeroValue(name),
 		ImageTagMutability: ecrtypes.ImageTagMutability(pointer.StringValue(params.ImageTagMutability)),
 	}
 	if params.ImageScanningConfiguration != nil {

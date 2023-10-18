@@ -48,7 +48,7 @@ func generateSSEConfig() *v1beta1.ServerSideEncryptionConfiguration {
 		Rules: []v1beta1.ServerSideEncryptionRule{
 			{
 				ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
-					KMSMasterKeyID: pointer.String(keyID),
+					KMSMasterKeyID: pointer.ToOrNilIfZeroValue(keyID),
 					SSEAlgorithm:   sseAlgo,
 				},
 			},
@@ -60,9 +60,9 @@ func generateSSEConfigWithBucketEncryption() *v1beta1.ServerSideEncryptionConfig
 	return &v1beta1.ServerSideEncryptionConfiguration{
 		Rules: []v1beta1.ServerSideEncryptionRule{
 			{
-				BucketKeyEnabled: *pointer.Bool(true),
+				BucketKeyEnabled: *pointer.ToOrNilIfZeroValue(true),
 				ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
-					KMSMasterKeyID: pointer.String(keyID),
+					KMSMasterKeyID: pointer.ToOrNilIfZeroValue(keyID),
 					SSEAlgorithm:   sseAlgo,
 				},
 			},
@@ -75,7 +75,7 @@ func generateAWSSSE() *s3types.ServerSideEncryptionConfiguration {
 		Rules: []s3types.ServerSideEncryptionRule{
 			{
 				ApplyServerSideEncryptionByDefault: &s3types.ServerSideEncryptionByDefault{
-					KMSMasterKeyID: pointer.String(keyID),
+					KMSMasterKeyID: pointer.ToOrNilIfZeroValue(keyID),
 					SSEAlgorithm:   s3types.ServerSideEncryptionAes256,
 				},
 			},

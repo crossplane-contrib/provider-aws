@@ -111,7 +111,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConn
 
 	if pointer.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest && !meta.WasDeleted(cr) {
 		req := svcsdk.AcceptVpcPeeringConnectionInput{
-			VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+			VpcPeeringConnectionId: pointer.ToOrNilIfZeroValue(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 		}
 		request, _ := pc.AcceptVpcPeeringConnectionRequest(&req)
 		err = request.Send()
@@ -131,13 +131,13 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConn
 		if !reflect.DeepEqual(obj.VpcPeeringConnections[0].AccepterVpcInfo.PeeringOptions, cr.Spec.ForProvider.AccepterPeeringOptions) ||
 			!reflect.DeepEqual(obj.VpcPeeringConnections[0].RequesterVpcInfo.PeeringOptions, cr.Spec.ForProvider.RequesterPeeringOptions) {
 			req := svcsdk.ModifyVpcPeeringConnectionOptionsInput{
-				VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+				VpcPeeringConnectionId: pointer.ToOrNilIfZeroValue(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 			}
 			if *cr.Spec.ForProvider.PeerRegion == cr.Spec.ForProvider.Region {
 				setAccepterRequester(&req, cr)
 			} else {
 				acc := svcsdk.ModifyVpcPeeringConnectionOptionsInput{
-					VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+					VpcPeeringConnectionId: pointer.ToOrNilIfZeroValue(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 				}
 				setAccepter(&acc, cr)
 				request, _ := pc.ModifyVpcPeeringConnectionOptionsRequest(&acc)

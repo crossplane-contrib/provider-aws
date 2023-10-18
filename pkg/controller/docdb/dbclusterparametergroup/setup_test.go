@@ -87,25 +87,25 @@ func withExternalName(value string) docDBModifier {
 
 func withDBClusterParameterGroupName(value string) docDBModifier {
 	return func(o *svcapitypes.DBClusterParameterGroup) {
-		o.Status.AtProvider.DBClusterParameterGroupName = pointer.String(value)
+		o.Status.AtProvider.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDescription(value string) docDBModifier {
 	return func(o *svcapitypes.DBClusterParameterGroup) {
-		o.Spec.ForProvider.Description = pointer.String(value)
+		o.Spec.ForProvider.Description = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDBParameterGroupFamily(value string) docDBModifier {
 	return func(o *svcapitypes.DBClusterParameterGroup) {
-		o.Spec.ForProvider.DBParameterGroupFamily = pointer.String(value)
+		o.Spec.ForProvider.DBParameterGroupFamily = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDBClusterParameterGroupARN(value string) docDBModifier {
 	return func(o *svcapitypes.DBClusterParameterGroup) {
-		o.Status.AtProvider.DBClusterParameterGroupARN = pointer.String(value)
+		o.Status.AtProvider.DBClusterParameterGroupARN = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -162,7 +162,7 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParameterGroupsOutput{
 							DBClusterParameterGroups: []*docdb.DBClusterParameterGroup{
 								{
-									DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+									DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								},
 							},
 						}, nil
@@ -197,7 +197,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParameterGroupsInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -205,13 +205,13 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -230,7 +230,7 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParameterGroupsOutput{
 							DBClusterParameterGroups: []*docdb.DBClusterParameterGroup{
 								{
-									DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+									DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								},
 							},
 						}, nil
@@ -239,8 +239,8 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{
 								{
-									ParameterName:  pointer.String(testParameterName),
-									ParameterValue: pointer.String(testParameterValue),
+									ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+									ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 								},
 							},
 						}, nil
@@ -253,8 +253,8 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 					),
 				),
@@ -265,8 +265,8 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 					),
 					withConditions(xpv1.Available()),
@@ -280,7 +280,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParameterGroupsInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -288,13 +288,13 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -313,7 +313,7 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParameterGroupsOutput{
 							DBClusterParameterGroups: []*docdb.DBClusterParameterGroup{
 								{
-									DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+									DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								},
 							},
 						}, nil
@@ -322,12 +322,12 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{
 								{
-									ParameterName:  pointer.String(testParameterName),
-									ParameterValue: pointer.String(testParameterValue),
+									ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+									ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 								},
 								{
-									ParameterName:  pointer.String(testOtherParameterName),
-									ParameterValue: pointer.String(testOtherParameterValue),
+									ParameterName:  pointer.ToOrNilIfZeroValue(testOtherParameterName),
+									ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 								},
 							},
 						}, nil
@@ -340,8 +340,8 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 					),
 				),
@@ -352,12 +352,12 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testOtherParameterName),
-							ParameterValue: pointer.String(testOtherParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testOtherParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 						},
 					),
 					withConditions(xpv1.Available()),
@@ -372,7 +372,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParameterGroupsInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -380,13 +380,13 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -405,8 +405,8 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParameterGroupsOutput{
 							DBClusterParameterGroups: []*docdb.DBClusterParameterGroup{
 								{
-									DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
-									Description:                 pointer.String(testDescription),
+									DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+									Description:                 pointer.ToOrNilIfZeroValue(testDescription),
 								},
 							},
 						}, nil
@@ -442,7 +442,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParameterGroupsInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -450,7 +450,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -464,8 +464,8 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParameterGroupsOutput{
 							DBClusterParameterGroups: []*docdb.DBClusterParameterGroup{
 								{
-									DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
-									DBParameterGroupFamily:      pointer.String(testFamily),
+									DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+									DBParameterGroupFamily:      pointer.ToOrNilIfZeroValue(testFamily),
 								},
 							},
 						}, nil
@@ -501,7 +501,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParameterGroupsInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -509,7 +509,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -523,7 +523,7 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParameterGroupsOutput{
 							DBClusterParameterGroups: []*docdb.DBClusterParameterGroup{
 								{
-									DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+									DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								},
 							},
 						}, nil
@@ -532,8 +532,8 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParametersOutput{
 							Parameters: []*docdb.Parameter{
 								{
-									ParameterName:  pointer.String(testParameterName),
-									ParameterValue: pointer.String(testParameterValue),
+									ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+									ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 								},
 							},
 						}, nil
@@ -543,8 +543,8 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testOtherParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 						},
 					),
 				),
@@ -555,8 +555,8 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testOtherParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 						},
 					),
 					withConditions(xpv1.Available()),
@@ -570,7 +570,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParameterGroupsInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -578,13 +578,13 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -616,7 +616,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParameterGroupsInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -630,7 +630,7 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClusterParameterGroupsOutput{
 							DBClusterParameterGroups: []*docdb.DBClusterParameterGroup{
 								{
-									DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+									DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								},
 							},
 						}, nil
@@ -657,7 +657,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParameterGroupsInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -665,7 +665,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClusterParametersInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -714,7 +714,7 @@ func TestCreate(t *testing.T) {
 					MockCreateDBClusterParameterGroupWithContext: func(c context.Context, cdpgi *docdb.CreateDBClusterParameterGroupInput, o []request.Option) (*docdb.CreateDBClusterParameterGroupOutput, error) {
 						return &docdb.CreateDBClusterParameterGroupOutput{
 							DBClusterParameterGroup: &docdb.DBClusterParameterGroup{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						}, nil
 					},
@@ -735,7 +735,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBClusterParameterGroupInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -748,7 +748,7 @@ func TestCreate(t *testing.T) {
 					MockCreateDBClusterParameterGroupWithContext: func(c context.Context, cdpgi *docdb.CreateDBClusterParameterGroupInput, o []request.Option) (*docdb.CreateDBClusterParameterGroupOutput, error) {
 						return &docdb.CreateDBClusterParameterGroupOutput{
 							DBClusterParameterGroup: &docdb.DBClusterParameterGroup{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						}, nil
 					},
@@ -757,12 +757,12 @@ func TestCreate(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testOtherParameterName),
-							ParameterValue: pointer.String(testOtherParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testOtherParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 						},
 					),
 				),
@@ -774,12 +774,12 @@ func TestCreate(t *testing.T) {
 					withConditions(xpv1.Creating()),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testOtherParameterName),
-							ParameterValue: pointer.String(testOtherParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testOtherParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 						},
 					),
 				),
@@ -789,7 +789,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBClusterParameterGroupInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -819,7 +819,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBClusterParameterGroupInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -832,7 +832,7 @@ func TestCreate(t *testing.T) {
 					MockCreateDBClusterParameterGroupWithContext: func(c context.Context, cdpgi *docdb.CreateDBClusterParameterGroupInput, o []request.Option) (*docdb.CreateDBClusterParameterGroupOutput, error) {
 						return &docdb.CreateDBClusterParameterGroupOutput{
 							DBClusterParameterGroup: &docdb.DBClusterParameterGroup{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						}, nil
 					},
@@ -841,8 +841,8 @@ func TestCreate(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 					),
 				),
@@ -854,8 +854,8 @@ func TestCreate(t *testing.T) {
 					withConditions(xpv1.Creating()),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 					),
 				),
@@ -865,7 +865,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBClusterParameterGroupInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -928,7 +928,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBClusterParameterGroupInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -957,7 +957,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBClusterParameterGroupInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 							},
 						},
 					},
@@ -1002,7 +1002,7 @@ func TestUpdate(t *testing.T) {
 				docdb: &fake.MockDocDBClient{
 					MockModifyDBClusterParameterGroupWithContext: func(c context.Context, mdpgi *docdb.ModifyDBClusterParameterGroupInput, o []request.Option) (*docdb.ModifyDBClusterParameterGroupOutput, error) {
 						return &docdb.ModifyDBClusterParameterGroupOutput{
-							DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+							DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 						}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
@@ -1019,17 +1019,17 @@ func TestUpdate(t *testing.T) {
 					withExternalName(testDBClusterParameterGroupName),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testOtherParameterName),
-							ParameterValue: pointer.String(testOtherParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testOtherParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 						},
 					),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 				),
 			},
@@ -1040,17 +1040,17 @@ func TestUpdate(t *testing.T) {
 					withConditions(xpv1.Available()),
 					withParameters(
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testParameterName),
-							ParameterValue: pointer.String(testParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 						},
 						&svcapitypes.CustomParameter{
-							ParameterName:  pointer.String(testOtherParameterName),
-							ParameterValue: pointer.String(testOtherParameterValue),
+							ParameterName:  pointer.ToOrNilIfZeroValue(testOtherParameterName),
+							ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 						},
 					),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 				),
 				docdb: fake.MockDocDBClientCall{
@@ -1058,15 +1058,15 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBClusterParameterGroupInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								Parameters: []*docdb.Parameter{
 									{
-										ParameterName:  pointer.String(testParameterName),
-										ParameterValue: pointer.String(testParameterValue),
+										ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+										ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 									},
 									{
-										ParameterName:  pointer.String(testOtherParameterName),
-										ParameterValue: pointer.String(testOtherParameterValue),
+										ParameterName:  pointer.ToOrNilIfZeroValue(testOtherParameterName),
+										ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 									},
 								},
 							},
@@ -1075,17 +1075,17 @@ func TestUpdate(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBClusterParameterGroupARN),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupARN),
 							},
 						},
 					},
 					AddTagsToResource: []*fake.CallAddTagsToResource{
 						{
 							I: &docdb.AddTagsToResourceInput{
-								ResourceName: pointer.String(testDBClusterParameterGroupARN),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupARN),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 							},
 						},
@@ -1114,7 +1114,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBClusterParameterGroupInput{
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								Parameters:                  []*docdb.Parameter{},
 							},
 						},
@@ -1159,8 +1159,8 @@ func TestInitialize(t *testing.T) {
 		"Successful": {
 			args: args{
 				cr: instance(withTags(
-					&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-					&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 				)),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
 			},
@@ -1168,8 +1168,8 @@ func TestInitialize(t *testing.T) {
 				cr: instance(withTags(
 					mergeTags(
 						[]*svcapitypes.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-							{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 						},
 						svcutils.GetExternalTags(instance()),
 					)...,
@@ -1179,8 +1179,8 @@ func TestInitialize(t *testing.T) {
 		"UpdateFailed": {
 			args: args{
 				cr: instance(withTags(
-					&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-					&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 				)),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errors.New(testErrBoom))},
 			},
@@ -1188,8 +1188,8 @@ func TestInitialize(t *testing.T) {
 				cr: instance(withTags(
 					mergeTags(
 						[]*svcapitypes.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-							{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 						},
 						svcutils.GetExternalTags(instance()),
 					)...,

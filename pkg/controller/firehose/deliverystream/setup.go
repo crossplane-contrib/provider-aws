@@ -27,6 +27,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/firehose/v1alpha1"
@@ -84,17 +85,17 @@ func SetupDeliveryStream(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DeliveryStream, obj *svcsdk.DescribeDeliveryStreamInput) error {
-	obj.DeliveryStreamName = pointer.String(meta.GetExternalName(cr))
+	obj.DeliveryStreamName = ptr.To(meta.GetExternalName(cr))
 	return nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.DeliveryStream, obj *svcsdk.CreateDeliveryStreamInput) error {
-	obj.DeliveryStreamName = pointer.String(meta.GetExternalName(cr))
+	obj.DeliveryStreamName = ptr.To(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DeliveryStream, obj *svcsdk.DeleteDeliveryStreamInput) (bool, error) {
-	obj.DeliveryStreamName = pointer.String(meta.GetExternalName(cr))
+	obj.DeliveryStreamName = ptr.To(meta.GetExternalName(cr))
 	return false, nil
 }
 

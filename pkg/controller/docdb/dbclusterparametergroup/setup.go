@@ -103,7 +103,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DescribeDBClusterParameterGroupsInput) error {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -179,7 +179,7 @@ func lateInitializeParameters(in []*svcapitypes.CustomParameter, from []*svcsdk.
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.ModifyDBClusterParameterGroupInput) error {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.Parameters = generateSdkParameters(cr.Spec.ForProvider.Parameters)
 	return nil
 }
@@ -193,13 +193,13 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.DBClusterParameter
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.CreateDBClusterParameterGroupInput) error {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	// CreateDBClusterParameterGroup does not create the parameters themselves. Parameters are added during update.
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DeleteDBClusterParameterGroupInput) (bool, error) {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

@@ -98,7 +98,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBSubnetGroup, obj *svcsdk.DescribeDBSubnetGroupsInput) error {
-	obj.DBSubnetGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBSubnetGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -144,7 +144,7 @@ func areSubnetsEqual(specSubnetIds []*string, current []*svcsdk.Subnet) bool {
 }
 
 func preUpdate(ctx context.Context, cr *svcapitypes.DBSubnetGroup, obj *svcsdk.ModifyDBSubnetGroupInput) error {
-	obj.DBSubnetGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBSubnetGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.SubnetIds = cr.Spec.ForProvider.SubnetIDs
 	return nil
 }
@@ -159,13 +159,13 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.DBSubnetGroup, r
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.DBSubnetGroup, obj *svcsdk.CreateDBSubnetGroupInput) error {
-	obj.DBSubnetGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBSubnetGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.SubnetIds = cr.Spec.ForProvider.SubnetIDs
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBSubnetGroup, obj *svcsdk.DeleteDBSubnetGroupInput) (bool, error) {
-	obj.DBSubnetGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBSubnetGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

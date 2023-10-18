@@ -161,7 +161,7 @@ func TestGenerateSubscribeInput(t *testing.T) {
 				Protocol: subEmailProtocol,
 			},
 			out: sns.SubscribeInput{
-				TopicArn:              pointer.String(topicArn),
+				TopicArn:              pointer.ToOrNilIfZeroValue(topicArn),
 				Endpoint:              &subEmailEndpoint,
 				Protocol:              &subEmailProtocol,
 				ReturnSubscriptionArn: subBoolTrue,

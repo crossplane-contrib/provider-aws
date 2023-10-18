@@ -69,10 +69,10 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls:       pointer.Bool(false),
-								IgnorePublicAcls:      pointer.Bool(false),
-								BlockPublicPolicy:     pointer.Bool(false),
-								RestrictPublicBuckets: pointer.Bool(false),
+								BlockPublicAcls:       pointer.ToOrNilIfZeroValue(false),
+								IgnorePublicAcls:      pointer.ToOrNilIfZeroValue(false),
+								BlockPublicPolicy:     pointer.ToOrNilIfZeroValue(false),
+								RestrictPublicBuckets: pointer.ToOrNilIfZeroValue(false),
 							},
 						},
 					},
@@ -93,7 +93,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls: pointer.Bool(true),
+								BlockPublicAcls: pointer.ToOrNilIfZeroValue(true),
 							},
 						},
 					},
@@ -116,10 +116,10 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls:       pointer.Bool(false),
-								IgnorePublicAcls:      pointer.Bool(false),
-								BlockPublicPolicy:     pointer.Bool(false),
-								RestrictPublicBuckets: pointer.Bool(false),
+								BlockPublicAcls:       pointer.ToOrNilIfZeroValue(false),
+								IgnorePublicAcls:      pointer.ToOrNilIfZeroValue(false),
+								BlockPublicPolicy:     pointer.ToOrNilIfZeroValue(false),
+								RestrictPublicBuckets: pointer.ToOrNilIfZeroValue(false),
 							},
 						},
 					},
@@ -142,7 +142,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls: pointer.Bool(true),
+								BlockPublicAcls: pointer.ToOrNilIfZeroValue(true),
 							},
 						},
 					},
@@ -166,7 +166,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					Spec: v1beta1.BucketSpec{
 						ForProvider: v1beta1.BucketParameters{
 							PublicAccessBlockConfiguration: &v1beta1.PublicAccessBlockConfiguration{
-								BlockPublicAcls: pointer.Bool(true),
+								BlockPublicAcls: pointer.ToOrNilIfZeroValue(true),
 							},
 						},
 					},

@@ -82,14 +82,14 @@ func SetupUserPoolClient(mgr ctrl.Manager, o controller.Options) error {
 
 func preObserve(_ context.Context, cr *svcapitypes.UserPoolClient, obj *svcsdk.DescribeUserPoolClientInput) error {
 	if meta.GetExternalName(cr) != "" {
-		obj.ClientId = pointer.String(meta.GetExternalName(cr))
+		obj.ClientId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	}
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.UserPoolClient, obj *svcsdk.DeleteUserPoolClientInput) (bool, error) {
-	obj.ClientId = pointer.String(meta.GetExternalName(cr))
+	obj.ClientId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return false, nil
 }
@@ -195,6 +195,6 @@ func areTokenValidityUnitsEqual(spec *svcapitypes.TokenValidityUnitsType, curren
 func lateInitialize(cr *svcapitypes.UserPoolClientParameters, resp *svcsdk.DescribeUserPoolClientOutput) error {
 	instance := resp.UserPoolClient
 
-	cr.RefreshTokenValidity = pointer.LateInitializeInt64Ptr(cr.RefreshTokenValidity, instance.RefreshTokenValidity)
+	cr.RefreshTokenValidity = pointer.LateInitialize(cr.RefreshTokenValidity, instance.RefreshTokenValidity)
 	return nil
 }

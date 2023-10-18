@@ -161,17 +161,17 @@ func LateInitialize(in *v1beta1.QueueParameters, attributes map[string]string, t
 		}
 	}
 
-	in.DelaySeconds = pointer.LateInitializeInt64Ptr(in.DelaySeconds, int64Ptr(attributes[v1beta1.AttributeDelaySeconds]))
-	in.KMSDataKeyReusePeriodSeconds = pointer.LateInitializeInt64Ptr(in.KMSDataKeyReusePeriodSeconds, int64Ptr(attributes[v1beta1.AttributeKmsDataKeyReusePeriodSeconds]))
-	in.MaximumMessageSize = pointer.LateInitializeInt64Ptr(in.MaximumMessageSize, int64Ptr(attributes[v1beta1.AttributeMaximumMessageSize]))
-	in.MessageRetentionPeriod = pointer.LateInitializeInt64Ptr(in.MessageRetentionPeriod, int64Ptr(attributes[v1beta1.AttributeMessageRetentionPeriod]))
-	in.ReceiveMessageWaitTimeSeconds = pointer.LateInitializeInt64Ptr(in.ReceiveMessageWaitTimeSeconds, int64Ptr(attributes[v1beta1.AttributeReceiveMessageWaitTimeSeconds]))
-	in.VisibilityTimeout = pointer.LateInitializeInt64Ptr(in.VisibilityTimeout, int64Ptr(attributes[v1beta1.AttributeVisibilityTimeout]))
+	in.DelaySeconds = pointer.LateInitialize(in.DelaySeconds, int64Ptr(attributes[v1beta1.AttributeDelaySeconds]))
+	in.KMSDataKeyReusePeriodSeconds = pointer.LateInitialize(in.KMSDataKeyReusePeriodSeconds, int64Ptr(attributes[v1beta1.AttributeKmsDataKeyReusePeriodSeconds]))
+	in.MaximumMessageSize = pointer.LateInitialize(in.MaximumMessageSize, int64Ptr(attributes[v1beta1.AttributeMaximumMessageSize]))
+	in.MessageRetentionPeriod = pointer.LateInitialize(in.MessageRetentionPeriod, int64Ptr(attributes[v1beta1.AttributeMessageRetentionPeriod]))
+	in.ReceiveMessageWaitTimeSeconds = pointer.LateInitialize(in.ReceiveMessageWaitTimeSeconds, int64Ptr(attributes[v1beta1.AttributeReceiveMessageWaitTimeSeconds]))
+	in.VisibilityTimeout = pointer.LateInitialize(in.VisibilityTimeout, int64Ptr(attributes[v1beta1.AttributeVisibilityTimeout]))
 
 	in.SqsManagedSseEnabled = nil
 	SqsManagedSseEnabled, err := strconv.ParseBool(attributes[v1beta1.AttributeSqsManagedSseEnabled])
 	if err == nil && SqsManagedSseEnabled {
-		in.SqsManagedSseEnabled = pointer.LateInitializeBoolPtr(in.SqsManagedSseEnabled, aws.Bool(SqsManagedSseEnabled))
+		in.SqsManagedSseEnabled = pointer.LateInitialize(in.SqsManagedSseEnabled, aws.Bool(SqsManagedSseEnabled))
 	}
 
 	if in.KMSMasterKeyID == nil && attributes[v1beta1.AttributeKmsMasterKeyID] != "" {

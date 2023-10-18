@@ -45,10 +45,10 @@ func TestGenerateRepositoryObservation(t *testing.T) {
 				CreatedAt:                  &createTime,
 				ImageScanningConfiguration: &awsImageScanConfig,
 				ImageTagMutability:         ecrtypes.ImageTagMutability(tagMutability),
-				RegistryId:                 pointer.String(registryID),
-				RepositoryName:             pointer.String(repositoryName),
-				RepositoryArn:              pointer.String(repositoryARN),
-				RepositoryUri:              pointer.String(repositoryURI),
+				RegistryId:                 pointer.ToOrNilIfZeroValue(registryID),
+				RepositoryName:             pointer.ToOrNilIfZeroValue(repositoryName),
+				RepositoryArn:              pointer.ToOrNilIfZeroValue(repositoryARN),
+				RepositoryUri:              pointer.ToOrNilIfZeroValue(repositoryURI),
 			},
 			out: v1beta1.RepositoryObservation{
 				CreatedAt:      &metav1.Time{Time: createTime},
@@ -237,7 +237,7 @@ func TestDiffTags(t *testing.T) {
 			},
 			want: want{
 				add: []ecrtypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
 				},
 			},
 		},
@@ -249,13 +249,13 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []ecrtypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
 				},
 			},
 			want: want{
 				add: []ecrtypes.Tag{
-					{Key: pointer.String("key1"), Value: pointer.String("val1")},
-					{Key: pointer.String("key2"), Value: pointer.String("val2")},
+					{Key: pointer.ToOrNilIfZeroValue("key1"), Value: pointer.ToOrNilIfZeroValue("val1")},
+					{Key: pointer.ToOrNilIfZeroValue("key2"), Value: pointer.ToOrNilIfZeroValue("val2")},
 				},
 			},
 		},
@@ -267,14 +267,14 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key2", Value: "val2"},
 				},
 				remote: []ecrtypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
-					{Key: pointer.String("key1"), Value: pointer.String("val1")},
-					{Key: pointer.String("key2"), Value: pointer.String("val2")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key1"), Value: pointer.ToOrNilIfZeroValue("val1")},
+					{Key: pointer.ToOrNilIfZeroValue("key2"), Value: pointer.ToOrNilIfZeroValue("val2")},
 				},
 			},
 			want: want{
 				add: []ecrtypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("different")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("different")},
 				},
 				remove: []string{"key"},
 			},
@@ -282,9 +282,9 @@ func TestDiffTags(t *testing.T) {
 		"RemoveAll": {
 			args: args{
 				remote: []ecrtypes.Tag{
-					{Key: pointer.String("key"), Value: pointer.String("val")},
-					{Key: pointer.String("key1"), Value: pointer.String("val1")},
-					{Key: pointer.String("key2"), Value: pointer.String("val2")},
+					{Key: pointer.ToOrNilIfZeroValue("key"), Value: pointer.ToOrNilIfZeroValue("val")},
+					{Key: pointer.ToOrNilIfZeroValue("key1"), Value: pointer.ToOrNilIfZeroValue("val1")},
+					{Key: pointer.ToOrNilIfZeroValue("key2"), Value: pointer.ToOrNilIfZeroValue("val2")},
 				},
 			},
 			want: want{

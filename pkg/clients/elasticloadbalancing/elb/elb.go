@@ -82,7 +82,7 @@ func LateInitializeELB(in *v1alpha1.ELBParameters, v *elbtypes.LoadBalancerDescr
 		return
 	}
 
-	in.Scheme = pointer.LateInitializeStringPtr(in.Scheme, v.Scheme)
+	in.Scheme = pointer.LateInitialize(in.Scheme, v.Scheme)
 
 	if len(in.AvailabilityZones) == 0 && len(v.AvailabilityZones) != 0 {
 		in.AvailabilityZones = v.AvailabilityZones

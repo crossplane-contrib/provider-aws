@@ -55,23 +55,23 @@ func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) {
 	if cl == nil {
 		return
 	}
-	in.AllowVersionUpgrade = pointer.LateInitializeBoolPtr(in.AllowVersionUpgrade, &cl.AllowVersionUpgrade)
-	in.AutomatedSnapshotRetentionPeriod = pointer.LateInitializeInt32Ptr(in.AutomatedSnapshotRetentionPeriod, &cl.AutomatedSnapshotRetentionPeriod)
-	in.AvailabilityZone = pointer.LateInitializeStringPtr(in.AvailabilityZone, cl.AvailabilityZone)
-	in.ClusterVersion = pointer.LateInitializeStringPtr(in.ClusterVersion, cl.ClusterVersion)
-	in.ClusterSubnetGroupName = pointer.LateInitializeStringPtr(in.ClusterSubnetGroupName, cl.ClusterSubnetGroupName)
-	in.DBName = pointer.LateInitializeStringPtr(in.DBName, cl.DBName)
-	in.Encrypted = pointer.LateInitializeBoolPtr(in.Encrypted, &cl.Encrypted)
-	in.EnhancedVPCRouting = pointer.LateInitializeBoolPtr(in.EnhancedVPCRouting, &cl.EnhancedVpcRouting)
-	in.KMSKeyID = pointer.LateInitializeStringPtr(in.KMSKeyID, cl.KmsKeyId)
-	in.MaintenanceTrackName = pointer.LateInitializeStringPtr(in.MaintenanceTrackName, cl.MaintenanceTrackName)
-	in.ManualSnapshotRetentionPeriod = pointer.LateInitializeInt32Ptr(in.ManualSnapshotRetentionPeriod, &cl.ManualSnapshotRetentionPeriod)
-	in.MasterUsername = pointer.LateInitializeString(in.MasterUsername, cl.MasterUsername)
-	in.NodeType = pointer.LateInitializeString(in.NodeType, cl.NodeType)
-	in.NumberOfNodes = pointer.LateInitializeInt32Ptr(in.NumberOfNodes, &cl.NumberOfNodes)
-	in.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(in.PreferredMaintenanceWindow, cl.PreferredMaintenanceWindow)
-	in.PubliclyAccessible = pointer.LateInitializeBoolPtr(in.PubliclyAccessible, &cl.PubliclyAccessible)
-	in.SnapshotScheduleIdentifier = pointer.LateInitializeStringPtr(in.SnapshotScheduleIdentifier, cl.SnapshotScheduleIdentifier)
+	in.AllowVersionUpgrade = pointer.LateInitialize(in.AllowVersionUpgrade, &cl.AllowVersionUpgrade)
+	in.AutomatedSnapshotRetentionPeriod = pointer.LateInitialize(in.AutomatedSnapshotRetentionPeriod, &cl.AutomatedSnapshotRetentionPeriod)
+	in.AvailabilityZone = pointer.LateInitialize(in.AvailabilityZone, cl.AvailabilityZone)
+	in.ClusterVersion = pointer.LateInitialize(in.ClusterVersion, cl.ClusterVersion)
+	in.ClusterSubnetGroupName = pointer.LateInitialize(in.ClusterSubnetGroupName, cl.ClusterSubnetGroupName)
+	in.DBName = pointer.LateInitialize(in.DBName, cl.DBName)
+	in.Encrypted = pointer.LateInitialize(in.Encrypted, &cl.Encrypted)
+	in.EnhancedVPCRouting = pointer.LateInitialize(in.EnhancedVPCRouting, &cl.EnhancedVpcRouting)
+	in.KMSKeyID = pointer.LateInitialize(in.KMSKeyID, cl.KmsKeyId)
+	in.MaintenanceTrackName = pointer.LateInitialize(in.MaintenanceTrackName, cl.MaintenanceTrackName)
+	in.ManualSnapshotRetentionPeriod = pointer.LateInitialize(in.ManualSnapshotRetentionPeriod, &cl.ManualSnapshotRetentionPeriod)
+	in.MasterUsername = pointer.LateInitializeValueFromPtr(in.MasterUsername, cl.MasterUsername)
+	in.NodeType = pointer.LateInitializeValueFromPtr(in.NodeType, cl.NodeType)
+	in.NumberOfNodes = pointer.LateInitialize(in.NumberOfNodes, &cl.NumberOfNodes)
+	in.PreferredMaintenanceWindow = pointer.LateInitialize(in.PreferredMaintenanceWindow, cl.PreferredMaintenanceWindow)
+	in.PubliclyAccessible = pointer.LateInitialize(in.PubliclyAccessible, &cl.PubliclyAccessible)
+	in.SnapshotScheduleIdentifier = pointer.LateInitialize(in.SnapshotScheduleIdentifier, cl.SnapshotScheduleIdentifier)
 
 	// If ClusterType is not provided by the user then set it to it's default value.
 	// As redshift.Cluster type doesn't hold this info.
@@ -84,14 +84,14 @@ func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) {
 		}
 	}
 	if cl.Endpoint != nil {
-		in.Port = pointer.LateInitializeInt32Ptr(in.Port, &cl.Endpoint.Port)
+		in.Port = pointer.LateInitialize(in.Port, &cl.Endpoint.Port)
 	}
 	if cl.HsmStatus != nil {
-		in.HSMClientCertificateIdentifier = pointer.LateInitializeStringPtr(in.HSMClientCertificateIdentifier, cl.HsmStatus.HsmClientCertificateIdentifier)
-		in.HSMConfigurationIdentifier = pointer.LateInitializeStringPtr(in.HSMConfigurationIdentifier, cl.HsmStatus.HsmConfigurationIdentifier)
+		in.HSMClientCertificateIdentifier = pointer.LateInitialize(in.HSMClientCertificateIdentifier, cl.HsmStatus.HsmClientCertificateIdentifier)
+		in.HSMConfigurationIdentifier = pointer.LateInitialize(in.HSMConfigurationIdentifier, cl.HsmStatus.HsmConfigurationIdentifier)
 	}
 	if cl.ElasticIpStatus != nil {
-		in.ElasticIP = pointer.LateInitializeStringPtr(in.ElasticIP, cl.ElasticIpStatus.ElasticIp)
+		in.ElasticIP = pointer.LateInitialize(in.ElasticIP, cl.ElasticIpStatus.ElasticIp)
 	}
 
 	if len(cl.ClusterSecurityGroups) != 0 {

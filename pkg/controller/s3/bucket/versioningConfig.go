@@ -46,7 +46,7 @@ func NewVersioningConfigurationClient(client s3.BucketClient) *VersioningConfigu
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return NeedsUpdate, errorutils.Wrap(err, versioningGetFailed)
 	}
@@ -77,7 +77,7 @@ func (*VersioningConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucke
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(err, versioningGetFailed)
 	}
@@ -91,8 +91,8 @@ func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, buc
 	}
 
 	config := bucket.Spec.ForProvider.VersioningConfiguration
-	config.Status = pointer.LateInitializeStringPtr(config.Status, pointer.String(string(external.Status)))
-	config.MFADelete = pointer.LateInitializeStringPtr(config.MFADelete, pointer.String(string(external.MFADelete)))
+	config.Status = pointer.LateInitialize(config.Status, pointer.ToOrNilIfZeroValue(string(external.Status)))
+	config.MFADelete = pointer.LateInitialize(config.MFADelete, pointer.ToOrNilIfZeroValue(string(external.MFADelete)))
 	return nil
 }
 
@@ -104,7 +104,7 @@ func (in *VersioningConfigurationClient) SubresourceExists(bucket *v1beta1.Bucke
 // GeneratePutBucketVersioningInput creates the input for the PutBucketVersioning request for the S3 Client
 func GeneratePutBucketVersioningInput(name string, config *v1beta1.VersioningConfiguration) *awss3.PutBucketVersioningInput {
 	return &awss3.PutBucketVersioningInput{
-		Bucket: pointer.String(name),
+		Bucket: pointer.ToOrNilIfZeroValue(name),
 		VersioningConfiguration: &awss3types.VersioningConfiguration{
 			MFADelete: awss3types.MFADelete(pointer.StringValue(config.MFADelete)),
 			Status:    awss3types.BucketVersioningStatus(pointer.StringValue(config.Status)),

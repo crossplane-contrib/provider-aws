@@ -116,7 +116,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
-	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(pointer.String(meta.GetExternalName(cr))))
+	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))))
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errGet)
 	}

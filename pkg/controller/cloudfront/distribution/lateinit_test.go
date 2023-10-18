@@ -21,6 +21,7 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
@@ -142,188 +143,188 @@ func TestLateInitialize(t *testing.T) {
 					Distribution: &svcsdk.Distribution{
 						DistributionConfig: &svcsdk.DistributionConfig{
 							Aliases: &svcsdk.Aliases{
-								Items: []*string{pointer.String("example.org")},
+								Items: []*string{pointer.ToOrNilIfZeroValue("example.org")},
 							},
 							CacheBehaviors: &svcsdk.CacheBehaviors{
 								Items: []*svcsdk.CacheBehavior{{
 									AllowedMethods: &svcsdk.AllowedMethods{
-										Items: []*string{pointer.String("GET")},
+										Items: []*string{pointer.ToOrNilIfZeroValue("GET")},
 										CachedMethods: &svcsdk.CachedMethods{
-											Items: []*string{pointer.String("GET")},
+											Items: []*string{pointer.ToOrNilIfZeroValue("GET")},
 										},
 									},
-									CachePolicyId:          pointer.String("example"),
-									Compress:               pointer.Bool(true),
-									DefaultTTL:             pointer.Int64(42),
-									FieldLevelEncryptionId: pointer.String("example"),
+									CachePolicyId:          pointer.ToOrNilIfZeroValue("example"),
+									Compress:               pointer.ToOrNilIfZeroValue(true),
+									DefaultTTL:             ptr.To[int64](42),
+									FieldLevelEncryptionId: pointer.ToOrNilIfZeroValue("example"),
 									ForwardedValues: &svcsdk.ForwardedValues{
 										Cookies: &svcsdk.CookiePreference{
-											Forward: pointer.String("example"),
+											Forward: pointer.ToOrNilIfZeroValue("example"),
 											WhitelistedNames: &svcsdk.CookieNames{
-												Items: []*string{pointer.String("example")},
+												Items: []*string{pointer.ToOrNilIfZeroValue("example")},
 											},
 										},
 										Headers: &svcsdk.Headers{
-											Items: []*string{pointer.String("X-Hello")},
+											Items: []*string{pointer.ToOrNilIfZeroValue("X-Hello")},
 										},
-										QueryString: pointer.Bool(true),
+										QueryString: pointer.ToOrNilIfZeroValue(true),
 										QueryStringCacheKeys: &svcsdk.QueryStringCacheKeys{
-											Items: []*string{pointer.String("search")},
+											Items: []*string{pointer.ToOrNilIfZeroValue("search")},
 										},
 									},
 									LambdaFunctionAssociations: &svcsdk.LambdaFunctionAssociations{
 										Items: []*svcsdk.LambdaFunctionAssociation{{
-											EventType:         pointer.String("good"),
-											IncludeBody:       pointer.Bool(true),
-											LambdaFunctionARN: pointer.String("arn"),
+											EventType:         pointer.ToOrNilIfZeroValue("good"),
+											IncludeBody:       pointer.ToOrNilIfZeroValue(true),
+											LambdaFunctionARN: pointer.ToOrNilIfZeroValue("arn"),
 										}},
 									},
-									MaxTTL:                pointer.Int64(42),
-									MinTTL:                pointer.Int64(42),
-									OriginRequestPolicyId: pointer.String("example"),
-									PathPattern:           pointer.String("example"),
-									RealtimeLogConfigArn:  pointer.String("example"),
-									SmoothStreaming:       pointer.Bool(true),
-									TargetOriginId:        pointer.String("example"),
+									MaxTTL:                ptr.To[int64](42),
+									MinTTL:                ptr.To[int64](42),
+									OriginRequestPolicyId: pointer.ToOrNilIfZeroValue("example"),
+									PathPattern:           pointer.ToOrNilIfZeroValue("example"),
+									RealtimeLogConfigArn:  pointer.ToOrNilIfZeroValue("example"),
+									SmoothStreaming:       pointer.ToOrNilIfZeroValue(true),
+									TargetOriginId:        pointer.ToOrNilIfZeroValue("example"),
 									TrustedKeyGroups: &svcsdk.TrustedKeyGroups{
-										Enabled: pointer.Bool(true),
-										Items:   []*string{pointer.String("the-good-key")},
+										Enabled: pointer.ToOrNilIfZeroValue(true),
+										Items:   []*string{pointer.ToOrNilIfZeroValue("the-good-key")},
 									},
 									TrustedSigners: &svcsdk.TrustedSigners{
-										Enabled: pointer.Bool(true),
-										Items:   []*string{pointer.String("the-good-signer")},
+										Enabled: pointer.ToOrNilIfZeroValue(true),
+										Items:   []*string{pointer.ToOrNilIfZeroValue("the-good-signer")},
 									},
 								}},
 							},
 							CustomErrorResponses: &svcsdk.CustomErrorResponses{
 								Items: []*svcsdk.CustomErrorResponse{{
-									ErrorCachingMinTTL: pointer.Int64(42),
-									ErrorCode:          pointer.Int64(418),
-									ResponseCode:       pointer.String("I'm a teapot"),
-									ResponsePagePath:   pointer.String("/teapot"),
+									ErrorCachingMinTTL: ptr.To[int64](42),
+									ErrorCode:          ptr.To[int64](418),
+									ResponseCode:       pointer.ToOrNilIfZeroValue("I'm a teapot"),
+									ResponsePagePath:   pointer.ToOrNilIfZeroValue("/teapot"),
 								}},
 							},
 							DefaultCacheBehavior: &svcsdk.DefaultCacheBehavior{
 								AllowedMethods: &svcsdk.AllowedMethods{
-									Items: []*string{pointer.String("GET")},
+									Items: []*string{pointer.ToOrNilIfZeroValue("GET")},
 									CachedMethods: &svcsdk.CachedMethods{
-										Items: []*string{pointer.String("GET")},
+										Items: []*string{pointer.ToOrNilIfZeroValue("GET")},
 									},
 								},
-								CachePolicyId:          pointer.String("example"),
-								Compress:               pointer.Bool(true),
-								DefaultTTL:             pointer.Int64(42),
-								FieldLevelEncryptionId: pointer.String("example"),
+								CachePolicyId:          pointer.ToOrNilIfZeroValue("example"),
+								Compress:               pointer.ToOrNilIfZeroValue(true),
+								DefaultTTL:             ptr.To[int64](42),
+								FieldLevelEncryptionId: pointer.ToOrNilIfZeroValue("example"),
 								ForwardedValues: &svcsdk.ForwardedValues{
 									Cookies: &svcsdk.CookiePreference{
-										Forward: pointer.String("example"),
+										Forward: pointer.ToOrNilIfZeroValue("example"),
 										WhitelistedNames: &svcsdk.CookieNames{
-											Items: []*string{pointer.String("example")},
+											Items: []*string{pointer.ToOrNilIfZeroValue("example")},
 										},
 									},
 									Headers: &svcsdk.Headers{
-										Items: []*string{pointer.String("X-Hello")},
+										Items: []*string{pointer.ToOrNilIfZeroValue("X-Hello")},
 									},
-									QueryString: pointer.Bool(true),
+									QueryString: pointer.ToOrNilIfZeroValue(true),
 									QueryStringCacheKeys: &svcsdk.QueryStringCacheKeys{
-										Items: []*string{pointer.String("search")},
+										Items: []*string{pointer.ToOrNilIfZeroValue("search")},
 									},
 								},
 								LambdaFunctionAssociations: &svcsdk.LambdaFunctionAssociations{
 									Items: []*svcsdk.LambdaFunctionAssociation{{
-										EventType:         pointer.String("good"),
-										IncludeBody:       pointer.Bool(true),
-										LambdaFunctionARN: pointer.String("arn"),
+										EventType:         pointer.ToOrNilIfZeroValue("good"),
+										IncludeBody:       pointer.ToOrNilIfZeroValue(true),
+										LambdaFunctionARN: pointer.ToOrNilIfZeroValue("arn"),
 									}},
 								},
-								MaxTTL:                pointer.Int64(42),
-								MinTTL:                pointer.Int64(42),
-								OriginRequestPolicyId: pointer.String("example"),
-								RealtimeLogConfigArn:  pointer.String("example"),
-								SmoothStreaming:       pointer.Bool(true),
-								TargetOriginId:        pointer.String("example"),
+								MaxTTL:                ptr.To[int64](42),
+								MinTTL:                ptr.To[int64](42),
+								OriginRequestPolicyId: pointer.ToOrNilIfZeroValue("example"),
+								RealtimeLogConfigArn:  pointer.ToOrNilIfZeroValue("example"),
+								SmoothStreaming:       pointer.ToOrNilIfZeroValue(true),
+								TargetOriginId:        pointer.ToOrNilIfZeroValue("example"),
 								TrustedKeyGroups: &svcsdk.TrustedKeyGroups{
-									Enabled: pointer.Bool(true),
-									Items:   []*string{pointer.String("the-good-key")},
+									Enabled: pointer.ToOrNilIfZeroValue(true),
+									Items:   []*string{pointer.ToOrNilIfZeroValue("the-good-key")},
 								},
 								TrustedSigners: &svcsdk.TrustedSigners{
-									Enabled: pointer.Bool(true),
-									Items:   []*string{pointer.String("the-good-signer")},
+									Enabled: pointer.ToOrNilIfZeroValue(true),
+									Items:   []*string{pointer.ToOrNilIfZeroValue("the-good-signer")},
 								},
 							},
-							DefaultRootObject: pointer.String("the-good-one"),
-							Enabled:           pointer.Bool(true),
-							HttpVersion:       pointer.String("1.1"),
-							IsIPV6Enabled:     pointer.Bool(true),
+							DefaultRootObject: pointer.ToOrNilIfZeroValue("the-good-one"),
+							Enabled:           pointer.ToOrNilIfZeroValue(true),
+							HttpVersion:       pointer.ToOrNilIfZeroValue("1.1"),
+							IsIPV6Enabled:     pointer.ToOrNilIfZeroValue(true),
 							Logging: &svcsdk.LoggingConfig{
-								Bucket:         pointer.String("big-logs"),
-								Enabled:        pointer.Bool(true),
-								IncludeCookies: pointer.Bool(true),
-								Prefix:         pointer.String("one-large-log-"),
+								Bucket:         pointer.ToOrNilIfZeroValue("big-logs"),
+								Enabled:        pointer.ToOrNilIfZeroValue(true),
+								IncludeCookies: pointer.ToOrNilIfZeroValue(true),
+								Prefix:         pointer.ToOrNilIfZeroValue("one-large-log-"),
 							},
 							OriginGroups: &svcsdk.OriginGroups{
 								Items: []*svcsdk.OriginGroup{{
 									FailoverCriteria: &svcsdk.OriginGroupFailoverCriteria{
 										StatusCodes: &svcsdk.StatusCodes{
-											Items: []*int64{pointer.Int64(418)},
+											Items: []*int64{ptr.To[int64](418)},
 										},
 									},
 									Members: &svcsdk.OriginGroupMembers{
 										Items: []*svcsdk.OriginGroupMember{{
-											OriginId: pointer.String("example"),
+											OriginId: pointer.ToOrNilIfZeroValue("example"),
 										}},
 									},
 								}},
 							},
 							Origins: &svcsdk.Origins{
 								Items: []*svcsdk.Origin{{
-									ConnectionAttempts: pointer.Int64(42),
-									ConnectionTimeout:  pointer.Int64(42),
+									ConnectionAttempts: ptr.To[int64](42),
+									ConnectionTimeout:  ptr.To[int64](42),
 									CustomHeaders: &svcsdk.CustomHeaders{
 										Items: []*svcsdk.OriginCustomHeader{{
-											HeaderName:  pointer.String("X-Cool"),
-											HeaderValue: pointer.String("very"),
+											HeaderName:  pointer.ToOrNilIfZeroValue("X-Cool"),
+											HeaderValue: pointer.ToOrNilIfZeroValue("very"),
 										}},
 									},
 									CustomOriginConfig: &svcsdk.CustomOriginConfig{
-										HTTPPort:               pointer.Int64(8080),
-										HTTPSPort:              pointer.Int64(443),
-										OriginKeepaliveTimeout: pointer.Int64(42),
-										OriginProtocolPolicy:   pointer.String("all-of-them"),
-										OriginReadTimeout:      pointer.Int64(42),
+										HTTPPort:               ptr.To[int64](8080),
+										HTTPSPort:              ptr.To[int64](443),
+										OriginKeepaliveTimeout: ptr.To[int64](42),
+										OriginProtocolPolicy:   pointer.ToOrNilIfZeroValue("all-of-them"),
+										OriginReadTimeout:      ptr.To[int64](42),
 										OriginSslProtocols: &svcsdk.OriginSslProtocols{
-											Items: []*string{pointer.String("TLS_1.2")},
+											Items: []*string{pointer.ToOrNilIfZeroValue("TLS_1.2")},
 										},
 									},
-									DomainName: pointer.String("example.org"),
-									Id:         pointer.String("custom"),
-									OriginPath: pointer.String("/"),
+									DomainName: pointer.ToOrNilIfZeroValue("example.org"),
+									Id:         pointer.ToOrNilIfZeroValue("custom"),
+									OriginPath: pointer.ToOrNilIfZeroValue("/"),
 									OriginShield: &svcsdk.OriginShield{
-										Enabled:            pointer.Bool(true),
-										OriginShieldRegion: pointer.String("us-east-1"),
+										Enabled:            pointer.ToOrNilIfZeroValue(true),
+										OriginShieldRegion: pointer.ToOrNilIfZeroValue("us-east-1"),
 									},
 									S3OriginConfig: &svcsdk.S3OriginConfig{
-										OriginAccessIdentity: pointer.String("cool-guy"),
+										OriginAccessIdentity: pointer.ToOrNilIfZeroValue("cool-guy"),
 									},
 								}},
 							},
-							PriceClass: pointer.String("really-cheap"),
+							PriceClass: pointer.ToOrNilIfZeroValue("really-cheap"),
 							Restrictions: &svcsdk.Restrictions{
 								GeoRestriction: &svcsdk.GeoRestriction{
-									RestrictionType: pointer.String("no-australians"),
-									Items:           []*string{pointer.String("negz"), pointer.String("kylie")},
+									RestrictionType: pointer.ToOrNilIfZeroValue("no-australians"),
+									Items:           []*string{pointer.ToOrNilIfZeroValue("negz"), pointer.ToOrNilIfZeroValue("kylie")},
 								},
 							},
 							ViewerCertificate: &svcsdk.ViewerCertificate{
-								ACMCertificateArn:            pointer.String("example"),
-								Certificate:                  pointer.String("example"),
-								CertificateSource:            pointer.String("trusty-source"),
-								CloudFrontDefaultCertificate: pointer.Bool(false),
-								IAMCertificateId:             pointer.String("example"),
-								MinimumProtocolVersion:       pointer.String("TLS_1.2"),
-								SSLSupportMethod:             pointer.String("fax"),
+								ACMCertificateArn:            pointer.ToOrNilIfZeroValue("example"),
+								Certificate:                  pointer.ToOrNilIfZeroValue("example"),
+								CertificateSource:            pointer.ToOrNilIfZeroValue("trusty-source"),
+								CloudFrontDefaultCertificate: pointer.ToOrNilIfZeroValue(false),
+								IAMCertificateId:             pointer.ToOrNilIfZeroValue("example"),
+								MinimumProtocolVersion:       pointer.ToOrNilIfZeroValue("TLS_1.2"),
+								SSLSupportMethod:             pointer.ToOrNilIfZeroValue("fax"),
 							},
-							WebACLId: pointer.String("example"),
+							WebACLId: pointer.ToOrNilIfZeroValue("example"),
 						},
 					},
 				},
@@ -331,188 +332,188 @@ func TestLateInitialize(t *testing.T) {
 			want: &svcapitypes.DistributionParameters{
 				DistributionConfig: &svcapitypes.DistributionConfig{
 					Aliases: &svcapitypes.Aliases{
-						Items: []*string{pointer.String("example.org")},
+						Items: []*string{pointer.ToOrNilIfZeroValue("example.org")},
 					},
 					CacheBehaviors: &svcapitypes.CacheBehaviors{
 						Items: []*svcapitypes.CacheBehavior{{
 							AllowedMethods: &svcapitypes.AllowedMethods{
-								Items: []*string{pointer.String("GET")},
+								Items: []*string{pointer.ToOrNilIfZeroValue("GET")},
 								CachedMethods: &svcapitypes.CachedMethods{
-									Items: []*string{pointer.String("GET")},
+									Items: []*string{pointer.ToOrNilIfZeroValue("GET")},
 								},
 							},
-							CachePolicyID:          pointer.String("example"),
-							Compress:               pointer.Bool(true),
-							DefaultTTL:             pointer.Int64(42),
-							FieldLevelEncryptionID: pointer.String("example"),
+							CachePolicyID:          pointer.ToOrNilIfZeroValue("example"),
+							Compress:               pointer.ToOrNilIfZeroValue(true),
+							DefaultTTL:             ptr.To[int64](42),
+							FieldLevelEncryptionID: pointer.ToOrNilIfZeroValue("example"),
 							ForwardedValues: &svcapitypes.ForwardedValues{
 								Cookies: &svcapitypes.CookiePreference{
-									Forward: pointer.String("example"),
+									Forward: pointer.ToOrNilIfZeroValue("example"),
 									WhitelistedNames: &svcapitypes.CookieNames{
-										Items: []*string{pointer.String("example")},
+										Items: []*string{pointer.ToOrNilIfZeroValue("example")},
 									},
 								},
 								Headers: &svcapitypes.Headers{
-									Items: []*string{pointer.String("X-Hello")},
+									Items: []*string{pointer.ToOrNilIfZeroValue("X-Hello")},
 								},
-								QueryString: pointer.Bool(true),
+								QueryString: pointer.ToOrNilIfZeroValue(true),
 								QueryStringCacheKeys: &svcapitypes.QueryStringCacheKeys{
-									Items: []*string{pointer.String("search")},
+									Items: []*string{pointer.ToOrNilIfZeroValue("search")},
 								},
 							},
 							LambdaFunctionAssociations: &svcapitypes.LambdaFunctionAssociations{
 								Items: []*svcapitypes.LambdaFunctionAssociation{{
-									EventType:         pointer.String("good"),
-									IncludeBody:       pointer.Bool(true),
-									LambdaFunctionARN: pointer.String("arn"),
+									EventType:         pointer.ToOrNilIfZeroValue("good"),
+									IncludeBody:       pointer.ToOrNilIfZeroValue(true),
+									LambdaFunctionARN: pointer.ToOrNilIfZeroValue("arn"),
 								}},
 							},
-							MaxTTL:                pointer.Int64(42),
-							MinTTL:                pointer.Int64(42),
-							OriginRequestPolicyID: pointer.String("example"),
-							PathPattern:           pointer.String("example"),
-							RealtimeLogConfigARN:  pointer.String("example"),
-							SmoothStreaming:       pointer.Bool(true),
-							TargetOriginID:        pointer.String("example"),
+							MaxTTL:                ptr.To[int64](42),
+							MinTTL:                ptr.To[int64](42),
+							OriginRequestPolicyID: pointer.ToOrNilIfZeroValue("example"),
+							PathPattern:           pointer.ToOrNilIfZeroValue("example"),
+							RealtimeLogConfigARN:  pointer.ToOrNilIfZeroValue("example"),
+							SmoothStreaming:       pointer.ToOrNilIfZeroValue(true),
+							TargetOriginID:        pointer.ToOrNilIfZeroValue("example"),
 							TrustedKeyGroups: &svcapitypes.TrustedKeyGroups{
-								Enabled: pointer.Bool(true),
-								Items:   []*string{pointer.String("the-good-key")},
+								Enabled: pointer.ToOrNilIfZeroValue(true),
+								Items:   []*string{pointer.ToOrNilIfZeroValue("the-good-key")},
 							},
 							TrustedSigners: &svcapitypes.TrustedSigners{
-								Enabled: pointer.Bool(true),
-								Items:   []*string{pointer.String("the-good-signer")},
+								Enabled: pointer.ToOrNilIfZeroValue(true),
+								Items:   []*string{pointer.ToOrNilIfZeroValue("the-good-signer")},
 							},
 						}},
 					},
 					CustomErrorResponses: &svcapitypes.CustomErrorResponses{
 						Items: []*svcapitypes.CustomErrorResponse{{
-							ErrorCachingMinTTL: pointer.Int64(42),
-							ErrorCode:          pointer.Int64(418),
-							ResponseCode:       pointer.String("I'm a teapot"),
-							ResponsePagePath:   pointer.String("/teapot"),
+							ErrorCachingMinTTL: ptr.To[int64](42),
+							ErrorCode:          ptr.To[int64](418),
+							ResponseCode:       pointer.ToOrNilIfZeroValue("I'm a teapot"),
+							ResponsePagePath:   pointer.ToOrNilIfZeroValue("/teapot"),
 						}},
 					},
 					DefaultCacheBehavior: &svcapitypes.DefaultCacheBehavior{
 						AllowedMethods: &svcapitypes.AllowedMethods{
-							Items: []*string{pointer.String("GET")},
+							Items: []*string{pointer.ToOrNilIfZeroValue("GET")},
 							CachedMethods: &svcapitypes.CachedMethods{
-								Items: []*string{pointer.String("GET")},
+								Items: []*string{pointer.ToOrNilIfZeroValue("GET")},
 							},
 						},
-						CachePolicyID:          pointer.String("example"),
-						Compress:               pointer.Bool(true),
-						DefaultTTL:             pointer.Int64(42),
-						FieldLevelEncryptionID: pointer.String("example"),
+						CachePolicyID:          pointer.ToOrNilIfZeroValue("example"),
+						Compress:               pointer.ToOrNilIfZeroValue(true),
+						DefaultTTL:             ptr.To[int64](42),
+						FieldLevelEncryptionID: pointer.ToOrNilIfZeroValue("example"),
 						ForwardedValues: &svcapitypes.ForwardedValues{
 							Cookies: &svcapitypes.CookiePreference{
-								Forward: pointer.String("example"),
+								Forward: pointer.ToOrNilIfZeroValue("example"),
 								WhitelistedNames: &svcapitypes.CookieNames{
-									Items: []*string{pointer.String("example")},
+									Items: []*string{pointer.ToOrNilIfZeroValue("example")},
 								},
 							},
 							Headers: &svcapitypes.Headers{
-								Items: []*string{pointer.String("X-Hello")},
+								Items: []*string{pointer.ToOrNilIfZeroValue("X-Hello")},
 							},
-							QueryString: pointer.Bool(true),
+							QueryString: pointer.ToOrNilIfZeroValue(true),
 							QueryStringCacheKeys: &svcapitypes.QueryStringCacheKeys{
-								Items: []*string{pointer.String("search")},
+								Items: []*string{pointer.ToOrNilIfZeroValue("search")},
 							},
 						},
 						LambdaFunctionAssociations: &svcapitypes.LambdaFunctionAssociations{
 							Items: []*svcapitypes.LambdaFunctionAssociation{{
-								EventType:         pointer.String("good"),
-								IncludeBody:       pointer.Bool(true),
-								LambdaFunctionARN: pointer.String("arn"),
+								EventType:         pointer.ToOrNilIfZeroValue("good"),
+								IncludeBody:       pointer.ToOrNilIfZeroValue(true),
+								LambdaFunctionARN: pointer.ToOrNilIfZeroValue("arn"),
 							}},
 						},
-						MaxTTL:                pointer.Int64(42),
-						MinTTL:                pointer.Int64(42),
-						OriginRequestPolicyID: pointer.String("example"),
-						RealtimeLogConfigARN:  pointer.String("example"),
-						SmoothStreaming:       pointer.Bool(true),
-						TargetOriginID:        pointer.String("example"),
+						MaxTTL:                ptr.To[int64](42),
+						MinTTL:                ptr.To[int64](42),
+						OriginRequestPolicyID: pointer.ToOrNilIfZeroValue("example"),
+						RealtimeLogConfigARN:  pointer.ToOrNilIfZeroValue("example"),
+						SmoothStreaming:       pointer.ToOrNilIfZeroValue(true),
+						TargetOriginID:        pointer.ToOrNilIfZeroValue("example"),
 						TrustedKeyGroups: &svcapitypes.TrustedKeyGroups{
-							Enabled: pointer.Bool(true),
-							Items:   []*string{pointer.String("the-good-key")},
+							Enabled: pointer.ToOrNilIfZeroValue(true),
+							Items:   []*string{pointer.ToOrNilIfZeroValue("the-good-key")},
 						},
 						TrustedSigners: &svcapitypes.TrustedSigners{
-							Enabled: pointer.Bool(true),
-							Items:   []*string{pointer.String("the-good-signer")},
+							Enabled: pointer.ToOrNilIfZeroValue(true),
+							Items:   []*string{pointer.ToOrNilIfZeroValue("the-good-signer")},
 						},
 					},
-					DefaultRootObject: pointer.String("the-good-one"),
-					Enabled:           pointer.Bool(true),
-					HTTPVersion:       pointer.String("1.1"),
-					IsIPV6Enabled:     pointer.Bool(true),
+					DefaultRootObject: pointer.ToOrNilIfZeroValue("the-good-one"),
+					Enabled:           pointer.ToOrNilIfZeroValue(true),
+					HTTPVersion:       pointer.ToOrNilIfZeroValue("1.1"),
+					IsIPV6Enabled:     pointer.ToOrNilIfZeroValue(true),
 					Logging: &svcapitypes.LoggingConfig{
-						Bucket:         pointer.String("big-logs"),
-						Enabled:        pointer.Bool(true),
-						IncludeCookies: pointer.Bool(true),
-						Prefix:         pointer.String("one-large-log-"),
+						Bucket:         pointer.ToOrNilIfZeroValue("big-logs"),
+						Enabled:        pointer.ToOrNilIfZeroValue(true),
+						IncludeCookies: pointer.ToOrNilIfZeroValue(true),
+						Prefix:         pointer.ToOrNilIfZeroValue("one-large-log-"),
 					},
 					OriginGroups: &svcapitypes.OriginGroups{
 						Items: []*svcapitypes.OriginGroup{{
 							FailoverCriteria: &svcapitypes.OriginGroupFailoverCriteria{
 								StatusCodes: &svcapitypes.StatusCodes{
-									Items: []*int64{pointer.Int64(418)},
+									Items: []*int64{ptr.To[int64](418)},
 								},
 							},
 							Members: &svcapitypes.OriginGroupMembers{
 								Items: []*svcapitypes.OriginGroupMember{{
-									OriginID: pointer.String("example"),
+									OriginID: pointer.ToOrNilIfZeroValue("example"),
 								}},
 							},
 						}},
 					},
 					Origins: &svcapitypes.Origins{
 						Items: []*svcapitypes.Origin{{
-							ConnectionAttempts: pointer.Int64(42),
-							ConnectionTimeout:  pointer.Int64(42),
+							ConnectionAttempts: ptr.To[int64](42),
+							ConnectionTimeout:  ptr.To[int64](42),
 							CustomHeaders: &svcapitypes.CustomHeaders{
 								Items: []*svcapitypes.OriginCustomHeader{{
-									HeaderName:  pointer.String("X-Cool"),
-									HeaderValue: pointer.String("very"),
+									HeaderName:  pointer.ToOrNilIfZeroValue("X-Cool"),
+									HeaderValue: pointer.ToOrNilIfZeroValue("very"),
 								}},
 							},
 							CustomOriginConfig: &svcapitypes.CustomOriginConfig{
-								HTTPPort:               pointer.Int64(8080),
-								HTTPSPort:              pointer.Int64(443),
-								OriginKeepaliveTimeout: pointer.Int64(42),
-								OriginProtocolPolicy:   pointer.String("all-of-them"),
-								OriginReadTimeout:      pointer.Int64(42),
+								HTTPPort:               ptr.To[int64](8080),
+								HTTPSPort:              ptr.To[int64](443),
+								OriginKeepaliveTimeout: ptr.To[int64](42),
+								OriginProtocolPolicy:   pointer.ToOrNilIfZeroValue("all-of-them"),
+								OriginReadTimeout:      ptr.To[int64](42),
 								OriginSSLProtocols: &svcapitypes.OriginSSLProtocols{
-									Items: []*string{pointer.String("TLS_1.2")},
+									Items: []*string{pointer.ToOrNilIfZeroValue("TLS_1.2")},
 								},
 							},
-							DomainName: pointer.String("example.org"),
-							ID:         pointer.String("custom"),
-							OriginPath: pointer.String("/"),
+							DomainName: pointer.ToOrNilIfZeroValue("example.org"),
+							ID:         pointer.ToOrNilIfZeroValue("custom"),
+							OriginPath: pointer.ToOrNilIfZeroValue("/"),
 							OriginShield: &svcapitypes.OriginShield{
-								Enabled:            pointer.Bool(true),
-								OriginShieldRegion: pointer.String("us-east-1"),
+								Enabled:            pointer.ToOrNilIfZeroValue(true),
+								OriginShieldRegion: pointer.ToOrNilIfZeroValue("us-east-1"),
 							},
 							S3OriginConfig: &svcapitypes.S3OriginConfig{
-								OriginAccessIdentity: pointer.String("cool-guy"),
+								OriginAccessIdentity: pointer.ToOrNilIfZeroValue("cool-guy"),
 							},
 						}},
 					},
-					PriceClass: pointer.String("really-cheap"),
+					PriceClass: pointer.ToOrNilIfZeroValue("really-cheap"),
 					Restrictions: &svcapitypes.Restrictions{
 						GeoRestriction: &svcapitypes.GeoRestriction{
-							RestrictionType: pointer.String("no-australians"),
-							Items:           []*string{pointer.String("negz"), pointer.String("kylie")},
+							RestrictionType: pointer.ToOrNilIfZeroValue("no-australians"),
+							Items:           []*string{pointer.ToOrNilIfZeroValue("negz"), pointer.ToOrNilIfZeroValue("kylie")},
 						},
 					},
 					ViewerCertificate: &svcapitypes.ViewerCertificate{
-						ACMCertificateARN:            pointer.String("example"),
-						Certificate:                  pointer.String("example"),
-						CertificateSource:            pointer.String("trusty-source"),
-						CloudFrontDefaultCertificate: pointer.Bool(false),
-						IAMCertificateID:             pointer.String("example"),
-						MinimumProtocolVersion:       pointer.String("TLS_1.2"),
-						SSLSupportMethod:             pointer.String("fax"),
+						ACMCertificateARN:            pointer.ToOrNilIfZeroValue("example"),
+						Certificate:                  pointer.ToOrNilIfZeroValue("example"),
+						CertificateSource:            pointer.ToOrNilIfZeroValue("trusty-source"),
+						CloudFrontDefaultCertificate: pointer.ToOrNilIfZeroValue(false),
+						IAMCertificateID:             pointer.ToOrNilIfZeroValue("example"),
+						MinimumProtocolVersion:       pointer.ToOrNilIfZeroValue("TLS_1.2"),
+						SSLSupportMethod:             pointer.ToOrNilIfZeroValue("fax"),
 					},
-					WebACLID: pointer.String("example"),
+					WebACLID: pointer.ToOrNilIfZeroValue("example"),
 				},
 			},
 		},
@@ -525,11 +526,11 @@ func TestLateInitialize(t *testing.T) {
 								{}, // This one has a nil ID.
 								{
 									// This one only exists in desired state.
-									ID: pointer.String("desired-only"),
+									ID: pointer.ToOrNilIfZeroValue("desired-only"),
 								},
 								{
 									// We want to late-init domain-name here.
-									ID: pointer.String("custom"),
+									ID: pointer.ToOrNilIfZeroValue("custom"),
 								},
 							},
 						},
@@ -543,11 +544,11 @@ func TestLateInitialize(t *testing.T) {
 									{}, // This one has a nil Id.
 									{
 										// This one only exists in actual state.
-										Id: pointer.String("actual-only"),
+										Id: pointer.ToOrNilIfZeroValue("actual-only"),
 									},
 									{
-										DomainName: pointer.String("example.org"),
-										Id:         pointer.String("custom"),
+										DomainName: pointer.ToOrNilIfZeroValue("example.org"),
+										Id:         pointer.ToOrNilIfZeroValue("custom"),
 									},
 								},
 							},
@@ -562,11 +563,11 @@ func TestLateInitialize(t *testing.T) {
 							{}, // This one has a nil ID.
 							{
 								// This one only exists in desired state.
-								ID: pointer.String("desired-only"),
+								ID: pointer.ToOrNilIfZeroValue("desired-only"),
 							},
 							{
-								DomainName: pointer.String("example.org"),
-								ID:         pointer.String("custom"),
+								DomainName: pointer.ToOrNilIfZeroValue("example.org"),
+								ID:         pointer.ToOrNilIfZeroValue("custom"),
 							},
 						},
 					},

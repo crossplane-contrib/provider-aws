@@ -144,7 +144,7 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.EmailIdentity, ob
 			if err != nil {
 				return errors.Wrap(err, "private key retrival failed")
 			}
-			obj.DkimSigningAttributes.DomainSigningPrivateKey = pointer.String(base64.StdEncoding.EncodeToString([]byte(pk)))
+			obj.DkimSigningAttributes.DomainSigningPrivateKey = pointer.ToOrNilIfZeroValue(base64.StdEncoding.EncodeToString([]byte(pk)))
 		}
 	}
 	return nil
@@ -202,10 +202,10 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 		dkimSigningAttributesInput := &svcsdk.PutEmailIdentityDkimSigningAttributesInput{
 			EmailIdentity: cr.Spec.ForProvider.EmailIdentity,
 			SigningAttributes: &svcsdk.DkimSigningAttributes{
-				DomainSigningPrivateKey: pointer.String(base64.StdEncoding.EncodeToString([]byte(pk))),
+				DomainSigningPrivateKey: pointer.ToOrNilIfZeroValue(base64.StdEncoding.EncodeToString([]byte(pk))),
 				DomainSigningSelector:   cr.Spec.ForProvider.DkimSigningAttributes.DomainSigningSelector,
 			},
-			SigningAttributesOrigin: pointer.String(dkimSigningAttributeExternal),
+			SigningAttributesOrigin: pointer.ToOrNilIfZeroValue(dkimSigningAttributeExternal),
 		}
 		if _, err := e.client.PutEmailIdentityDkimSigningAttributesWithContext(ctx, dkimSigningAttributesInput); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, "update failed for EmailIdentityDkimSigningAttributes")
@@ -215,7 +215,7 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 	if cr.Spec.ForProvider.DkimSigningAttributes != nil && cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength != nil {
 		dkimSigningAttributesInput := &svcsdk.PutEmailIdentityDkimSigningAttributesInput{
 			EmailIdentity:           cr.Spec.ForProvider.EmailIdentity,
-			SigningAttributesOrigin: pointer.String(dkimSigningAttributeEasyDKIM),
+			SigningAttributesOrigin: pointer.ToOrNilIfZeroValue(dkimSigningAttributeEasyDKIM),
 			SigningAttributes: &svcsdk.DkimSigningAttributes{
 				NextSigningKeyLength: cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength,
 			},

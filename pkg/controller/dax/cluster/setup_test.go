@@ -134,7 +134,7 @@ func withName(value string) daxModifier {
 
 func withStatusName(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Status.AtProvider.ClusterName = pointer.String(value)
+		o.Status.AtProvider.ClusterName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -146,61 +146,61 @@ func withSpec(value svcapitypes.ClusterParameters) daxModifier {
 
 func withDescription(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.Description = pointer.String(value)
+		o.Spec.ForProvider.Description = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withParameterGroupName(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.ParameterGroupName = pointer.String(value)
+		o.Spec.ForProvider.ParameterGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withSubnetGroupName(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.SubnetGroupName = pointer.String(value)
+		o.Spec.ForProvider.SubnetGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withIAMRoleARN(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.IAMRoleARN = pointer.String(value)
+		o.Spec.ForProvider.IAMRoleARN = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withSecurityGroupIDs(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.SecurityGroupIDs = append(o.Spec.ForProvider.SecurityGroupIDs, pointer.String(value))
+		o.Spec.ForProvider.SecurityGroupIDs = append(o.Spec.ForProvider.SecurityGroupIDs, pointer.ToOrNilIfZeroValue(value))
 	}
 }
 
 func withAvailabilityZones(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.AvailabilityZones = append(o.Spec.ForProvider.AvailabilityZones, pointer.String(value))
+		o.Spec.ForProvider.AvailabilityZones = append(o.Spec.ForProvider.AvailabilityZones, pointer.ToOrNilIfZeroValue(value))
 	}
 }
 
 func withPreferredMaintenanceWindow(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.PreferredMaintenanceWindow = pointer.String(value)
+		o.Spec.ForProvider.PreferredMaintenanceWindow = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withClusterEndpointEncryptionType(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.ClusterEndpointEncryptionType = pointer.String(value)
+		o.Spec.ForProvider.ClusterEndpointEncryptionType = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withNodeType(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.NodeType = pointer.String(value)
+		o.Spec.ForProvider.NodeType = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withNotificationTopicARN(value string) daxModifier {
 	return func(o *svcapitypes.Cluster) {
-		o.Spec.ForProvider.NotificationTopicARN = pointer.String(value)
+		o.Spec.ForProvider.NotificationTopicARN = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -218,53 +218,53 @@ func withConditions(value ...xpv1.Condition) daxModifier {
 
 func baseCluster() *dax.Cluster {
 	return &dax.Cluster{
-		ActiveNodes: pointer.Int64(testActiveNodes),
-		ClusterArn:  pointer.String(testClusterARN),
+		ActiveNodes: pointer.ToIntAsInt64(testActiveNodes),
+		ClusterArn:  pointer.ToOrNilIfZeroValue(testClusterARN),
 		ClusterDiscoveryEndpoint: &dax.Endpoint{
-			Address: pointer.String(testEndpointAddress),
-			Port:    pointer.Int64(testEndpointPort),
-			URL:     pointer.String(testEndpointURL),
+			Address: pointer.ToOrNilIfZeroValue(testEndpointAddress),
+			Port:    pointer.ToIntAsInt64(testEndpointPort),
+			URL:     pointer.ToOrNilIfZeroValue(testEndpointURL),
 		},
-		ClusterEndpointEncryptionType: pointer.String(testClusterEndpointEncryptionType),
-		ClusterName:                   pointer.String(testClusterName),
-		Description:                   pointer.String(testDescription),
-		IamRoleArn:                    pointer.String(testIamRoleARN),
-		NodeIdsToRemove:               []*string{pointer.String(testNodeIDToRemove), pointer.String(testOtherNodeIDToRemove)},
-		NodeType:                      pointer.String(testNodeType),
+		ClusterEndpointEncryptionType: pointer.ToOrNilIfZeroValue(testClusterEndpointEncryptionType),
+		ClusterName:                   pointer.ToOrNilIfZeroValue(testClusterName),
+		Description:                   pointer.ToOrNilIfZeroValue(testDescription),
+		IamRoleArn:                    pointer.ToOrNilIfZeroValue(testIamRoleARN),
+		NodeIdsToRemove:               []*string{pointer.ToOrNilIfZeroValue(testNodeIDToRemove), pointer.ToOrNilIfZeroValue(testOtherNodeIDToRemove)},
+		NodeType:                      pointer.ToOrNilIfZeroValue(testNodeType),
 		Nodes: []*dax.Node{
 			{
-				AvailabilityZone:     pointer.String(testAvailabilityZone),
-				NodeId:               pointer.String(testNodeID),
-				NodeStatus:           pointer.String(testNodeStatus),
-				ParameterGroupStatus: pointer.String(testParameterGroupStatus),
+				AvailabilityZone:     pointer.ToOrNilIfZeroValue(testAvailabilityZone),
+				NodeId:               pointer.ToOrNilIfZeroValue(testNodeID),
+				NodeStatus:           pointer.ToOrNilIfZeroValue(testNodeStatus),
+				ParameterGroupStatus: pointer.ToOrNilIfZeroValue(testParameterGroupStatus),
 			},
 			{
-				AvailabilityZone:     pointer.String(testOtherAvailabilityZone),
-				NodeId:               pointer.String(testOtherNodeID),
-				NodeStatus:           pointer.String(testOtherNodeStatus),
-				ParameterGroupStatus: pointer.String(testOtherParameterGroupStatus),
+				AvailabilityZone:     pointer.ToOrNilIfZeroValue(testOtherAvailabilityZone),
+				NodeId:               pointer.ToOrNilIfZeroValue(testOtherNodeID),
+				NodeStatus:           pointer.ToOrNilIfZeroValue(testOtherNodeStatus),
+				ParameterGroupStatus: pointer.ToOrNilIfZeroValue(testOtherParameterGroupStatus),
 			},
 		},
 		NotificationConfiguration: &dax.NotificationConfiguration{
-			TopicArn:    pointer.String(testTopicARN),
-			TopicStatus: pointer.String(testTopicStatus),
+			TopicArn:    pointer.ToOrNilIfZeroValue(testTopicARN),
+			TopicStatus: pointer.ToOrNilIfZeroValue(testTopicStatus),
 		},
 		ParameterGroup: &dax.ParameterGroupStatus{
-			NodeIdsToReboot:      []*string{pointer.String(testNodeIDToReboot)},
-			ParameterApplyStatus: pointer.String(testParameterApplyStatus),
-			ParameterGroupName:   pointer.String(testParameterGroupName),
+			NodeIdsToReboot:      []*string{pointer.ToOrNilIfZeroValue(testNodeIDToReboot)},
+			ParameterApplyStatus: pointer.ToOrNilIfZeroValue(testParameterApplyStatus),
+			ParameterGroupName:   pointer.ToOrNilIfZeroValue(testParameterGroupName),
 		},
-		PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
-		SSEDescription:             &dax.SSEDescription{Status: pointer.String(testSSEDescriptionStatus)},
+		PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+		SSEDescription:             &dax.SSEDescription{Status: pointer.ToOrNilIfZeroValue(testSSEDescriptionStatus)},
 		SecurityGroups: []*dax.SecurityGroupMembership{
 			{
-				SecurityGroupIdentifier: pointer.String(testSecurityGroupIdentifier),
-				Status:                  pointer.String(testSecurityGroupStatus),
+				SecurityGroupIdentifier: pointer.ToOrNilIfZeroValue(testSecurityGroupIdentifier),
+				Status:                  pointer.ToOrNilIfZeroValue(testSecurityGroupStatus),
 			},
 		},
-		Status:      pointer.String(testStatus),
-		SubnetGroup: pointer.String(testSubnetGroup),
-		TotalNodes:  pointer.Int64(2),
+		Status:      pointer.ToOrNilIfZeroValue(testStatus),
+		SubnetGroup: pointer.ToOrNilIfZeroValue(testSubnetGroup),
+		TotalNodes:  pointer.ToIntAsInt64(2),
 	}
 }
 
@@ -272,71 +272,71 @@ func baseClusterParameters() svcapitypes.ClusterParameters {
 	return svcapitypes.ClusterParameters{
 		Region: "",
 		AvailabilityZones: []*string{
-			pointer.String(testAvailabilityZone),
-			pointer.String(testOtherAvailabilityZone),
+			pointer.ToOrNilIfZeroValue(testAvailabilityZone),
+			pointer.ToOrNilIfZeroValue(testOtherAvailabilityZone),
 		},
-		ClusterEndpointEncryptionType: pointer.String(testClusterEndpointEncryptionType),
-		Description:                   pointer.String(testDescription),
-		NodeType:                      pointer.String(testNodeType),
-		PreferredMaintenanceWindow:    pointer.String(testPreferredMaintenanceWindow),
-		ReplicationFactor:             pointer.Int64(testReplicationFactor),
-		SSESpecification:              &svcapitypes.SSESpecification{Enabled: pointer.Bool(testSSESpecificationEnabled)},
-		Tags:                          []*svcapitypes.Tag{{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}},
+		ClusterEndpointEncryptionType: pointer.ToOrNilIfZeroValue(testClusterEndpointEncryptionType),
+		Description:                   pointer.ToOrNilIfZeroValue(testDescription),
+		NodeType:                      pointer.ToOrNilIfZeroValue(testNodeType),
+		PreferredMaintenanceWindow:    pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+		ReplicationFactor:             pointer.ToIntAsInt64(testReplicationFactor),
+		SSESpecification:              &svcapitypes.SSESpecification{Enabled: pointer.ToOrNilIfZeroValue(testSSESpecificationEnabled)},
+		Tags:                          []*svcapitypes.Tag{{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}},
 		CustomClusterParameters: svcapitypes.CustomClusterParameters{
-			NotificationTopicARN: pointer.String(testTopicARN),
-			IAMRoleARN:           pointer.String(testIamRoleARN),
-			ParameterGroupName:   pointer.String(testParameterGroupName),
-			SubnetGroupName:      pointer.String(testSubnetGroupName),
-			SecurityGroupIDs:     []*string{pointer.String(testSecurityGroupIdentifier)},
+			NotificationTopicARN: pointer.ToOrNilIfZeroValue(testTopicARN),
+			IAMRoleARN:           pointer.ToOrNilIfZeroValue(testIamRoleARN),
+			ParameterGroupName:   pointer.ToOrNilIfZeroValue(testParameterGroupName),
+			SubnetGroupName:      pointer.ToOrNilIfZeroValue(testSubnetGroupName),
+			SecurityGroupIDs:     []*string{pointer.ToOrNilIfZeroValue(testSecurityGroupIdentifier)},
 		},
 	}
 }
 
 func baseClusterObservation() svcapitypes.ClusterObservation {
 	return svcapitypes.ClusterObservation{
-		ActiveNodes: pointer.Int64(testActiveNodes),
-		ClusterARN:  pointer.String(testClusterARN),
+		ActiveNodes: pointer.ToIntAsInt64(testActiveNodes),
+		ClusterARN:  pointer.ToOrNilIfZeroValue(testClusterARN),
 		ClusterDiscoveryEndpoint: &svcapitypes.Endpoint{
-			Address: pointer.String(testEndpointAddress),
-			Port:    pointer.Int64(testEndpointPort),
-			URL:     pointer.String(testEndpointURL),
+			Address: pointer.ToOrNilIfZeroValue(testEndpointAddress),
+			Port:    pointer.ToIntAsInt64(testEndpointPort),
+			URL:     pointer.ToOrNilIfZeroValue(testEndpointURL),
 		},
-		ClusterName:     pointer.String(testClusterName),
-		IAMRoleARN:      pointer.String(testIamRoleARN),
-		NodeIDsToRemove: []*string{pointer.String(testNodeIDToRemove), pointer.String(testOtherNodeIDToRemove)},
+		ClusterName:     pointer.ToOrNilIfZeroValue(testClusterName),
+		IAMRoleARN:      pointer.ToOrNilIfZeroValue(testIamRoleARN),
+		NodeIDsToRemove: []*string{pointer.ToOrNilIfZeroValue(testNodeIDToRemove), pointer.ToOrNilIfZeroValue(testOtherNodeIDToRemove)},
 		Nodes: []*svcapitypes.Node{
 			{
-				AvailabilityZone:     pointer.String(testAvailabilityZone),
-				NodeID:               pointer.String(testNodeID),
-				NodeStatus:           pointer.String(testNodeStatus),
-				ParameterGroupStatus: pointer.String(testParameterGroupStatus),
+				AvailabilityZone:     pointer.ToOrNilIfZeroValue(testAvailabilityZone),
+				NodeID:               pointer.ToOrNilIfZeroValue(testNodeID),
+				NodeStatus:           pointer.ToOrNilIfZeroValue(testNodeStatus),
+				ParameterGroupStatus: pointer.ToOrNilIfZeroValue(testParameterGroupStatus),
 			},
 			{
-				AvailabilityZone:     pointer.String(testOtherAvailabilityZone),
-				NodeID:               pointer.String(testOtherNodeID),
-				NodeStatus:           pointer.String(testOtherNodeStatus),
-				ParameterGroupStatus: pointer.String(testOtherParameterGroupStatus),
+				AvailabilityZone:     pointer.ToOrNilIfZeroValue(testOtherAvailabilityZone),
+				NodeID:               pointer.ToOrNilIfZeroValue(testOtherNodeID),
+				NodeStatus:           pointer.ToOrNilIfZeroValue(testOtherNodeStatus),
+				ParameterGroupStatus: pointer.ToOrNilIfZeroValue(testOtherParameterGroupStatus),
 			},
 		},
 		NotificationConfiguration: &svcapitypes.NotificationConfiguration{
-			TopicARN:    pointer.String(testTopicARN),
-			TopicStatus: pointer.String(testTopicStatus),
+			TopicARN:    pointer.ToOrNilIfZeroValue(testTopicARN),
+			TopicStatus: pointer.ToOrNilIfZeroValue(testTopicStatus),
 		},
 		ParameterGroup: &svcapitypes.ParameterGroupStatus_SDK{
-			NodeIDsToReboot:      []*string{pointer.String(testNodeIDToReboot)},
-			ParameterApplyStatus: pointer.String(testParameterApplyStatus),
-			ParameterGroupName:   pointer.String(testParameterGroupName),
+			NodeIDsToReboot:      []*string{pointer.ToOrNilIfZeroValue(testNodeIDToReboot)},
+			ParameterApplyStatus: pointer.ToOrNilIfZeroValue(testParameterApplyStatus),
+			ParameterGroupName:   pointer.ToOrNilIfZeroValue(testParameterGroupName),
 		},
-		SSEDescription: &svcapitypes.SSEDescription{Status: pointer.String(testSSEDescriptionStatus)},
+		SSEDescription: &svcapitypes.SSEDescription{Status: pointer.ToOrNilIfZeroValue(testSSEDescriptionStatus)},
 		SecurityGroups: []*svcapitypes.SecurityGroupMembership{
 			{
-				SecurityGroupIdentifier: pointer.String(testSecurityGroupIdentifier),
-				Status:                  pointer.String(testSecurityGroupStatus),
+				SecurityGroupIdentifier: pointer.ToOrNilIfZeroValue(testSecurityGroupIdentifier),
+				Status:                  pointer.ToOrNilIfZeroValue(testSecurityGroupStatus),
 			},
 		},
-		Status:      pointer.String(testStatus),
-		SubnetGroup: pointer.String(testSubnetGroup),
-		TotalNodes:  pointer.Int64(2),
+		Status:      pointer.ToOrNilIfZeroValue(testStatus),
+		SubnetGroup: pointer.ToOrNilIfZeroValue(testSubnetGroup),
+		TotalNodes:  pointer.ToIntAsInt64(2),
 	}
 }
 
@@ -879,7 +879,7 @@ func TestUpdate(t *testing.T) {
 				dax: &fake.MockDaxClient{
 					MockUpdateClusterWithContext: func(c context.Context, uci *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
 						return &dax.UpdateClusterOutput{Cluster: &dax.Cluster{
-							ClusterName: pointer.String(testClusterName),
+							ClusterName: pointer.ToOrNilIfZeroValue(testClusterName),
 						}}, nil
 					},
 				},
@@ -899,8 +899,8 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateClusterInput{
-								ClusterName: pointer.String(testClusterName),
-								Description: pointer.String(testDescription),
+								ClusterName: pointer.ToOrNilIfZeroValue(testClusterName),
+								Description: pointer.ToOrNilIfZeroValue(testDescription),
 							},
 						},
 					},
@@ -912,7 +912,7 @@ func TestUpdate(t *testing.T) {
 				dax: &fake.MockDaxClient{
 					MockUpdateClusterWithContext: func(c context.Context, uci *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
 						return &dax.UpdateClusterOutput{Cluster: &dax.Cluster{
-							ClusterName: pointer.String(testClusterName),
+							ClusterName: pointer.ToOrNilIfZeroValue(testClusterName),
 						}}, nil
 					},
 				},
@@ -932,12 +932,12 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateClusterInput{
-								ClusterName:                pointer.String(testClusterName),
-								Description:                pointer.String(testDescription),
-								NotificationTopicArn:       pointer.String(testTopicARN),
-								ParameterGroupName:         pointer.String(testParameterGroupName),
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
-								SecurityGroupIds:           []*string{pointer.String(testSecurityGroupIdentifier)},
+								ClusterName:                pointer.ToOrNilIfZeroValue(testClusterName),
+								Description:                pointer.ToOrNilIfZeroValue(testDescription),
+								NotificationTopicArn:       pointer.ToOrNilIfZeroValue(testTopicARN),
+								ParameterGroupName:         pointer.ToOrNilIfZeroValue(testParameterGroupName),
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+								SecurityGroupIds:           []*string{pointer.ToOrNilIfZeroValue(testSecurityGroupIdentifier)},
 							},
 						},
 					},
@@ -949,7 +949,7 @@ func TestUpdate(t *testing.T) {
 				dax: &fake.MockDaxClient{
 					MockUpdateClusterWithContext: func(c context.Context, uci *dax.UpdateClusterInput, o []request.Option) (*dax.UpdateClusterOutput, error) {
 						return &dax.UpdateClusterOutput{Cluster: &dax.Cluster{
-							ClusterName: pointer.String(testClusterName),
+							ClusterName: pointer.ToOrNilIfZeroValue(testClusterName),
 						}}, nil
 					},
 				},
@@ -969,8 +969,8 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateClusterInput{
-								ClusterName:      pointer.String(testClusterName),
-								SecurityGroupIds: []*string{pointer.String(testOtherSecurityGroupIdentifier)},
+								ClusterName:      pointer.ToOrNilIfZeroValue(testClusterName),
+								SecurityGroupIds: []*string{pointer.ToOrNilIfZeroValue(testOtherSecurityGroupIdentifier)},
 							},
 						},
 					},
@@ -999,7 +999,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateClusterInput{
-								ClusterName: pointer.String(testClusterName),
+								ClusterName: pointer.ToOrNilIfZeroValue(testClusterName),
 							},
 						},
 					},
@@ -1067,22 +1067,22 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateClusterInput{
-								AvailabilityZones:             []*string{pointer.String(testAvailabilityZone), pointer.String(testOtherAvailabilityZone)},
-								ClusterEndpointEncryptionType: pointer.String(testClusterEndpointEncryptionType),
-								ClusterName:                   pointer.String(testClusterName),
-								Description:                   pointer.String(testDescription),
-								IamRoleArn:                    pointer.String(testIamRoleARN),
-								NodeType:                      pointer.String(testNodeType),
-								NotificationTopicArn:          pointer.String(testTopicARN),
-								ParameterGroupName:            pointer.String(testParameterGroupName),
-								PreferredMaintenanceWindow:    pointer.String(testPreferredMaintenanceWindow),
-								ReplicationFactor:             pointer.Int64(testReplicationFactor),
-								SSESpecification:              &dax.SSESpecification{Enabled: pointer.Bool(testSSESpecificationEnabled)},
-								SecurityGroupIds:              []*string{pointer.String(testSecurityGroupIdentifier)},
-								SubnetGroupName:               pointer.String(testSubnetGroupName),
+								AvailabilityZones:             []*string{pointer.ToOrNilIfZeroValue(testAvailabilityZone), pointer.ToOrNilIfZeroValue(testOtherAvailabilityZone)},
+								ClusterEndpointEncryptionType: pointer.ToOrNilIfZeroValue(testClusterEndpointEncryptionType),
+								ClusterName:                   pointer.ToOrNilIfZeroValue(testClusterName),
+								Description:                   pointer.ToOrNilIfZeroValue(testDescription),
+								IamRoleArn:                    pointer.ToOrNilIfZeroValue(testIamRoleARN),
+								NodeType:                      pointer.ToOrNilIfZeroValue(testNodeType),
+								NotificationTopicArn:          pointer.ToOrNilIfZeroValue(testTopicARN),
+								ParameterGroupName:            pointer.ToOrNilIfZeroValue(testParameterGroupName),
+								PreferredMaintenanceWindow:    pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+								ReplicationFactor:             pointer.ToIntAsInt64(testReplicationFactor),
+								SSESpecification:              &dax.SSESpecification{Enabled: pointer.ToOrNilIfZeroValue(testSSESpecificationEnabled)},
+								SecurityGroupIds:              []*string{pointer.ToOrNilIfZeroValue(testSecurityGroupIdentifier)},
+								SubnetGroupName:               pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 								Tags: []*dax.Tag{{
-									Key:   pointer.String(testTagKey),
-									Value: pointer.String(testTagValue),
+									Key:   pointer.ToOrNilIfZeroValue(testTagKey),
+									Value: pointer.ToOrNilIfZeroValue(testTagValue),
 								}},
 							},
 						},
@@ -1116,22 +1116,22 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateClusterInput{
-								AvailabilityZones:             []*string{pointer.String(testAvailabilityZone), pointer.String(testOtherAvailabilityZone)},
-								ClusterEndpointEncryptionType: pointer.String(testClusterEndpointEncryptionType),
-								ClusterName:                   pointer.String(testClusterName),
-								Description:                   pointer.String(testDescription),
-								IamRoleArn:                    pointer.String(testIamRoleARN),
-								NodeType:                      pointer.String(testNodeType),
-								NotificationTopicArn:          pointer.String(testTopicARN),
-								ParameterGroupName:            pointer.String(testParameterGroupName),
-								PreferredMaintenanceWindow:    pointer.String(testPreferredMaintenanceWindow),
-								ReplicationFactor:             pointer.Int64(testReplicationFactor),
-								SSESpecification:              &dax.SSESpecification{Enabled: pointer.Bool(testSSESpecificationEnabled)},
-								SecurityGroupIds:              []*string{pointer.String(testSecurityGroupIdentifier)},
-								SubnetGroupName:               pointer.String(testSubnetGroupName),
+								AvailabilityZones:             []*string{pointer.ToOrNilIfZeroValue(testAvailabilityZone), pointer.ToOrNilIfZeroValue(testOtherAvailabilityZone)},
+								ClusterEndpointEncryptionType: pointer.ToOrNilIfZeroValue(testClusterEndpointEncryptionType),
+								ClusterName:                   pointer.ToOrNilIfZeroValue(testClusterName),
+								Description:                   pointer.ToOrNilIfZeroValue(testDescription),
+								IamRoleArn:                    pointer.ToOrNilIfZeroValue(testIamRoleARN),
+								NodeType:                      pointer.ToOrNilIfZeroValue(testNodeType),
+								NotificationTopicArn:          pointer.ToOrNilIfZeroValue(testTopicARN),
+								ParameterGroupName:            pointer.ToOrNilIfZeroValue(testParameterGroupName),
+								PreferredMaintenanceWindow:    pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+								ReplicationFactor:             pointer.ToIntAsInt64(testReplicationFactor),
+								SSESpecification:              &dax.SSESpecification{Enabled: pointer.ToOrNilIfZeroValue(testSSESpecificationEnabled)},
+								SecurityGroupIds:              []*string{pointer.ToOrNilIfZeroValue(testSecurityGroupIdentifier)},
+								SubnetGroupName:               pointer.ToOrNilIfZeroValue(testSubnetGroupName),
 								Tags: []*dax.Tag{{
-									Key:   pointer.String(testTagKey),
-									Value: pointer.String(testTagValue),
+									Key:   pointer.ToOrNilIfZeroValue(testTagKey),
+									Value: pointer.ToOrNilIfZeroValue(testTagValue),
 								}},
 							},
 						},
@@ -1195,7 +1195,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DeleteClusterInput{
-								ClusterName: pointer.String(testClusterName),
+								ClusterName: pointer.ToOrNilIfZeroValue(testClusterName),
 							},
 						},
 					},
@@ -1224,7 +1224,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DeleteClusterInput{
-								ClusterName: pointer.String(testClusterName),
+								ClusterName: pointer.ToOrNilIfZeroValue(testClusterName),
 							},
 						},
 					},

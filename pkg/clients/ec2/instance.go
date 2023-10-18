@@ -183,24 +183,24 @@ func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *typ
 	}
 
 	if attributes.DisableApiTermination != nil {
-		in.DisableAPITermination = pointer.LateInitializeBoolPtr(in.DisableAPITermination, attributes.DisableApiTermination.Value)
+		in.DisableAPITermination = pointer.LateInitialize(in.DisableAPITermination, attributes.DisableApiTermination.Value)
 	}
 
 	if attributes.InstanceInitiatedShutdownBehavior != nil {
-		in.InstanceInitiatedShutdownBehavior = pointer.LateInitializeString(in.InstanceInitiatedShutdownBehavior, attributes.InstanceInitiatedShutdownBehavior.Value)
+		in.InstanceInitiatedShutdownBehavior = pointer.LateInitializeValueFromPtr(in.InstanceInitiatedShutdownBehavior, attributes.InstanceInitiatedShutdownBehavior.Value)
 	}
 
 	if attributes.InstanceType != nil {
-		in.InstanceType = pointer.LateInitializeString(in.InstanceType, attributes.InstanceType.Value)
+		in.InstanceType = pointer.LateInitializeValueFromPtr(in.InstanceType, attributes.InstanceType.Value)
 	}
 
 	if attributes.UserData != nil {
-		in.UserData = pointer.LateInitializeStringPtr(in.UserData, attributes.UserData.Value)
+		in.UserData = pointer.LateInitialize(in.UserData, attributes.UserData.Value)
 	}
 
-	in.EBSOptimized = pointer.LateInitializeBoolPtr(in.EBSOptimized, instance.EbsOptimized)
-	in.KernelID = pointer.LateInitializeStringPtr(in.KernelID, instance.KernelId)
-	in.RAMDiskID = pointer.LateInitializeStringPtr(in.RAMDiskID, instance.RamdiskId)
+	in.EBSOptimized = pointer.LateInitialize(in.EBSOptimized, instance.EbsOptimized)
+	in.KernelID = pointer.LateInitialize(in.KernelID, instance.KernelId)
+	in.RAMDiskID = pointer.LateInitialize(in.RAMDiskID, instance.RamdiskId)
 
 	if len(in.SecurityGroupIDs) == 0 && len(instance.SecurityGroups) != 0 {
 		in.SecurityGroupIDs = make([]string, len(instance.SecurityGroups))

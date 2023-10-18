@@ -93,19 +93,19 @@ func preObserve(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.ListAliase
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.CreateAliasInput) error {
-	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.ToOrNilIfZeroValue("alias/" + meta.GetExternalName(cr))
 	obj.TargetKeyId = cr.Spec.ForProvider.TargetKeyID
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.UpdateAliasInput) error {
-	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.ToOrNilIfZeroValue("alias/" + meta.GetExternalName(cr))
 	obj.TargetKeyId = cr.Spec.ForProvider.TargetKeyID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.DeleteAliasInput) (bool, error) {
-	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.ToOrNilIfZeroValue("alias/" + meta.GetExternalName(cr))
 	return false, nil
 }
 

@@ -46,7 +46,7 @@ func NewCORSConfigurationClient(client s3.BucketClient) *CORSConfigurationClient
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *CORSConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	result, err := in.client.GetBucketCors(ctx, &awss3.GetBucketCorsInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	result, err := in.client.GetBucketCors(ctx, &awss3.GetBucketCorsInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if resource.Ignore(s3.CORSConfigurationNotFound, err) != nil {
 		return NeedsUpdate, errorutils.Wrap(err, corsGetFailed)
 	}
@@ -75,7 +75,7 @@ func (in *CORSConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v
 func (in *CORSConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketCors(ctx,
 		&awss3.DeleteBucketCorsInput{
-			Bucket: pointer.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)),
 		},
 	)
 	return errorutils.Wrap(err, corsDeleteFailed)
@@ -84,7 +84,7 @@ func (in *CORSConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.B
 // LateInitialize does nothing because CORSConfiguration might have been deleted
 // by the user.
 func (in *CORSConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketCors(ctx, &awss3.GetBucketCorsInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketCors(ctx, &awss3.GetBucketCorsInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(resource.Ignore(s3.CORSConfigurationNotFound, err), corsGetFailed)
 	}
@@ -115,7 +115,7 @@ func (in *CORSConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) boo
 // GeneratePutBucketCorsInput creates the input for the PutBucketCors request for the S3 Client
 func GeneratePutBucketCorsInput(name string, config *v1beta1.CORSConfiguration) *awss3.PutBucketCorsInput {
 	bci := &awss3.PutBucketCorsInput{
-		Bucket:            pointer.String(name),
+		Bucket:            pointer.ToOrNilIfZeroValue(name),
 		CORSConfiguration: &types.CORSConfiguration{CORSRules: make([]types.CORSRule, 0)},
 	}
 	for _, cors := range config.CORSRules {

@@ -105,11 +105,11 @@ func GenerateSubscriptionObservation(attr map[string]string) v1beta1.Subscriptio
 // *v1beta1.SubscriptionParameters with the values seen in
 // sns.Subscription
 func LateInitializeSubscription(in *v1beta1.SubscriptionParameters, subAttributes map[string]string) {
-	in.DeliveryPolicy = pointer.LateInitializeStringPtr(in.DeliveryPolicy, pointer.String(subAttributes[SubscriptionDeliveryPolicy]))
-	in.FilterPolicy = pointer.LateInitializeStringPtr(in.FilterPolicy, pointer.String(subAttributes[SubscriptionFilterPolicy]))
-	in.FilterPolicyScope = pointer.LateInitializeStringPtr(in.FilterPolicyScope, pointer.String(subAttributes[SubscriptionFilterPolicyScope]))
-	in.RawMessageDelivery = pointer.LateInitializeStringPtr(in.RawMessageDelivery, pointer.String(subAttributes[SubscriptionRawMessageDelivery]))
-	in.RedrivePolicy = pointer.LateInitializeStringPtr(in.RedrivePolicy, pointer.String(subAttributes[SubscriptionRedrivePolicy]))
+	in.DeliveryPolicy = pointer.LateInitialize(in.DeliveryPolicy, pointer.ToOrNilIfZeroValue(subAttributes[SubscriptionDeliveryPolicy]))
+	in.FilterPolicy = pointer.LateInitialize(in.FilterPolicy, pointer.ToOrNilIfZeroValue(subAttributes[SubscriptionFilterPolicy]))
+	in.FilterPolicyScope = pointer.LateInitialize(in.FilterPolicyScope, pointer.ToOrNilIfZeroValue(subAttributes[SubscriptionFilterPolicyScope]))
+	in.RawMessageDelivery = pointer.LateInitialize(in.RawMessageDelivery, pointer.ToOrNilIfZeroValue(subAttributes[SubscriptionRawMessageDelivery]))
+	in.RedrivePolicy = pointer.LateInitialize(in.RedrivePolicy, pointer.ToOrNilIfZeroValue(subAttributes[SubscriptionRedrivePolicy]))
 }
 
 // getSubAttributes returns map of SNS Sunscription Attributes
