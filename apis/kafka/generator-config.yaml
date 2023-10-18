@@ -18,3 +18,9 @@ resources:
       errors:
         404:
           code: NotFoundException
+    fields:
+      ClusterPolicyVersion:
+        is_read_only: true
+        from:
+          operation: GetClusterPolicy
+          path: CurrentVersion
