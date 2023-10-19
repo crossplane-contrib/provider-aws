@@ -28,13 +28,13 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.12.0
 	github.com/aws/smithy-go v1.13.3
-	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	github.com/crossplane/crossplane-runtime v0.20.0
 	github.com/crossplane/crossplane-tools v0.0.0-20230714144037-2684f4bc7638
 	github.com/evanphx/json-patch v4.12.0+incompatible
 	github.com/go-ini/ini v1.67.0
 	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.9
+	github.com/jmattheis/goverter v0.18.0
 	github.com/mattbaird/jsonpatch v0.0.0-20200820163806-098863c1fc24
 	github.com/mitchellh/copystructure v1.0.0
 	github.com/onsi/gomega v1.27.7
@@ -70,7 +70,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cenkalti/backoff/v3 v3.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/dave/jennifer v1.4.1 // indirect
+	github.com/dave/jennifer v1.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
