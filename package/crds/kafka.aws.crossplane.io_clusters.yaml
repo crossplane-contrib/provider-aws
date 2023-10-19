@@ -1295,6 +1295,9 @@ spec:
                   clusterARN:
                     description: The Amazon Resource Name (ARN) of the cluster.
                     type: string
+                  clusterPolicyVersion:
+                    description: Cluster policy version.
+                    type: string
                   state:
                     description: The state of the cluster. The possible states are
                       ACTIVE, CREATING, DELETING, FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER,

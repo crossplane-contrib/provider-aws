@@ -375,7 +375,7 @@ func (u *hooks) getClusterPolicyState(ctx context.Context, wanted *svcapitypes.C
 	})
 	if IsNotFound(err) {
 		if wanted.Spec.ForProvider.ClusterPolicy == nil {
-			return subResourceOK, "spec.forProvider.clusterPolicy", nil
+			return subResourceOK, "", nil
 		}
 		return subResourceNeedsUpdate, "spec.forProvider.clusterPolicy", nil
 	}
@@ -383,11 +383,16 @@ func (u *hooks) getClusterPolicyState(ctx context.Context, wanted *svcapitypes.C
 		return subResourceOK, "", errors.Wrap(err, errGetClusterPolicy)
 	}
 
+	// write clusterPolicy currentVersion into status to be used in potential update and to be visible for user
+	wanted.Status.AtProvider.ClusterPolicyVersion = res.CurrentVersion
+
 	if res.Policy == nil {
 		if wanted.Spec.ForProvider.ClusterPolicy == nil {
-			return subResourceNeedsDeletion, "spec.forProvider.clusterPolicy", nil
+			return subResourceOK, "", nil
 		}
-		return subResourceOK, "spec.forProvider.clusterPolicy", nil
+		return subResourceNeedsUpdate, "spec.forProvider.clusterPolicy", nil
+	} else if wanted.Spec.ForProvider.ClusterPolicy == nil {
+		return subResourceNeedsDeletion, "spec.forProvider.clusterPolicy", nil
 	}
 
 	currentPolicy, err := policy.ParsePolicyString(*res.Policy)
@@ -990,8 +995,9 @@ func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 				return managed.ExternalUpdate{}, errors.Wrap(err, errMarshalClusterPolicy)
 			}
 			_, err = u.client.PutClusterPolicyWithContext(ctx, &svcsdk.PutClusterPolicyInput{
-				ClusterArn: &currentARN,
-				Policy:     policyRaw,
+				ClusterArn:     &currentARN,
+				CurrentVersion: cr.Status.AtProvider.ClusterPolicyVersion,
+				Policy:         policyRaw,
 			})
 			if err != nil {
 				return managed.ExternalUpdate{}, errors.Wrap(err, errPutClusterPolicy)
