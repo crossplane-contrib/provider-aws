@@ -1,0 +1,14 @@
+apiVersion: firehose.aws.crossplane.io/v1alpha1
+kind: DeliveryStream
+metadata:
+  name: firehose-deliverystream
+spec:
+  forProvider:
+    region: us-east-1
+    deliveryStreamName: firehose-deliverystream
+    deliveryStreamType: DirectPut
+    extendedS3DestinationConfiguration:
+      roleARN: arn:aws:iam::000000000000:role/Firehose-Example-Role
+      bucketARN: arn:aws:s3:::bucket-example
+  providerConfigRef:
+      name: example
