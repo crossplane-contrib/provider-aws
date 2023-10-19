@@ -506,6 +506,11 @@ func (in *ClusterObservation) DeepCopyInto(out *ClusterObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ClusterPolicyVersion != nil {
+		in, out := &in.ClusterPolicyVersion, &out.ClusterPolicyVersion
+		*out = new(string)
+		**out = **in
+	}
 	if in.State != nil {
 		in, out := &in.State, &out.State
 		*out = new(string)

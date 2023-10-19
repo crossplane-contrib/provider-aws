@@ -66,6 +66,8 @@ type ClusterSpec struct {
 type ClusterObservation struct {
 	// The Amazon Resource Name (ARN) of the cluster.
 	ClusterARN *string `json:"clusterARN,omitempty"`
+	// Cluster policy version.
+	ClusterPolicyVersion *string `json:"clusterPolicyVersion,omitempty"`
 	// The state of the cluster. The possible states are ACTIVE, CREATING, DELETING,
 	// FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER, and UPDATING.
 	State *string `json:"state,omitempty"`
