@@ -34,7 +34,7 @@ type Tag struct {
 
 // DomainValidationOption validate domain ownership.
 type DomainValidationOption struct {
-	// Additinal Fully qualified domain name (FQDN),that to secure with an ACM certificate.
+	// Additional Fully qualified domain name (FQDN), that to secure with an ACM certificate.
 	// +immutable
 	DomainName string `json:"domainName"`
 
