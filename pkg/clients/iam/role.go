@@ -12,10 +12,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/convert"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
@@ -169,16 +169,8 @@ func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
 func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, string, error) {
-	generated, err := copystructure.Copy(&observed)
-	if err != nil {
-		return true, "", errors.Wrap(err, errCheckUpToDate)
-	}
-	desired, ok := generated.(*iamtypes.Role)
-	if !ok {
-		return true, "", errors.New(errCheckUpToDate)
-	}
-
-	if err = GenerateRole(in, desired); err != nil {
+	desired := (&convert.ConverterImpl{}).DeepCopyAWSRole(&observed)
+	if err := GenerateRole(in, desired); err != nil {
 		return false, "", err
 	}
 
