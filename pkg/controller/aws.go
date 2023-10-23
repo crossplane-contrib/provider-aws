@@ -47,6 +47,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elasticloadbalancing"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/emrcontainers"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/firehose"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/globalaccelerator"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/glue"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam"
@@ -109,6 +110,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		elasticloadbalancing.Setup,
 		elbv2.Setup,
 		emrcontainers.Setup,
+		firehose.Setup,
 		glue.Setup,
 		globalaccelerator.Setup,
 		iam.Setup,
