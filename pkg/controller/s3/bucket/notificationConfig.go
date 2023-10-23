@@ -25,13 +25,13 @@ import (
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go/document"
-	"github.com/barkimedes/go-deepcopy"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/s3/bucket/convert"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
@@ -137,19 +137,23 @@ func sortTopic(configs []types.TopicConfiguration) {
 }
 
 func sanitizedQueueConfigurations(configs []types.QueueConfiguration) []types.QueueConfiguration {
-	rawConfig, err := deepcopy.Anything(configs)
-	if err != nil {
-		return configs
+	if configs == nil {
+		return []types.QueueConfiguration{}
 	}
 
-	sConfig := rawConfig.([]types.QueueConfiguration)
-
+	sConfig := (&convert.ConverterImpl{}).DeepCopyAWSQueueConfiguration(configs)
 	for c := range sConfig {
+		if sConfig[c].Events == nil {
+			sConfig[c].Events = []types.Event{}
+		}
 		if sConfig[c].Filter == nil {
 			continue
 		}
 		if sConfig[c].Filter.Key == nil {
 			continue
+		}
+		if sConfig[c].Filter.Key.FilterRules == nil {
+			sConfig[c].Filter.Key.FilterRules = []types.FilterRule{}
 		}
 		for r := range sConfig[c].Filter.Key.FilterRules {
 			name := string(sConfig[c].Filter.Key.FilterRules[r].Name)

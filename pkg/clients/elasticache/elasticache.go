@@ -30,11 +30,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
 
 	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache/convert"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
@@ -841,14 +841,7 @@ func GenerateCluster(name string, p cachev1alpha1.CacheClusterParameters, c *ela
 // IsClusterUpToDate checks whether current state is up-to-date compared to the given
 // set of parameters.
 func IsClusterUpToDate(name string, in *cachev1alpha1.CacheClusterParameters, observed *elasticachetypes.CacheCluster) (bool, error) {
-	generated, err := copystructure.Copy(observed)
-	if err != nil {
-		return true, errors.Wrap(err, errCheckUpToDate)
-	}
-	desired, ok := generated.(*elasticachetypes.CacheCluster)
-	if !ok {
-		return true, errors.New(errCheckUpToDate)
-	}
+	desired := (&convert.ConverterImpl{}).DeepCopyAWSCacheCluster(observed)
 	GenerateCluster(name, *in, desired)
 
 	if desired.EngineVersion != nil {
