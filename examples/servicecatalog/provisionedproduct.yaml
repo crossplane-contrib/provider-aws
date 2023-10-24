@@ -1,0 +1,23 @@
+---
+apiVersion: servicecatalog.aws.crossplane.io/v1alpha1
+kind: ProvisionedProduct
+metadata:
+  name: awesome-s3-bucket
+spec:
+  forProvider:
+    region: us-east-1
+    productName: s3
+    provisioningArtifactName: v1.0.0
+    provisioningParameters:
+      - key: BucketName
+        value: "awesome-s3-bucket"
+      - key: BucketVersioning
+        value: "enabled"
+      - key: TransferAcceleration
+        value: "suspended"
+      - key: EncryptionType
+        value: "SSE-KMS"
+      - key: KMSArn
+        value: "none"
+  providerConfigRef:
+    name: provider-aws
