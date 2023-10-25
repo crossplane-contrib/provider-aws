@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/aws-controllers-k8s/code-generator v0.26.1
 	github.com/aws/aws-sdk-go v1.44.334
-	github.com/aws/aws-sdk-go-v2 v1.16.16
+	github.com/aws/aws-sdk-go-v2 v1.17.3
 	github.com/aws/aws-sdk-go-v2/config v1.11.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.5
 	github.com/aws/aws-sdk-go-v2/service/acm v1.10.0
@@ -19,7 +19,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.21.1
-	github.com/aws/aws-sdk-go-v2/service/rds v1.14.0
+	github.com/aws/aws-sdk-go-v2/service/rds v1.39.0
 	github.com/aws/aws-sdk-go-v2/service/redshift v1.17.0
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/route53resolver v1.10.2
@@ -27,7 +27,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sns v1.13.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.14.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.12.0
-	github.com/aws/smithy-go v1.13.3
+	github.com/aws/smithy-go v1.13.5
 	github.com/crossplane/crossplane-runtime v1.13.0
 	github.com/crossplane/crossplane-tools v0.0.0-20230714144037-2684f4bc7638
 	github.com/evanphx/json-patch v4.12.0+incompatible
@@ -57,11 +57,11 @@ require (
 	github.com/aws-controllers-k8s/pkg v0.0.4 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.8.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.23 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.17 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.27 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.21 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.5.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.5.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.21 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.9.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

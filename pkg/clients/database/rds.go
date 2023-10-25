@@ -82,6 +82,7 @@ func GenerateCreateRDSInstanceInput(name, password string, p *v1beta1.RDSInstanc
 		AutoMinorVersionUpgrade:            p.AutoMinorVersionUpgrade,
 		AvailabilityZone:                   p.AvailabilityZone,
 		BackupRetentionPeriod:              pointer.Int32Address(p.BackupRetentionPeriod),
+		CACertificateIdentifier:            p.CACertificateIdentifier,
 		CharacterSetName:                   p.CharacterSetName,
 		CopyTagsToSnapshot:                 p.CopyTagsToSnapshot,
 		DBClusterIdentifier:                p.DBClusterIdentifier,

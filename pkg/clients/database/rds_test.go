@@ -43,6 +43,7 @@ import (
 )
 
 var (
+	allFieldsName                      = "allfieldsName"
 	allocatedStorage             int32 = 20
 	address                            = "address"
 	arn                                = "my:arn"
@@ -50,6 +51,7 @@ var (
 	characterSetName                   = "utf8"
 	clusterName                        = "testCluster"
 	dbName                             = "example-name"
+	dbSecurityGroups                   = []string{"test"}
 	description                        = "testDescription"
 	domain                             = "domain"
 	enableCloudwatchExports            = []string{"test"}
@@ -57,6 +59,7 @@ var (
 	enabledCloudwatchExportsNone       = []string{}
 	engine                             = "5.6.41"
 	falseFlag                          = false
+	iamRole                            = "iamRole"
 	instanceClass                      = "class"
 	kmsID                              = "kms"
 	monitoring                         = 3
@@ -79,6 +82,7 @@ var (
 	username                           = "username"
 	value                              = "testValue"
 	vpc                                = "vpc"
+	vpcIds                             = []string{"test"}
 	window                             = "window"
 	zone                               = "zone"
 
@@ -1255,11 +1259,7 @@ func TestLateInitialize(t *testing.T) {
 }
 
 func TestGenerateModifyDBInstanceInput(t *testing.T) {
-	dbSecurityGroups := []string{name}
-	allFieldsName := "allfieldsName"
 	emptyName := "emptyProcessor"
-	iamRole := "iamRole"
-	vpcIds := []string{name}
 
 	cases := map[string]struct {
 		name   string
@@ -1382,6 +1382,124 @@ func TestGenerateModifyDBInstanceInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got := GenerateModifyDBInstanceInput(tc.name, &tc.params, &tc.db)
+			if diff := cmp.Diff(&tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateCreateRDSInstanceInput(t *testing.T) {
+	cases := map[string]struct {
+		name     string
+		password string
+		params   v1beta1.RDSInstanceParameters
+		want     rds.CreateDBInstanceInput
+	}{
+		"AllFields": {
+			name: allFieldsName,
+			params: v1beta1.RDSInstanceParameters{
+				AllocatedStorage:                   &storage,
+				DBInstanceClass:                    instanceClass,
+				ApplyModificationsImmediately:      &trueFlag,
+				Engine:                             engine,
+				EngineVersion:                      &engine,
+				AutoMinorVersionUpgrade:            &trueFlag,
+				AllowMajorVersionUpgrade:           &trueFlag,
+				AvailabilityZone:                   &az,
+				BackupRetentionPeriod:              &retention,
+				CACertificateIdentifier:            &name,
+				CharacterSetName:                   &name,
+				CopyTagsToSnapshot:                 &trueFlag,
+				DBClusterIdentifier:                &clusterName,
+				DBName:                             &name,
+				DBParameterGroupName:               &name,
+				DeletionProtection:                 &trueFlag,
+				Domain:                             &domain,
+				DomainIAMRoleName:                  &iamRole,
+				EnableIAMDatabaseAuthentication:    &trueFlag,
+				EnablePerformanceInsights:          &trueFlag,
+				IOPS:                               &storage,
+				KMSKeyID:                           &kmsID,
+				LicenseModel:                       &name,
+				MasterUsername:                     &username,
+				MonitoringInterval:                 &monitoring,
+				MonitoringRoleARN:                  &arn,
+				MultiAZ:                            &multiAZ,
+				OptionGroupName:                    &name,
+				PerformanceInsightsKMSKeyID:        &kmsID,
+				PerformanceInsightsRetentionPeriod: &retention,
+				Port:                               &port,
+				PreferredBackupWindow:              &window,
+				PreferredMaintenanceWindow:         &window,
+				PromotionTier:                      &tier,
+				PubliclyAccessible:                 &trueFlag,
+				StorageEncrypted:                   &trueFlag,
+				StorageType:                        &storageType,
+				Timezone:                           &zone,
+				DBSecurityGroups:                   dbSecurityGroups,
+				DBSubnetGroupName:                  &name,
+				EnableCloudwatchLogsExports:        enableCloudwatchExports,
+				ProcessorFeatures: []v1beta1.ProcessorFeature{{
+					Name:  name,
+					Value: value,
+				}},
+				VPCSecurityGroupIDs:         vpcIds,
+				UseDefaultProcessorFeatures: &trueFlag,
+			},
+			want: rds.CreateDBInstanceInput{
+				DBInstanceIdentifier:               &allFieldsName,
+				AvailabilityZone:                   &az,
+				AllocatedStorage:                   &storage32,
+				AutoMinorVersionUpgrade:            &trueFlag,
+				BackupRetentionPeriod:              &retention32,
+				CACertificateIdentifier:            &name,
+				CharacterSetName:                   &name,
+				CopyTagsToSnapshot:                 &trueFlag,
+				DBClusterIdentifier:                &clusterName,
+				DBInstanceClass:                    &instanceClass,
+				DBName:                             &name,
+				DBParameterGroupName:               &name,
+				DBSecurityGroups:                   dbSecurityGroups,
+				DBSubnetGroupName:                  &name,
+				DeletionProtection:                 &trueFlag,
+				Domain:                             &domain,
+				DomainIAMRoleName:                  &iamRole,
+				EnableIAMDatabaseAuthentication:    &trueFlag,
+				EnableCloudwatchLogsExports:        enableCloudwatchExports,
+				EnablePerformanceInsights:          &trueFlag,
+				Engine:                             &engine,
+				EngineVersion:                      &engine,
+				Iops:                               &storage32,
+				KmsKeyId:                           &kmsID,
+				LicenseModel:                       &name,
+				MasterUsername:                     &username,
+				MonitoringInterval:                 &monitoring32,
+				MonitoringRoleArn:                  &arn,
+				MultiAZ:                            &multiAZ,
+				OptionGroupName:                    &name,
+				PerformanceInsightsRetentionPeriod: &retention32,
+				PerformanceInsightsKMSKeyId:        &kmsID,
+				Port:                               &port32,
+				PreferredBackupWindow:              &window,
+				PreferredMaintenanceWindow:         &window,
+				PromotionTier:                      &tier32,
+				PubliclyAccessible:                 &trueFlag,
+				StorageEncrypted:                   &trueFlag,
+				StorageType:                        &storageType,
+				Timezone:                           &zone,
+				VpcSecurityGroupIds:                vpcIds,
+				ProcessorFeatures: []rdstypes.ProcessorFeature{{
+					Name:  &name,
+					Value: &value,
+				}},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GenerateCreateRDSInstanceInput(tc.name, tc.password, &tc.params)
 			if diff := cmp.Diff(&tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
