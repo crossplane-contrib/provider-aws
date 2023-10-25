@@ -134,7 +134,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	current := cr.Spec.ForProvider.Status
-	cr.Spec.ForProvider.Status = pointer.LateInitializeString(cr.Spec.ForProvider.Status, aws.String(string(accessKey.Status)))
+	cr.Spec.ForProvider.Status = pointer.LateInitializeValueFromPtr(cr.Spec.ForProvider.Status, aws.String(string(accessKey.Status)))
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        string(accessKey.Status) == cr.Spec.ForProvider.Status,

@@ -289,8 +289,8 @@ func getContainerProperties(cp *svcsdk.ContainerProperties) *svcapitypes.Contain
 
 func generateRegisterJobDefinitionInput(cr *svcapitypes.JobDefinition) *svcsdk.RegisterJobDefinitionInput { //nolint:gocyclo
 	res := &svcsdk.RegisterJobDefinitionInput{}
-	res.JobDefinitionName = pointer.String(cr.Name)
-	res.Type = pointer.String(cr.Spec.ForProvider.JobDefinitionType)
+	res.JobDefinitionName = pointer.ToOrNilIfZeroValue(cr.Name)
+	res.Type = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.JobDefinitionType)
 
 	if cr.Spec.ForProvider.ContainerProperties != nil {
 		res.ContainerProperties = assignContainerProperties(cr.Spec.ForProvider.ContainerProperties)
@@ -309,7 +309,7 @@ func generateRegisterJobDefinitionInput(cr *svcapitypes.JobDefinition) *svcsdk.R
 				if noRaProp.Container != nil {
 					sdkNoRaProp.Container = assignContainerProperties(noRaProp.Container)
 				}
-				sdkNoRaProp.TargetNodes = pointer.String(noRaProp.TargetNodes)
+				sdkNoRaProp.TargetNodes = pointer.ToOrNilIfZeroValue(noRaProp.TargetNodes)
 				noRaProps = append(noRaProps, sdkNoRaProp)
 			}
 			nodeProps.NodeRangeProperties = noRaProps
@@ -339,7 +339,7 @@ func generateRegisterJobDefinitionInput(cr *svcapitypes.JobDefinition) *svcsdk.R
 			eoes := []*svcsdk.EvaluateOnExit{}
 			for _, eoe := range cr.Spec.ForProvider.RetryStrategy.EvaluateOnExit {
 				eoes = append(eoes, &svcsdk.EvaluateOnExit{
-					Action:         pointer.String(eoe.Action),
+					Action:         pointer.ToOrNilIfZeroValue(eoe.Action),
 					OnExitCode:     eoe.OnExitCode,
 					OnReason:       eoe.OnReason,
 					OnStatusReason: eoe.OnStatusReason,
@@ -400,7 +400,7 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 				for _, device := range cp.LinuxParameters.Devices {
 					devices = append(devices, &svcsdk.Device{
 						ContainerPath: device.ContainerPath,
-						HostPath:      pointer.String(device.HostPath),
+						HostPath:      pointer.ToOrNilIfZeroValue(device.HostPath),
 						Permissions:   device.Permissions,
 					})
 				}
@@ -422,7 +422,7 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 				tmpfs := []*svcsdk.Tmpfs{}
 				for _, tmpf := range cp.LinuxParameters.Tmpfs {
 					tmpfs = append(tmpfs, &svcsdk.Tmpfs{
-						ContainerPath: pointer.String(tmpf.ContainerPath),
+						ContainerPath: pointer.ToOrNilIfZeroValue(tmpf.ContainerPath),
 						MountOptions:  tmpf.MountOptions,
 						Size:          ptr.To(tmpf.Size),
 					})
@@ -434,7 +434,7 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 		if cp.LogConfiguration != nil {
 			logConfi := &svcsdk.LogConfiguration{}
 
-			logConfi.LogDriver = pointer.String(cp.LogConfiguration.LogDriver)
+			logConfi.LogDriver = pointer.ToOrNilIfZeroValue(cp.LogConfiguration.LogDriver)
 
 			if cp.LogConfiguration.Options != nil {
 				logConfi.Options = cp.LogConfiguration.Options
@@ -443,8 +443,8 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 				secrets := []*svcsdk.Secret{}
 				for _, secret := range cp.LogConfiguration.SecretOptions {
 					secrets = append(secrets, &svcsdk.Secret{
-						Name:      pointer.String(secret.Name),
-						ValueFrom: pointer.String(secret.ValueFrom),
+						Name:      pointer.ToOrNilIfZeroValue(secret.Name),
+						ValueFrom: pointer.ToOrNilIfZeroValue(secret.ValueFrom),
 					})
 				}
 				logConfi.SecretOptions = secrets
@@ -476,8 +476,8 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 			resReqs := []*svcsdk.ResourceRequirement{}
 			for _, resReq := range cp.ResourceRequirements {
 				resReqs = append(resReqs, &svcsdk.ResourceRequirement{
-					Type:  pointer.String(resReq.ResourceType),
-					Value: pointer.String(resReq.Value),
+					Type:  pointer.ToOrNilIfZeroValue(resReq.ResourceType),
+					Value: pointer.ToOrNilIfZeroValue(resReq.Value),
 				})
 			}
 			sdkcp.ResourceRequirements = resReqs
@@ -486,8 +486,8 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 			secrets := []*svcsdk.Secret{}
 			for _, secret := range cp.Secrets {
 				secrets = append(secrets, &svcsdk.Secret{
-					Name:      pointer.String(secret.Name),
-					ValueFrom: pointer.String(secret.ValueFrom),
+					Name:      pointer.ToOrNilIfZeroValue(secret.Name),
+					ValueFrom: pointer.ToOrNilIfZeroValue(secret.ValueFrom),
 				})
 			}
 			sdkcp.Secrets = secrets
@@ -497,7 +497,7 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 			for _, ulimit := range cp.Ulimits {
 				ulimits = append(ulimits, &svcsdk.Ulimit{
 					HardLimit: ptr.To(ulimit.HardLimit),
-					Name:      pointer.String(ulimit.Name),
+					Name:      pointer.ToOrNilIfZeroValue(ulimit.Name),
 					SoftLimit: ptr.To(ulimit.SoftLimit),
 				})
 			}
@@ -518,7 +518,7 @@ func assignContainerProperties(cp *svcapitypes.ContainerProperties) *svcsdk.Cont
 							Iam:           volume.EfsVolumeConfiguration.AuthorizationConfig.IAM,
 						}
 					}
-					sdkVolumeConfig.FileSystemId = pointer.String(volume.EfsVolumeConfiguration.FileSystemID)
+					sdkVolumeConfig.FileSystemId = pointer.ToOrNilIfZeroValue(volume.EfsVolumeConfiguration.FileSystemID)
 					sdkVolumeConfig.RootDirectory = volume.EfsVolumeConfiguration.RootDirectory
 					sdkVolumeConfig.TransitEncryption = volume.EfsVolumeConfiguration.TransitEncryption
 					sdkVolumeConfig.TransitEncryptionPort = volume.EfsVolumeConfiguration.TransitEncryptionPort

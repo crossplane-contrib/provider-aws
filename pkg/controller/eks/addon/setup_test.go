@@ -115,7 +115,7 @@ func TestObserve(t *testing.T) {
 						).
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
-								Status: pointer.String(awseks.AddonStatusActive),
+								Status: pointer.ToOrNilIfZeroValue(awseks.AddonStatusActive),
 							},
 						}, nil)
 				}),
@@ -128,7 +128,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testExternalName),
 					withConditions(xpv1.Available()),
 					withStatus(v1alpha1.AddonObservation{
-						Status: pointer.String(awseks.AddonStatusActive),
+						Status: pointer.ToOrNilIfZeroValue(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -170,7 +170,7 @@ func TestObserve(t *testing.T) {
 						Return(&awseks.DescribeAddonOutput{
 							Addon: &awseks.Addon{
 								ServiceAccountRoleArn: &testServiceAccountRoleArn,
-								Status:                pointer.String(awseks.AddonStatusActive),
+								Status:                pointer.ToOrNilIfZeroValue(awseks.AddonStatusActive),
 							},
 						}, nil)
 				}),
@@ -188,7 +188,7 @@ func TestObserve(t *testing.T) {
 						},
 					),
 					withStatus(v1alpha1.AddonObservation{
-						Status: pointer.String(awseks.AddonStatusActive),
+						Status: pointer.ToOrNilIfZeroValue(awseks.AddonStatusActive),
 					}),
 				),
 				result: managed.ExternalObservation{

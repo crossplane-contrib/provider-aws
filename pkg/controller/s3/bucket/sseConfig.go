@@ -49,7 +49,7 @@ func NewSSEConfigurationClient(client s3.BucketClient) *SSEConfigurationClient {
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
 	config := bucket.Spec.ForProvider.ServerSideEncryptionConfiguration
-	external, err := in.client.GetBucketEncryption(ctx, &awss3.GetBucketEncryptionInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketEncryption(ctx, &awss3.GetBucketEncryptionInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		if s3.SSEConfigurationNotFound(err) && config == nil {
 			return Updated, nil
@@ -98,7 +98,7 @@ func (in *SSEConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1
 func (in *SSEConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketEncryption(ctx,
 		&awss3.DeleteBucketEncryptionInput{
-			Bucket: pointer.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)),
 		},
 	)
 	return errorutils.Wrap(err, sseDeleteFailed)
@@ -107,7 +107,7 @@ func (in *SSEConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bu
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *SSEConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketEncryption(ctx, &awss3.GetBucketEncryptionInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketEncryption(ctx, &awss3.GetBucketEncryptionInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(resource.Ignore(s3.SSEConfigurationNotFound, err), sseGetFailed)
 	}
@@ -137,7 +137,7 @@ func (in *SSEConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) bool
 // GeneratePutBucketEncryptionInput creates the input for the PutBucketEncryption request for the S3 Client
 func GeneratePutBucketEncryptionInput(name string, config *v1beta1.ServerSideEncryptionConfiguration) *awss3.PutBucketEncryptionInput {
 	bei := &awss3.PutBucketEncryptionInput{
-		Bucket: pointer.String(name),
+		Bucket: pointer.ToOrNilIfZeroValue(name),
 		ServerSideEncryptionConfiguration: &types.ServerSideEncryptionConfiguration{
 			Rules: make([]types.ServerSideEncryptionRule, len(config.Rules)),
 		},

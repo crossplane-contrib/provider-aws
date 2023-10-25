@@ -88,7 +88,7 @@ type hooks struct {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {
-	obj.CreatorRequestId = pointer.String(string(cr.UID))
+	obj.CreatorRequestId = pointer.ToOrNilIfZeroValue(string(cr.UID))
 
 	return nil
 }
@@ -100,8 +100,8 @@ func postCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, resp *svcsdk.C
 
 func preUpdate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.UpdateHttpNamespaceInput) error {
 
-	obj.UpdaterRequestId = pointer.String(string(cr.UID))
-	obj.Id = pointer.String(meta.GetExternalName(cr))
+	obj.UpdaterRequestId = pointer.ToOrNilIfZeroValue(string(cr.UID))
+	obj.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	obj.Namespace = &svcsdk.HttpNamespaceChange{
 		Description: cr.GetDescription(),

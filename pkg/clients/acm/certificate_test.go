@@ -29,7 +29,7 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 		"FilledInput": {
 			in: v1beta1.CertificateParameters{
 				DomainName:              domainName,
-				CertificateAuthorityARN: pointer.String(certificateAuthorityArn),
+				CertificateAuthorityARN: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 				Options: &v1beta1.CertificateOptions{
 					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreference,
 				},
@@ -40,13 +40,13 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 				}},
 			},
 			out: acm.RequestCertificateInput{
-				DomainName:              pointer.String(domainName),
-				CertificateAuthorityArn: pointer.String(certificateAuthorityArn),
+				DomainName:              pointer.ToOrNilIfZeroValue(domainName),
+				CertificateAuthorityArn: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 				Options:                 &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
 				ValidationMethod:        acmtypes.ValidationMethodDns,
 				Tags: []acmtypes.Tag{{
-					Key:   pointer.String("key1"),
-					Value: pointer.String("value1"),
+					Key:   pointer.ToOrNilIfZeroValue("key1"),
+					Value: pointer.ToOrNilIfZeroValue("value1"),
 				}},
 			},
 		},
@@ -77,20 +77,20 @@ func TestLateInitializeCertificate(t *testing.T) {
 			args: args{
 				spec: &v1beta1.CertificateParameters{
 					DomainName:              domainName,
-					CertificateAuthorityARN: pointer.String(certificateAuthorityArn),
+					CertificateAuthorityARN: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 					Options: &v1beta1.CertificateOptions{
 						CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreference,
 					},
 				},
 				in: &acmtypes.CertificateDetail{
-					DomainName:              pointer.String(domainName),
-					CertificateAuthorityArn: pointer.String(certificateAuthorityArn),
+					DomainName:              pointer.ToOrNilIfZeroValue(domainName),
+					CertificateAuthorityArn: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 					Options:                 &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
 				},
 			},
 			want: &v1beta1.CertificateParameters{
 				DomainName:              domainName,
-				CertificateAuthorityARN: pointer.String(certificateAuthorityArn),
+				CertificateAuthorityARN: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 				Options: &v1beta1.CertificateOptions{
 					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreference,
 				},
@@ -100,20 +100,20 @@ func TestLateInitializeCertificate(t *testing.T) {
 			args: args{
 				spec: &v1beta1.CertificateParameters{
 					DomainName:              domainName,
-					CertificateAuthorityARN: pointer.String(certificateAuthorityArn),
+					CertificateAuthorityARN: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 					Options: &v1beta1.CertificateOptions{
 						CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreference,
 					},
 				},
 				in: &acmtypes.CertificateDetail{
-					DomainName:              pointer.String(domainName),
-					CertificateAuthorityArn: pointer.String(certificateAuthorityArn),
+					DomainName:              pointer.ToOrNilIfZeroValue(domainName),
+					CertificateAuthorityArn: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 					Options:                 &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
 				},
 			},
 			want: &v1beta1.CertificateParameters{
 				DomainName:              domainName,
-				CertificateAuthorityARN: pointer.String(certificateAuthorityArn),
+				CertificateAuthorityARN: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 				Options: &v1beta1.CertificateOptions{
 					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreference,
 				},
@@ -123,17 +123,17 @@ func TestLateInitializeCertificate(t *testing.T) {
 			args: args{
 				spec: &v1beta1.CertificateParameters{
 					DomainName:              domainName,
-					CertificateAuthorityARN: pointer.String(certificateAuthorityArn),
+					CertificateAuthorityARN: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 				},
 				in: &acmtypes.CertificateDetail{
-					DomainName:              pointer.String(domainName),
-					CertificateAuthorityArn: pointer.String(certificateAuthorityArn),
+					DomainName:              pointer.ToOrNilIfZeroValue(domainName),
+					CertificateAuthorityArn: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 					Options:                 &acmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: acmtypes.CertificateTransparencyLoggingPreferenceDisabled},
 				},
 			},
 			want: &v1beta1.CertificateParameters{
 				DomainName:              domainName,
-				CertificateAuthorityARN: pointer.String(certificateAuthorityArn),
+				CertificateAuthorityARN: pointer.ToOrNilIfZeroValue(certificateAuthorityArn),
 				Options: &v1beta1.CertificateOptions{
 					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreference,
 				},
@@ -162,7 +162,7 @@ func TestGenerateCertificateStatus(t *testing.T) {
 	}{
 		"AllFilled": {
 			in: acmtypes.CertificateDetail{
-				CertificateArn:     pointer.String(certificateArn),
+				CertificateArn:     pointer.ToOrNilIfZeroValue(certificateArn),
 				RenewalEligibility: acmtypes.RenewalEligibilityEligible,
 			},
 			out: v1beta1.CertificateExternalStatus{
@@ -182,7 +182,7 @@ func TestGenerateCertificateStatus(t *testing.T) {
 		},
 		"DomainValidationOptionsResourceRecord": {
 			in: acmtypes.CertificateDetail{
-				CertificateArn:     pointer.String(certificateArn),
+				CertificateArn:     pointer.ToOrNilIfZeroValue(certificateArn),
 				RenewalEligibility: acmtypes.RenewalEligibilityIneligible,
 				Type:               acmtypes.CertificateTypeAmazonIssued,
 				Status:             acmtypes.CertificateStatusPendingValidation,
@@ -248,8 +248,8 @@ func TestIsCertificateUpToDate(t *testing.T) {
 					}},
 				},
 				tags: []acmtypes.Tag{{
-					Key:   pointer.String("key1"),
-					Value: pointer.String("value1"),
+					Key:   pointer.ToOrNilIfZeroValue("key1"),
+					Value: pointer.ToOrNilIfZeroValue("value1"),
 				}},
 			},
 			want: true,
@@ -269,8 +269,8 @@ func TestIsCertificateUpToDate(t *testing.T) {
 					}},
 				},
 				tags: []acmtypes.Tag{{
-					Key:   pointer.String("key1"),
-					Value: pointer.String("value1"),
+					Key:   pointer.ToOrNilIfZeroValue("key1"),
+					Value: pointer.ToOrNilIfZeroValue("value1"),
 				}},
 			},
 			want: false,
@@ -290,8 +290,8 @@ func TestIsCertificateUpToDate(t *testing.T) {
 					}},
 				},
 				tags: []acmtypes.Tag{{
-					Key:   pointer.String("key2"),
-					Value: pointer.String("value2"),
+					Key:   pointer.ToOrNilIfZeroValue("key2"),
+					Value: pointer.ToOrNilIfZeroValue("value2"),
 				}},
 			},
 			want: false,

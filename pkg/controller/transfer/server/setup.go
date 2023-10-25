@@ -78,13 +78,13 @@ func SetupServer(mgr ctrl.Manager, o controller.Options) error {
 
 func preObserve(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.DescribeServerInput) error {
 	if meta.GetExternalName(cr) != "" {
-		obj.ServerId = pointer.String(meta.GetExternalName(cr))
+		obj.ServerId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	}
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.DeleteServerInput) (bool, error) {
-	obj.ServerId = pointer.String(meta.GetExternalName(cr))
+	obj.ServerId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

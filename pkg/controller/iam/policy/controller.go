@@ -379,7 +379,7 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 	// slashes. In addition, it can contain any ASCII character from the ! (\u0021 ) through the
 	// DEL character (\u007F ), including most punctuation characters, digits, and upper and lowercased letters.
 	if policyPath == nil {
-		policyPath = pointer.String("/")
+		policyPath = pointer.ToOrNilIfZeroValue("/")
 	}
 
 	// Use it to construct an arn for the policy

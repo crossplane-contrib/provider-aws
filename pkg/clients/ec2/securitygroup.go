@@ -60,25 +60,25 @@ func GenerateEC2Permissions(objectPerms []v1beta1.IPPermission) []ec2types.IpPer
 	for i, p := range objectPerms {
 		ipPerm := ec2types.IpPermission{
 			FromPort:   p.FromPort,
-			IpProtocol: pointer.String(p.IPProtocol),
+			IpProtocol: pointer.ToOrNilIfZeroValue(p.IPProtocol),
 			ToPort:     p.ToPort,
 		}
 		for _, c := range p.IPRanges {
 			ipPerm.IpRanges = append(ipPerm.IpRanges, ec2types.IpRange{
-				CidrIp:      pointer.String(c.CIDRIP),
+				CidrIp:      pointer.ToOrNilIfZeroValue(c.CIDRIP),
 				Description: c.Description,
 			})
 		}
 		for _, c := range p.IPv6Ranges {
 			ipPerm.Ipv6Ranges = append(ipPerm.Ipv6Ranges, ec2types.Ipv6Range{
-				CidrIpv6:    pointer.String(c.CIDRIPv6),
+				CidrIpv6:    pointer.ToOrNilIfZeroValue(c.CIDRIPv6),
 				Description: c.Description,
 			})
 		}
 		for _, c := range p.PrefixListIDs {
 			ipPerm.PrefixListIds = append(ipPerm.PrefixListIds, ec2types.PrefixListId{
 				Description:  c.Description,
-				PrefixListId: pointer.String(c.PrefixListID),
+				PrefixListId: pointer.ToOrNilIfZeroValue(c.PrefixListID),
 			})
 		}
 		for _, c := range p.UserIDGroupPairs {
@@ -112,9 +112,9 @@ func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2types.Security
 		return
 	}
 
-	in.Description = pointer.LateInitializeString(in.Description, sg.Description)
-	in.GroupName = pointer.LateInitializeString(in.GroupName, sg.GroupName)
-	in.VPCID = pointer.LateInitializeStringPtr(in.VPCID, sg.VpcId)
+	in.Description = pointer.LateInitializeValueFromPtr(in.Description, sg.Description)
+	in.GroupName = pointer.LateInitializeValueFromPtr(in.GroupName, sg.GroupName)
+	in.VPCID = pointer.LateInitialize(in.VPCID, sg.VpcId)
 
 	// We cannot safely late init egress/ingress rules because they are keyless arrays
 

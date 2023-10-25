@@ -66,7 +66,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.DescribeParameterGroupsInput) error {
-	obj.ParameterGroupNames = append(obj.ParameterGroupNames, pointer.String(meta.GetExternalName(cr)))
+	obj.ParameterGroupNames = append(obj.ParameterGroupNames, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 	return nil
 }
 
@@ -80,12 +80,12 @@ func postObserve(_ context.Context, cr *svcapitypes.ParameterGroup, _ *svcsdk.De
 
 func preCreate(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.CreateParameterGroupInput) error {
 	meta.SetExternalName(cr, cr.Name)
-	obj.ParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.ParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.UpdateParameterGroupInput) error {
-	obj.ParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.ParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ParameterNameValues = make([]*svcsdk.ParameterNameValue, len(cr.Spec.ForProvider.ParameterNameValues))
 
 	for i, v := range cr.Spec.ForProvider.ParameterNameValues {
@@ -107,7 +107,7 @@ func postUpdate(_ context.Context, cr *svcapitypes.ParameterGroup, _ *svcsdk.Upd
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.ParameterGroup, obj *svcsdk.DeleteParameterGroupInput) (bool, error) {
-	obj.ParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.ParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -120,8 +120,8 @@ func (c *custom) isUpToDate(ctx context.Context, cr *svcapitypes.ParameterGroup,
 	}
 
 	input := &svcsdk.DescribeParametersInput{
-		ParameterGroupName: pointer.String(meta.GetExternalName(cr)),
-		MaxResults:         pointer.Int64(100),
+		ParameterGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+		MaxResults:         pointer.ToIntAsInt64(100),
 	}
 
 	results, err := c.client.DescribeParametersWithContext(ctx, input)

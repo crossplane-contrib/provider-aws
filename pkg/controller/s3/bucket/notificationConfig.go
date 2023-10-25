@@ -53,7 +53,7 @@ func NewNotificationConfigurationClient(client s3.BucketClient) *NotificationCon
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketNotificationConfiguration(ctx, &awss3.GetBucketNotificationConfigurationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketNotificationConfiguration(ctx, &awss3.GetBucketNotificationConfigurationInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return NeedsUpdate, errorutils.Wrap(err, notificationGetFailed)
 	}
@@ -173,7 +173,7 @@ func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []ty
 		conf := types.LambdaFunctionConfiguration{
 			Filter:            nil,
 			Id:                v.ID,
-			LambdaFunctionArn: pointer.String(v.LambdaFunctionArn),
+			LambdaFunctionArn: pointer.ToOrNilIfZeroValue(v.LambdaFunctionArn),
 		}
 		if v.Events != nil {
 			conf.Events = copyEvents(v.Events)
@@ -270,7 +270,7 @@ func GenerateConfiguration(config *v1beta1.NotificationConfiguration) *types.Not
 // GenerateNotificationConfigurationInput creates the input for the LifecycleConfiguration request for the S3 Client
 func GenerateNotificationConfigurationInput(name string, config *v1beta1.NotificationConfiguration) *awss3.PutBucketNotificationConfigurationInput {
 	return &awss3.PutBucketNotificationConfigurationInput{
-		Bucket:                    pointer.String(name),
+		Bucket:                    pointer.ToOrNilIfZeroValue(name),
 		NotificationConfiguration: GenerateConfiguration(config),
 	}
 }
@@ -292,7 +292,7 @@ func (*NotificationConfigurationClient) Delete(_ context.Context, _ *v1beta1.Buc
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketNotificationConfiguration(ctx, &awss3.GetBucketNotificationConfigurationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketNotificationConfiguration(ctx, &awss3.GetBucketNotificationConfigurationInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(err, notificationGetFailed)
 	}
@@ -376,8 +376,8 @@ func LateInitializeLambda(external []types.LambdaFunctionConfiguration, local []
 		local[i] = v1beta1.LambdaFunctionConfiguration{
 			Events:            LateInitializeEvents(local[i].Events, v.Events),
 			Filter:            LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:                pointer.LateInitializeStringPtr(local[i].ID, v.Id),
-			LambdaFunctionArn: pointer.LateInitializeString(local[i].LambdaFunctionArn, v.LambdaFunctionArn),
+			ID:                pointer.LateInitialize(local[i].ID, v.Id),
+			LambdaFunctionArn: pointer.LateInitializeValueFromPtr(local[i].LambdaFunctionArn, v.LambdaFunctionArn),
 		}
 	}
 	return local
@@ -393,8 +393,8 @@ func LateInitializeQueue(external []types.QueueConfiguration, local []v1beta1.Qu
 		local[i] = v1beta1.QueueConfiguration{
 			Events:   LateInitializeEvents(local[i].Events, v.Events),
 			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:       pointer.LateInitializeStringPtr(local[i].ID, v.Id),
-			QueueArn: pointer.LateInitializeStringPtr(local[i].QueueArn, v.QueueArn),
+			ID:       pointer.LateInitialize(local[i].ID, v.Id),
+			QueueArn: pointer.LateInitialize(local[i].QueueArn, v.QueueArn),
 		}
 	}
 	return local
@@ -410,8 +410,8 @@ func LateInitializeTopic(external []types.TopicConfiguration, local []v1beta1.To
 		local[i] = v1beta1.TopicConfiguration{
 			Events:   LateInitializeEvents(local[i].Events, v.Events),
 			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:       pointer.LateInitializeStringPtr(local[i].ID, v.Id),
-			TopicArn: pointer.LateInitializeStringPtr(local[i].TopicArn, v.TopicArn),
+			ID:       pointer.LateInitialize(local[i].ID, v.Id),
+			TopicArn: pointer.LateInitialize(local[i].TopicArn, v.TopicArn),
 		}
 	}
 	return local

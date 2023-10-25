@@ -194,10 +194,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.PermissionParameters) {
-	spec.EventSourceToken = pointer.LateInitializeStringPtr(spec.EventSourceToken, current.EventSourceToken)
-	spec.PrincipalOrgID = pointer.LateInitializeStringPtr(spec.PrincipalOrgID, current.PrincipalOrgID)
-	spec.SourceAccount = pointer.LateInitializeStringPtr(spec.SourceAccount, current.SourceAccount)
-	spec.SourceArn = pointer.LateInitializeStringPtr(spec.SourceArn, current.SourceArn)
+	spec.EventSourceToken = pointer.LateInitialize(spec.EventSourceToken, current.EventSourceToken)
+	spec.PrincipalOrgID = pointer.LateInitialize(spec.PrincipalOrgID, current.PrincipalOrgID)
+	spec.SourceAccount = pointer.LateInitialize(spec.SourceAccount, current.SourceAccount)
+	spec.SourceArn = pointer.LateInitialize(spec.SourceArn, current.SourceArn)
 }
 
 // IsErrorNotFound helper function to test for ResourceNotFoundException error.

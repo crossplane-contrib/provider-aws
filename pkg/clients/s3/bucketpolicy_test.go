@@ -30,7 +30,7 @@ import (
 var (
 	// an arbitrary managed resource
 	effect      = "Allow"
-	statementID = pointer.String("1")
+	statementID = pointer.ToOrNilIfZeroValue("1")
 )
 
 type statementModifier func(statement *common.BucketPolicyStatement)
@@ -95,13 +95,13 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 				withPrincipal(&common.BucketPrincipal{
 					AWSPrincipals: []common.AWSPrincipal{
 						{
-							UserARN: pointer.String("arn:aws:iam::111122223333:userARN"),
+							UserARN: pointer.ToOrNilIfZeroValue("arn:aws:iam::111122223333:userARN"),
 						},
 						{
-							AWSAccountID: pointer.String("111122223333"),
+							AWSAccountID: pointer.ToOrNilIfZeroValue("111122223333"),
 						},
 						{
-							IAMRoleARN: pointer.String("arn:aws:iam::111122223333:roleARN"),
+							IAMRoleARN: pointer.ToOrNilIfZeroValue("arn:aws:iam::111122223333:roleARN"),
 						},
 					},
 				}),
@@ -113,11 +113,11 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 						Conditions: []common.ConditionPair{
 							{
 								ConditionKey:         "test",
-								ConditionStringValue: pointer.String("testKey"),
+								ConditionStringValue: pointer.ToOrNilIfZeroValue("testKey"),
 							},
 							{
 								ConditionKey:         "test2",
-								ConditionStringValue: pointer.String("testKey2"),
+								ConditionStringValue: pointer.ToOrNilIfZeroValue("testKey2"),
 							},
 						},
 					},

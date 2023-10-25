@@ -111,7 +111,7 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfigurat
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.CreateVpcEndpointServiceConfigurationInput) error {
-	obj.ClientToken = pointer.String(meta.GetExternalName(cr))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.GatewayLoadBalancerArns = append(obj.GatewayLoadBalancerArns, cr.Spec.ForProvider.GatewayLoadBalancerARNs...)
 	obj.NetworkLoadBalancerArns = append(obj.NetworkLoadBalancerArns, cr.Spec.ForProvider.NetworkLoadBalancerARNs...)
 
@@ -164,7 +164,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfigurati
 func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.ModifyVpcEndpointServiceConfigurationInput) error {
 
 	input := &svcsdk.DescribeVpcEndpointServiceConfigurationsInput{}
-	input.ServiceIds = append(input.ServiceIds, pointer.String(meta.GetExternalName(cr)))
+	input.ServiceIds = append(input.ServiceIds, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 
 	resp, err := u.client.DescribeVpcEndpointServiceConfigurations(input)
 	if err != nil {
@@ -194,7 +194,7 @@ func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServic
 		obj.RemovePrivateDnsName = aws.Bool(true)
 	}
 
-	obj.ServiceId = pointer.String(meta.GetExternalName(cr))
+	obj.ServiceId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	return nil
 }
@@ -208,7 +208,7 @@ func (u *updater) delete(ctx context.Context, mg cpresource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	input := &svcsdk.DeleteVpcEndpointServiceConfigurationsInput{}
-	input.ServiceIds = append(input.ServiceIds, pointer.String(meta.GetExternalName(cr)))
+	input.ServiceIds = append(input.ServiceIds, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 
 	_, err := u.client.DeleteVpcEndpointServiceConfigurationsWithContext(ctx, input)
 	return errorutils.Wrap(cpresource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)

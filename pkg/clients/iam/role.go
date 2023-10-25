@@ -115,13 +115,13 @@ func LateInitializeRole(in *v1beta1.RoleParameters, role *iamtypes.Role) {
 	if role == nil {
 		return
 	}
-	in.AssumeRolePolicyDocument = pointer.LateInitializeString(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
-	in.Description = pointer.LateInitializeStringPtr(in.Description, role.Description)
-	in.MaxSessionDuration = pointer.LateInitializeInt32Ptr(in.MaxSessionDuration, role.MaxSessionDuration)
-	in.Path = pointer.LateInitializeStringPtr(in.Path, role.Path)
+	in.AssumeRolePolicyDocument = pointer.LateInitializeValueFromPtr(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
+	in.Description = pointer.LateInitialize(in.Description, role.Description)
+	in.MaxSessionDuration = pointer.LateInitialize(in.MaxSessionDuration, role.MaxSessionDuration)
+	in.Path = pointer.LateInitialize(in.Path, role.Path)
 
 	if role.PermissionsBoundary != nil {
-		in.PermissionsBoundary = pointer.LateInitializeStringPtr(in.PermissionsBoundary, role.PermissionsBoundary.PermissionsBoundaryArn)
+		in.PermissionsBoundary = pointer.LateInitialize(in.PermissionsBoundary, role.PermissionsBoundary.PermissionsBoundaryArn)
 	}
 
 	if in.Tags == nil && role.Tags != nil {

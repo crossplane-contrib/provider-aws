@@ -118,7 +118,7 @@ func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2types.RouteTable)
 	if rt == nil {
 		return
 	}
-	in.VPCID = pointer.LateInitializeStringPtr(in.VPCID, rt.VpcId)
+	in.VPCID = pointer.LateInitialize(in.VPCID, rt.VpcId)
 
 	if !pointer.BoolValue(in.IgnoreRoutes) {
 		if len(in.Routes) == 0 && len(rt.Routes) != 0 {

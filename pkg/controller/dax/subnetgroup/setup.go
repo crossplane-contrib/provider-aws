@@ -57,7 +57,7 @@ func SetupSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.DescribeSubnetGroupsInput) error {
-	obj.SubnetGroupNames = append(obj.SubnetGroupNames, pointer.String(meta.GetExternalName(cr)))
+	obj.SubnetGroupNames = append(obj.SubnetGroupNames, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 	return nil
 }
 
@@ -71,23 +71,23 @@ func postObserve(_ context.Context, cr *svcapitypes.SubnetGroup, _ *svcsdk.Descr
 
 func preCreate(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.CreateSubnetGroupInput) error {
 	meta.SetExternalName(cr, cr.Name)
-	obj.SubnetGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.SubnetGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	for _, s := range cr.Spec.ForProvider.SubnetIds {
-		obj.SubnetIds = append(obj.SubnetIds, pointer.String(*s))
+		obj.SubnetIds = append(obj.SubnetIds, pointer.ToOrNilIfZeroValue(*s))
 	}
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.UpdateSubnetGroupInput) error {
-	obj.SubnetGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.SubnetGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	for _, s := range cr.Spec.ForProvider.SubnetIds {
-		obj.SubnetIds = append(obj.SubnetIds, pointer.String(*s))
+		obj.SubnetIds = append(obj.SubnetIds, pointer.ToOrNilIfZeroValue(*s))
 	}
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.SubnetGroup, obj *svcsdk.DeleteSubnetGroupInput) (bool, error) {
-	obj.SubnetGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.SubnetGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

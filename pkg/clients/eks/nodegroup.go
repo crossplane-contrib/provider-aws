@@ -249,9 +249,9 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 	if ng == nil {
 		return
 	}
-	in.AMIType = pointer.LateInitializeStringPtr(in.AMIType, pointer.String(string(ng.AmiType)))
-	in.CapacityType = pointer.LateInitializeStringPtr(in.CapacityType, pointer.String(string(ng.CapacityType)))
-	in.DiskSize = pointer.LateInitializeInt32Ptr(in.DiskSize, ng.DiskSize)
+	in.AMIType = pointer.LateInitialize(in.AMIType, pointer.ToOrNilIfZeroValue(string(ng.AmiType)))
+	in.CapacityType = pointer.LateInitialize(in.CapacityType, pointer.ToOrNilIfZeroValue(string(ng.CapacityType)))
+	in.DiskSize = pointer.LateInitialize(in.DiskSize, ng.DiskSize)
 	if len(in.InstanceTypes) == 0 && len(ng.InstanceTypes) > 0 {
 		in.InstanceTypes = ng.InstanceTypes
 	}
@@ -279,15 +279,15 @@ func LateInitializeNodeGroup(in *manualv1alpha1.NodeGroupParameters, ng *ekstype
 	if in.UpdateConfig == nil {
 		in.UpdateConfig = &manualv1alpha1.NodeGroupUpdateConfig{}
 	}
-	in.UpdateConfig.Force = pointer.LateInitializeBoolPtr(in.UpdateConfig.Force, aws.Bool(false))
+	in.UpdateConfig.Force = pointer.LateInitialize(in.UpdateConfig.Force, aws.Bool(false))
 	if ng.UpdateConfig != nil {
-		in.UpdateConfig.MaxUnavailable = pointer.LateInitializeInt32Ptr(in.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable)
+		in.UpdateConfig.MaxUnavailable = pointer.LateInitialize(in.UpdateConfig.MaxUnavailable, ng.UpdateConfig.MaxUnavailable)
 	}
 	if in.LaunchTemplate != nil && ng.LaunchTemplate != nil && ng.LaunchTemplate.Version != nil {
-		in.LaunchTemplate.Version = pointer.LateInitializeStringPtr(in.LaunchTemplate.Version, ng.LaunchTemplate.Version)
+		in.LaunchTemplate.Version = pointer.LateInitialize(in.LaunchTemplate.Version, ng.LaunchTemplate.Version)
 	}
-	in.ReleaseVersion = pointer.LateInitializeStringPtr(in.ReleaseVersion, ng.ReleaseVersion)
-	in.Version = pointer.LateInitializeStringPtr(in.Version, ng.Version)
+	in.ReleaseVersion = pointer.LateInitialize(in.ReleaseVersion, ng.ReleaseVersion)
+	in.Version = pointer.LateInitialize(in.Version, ng.Version)
 	// NOTE(hasheddan): we always will set the default Crossplane tags in
 	// practice during initialization in the controller, but we check if no tags
 	// exist for consistency with expected late initialization behavior.

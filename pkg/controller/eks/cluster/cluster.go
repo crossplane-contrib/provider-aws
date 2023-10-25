@@ -204,13 +204,13 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	if patch.EncryptionConfig != nil {
 		_, err := e.client.AssociateEncryptionConfig(ctx, &awseks.AssociateEncryptionConfigInput{
-			ClusterName:      pointer.String(meta.GetExternalName(cr)),
+			ClusterName:      pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			EncryptionConfig: eks.GenerateEncryptionConfig(&cr.Spec.ForProvider),
 		})
 		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	if patch.Version != nil {
-		_, err := e.client.UpdateClusterVersion(ctx, &awseks.UpdateClusterVersionInput{Name: pointer.String(meta.GetExternalName(cr)), Version: patch.Version})
+		_, err := e.client.UpdateClusterVersion(ctx, &awseks.UpdateClusterVersionInput{Name: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)), Version: patch.Version})
 		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	if patch.Logging != nil {
@@ -230,7 +230,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if cr.Status.AtProvider.Status == v1beta1.ClusterStatusDeleting {
 		return nil
 	}
-	_, err := e.client.DeleteCluster(ctx, &awseks.DeleteClusterInput{Name: pointer.String(meta.GetExternalName(cr))})
+	_, err := e.client.DeleteCluster(ctx, &awseks.DeleteClusterInput{Name: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))})
 	return errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
 }
 

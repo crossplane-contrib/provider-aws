@@ -29,9 +29,9 @@ func AccessPoint(m ...AccessPointModifier) *svcapitypes.AccessPoint {
 		Spec: svcapitypes.AccessPointSpec{
 			ForProvider: svcapitypes.AccessPointParameters{
 				Region:    "us-east-1",
-				AccountID: pointer.String("1234567890"),
+				AccountID: pointer.ToOrNilIfZeroValue("1234567890"),
 				CustomAccessPointParameters: svcapitypes.CustomAccessPointParameters{
-					BucketName: pointer.String("test.bucket.name"),
+					BucketName: pointer.ToOrNilIfZeroValue("test.bucket.name"),
 				},
 			},
 		},

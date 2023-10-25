@@ -43,7 +43,7 @@ func LateInitializeRepositoryPolicy(in *v1beta1.RepositoryPolicyParameters, r *e
 	if r == nil {
 		return
 	}
-	in.RegistryID = pointer.LateInitializeStringPtr(in.RegistryID, r.RegistryId)
+	in.RegistryID = pointer.LateInitialize(in.RegistryID, r.RegistryId)
 }
 
 // IsPolicyNotFoundErr returns true if the error code indicates that the policy was not found

@@ -67,7 +67,7 @@ func TestDiffTags(t *testing.T) {
 					sdkTag("testAdd", "val"),
 				},
 				remove: []*string{
-					pointer.String("testRemove"),
+					pointer.ToOrNilIfZeroValue("testRemove"),
 				},
 			},
 		},

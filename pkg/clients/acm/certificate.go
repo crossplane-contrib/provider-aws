@@ -100,7 +100,7 @@ func GenerateCertificateStatus(certificate types.CertificateDetail) v1beta1.Cert
 // LateInitializeCertificate fills the empty fields in *v1beta1.CertificateParameters with
 // the values seen in iam.Certificate.
 func LateInitializeCertificate(in *v1beta1.CertificateParameters, certificate *types.CertificateDetail) {
-	in.CertificateAuthorityARN = pointer.LateInitializeStringPtr(in.CertificateAuthorityARN, certificate.CertificateAuthorityArn)
+	in.CertificateAuthorityARN = pointer.LateInitialize(in.CertificateAuthorityARN, certificate.CertificateAuthorityArn)
 	if in.Options == nil && certificate.Options != nil {
 		in.Options = &v1beta1.CertificateOptions{
 			CertificateTransparencyLoggingPreference: string(certificate.Options.CertificateTransparencyLoggingPreference),

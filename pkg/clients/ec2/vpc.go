@@ -107,16 +107,16 @@ func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2types.Vpc, attributes *e
 		return
 	}
 
-	in.CIDRBlock = pointer.LateInitializeString(in.CIDRBlock, v.CidrBlock)
-	in.InstanceTenancy = pointer.LateInitializeStringPtr(in.InstanceTenancy, pointer.String(string(v.InstanceTenancy)))
+	in.CIDRBlock = pointer.LateInitializeValueFromPtr(in.CIDRBlock, v.CidrBlock)
+	in.InstanceTenancy = pointer.LateInitialize(in.InstanceTenancy, pointer.ToOrNilIfZeroValue(string(v.InstanceTenancy)))
 	if len(v.Ipv6CidrBlockAssociationSet) != 0 {
 		ipv6Association := v.Ipv6CidrBlockAssociationSet[0]
-		in.Ipv6CIDRBlock = pointer.LateInitializeStringPtr(in.Ipv6CIDRBlock, ipv6Association.Ipv6CidrBlock)
+		in.Ipv6CIDRBlock = pointer.LateInitialize(in.Ipv6CIDRBlock, ipv6Association.Ipv6CidrBlock)
 	}
 	if attributes.EnableDnsHostnames != nil {
-		in.EnableDNSHostNames = pointer.LateInitializeBoolPtr(in.EnableDNSHostNames, attributes.EnableDnsHostnames.Value)
+		in.EnableDNSHostNames = pointer.LateInitialize(in.EnableDNSHostNames, attributes.EnableDnsHostnames.Value)
 	}
 	if attributes.EnableDnsHostnames != nil {
-		in.EnableDNSSupport = pointer.LateInitializeBoolPtr(in.EnableDNSSupport, attributes.EnableDnsSupport.Value)
+		in.EnableDNSSupport = pointer.LateInitialize(in.EnableDNSSupport, attributes.EnableDnsSupport.Value)
 	}
 }

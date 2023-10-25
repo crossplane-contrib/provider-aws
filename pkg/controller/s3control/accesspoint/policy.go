@@ -88,7 +88,7 @@ func (p *policyClient) createOrUpdate(ctx context.Context, cr *svcapitypes.Acces
 		return nil
 	}
 	input := &svcsdk.PutAccessPointPolicyInput{}
-	input.Name = pointer.String(meta.GetExternalName(cr))
+	input.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.AccountID != nil {
 		input.SetAccountId(*cr.Spec.ForProvider.AccountID)
@@ -118,7 +118,7 @@ func isErrorPolicyNotFound(err error) bool {
 // generateGetAccessPointPolicyInput returns a get input.
 func generateGetAccessPointPolicyInput(cr *svcapitypes.AccessPoint) *svcsdk.GetAccessPointPolicyInput {
 	input := &svcsdk.GetAccessPointPolicyInput{}
-	input.Name = pointer.String(meta.GetExternalName(cr))
+	input.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.AccountID != nil {
 		input.SetAccountId(*cr.Spec.ForProvider.AccountID)
@@ -130,7 +130,7 @@ func generateGetAccessPointPolicyInput(cr *svcapitypes.AccessPoint) *svcsdk.GetA
 // generateDeleteAccessPointPolicyInput returns a deletion input.
 func generateDeleteAccessPointPolicyInput(cr *svcapitypes.AccessPoint) *svcsdk.DeleteAccessPointPolicyInput {
 	input := &svcsdk.DeleteAccessPointPolicyInput{}
-	input.Name = pointer.String(meta.GetExternalName(cr))
+	input.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	if cr.Spec.ForProvider.AccountID != nil {
 		input.SetAccountId(*cr.Spec.ForProvider.AccountID)
 	}

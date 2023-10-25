@@ -80,12 +80,12 @@ func SetupClassifier(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.DeleteClassifierInput) (bool, error) {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.GetClassifierInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -147,7 +147,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Update
 
 	if cr.Spec.ForProvider.CustomCSVClassifier != nil {
 		obj.CsvClassifier = &svcsdk.UpdateCsvClassifierRequest{
-			Name:                 pointer.String(meta.GetExternalName(cr)),
+			Name:                 pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			AllowSingleColumn:    cr.Spec.ForProvider.CustomCSVClassifier.AllowSingleColumn,
 			ContainsHeader:       cr.Spec.ForProvider.CustomCSVClassifier.ContainsHeader,
 			Delimiter:            cr.Spec.ForProvider.CustomCSVClassifier.Delimiter,
@@ -160,8 +160,8 @@ func preUpdate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Update
 	if cr.Spec.ForProvider.CustomXMLClassifier != nil {
 
 		obj.XMLClassifier = &svcsdk.UpdateXMLClassifierRequest{
-			Name:           pointer.String(meta.GetExternalName(cr)),
-			Classification: pointer.String(cr.Spec.ForProvider.CustomXMLClassifier.Classification),
+			Name:           pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+			Classification: pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomXMLClassifier.Classification),
 			RowTag:         cr.Spec.ForProvider.CustomXMLClassifier.RowTag,
 		}
 	}
@@ -169,10 +169,10 @@ func preUpdate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Update
 	if cr.Spec.ForProvider.CustomGrokClassifier != nil {
 
 		obj.GrokClassifier = &svcsdk.UpdateGrokClassifierRequest{
-			Name:           pointer.String(meta.GetExternalName(cr)),
-			Classification: pointer.String(cr.Spec.ForProvider.CustomGrokClassifier.Classification),
+			Name:           pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+			Classification: pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomGrokClassifier.Classification),
 			CustomPatterns: cr.Spec.ForProvider.CustomGrokClassifier.CustomPatterns,
-			GrokPattern:    pointer.String(cr.Spec.ForProvider.CustomGrokClassifier.GrokPattern),
+			GrokPattern:    pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomGrokClassifier.GrokPattern),
 		}
 		// if CustomPatterns was not nil before but is changed to nil through update, AWS just keeps the old value... (see on AWS Console)
 		// however if we fill the spec field with "", AWS sets it to nil/empty
@@ -184,7 +184,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Update
 
 	if cr.Spec.ForProvider.CustomJSONClassifier != nil {
 		obj.JsonClassifier = &svcsdk.UpdateJsonClassifierRequest{
-			Name:     pointer.String(meta.GetExternalName(cr)),
+			Name:     pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			JsonPath: cr.Spec.ForProvider.CustomJSONClassifier.JSONPath,
 		}
 	}
@@ -196,7 +196,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomCSVClassifier != nil {
 		obj.CsvClassifier = &svcsdk.CreateCsvClassifierRequest{
-			Name:                 pointer.String(meta.GetExternalName(cr)),
+			Name:                 pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			AllowSingleColumn:    cr.Spec.ForProvider.CustomCSVClassifier.AllowSingleColumn,
 			ContainsHeader:       cr.Spec.ForProvider.CustomCSVClassifier.ContainsHeader,
 			Delimiter:            cr.Spec.ForProvider.CustomCSVClassifier.Delimiter,
@@ -208,24 +208,24 @@ func preCreate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomXMLClassifier != nil {
 		obj.XMLClassifier = &svcsdk.CreateXMLClassifierRequest{
-			Name:           pointer.String(meta.GetExternalName(cr)),
-			Classification: pointer.String(cr.Spec.ForProvider.CustomXMLClassifier.Classification),
+			Name:           pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+			Classification: pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomXMLClassifier.Classification),
 			RowTag:         cr.Spec.ForProvider.CustomXMLClassifier.RowTag,
 		}
 	}
 
 	if cr.Spec.ForProvider.CustomGrokClassifier != nil {
 		obj.GrokClassifier = &svcsdk.CreateGrokClassifierRequest{
-			Name:           pointer.String(meta.GetExternalName(cr)),
-			Classification: pointer.String(cr.Spec.ForProvider.CustomGrokClassifier.Classification),
+			Name:           pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+			Classification: pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomGrokClassifier.Classification),
 			CustomPatterns: cr.Spec.ForProvider.CustomGrokClassifier.CustomPatterns,
-			GrokPattern:    pointer.String(cr.Spec.ForProvider.CustomGrokClassifier.GrokPattern),
+			GrokPattern:    pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomGrokClassifier.GrokPattern),
 		}
 	}
 
 	if cr.Spec.ForProvider.CustomJSONClassifier != nil {
 		obj.JsonClassifier = &svcsdk.CreateJsonClassifierRequest{
-			Name:     pointer.String(meta.GetExternalName(cr)),
+			Name:     pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			JsonPath: cr.Spec.ForProvider.CustomJSONClassifier.JSONPath,
 		}
 	}

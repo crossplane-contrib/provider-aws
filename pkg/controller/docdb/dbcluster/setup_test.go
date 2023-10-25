@@ -104,7 +104,7 @@ type docDBModifier func(*svcapitypes.DBCluster)
 func toStringPtrArray(values ...string) []*string {
 	ptrArr := make([]*string, len(values))
 	for i, s := range values {
-		ptrArr[i] = pointer.String(s)
+		ptrArr[i] = pointer.ToOrNilIfZeroValue(s)
 	}
 	return ptrArr
 }
@@ -132,7 +132,7 @@ func withDeletionTimestamp(v *metav1.Time) docDBModifier {
 
 func withDBClusterIdentifier(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Status.AtProvider.DBClusterIdentifier = pointer.String(value)
+		o.Status.AtProvider.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -144,7 +144,7 @@ func withConditions(value ...xpv1.Condition) docDBModifier {
 
 func withStatus(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Status.AtProvider.Status = pointer.String(value)
+		o.Status.AtProvider.Status = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -156,37 +156,37 @@ func withAvailabilityZones(values ...string) docDBModifier {
 
 func withBackupRetentionPeriod(value int) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.BackupRetentionPeriod = pointer.Int64(value)
+		o.Spec.ForProvider.BackupRetentionPeriod = pointer.ToIntAsInt64(value)
 	}
 }
 
 func withDBClusterParameterGroupName(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.DBClusterParameterGroupName = pointer.String(value)
+		o.Spec.ForProvider.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withStatusDBClusterParameterGroupName(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Status.AtProvider.DBClusterParameterGroup = pointer.String(value)
+		o.Status.AtProvider.DBClusterParameterGroup = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withStatusDBClusterArn(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Status.AtProvider.DBClusterARN = pointer.String(value)
+		o.Status.AtProvider.DBClusterARN = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDBSubnetGroup(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.DBSubnetGroupName = pointer.String(value)
+		o.Spec.ForProvider.DBSubnetGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDeletionProtection(value bool) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.DeletionProtection = pointer.Bool(value, pointer.FieldRequired)
+		o.Spec.ForProvider.DeletionProtection = ptr.To(value)
 	}
 }
 
@@ -204,19 +204,19 @@ func withStatusEnableCloudWatchLogsExports(values ...string) docDBModifier {
 
 func withEngine(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.Engine = pointer.String(value)
+		o.Spec.ForProvider.Engine = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withEngineVersion(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.EngineVersion = pointer.String(value)
+		o.Spec.ForProvider.EngineVersion = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withMasterUserName(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.MasterUsername = pointer.String(value)
+		o.Spec.ForProvider.MasterUsername = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -234,49 +234,49 @@ func withMasterPasswordSecretRef(namesapce, name, key string) docDBModifier {
 
 func withKmsKeyID(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.KMSKeyID = pointer.String(value)
+		o.Spec.ForProvider.KMSKeyID = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withPort(value int) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.Port = pointer.Int64(value)
+		o.Spec.ForProvider.Port = pointer.ToIntAsInt64(value)
 	}
 }
 
 func withEndpoint(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Status.AtProvider.Endpoint = pointer.String(value)
+		o.Status.AtProvider.Endpoint = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withReaderEndpoint(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Status.AtProvider.ReaderEndpoint = pointer.String(value)
+		o.Status.AtProvider.ReaderEndpoint = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withPreSignedURL(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.PreSignedURL = pointer.String(value)
+		o.Spec.ForProvider.PreSignedURL = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withPreferredBackupWindow(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.PreferredBackupWindow = pointer.String(value)
+		o.Spec.ForProvider.PreferredBackupWindow = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withPreferredMaintenanceWindow(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.PreferredMaintenanceWindow = pointer.String(value)
+		o.Spec.ForProvider.PreferredMaintenanceWindow = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withStorageEncrypted(value bool) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.StorageEncrypted = pointer.Bool(value)
+		o.Spec.ForProvider.StorageEncrypted = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -298,13 +298,13 @@ func withTags(values ...*svcapitypes.Tag) docDBModifier {
 
 func withSkipFinalSnapshot(value bool) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.SkipFinalSnapshot = pointer.Bool(value)
+		o.Spec.ForProvider.SkipFinalSnapshot = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withFinalDBSnapshotIdentifier(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
-		o.Spec.ForProvider.FinalDBSnapshotIdentifier = pointer.String(value)
+		o.Spec.ForProvider.FinalDBSnapshotIdentifier = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -367,9 +367,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:   pointer.String(testDBClusterIdentifier),
-									Status:                pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									BackupRetentionPeriod: pointer.Int64(testBackupRetentionPeriod),
+									DBClusterIdentifier:   pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									BackupRetentionPeriod: pointer.ToIntAsInt64(testBackupRetentionPeriod),
 								},
 							},
 						}, nil
@@ -401,7 +401,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -415,9 +415,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:   pointer.String(testDBClusterIdentifier),
-									Status:                pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									BackupRetentionPeriod: pointer.Int64(testBackupRetentionPeriod),
+									DBClusterIdentifier:   pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									BackupRetentionPeriod: pointer.ToIntAsInt64(testBackupRetentionPeriod),
 								},
 							},
 						}, nil
@@ -454,7 +454,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -473,9 +473,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:   pointer.String(testDBClusterIdentifier),
-									Status:                pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									BackupRetentionPeriod: pointer.Int64(testBackupRetentionPeriod),
+									DBClusterIdentifier:   pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									BackupRetentionPeriod: pointer.ToIntAsInt64(testBackupRetentionPeriod),
 								},
 							},
 						}, nil
@@ -511,7 +511,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -530,8 +530,8 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
 								},
 							},
 						}, nil
@@ -566,7 +566,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -585,9 +585,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:     pointer.String(testDBClusterIdentifier),
-									Status:                  pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									DBClusterParameterGroup: pointer.String(testDBClusterParameterGroupName),
+									DBClusterIdentifier:     pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                  pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterParameterGroup: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								},
 							},
 						}, nil
@@ -620,7 +620,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -634,9 +634,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:     pointer.String(testDBClusterIdentifier),
-									Status:                  pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									DBClusterParameterGroup: pointer.String(testDBClusterParameterGroupName),
+									DBClusterIdentifier:     pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                  pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterParameterGroup: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								},
 							},
 						}, nil
@@ -674,7 +674,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -693,9 +693,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:     pointer.String(testDBClusterIdentifier),
-									Status:                  pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									DBClusterParameterGroup: pointer.String(testDBClusterParameterGroupName),
+									DBClusterIdentifier:     pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                  pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterParameterGroup: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
 								},
 							},
 						}, nil
@@ -732,7 +732,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -751,9 +751,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									DeletionProtection:  pointer.Bool(true),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									DeletionProtection:  pointer.ToOrNilIfZeroValue(true),
 								},
 							},
 						}, nil
@@ -785,7 +785,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -799,9 +799,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									DeletionProtection:  pointer.Bool(true),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									DeletionProtection:  pointer.ToOrNilIfZeroValue(true),
 								},
 							},
 						}, nil
@@ -838,7 +838,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -857,9 +857,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									DeletionProtection:  pointer.Bool(true),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									DeletionProtection:  pointer.ToOrNilIfZeroValue(true),
 								},
 							},
 						}, nil
@@ -895,7 +895,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -914,10 +914,10 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
 									EnabledCloudwatchLogsExports: []*string{
-										pointer.String(testCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testCloudWatchLog),
 									},
 								},
 							},
@@ -960,7 +960,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -974,11 +974,11 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
 									EnabledCloudwatchLogsExports: []*string{
-										pointer.String(testCloudWatchLog),
-										pointer.String(testOtherCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testOtherCloudWatchLog),
 									},
 								},
 							},
@@ -1019,7 +1019,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1033,11 +1033,11 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
 									EnabledCloudwatchLogsExports: []*string{
-										pointer.String(testCloudWatchLog),
-										pointer.String(testOtherCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testOtherCloudWatchLog),
 									},
 								},
 							},
@@ -1085,7 +1085,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1104,11 +1104,11 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
 									EnabledCloudwatchLogsExports: []*string{
-										pointer.String(testCloudWatchLog),
-										pointer.String(testOtherCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testOtherCloudWatchLog),
 									},
 								},
 							},
@@ -1156,7 +1156,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1175,11 +1175,11 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
 									EnabledCloudwatchLogsExports: []*string{
-										pointer.String(testCloudWatchLog),
-										pointer.String(testOtherCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testCloudWatchLog),
+										pointer.ToOrNilIfZeroValue(testOtherCloudWatchLog),
 									},
 								},
 							},
@@ -1223,7 +1223,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1242,9 +1242,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									Port:                pointer.Int64(testPort),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									Port:                pointer.ToIntAsInt64(testPort),
 								},
 							},
 						}, nil
@@ -1276,7 +1276,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1290,9 +1290,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									Port:                pointer.Int64(testPort),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									Port:                pointer.ToIntAsInt64(testPort),
 								},
 							},
 						}, nil
@@ -1329,7 +1329,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1348,9 +1348,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-									Status:              pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									Port:                pointer.Int64(testPort),
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									Port:                pointer.ToIntAsInt64(testPort),
 								},
 							},
 						}, nil
@@ -1386,7 +1386,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1405,9 +1405,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:   pointer.String(testDBClusterIdentifier),
-									Status:                pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									PreferredBackupWindow: pointer.String(testPreferredBackupWindow),
+									DBClusterIdentifier:   pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									PreferredBackupWindow: pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
 								},
 							},
 						}, nil
@@ -1439,7 +1439,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1453,9 +1453,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:   pointer.String(testDBClusterIdentifier),
-									Status:                pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									PreferredBackupWindow: pointer.String(testPreferredBackupWindow),
+									DBClusterIdentifier:   pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									PreferredBackupWindow: pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
 								},
 							},
 						}, nil
@@ -1492,7 +1492,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1511,9 +1511,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:   pointer.String(testDBClusterIdentifier),
-									Status:                pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									PreferredBackupWindow: pointer.String(testPreferredBackupWindow),
+									DBClusterIdentifier:   pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									PreferredBackupWindow: pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
 								},
 							},
 						}, nil
@@ -1549,7 +1549,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1568,9 +1568,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-									Status:                     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
+									DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 								},
 							},
 						}, nil
@@ -1602,7 +1602,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1616,9 +1616,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-									Status:                     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
+									DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 								},
 							},
 						}, nil
@@ -1655,7 +1655,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1674,9 +1674,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-									Status:                     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
+									DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 								},
 							},
 						}, nil
@@ -1712,7 +1712,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1731,9 +1731,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBClustersOutput{
 							DBClusters: []*docdb.DBCluster{
 								{
-									DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-									Status:                     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-									PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
+									DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:                     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 								},
 							},
 						}, nil
@@ -1772,7 +1772,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1807,7 +1807,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1841,7 +1841,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBClustersInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -1903,21 +1903,21 @@ func TestCreate(t *testing.T) {
 									&testAvailabilityZone,
 									&testOtherAvailabilityZone,
 								},
-								BackupRetentionPeriod:      pointer.Int64(testBackupRetentionPeriod),
+								BackupRetentionPeriod:      pointer.ToIntAsInt64(testBackupRetentionPeriod),
 								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
-								DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-								DBClusterArn:               pointer.String(testDBClusterArn),
-								DeletionProtection:         pointer.Bool(true),
-								Endpoint:                   pointer.String(testEndpoint),
+								DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:               pointer.ToOrNilIfZeroValue(testDBClusterArn),
+								DeletionProtection:         pointer.ToOrNilIfZeroValue(true),
+								Endpoint:                   pointer.ToOrNilIfZeroValue(testEndpoint),
 								Engine:                     &testEngine,
 								EngineVersion:              &testEngineVersion,
 								KmsKeyId:                   &testKMSKeyID,
 								MasterUsername:             &testMasterUserName,
-								ReaderEndpoint:             pointer.String(testReaderEndpoint),
-								Port:                       pointer.Int64(testPort),
+								ReaderEndpoint:             pointer.ToOrNilIfZeroValue(testReaderEndpoint),
+								Port:                       pointer.ToIntAsInt64(testPort),
 								PreferredBackupWindow:      &testPreferredBackupWindow,
 								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
-								StorageEncrypted:           pointer.Bool(true),
+								StorageEncrypted:           pointer.ToOrNilIfZeroValue(true),
 							},
 						}, nil
 					},
@@ -1947,8 +1947,8 @@ func TestCreate(t *testing.T) {
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withStorageEncrypted(true),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 					withVpcSecurityGroupIds(
 						testVpcSecurityGroup,
@@ -1985,8 +1985,8 @@ func TestCreate(t *testing.T) {
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withStorageEncrypted(true),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 					withVpcSecurityGroupIds(
 						testVpcSecurityGroup,
@@ -2011,36 +2011,36 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								AvailabilityZones: toStringPtrArray(
 									testAvailabilityZone,
 									testOtherAvailabilityZone,
 								),
-								BackupRetentionPeriod:       pointer.Int64(testBackupRetentionPeriod),
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
-								DBSubnetGroupName:           pointer.String(testDBSubnetGroupName),
-								DeletionProtection:          pointer.Bool(true),
+								BackupRetentionPeriod:       pointer.ToIntAsInt64(testBackupRetentionPeriod),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+								DBSubnetGroupName:           pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
+								DeletionProtection:          pointer.ToOrNilIfZeroValue(true),
 								EnableCloudwatchLogsExports: toStringPtrArray(
 									testCloudWatchLog,
 									testOtherCloudWatchLog,
 								),
-								Engine:                     pointer.String(testEngine),
-								EngineVersion:              pointer.String(testEngineVersion),
-								KmsKeyId:                   pointer.String(testKMSKeyID),
-								MasterUsername:             pointer.String(testMasterUserName),
-								MasterUserPassword:         pointer.String(testMasterUserPassword),
-								Port:                       pointer.Int64(testPort),
-								PreSignedUrl:               pointer.String(testPresignedURL),
-								PreferredBackupWindow:      pointer.String(testPreferredBackupWindow),
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
-								StorageEncrypted:           pointer.Bool(true),
+								Engine:                     pointer.ToOrNilIfZeroValue(testEngine),
+								EngineVersion:              pointer.ToOrNilIfZeroValue(testEngineVersion),
+								KmsKeyId:                   pointer.ToOrNilIfZeroValue(testKMSKeyID),
+								MasterUsername:             pointer.ToOrNilIfZeroValue(testMasterUserName),
+								MasterUserPassword:         pointer.ToOrNilIfZeroValue(testMasterUserPassword),
+								Port:                       pointer.ToIntAsInt64(testPort),
+								PreSignedUrl:               pointer.ToOrNilIfZeroValue(testPresignedURL),
+								PreferredBackupWindow:      pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+								StorageEncrypted:           pointer.ToOrNilIfZeroValue(true),
 								VpcSecurityGroupIds: toStringPtrArray(
 									testVpcSecurityGroup,
 									testOtherVpcSecurityGroup,
 								),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 							},
 						},
@@ -2067,21 +2067,21 @@ func TestCreate(t *testing.T) {
 									&testAvailabilityZone,
 									&testOtherAvailabilityZone,
 								},
-								BackupRetentionPeriod:      pointer.Int64(testBackupRetentionPeriod),
+								BackupRetentionPeriod:      pointer.ToIntAsInt64(testBackupRetentionPeriod),
 								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
-								DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-								DBClusterArn:               pointer.String(testDBClusterArn),
-								DeletionProtection:         pointer.Bool(true),
-								Endpoint:                   pointer.String(testEndpoint),
+								DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:               pointer.ToOrNilIfZeroValue(testDBClusterArn),
+								DeletionProtection:         pointer.ToOrNilIfZeroValue(true),
+								Endpoint:                   pointer.ToOrNilIfZeroValue(testEndpoint),
 								Engine:                     &testEngine,
 								EngineVersion:              &testEngineVersion,
 								KmsKeyId:                   &testKMSKeyID,
 								MasterUsername:             &testMasterUserName,
-								ReaderEndpoint:             pointer.String(testReaderEndpoint),
-								Port:                       pointer.Int64(testPort),
+								ReaderEndpoint:             pointer.ToOrNilIfZeroValue(testReaderEndpoint),
+								Port:                       pointer.ToIntAsInt64(testPort),
 								PreferredBackupWindow:      &testPreferredBackupWindow,
 								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
-								StorageEncrypted:           pointer.Bool(true),
+								StorageEncrypted:           pointer.ToOrNilIfZeroValue(true),
 							},
 						}, nil
 					},
@@ -2092,21 +2092,21 @@ func TestCreate(t *testing.T) {
 									&testAvailabilityZone,
 									&testOtherAvailabilityZone,
 								},
-								BackupRetentionPeriod:      pointer.Int64(testBackupRetentionPeriod),
+								BackupRetentionPeriod:      pointer.ToIntAsInt64(testBackupRetentionPeriod),
 								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
-								DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-								DBClusterArn:               pointer.String(testDBClusterArn),
-								DeletionProtection:         pointer.Bool(true),
-								Endpoint:                   pointer.String(testEndpoint),
+								DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:               pointer.ToOrNilIfZeroValue(testDBClusterArn),
+								DeletionProtection:         pointer.ToOrNilIfZeroValue(true),
+								Endpoint:                   pointer.ToOrNilIfZeroValue(testEndpoint),
 								Engine:                     &testEngine,
 								EngineVersion:              &testEngineVersion,
 								KmsKeyId:                   &testKMSKeyID,
 								MasterUsername:             &testMasterUserName,
-								ReaderEndpoint:             pointer.String(testReaderEndpoint),
-								Port:                       pointer.Int64(testPort),
+								ReaderEndpoint:             pointer.ToOrNilIfZeroValue(testReaderEndpoint),
+								Port:                       pointer.ToIntAsInt64(testPort),
 								PreferredBackupWindow:      &testPreferredBackupWindow,
 								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
-								StorageEncrypted:           pointer.Bool(true),
+								StorageEncrypted:           pointer.ToOrNilIfZeroValue(true),
 							},
 						}, nil
 					},
@@ -2136,8 +2136,8 @@ func TestCreate(t *testing.T) {
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withStorageEncrypted(true),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 					withVpcSecurityGroupIds(
 						testVpcSecurityGroup,
@@ -2177,8 +2177,8 @@ func TestCreate(t *testing.T) {
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withStorageEncrypted(true),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 					withVpcSecurityGroupIds(
 						testVpcSecurityGroup,
@@ -2206,28 +2206,28 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.RestoreDBClusterFromSnapshotInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								AvailabilityZones: toStringPtrArray(
 									testAvailabilityZone,
 									testOtherAvailabilityZone,
 								),
-								DBSubnetGroupName:  pointer.String(testDBSubnetGroupName),
-								DeletionProtection: pointer.Bool(true),
+								DBSubnetGroupName:  pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
+								DeletionProtection: pointer.ToOrNilIfZeroValue(true),
 								EnableCloudwatchLogsExports: toStringPtrArray(
 									testCloudWatchLog,
 									testOtherCloudWatchLog,
 								),
-								Engine:        pointer.String(testEngine),
-								EngineVersion: pointer.String(testEngineVersion),
-								KmsKeyId:      pointer.String(testKMSKeyID),
-								Port:          pointer.Int64(testPort),
+								Engine:        pointer.ToOrNilIfZeroValue(testEngine),
+								EngineVersion: pointer.ToOrNilIfZeroValue(testEngineVersion),
+								KmsKeyId:      pointer.ToOrNilIfZeroValue(testKMSKeyID),
+								Port:          pointer.ToIntAsInt64(testPort),
 								VpcSecurityGroupIds: toStringPtrArray(
 									testVpcSecurityGroup,
 									testOtherVpcSecurityGroup,
 								),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 								SnapshotIdentifier: ptr.To("abcd"),
 							},
@@ -2237,36 +2237,36 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								AvailabilityZones: toStringPtrArray(
 									testAvailabilityZone,
 									testOtherAvailabilityZone,
 								),
-								BackupRetentionPeriod:       pointer.Int64(testBackupRetentionPeriod),
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
-								DBSubnetGroupName:           pointer.String(testDBSubnetGroupName),
-								DeletionProtection:          pointer.Bool(true),
+								BackupRetentionPeriod:       pointer.ToIntAsInt64(testBackupRetentionPeriod),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+								DBSubnetGroupName:           pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
+								DeletionProtection:          pointer.ToOrNilIfZeroValue(true),
 								EnableCloudwatchLogsExports: toStringPtrArray(
 									testCloudWatchLog,
 									testOtherCloudWatchLog,
 								),
-								Engine:                     pointer.String(testEngine),
-								EngineVersion:              pointer.String(testEngineVersion),
-								KmsKeyId:                   pointer.String(testKMSKeyID),
-								MasterUsername:             pointer.String(testMasterUserName),
-								MasterUserPassword:         pointer.String(testMasterUserPassword),
-								Port:                       pointer.Int64(testPort),
-								PreSignedUrl:               pointer.String(testPresignedURL),
-								PreferredBackupWindow:      pointer.String(testPreferredBackupWindow),
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
-								StorageEncrypted:           pointer.Bool(true),
+								Engine:                     pointer.ToOrNilIfZeroValue(testEngine),
+								EngineVersion:              pointer.ToOrNilIfZeroValue(testEngineVersion),
+								KmsKeyId:                   pointer.ToOrNilIfZeroValue(testKMSKeyID),
+								MasterUsername:             pointer.ToOrNilIfZeroValue(testMasterUserName),
+								MasterUserPassword:         pointer.ToOrNilIfZeroValue(testMasterUserPassword),
+								Port:                       pointer.ToIntAsInt64(testPort),
+								PreSignedUrl:               pointer.ToOrNilIfZeroValue(testPresignedURL),
+								PreferredBackupWindow:      pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+								StorageEncrypted:           pointer.ToOrNilIfZeroValue(true),
 								VpcSecurityGroupIds: toStringPtrArray(
 									testVpcSecurityGroup,
 									testOtherVpcSecurityGroup,
 								),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 							},
 						},
@@ -2293,21 +2293,21 @@ func TestCreate(t *testing.T) {
 									&testAvailabilityZone,
 									&testOtherAvailabilityZone,
 								},
-								BackupRetentionPeriod:      pointer.Int64(testBackupRetentionPeriod),
+								BackupRetentionPeriod:      pointer.ToIntAsInt64(testBackupRetentionPeriod),
 								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
-								DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-								DBClusterArn:               pointer.String(testDBClusterArn),
-								DeletionProtection:         pointer.Bool(true),
-								Endpoint:                   pointer.String(testEndpoint),
+								DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:               pointer.ToOrNilIfZeroValue(testDBClusterArn),
+								DeletionProtection:         pointer.ToOrNilIfZeroValue(true),
+								Endpoint:                   pointer.ToOrNilIfZeroValue(testEndpoint),
 								Engine:                     &testEngine,
 								EngineVersion:              &testEngineVersion,
 								KmsKeyId:                   &testKMSKeyID,
 								MasterUsername:             &testMasterUserName,
-								ReaderEndpoint:             pointer.String(testReaderEndpoint),
-								Port:                       pointer.Int64(testPort),
+								ReaderEndpoint:             pointer.ToOrNilIfZeroValue(testReaderEndpoint),
+								Port:                       pointer.ToIntAsInt64(testPort),
 								PreferredBackupWindow:      &testPreferredBackupWindow,
 								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
-								StorageEncrypted:           pointer.Bool(true),
+								StorageEncrypted:           pointer.ToOrNilIfZeroValue(true),
 							},
 						}, nil
 					},
@@ -2318,21 +2318,21 @@ func TestCreate(t *testing.T) {
 									&testAvailabilityZone,
 									&testOtherAvailabilityZone,
 								},
-								BackupRetentionPeriod:      pointer.Int64(testBackupRetentionPeriod),
+								BackupRetentionPeriod:      pointer.ToIntAsInt64(testBackupRetentionPeriod),
 								DBClusterParameterGroup:    &testDBClusterParameterGroupName,
-								DBClusterIdentifier:        pointer.String(testDBClusterIdentifier),
-								DBClusterArn:               pointer.String(testDBClusterArn),
-								DeletionProtection:         pointer.Bool(true),
-								Endpoint:                   pointer.String(testEndpoint),
+								DBClusterIdentifier:        pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:               pointer.ToOrNilIfZeroValue(testDBClusterArn),
+								DeletionProtection:         pointer.ToOrNilIfZeroValue(true),
+								Endpoint:                   pointer.ToOrNilIfZeroValue(testEndpoint),
 								Engine:                     &testEngine,
 								EngineVersion:              &testEngineVersion,
 								KmsKeyId:                   &testKMSKeyID,
 								MasterUsername:             &testMasterUserName,
-								ReaderEndpoint:             pointer.String(testReaderEndpoint),
-								Port:                       pointer.Int64(testPort),
+								ReaderEndpoint:             pointer.ToOrNilIfZeroValue(testReaderEndpoint),
+								Port:                       pointer.ToIntAsInt64(testPort),
 								PreferredBackupWindow:      &testPreferredBackupWindow,
 								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
-								StorageEncrypted:           pointer.Bool(true),
+								StorageEncrypted:           pointer.ToOrNilIfZeroValue(true),
 							},
 						}, nil
 					},
@@ -2362,8 +2362,8 @@ func TestCreate(t *testing.T) {
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withStorageEncrypted(true),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 					withVpcSecurityGroupIds(
 						testVpcSecurityGroup,
@@ -2406,8 +2406,8 @@ func TestCreate(t *testing.T) {
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withStorageEncrypted(true),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 					withVpcSecurityGroupIds(
 						testVpcSecurityGroup,
@@ -2438,22 +2438,22 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.RestoreDBClusterToPointInTimeInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-								DBSubnetGroupName:   pointer.String(testDBSubnetGroupName),
-								DeletionProtection:  pointer.Bool(true),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBSubnetGroupName:   pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
+								DeletionProtection:  pointer.ToOrNilIfZeroValue(true),
 								EnableCloudwatchLogsExports: toStringPtrArray(
 									testCloudWatchLog,
 									testOtherCloudWatchLog,
 								),
-								KmsKeyId: pointer.String(testKMSKeyID),
-								Port:     pointer.Int64(testPort),
+								KmsKeyId: pointer.ToOrNilIfZeroValue(testKMSKeyID),
+								Port:     pointer.ToIntAsInt64(testPort),
 								VpcSecurityGroupIds: toStringPtrArray(
 									testVpcSecurityGroup,
 									testOtherVpcSecurityGroup,
 								),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 								RestoreToTime:             &timeNow,
 								UseLatestRestorableTime:   ptr.To(true),
@@ -2466,36 +2466,36 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								AvailabilityZones: toStringPtrArray(
 									testAvailabilityZone,
 									testOtherAvailabilityZone,
 								),
-								BackupRetentionPeriod:       pointer.Int64(testBackupRetentionPeriod),
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
-								DBSubnetGroupName:           pointer.String(testDBSubnetGroupName),
-								DeletionProtection:          pointer.Bool(true),
+								BackupRetentionPeriod:       pointer.ToIntAsInt64(testBackupRetentionPeriod),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+								DBSubnetGroupName:           pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
+								DeletionProtection:          pointer.ToOrNilIfZeroValue(true),
 								EnableCloudwatchLogsExports: toStringPtrArray(
 									testCloudWatchLog,
 									testOtherCloudWatchLog,
 								),
-								Engine:                     pointer.String(testEngine),
-								EngineVersion:              pointer.String(testEngineVersion),
-								KmsKeyId:                   pointer.String(testKMSKeyID),
-								MasterUsername:             pointer.String(testMasterUserName),
-								MasterUserPassword:         pointer.String(testMasterUserPassword),
-								Port:                       pointer.Int64(testPort),
-								PreSignedUrl:               pointer.String(testPresignedURL),
-								PreferredBackupWindow:      pointer.String(testPreferredBackupWindow),
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
-								StorageEncrypted:           pointer.Bool(true),
+								Engine:                     pointer.ToOrNilIfZeroValue(testEngine),
+								EngineVersion:              pointer.ToOrNilIfZeroValue(testEngineVersion),
+								KmsKeyId:                   pointer.ToOrNilIfZeroValue(testKMSKeyID),
+								MasterUsername:             pointer.ToOrNilIfZeroValue(testMasterUserName),
+								MasterUserPassword:         pointer.ToOrNilIfZeroValue(testMasterUserPassword),
+								Port:                       pointer.ToIntAsInt64(testPort),
+								PreSignedUrl:               pointer.ToOrNilIfZeroValue(testPresignedURL),
+								PreferredBackupWindow:      pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+								StorageEncrypted:           pointer.ToOrNilIfZeroValue(true),
 								VpcSecurityGroupIds: toStringPtrArray(
 									testVpcSecurityGroup,
 									testOtherVpcSecurityGroup,
 								),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 							},
 						},
@@ -2528,7 +2528,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -2546,11 +2546,11 @@ func TestCreate(t *testing.T) {
 					MockCreateDBClusterWithContext: func(c context.Context, cdpgi *docdb.CreateDBClusterInput, o []request.Option) (*docdb.CreateDBClusterOutput, error) {
 						return &docdb.CreateDBClusterOutput{
 							DBCluster: &docdb.DBCluster{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-								DBClusterArn:        pointer.String(testDBClusterArn),
-								Endpoint:            pointer.String(testEndpoint),
-								ReaderEndpoint:      pointer.String(testReaderEndpoint),
-								Port:                pointer.Int64(testPort),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
+								Endpoint:            pointer.ToOrNilIfZeroValue(testEndpoint),
+								ReaderEndpoint:      pointer.ToOrNilIfZeroValue(testReaderEndpoint),
+								Port:                pointer.ToIntAsInt64(testPort),
 							},
 						}, nil
 					},
@@ -2635,9 +2635,9 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBClusterInput{
-								DBClusterIdentifier:       pointer.String(testDBClusterIdentifier),
-								FinalDBSnapshotIdentifier: pointer.String(testFinalDBSnapshotIdentifier),
-								SkipFinalSnapshot:         pointer.Bool(true),
+								DBClusterIdentifier:       pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								FinalDBSnapshotIdentifier: pointer.ToOrNilIfZeroValue(testFinalDBSnapshotIdentifier),
+								SkipFinalSnapshot:         pointer.ToOrNilIfZeroValue(true),
 							},
 						},
 					},
@@ -2668,7 +2668,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},
@@ -2714,8 +2714,8 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBClusterWithContext: func(c context.Context, mdpgi *docdb.ModifyDBClusterInput, o []request.Option) (*docdb.ModifyDBClusterOutput, error) {
 						return &docdb.ModifyDBClusterOutput{
 							DBCluster: &docdb.DBCluster{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-								DBClusterArn:        pointer.String(testDBClusterArn),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
 							},
 						}, nil
 					},
@@ -2723,8 +2723,8 @@ func TestUpdate(t *testing.T) {
 						return &docdb.ListTagsForResourceOutput{
 							TagList: []*docdb.Tag{
 								{
-									Key:   pointer.String(testOtherOtherTagKey),
-									Value: pointer.String(testOtherOtherTagValue),
+									Key:   pointer.ToOrNilIfZeroValue(testOtherOtherTagKey),
+									Value: pointer.ToOrNilIfZeroValue(testOtherOtherTagValue),
 								},
 							},
 						}, nil
@@ -2757,8 +2757,8 @@ func TestUpdate(t *testing.T) {
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withStorageEncrypted(true),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 					withVpcSecurityGroupIds(
 						testVpcSecurityGroup,
@@ -2788,8 +2788,8 @@ func TestUpdate(t *testing.T) {
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withStorageEncrypted(true),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 					withVpcSecurityGroupIds(
 						testVpcSecurityGroup,
@@ -2801,14 +2801,14 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBClusterInput{
-								DBClusterIdentifier:         pointer.String(testDBClusterIdentifier),
-								BackupRetentionPeriod:       pointer.Int64(testBackupRetentionPeriod),
-								DBClusterParameterGroupName: pointer.String(testDBClusterParameterGroupName),
-								DeletionProtection:          pointer.Bool(true),
-								EngineVersion:               pointer.String(testEngineVersion),
-								Port:                        pointer.Int64(testPort),
-								PreferredBackupWindow:       pointer.String(testPreferredBackupWindow),
-								PreferredMaintenanceWindow:  pointer.String(testPreferredMaintenanceWindow),
+								DBClusterIdentifier:         pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								BackupRetentionPeriod:       pointer.ToIntAsInt64(testBackupRetentionPeriod),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+								DeletionProtection:          pointer.ToOrNilIfZeroValue(true),
+								EngineVersion:               pointer.ToOrNilIfZeroValue(testEngineVersion),
+								Port:                        pointer.ToIntAsInt64(testPort),
+								PreferredBackupWindow:       pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
+								PreferredMaintenanceWindow:  pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 								VpcSecurityGroupIds: toStringPtrArray(
 									testVpcSecurityGroup,
 									testOtherVpcSecurityGroup,
@@ -2823,17 +2823,17 @@ func TestUpdate(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBClusterArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
 							},
 						},
 					},
 					AddTagsToResource: []*fake.CallAddTagsToResource{
 						{
 							I: &docdb.AddTagsToResourceInput{
-								ResourceName: pointer.String(testDBClusterArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 							},
 						},
@@ -2841,9 +2841,9 @@ func TestUpdate(t *testing.T) {
 					RemoveTagsFromResource: []*fake.CallRemoveTagsFromResource{
 						{
 							I: &docdb.RemoveTagsFromResourceInput{
-								ResourceName: pointer.String(testDBClusterArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
 								TagKeys: []*string{
-									pointer.String(testOtherOtherTagKey),
+									pointer.ToOrNilIfZeroValue(testOtherOtherTagKey),
 								},
 							},
 						},
@@ -2857,8 +2857,8 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBClusterWithContext: func(c context.Context, mdpgi *docdb.ModifyDBClusterInput, o []request.Option) (*docdb.ModifyDBClusterOutput, error) {
 						return &docdb.ModifyDBClusterOutput{
 							DBCluster: &docdb.DBCluster{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-								DBClusterArn:        pointer.String(testDBClusterArn),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
 							},
 						}, nil
 					},
@@ -2891,7 +2891,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								CloudwatchLogsExportConfiguration: &docdb.CloudwatchLogsExportConfiguration{
 									DisableLogTypes: []*string{},
 									EnableLogTypes: toStringPtrArray(
@@ -2905,7 +2905,7 @@ func TestUpdate(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBClusterArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
 							},
 						},
 					},
@@ -2918,8 +2918,8 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBClusterWithContext: func(c context.Context, mdpgi *docdb.ModifyDBClusterInput, o []request.Option) (*docdb.ModifyDBClusterOutput, error) {
 						return &docdb.ModifyDBClusterOutput{
 							DBCluster: &docdb.DBCluster{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-								DBClusterArn:        pointer.String(testDBClusterArn),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
 							},
 						}, nil
 					},
@@ -2952,7 +2952,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								CloudwatchLogsExportConfiguration: &docdb.CloudwatchLogsExportConfiguration{
 									DisableLogTypes: toStringPtrArray(
 										testCloudWatchLog,
@@ -2965,7 +2965,7 @@ func TestUpdate(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBClusterArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
 							},
 						},
 					},
@@ -2978,8 +2978,8 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBClusterWithContext: func(c context.Context, mdpgi *docdb.ModifyDBClusterInput, o []request.Option) (*docdb.ModifyDBClusterOutput, error) {
 						return &docdb.ModifyDBClusterOutput{
 							DBCluster: &docdb.DBCluster{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
-								DBClusterArn:        pointer.String(testDBClusterArn),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
 							},
 						}, nil
 					},
@@ -3016,7 +3016,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								CloudwatchLogsExportConfiguration: &docdb.CloudwatchLogsExportConfiguration{
 									DisableLogTypes: toStringPtrArray(
 										testCloudWatchLog,
@@ -3031,7 +3031,7 @@ func TestUpdate(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBClusterArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
 							},
 						},
 					},
@@ -3061,7 +3061,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBClusterInput{
-								DBClusterIdentifier: pointer.String(testDBClusterIdentifier),
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								CloudwatchLogsExportConfiguration: &docdb.CloudwatchLogsExportConfiguration{
 									DisableLogTypes: []*string{},
 									EnableLogTypes:  []*string{},
@@ -3109,8 +3109,8 @@ func TestInitialize(t *testing.T) {
 		"Successful": {
 			args: args{
 				cr: instance(withTags(
-					&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-					&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 				)),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
 			},
@@ -3118,8 +3118,8 @@ func TestInitialize(t *testing.T) {
 				cr: instance(withTags(
 					mergeTags(
 						[]*svcapitypes.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-							{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 						},
 						svcutils.GetExternalTags(instance()),
 					)...,
@@ -3129,8 +3129,8 @@ func TestInitialize(t *testing.T) {
 		"UpdateFailed": {
 			args: args{
 				cr: instance(withTags(
-					&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-					&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 				)),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errors.New(testErrBoom))},
 			},
@@ -3138,8 +3138,8 @@ func TestInitialize(t *testing.T) {
 				cr: instance(withTags(
 					mergeTags(
 						[]*svcapitypes.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-							{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 						},
 						svcutils.GetExternalTags(instance()),
 					)...,

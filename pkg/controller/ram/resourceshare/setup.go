@@ -79,14 +79,14 @@ func preDelete(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.Del
 	// IdempotentParameterMismatchException: com.amazonaws.carsservice.IdempotentParameterMismatchException:
 	// The request has the same client token as a previous request, but the requests are not the same.
 	// client token cannot exceed 64 characters.
-	obj.ClientToken = pointer.String(cr.ResourceVersion)
-	obj.ResourceShareArn = pointer.String(meta.GetExternalName(cr))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(cr.ResourceVersion)
+	obj.ResourceShareArn = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.GetResourceSharesInput) error {
-	obj.MaxResults = pointer.Int64(100)
-	obj.ResourceOwner = pointer.String(svcsdk.ResourceOwnerSelf)
+	obj.MaxResults = pointer.ToIntAsInt64(100)
+	obj.ResourceOwner = pointer.ToOrNilIfZeroValue(svcsdk.ResourceOwnerSelf)
 	return nil
 }
 
@@ -120,7 +120,7 @@ func postObserve(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.G
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.ResourceShare, obj *svcsdk.CreateResourceShareInput) error {
-	obj.ClientToken = pointer.String(string(cr.UID))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	return nil
 }
 

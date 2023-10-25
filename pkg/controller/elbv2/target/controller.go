@@ -119,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               pointer.String(meta.GetExternalName(cr)),
+				Id:               pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
@@ -157,7 +157,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               pointer.String(meta.GetExternalName(cr)),
+				Id:               pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
@@ -185,7 +185,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               pointer.String(meta.GetExternalName(cr)),
+				Id:               pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},

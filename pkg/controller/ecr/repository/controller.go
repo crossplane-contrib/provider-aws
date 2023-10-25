@@ -218,7 +218,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if patch.ImageTagMutability != nil {
 		_, err := e.client.PutImageTagMutability(ctx, &awsecr.PutImageTagMutabilityInput{
-			RepositoryName:     pointer.String(meta.GetExternalName(cr)),
+			RepositoryName:     pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			ImageTagMutability: awsecrtypes.ImageTagMutability(aws.ToString(patch.ImageTagMutability)),
 		})
 		if err != nil {
@@ -228,7 +228,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if patch.ImageScanningConfiguration != nil {
 		_, err := e.client.PutImageScanningConfiguration(ctx, &awsecr.PutImageScanningConfigurationInput{
-			RepositoryName: pointer.String(meta.GetExternalName(cr)),
+			RepositoryName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			ImageScanningConfiguration: &awsecrtypes.ImageScanningConfiguration{
 				ScanOnPush: patch.ImageScanningConfiguration.ScanOnPush,
 			},

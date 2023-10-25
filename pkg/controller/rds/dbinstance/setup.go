@@ -117,7 +117,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesInput) error {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -143,18 +143,18 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		return errors.Wrap(err, dbinstance.ErrNoRetrievePasswordOrGenerate)
 	}
 
-	obj.MasterUserPassword = pointer.String(pw)
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(pw)
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	if len(cr.Spec.ForProvider.VPCSecurityGroupIDs) > 0 {
 		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
 		for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			obj.VpcSecurityGroupIds[i] = pointer.String(v)
+			obj.VpcSecurityGroupIds[i] = pointer.ToOrNilIfZeroValue(v)
 		}
 	}
 	if len(cr.Spec.ForProvider.DBSecurityGroups) > 0 {
 		obj.DBSecurityGroups = make([]*string, len(cr.Spec.ForProvider.DBSecurityGroups))
 		for i, v := range cr.Spec.ForProvider.DBSecurityGroups {
-			obj.DBSecurityGroups[i] = pointer.String(v)
+			obj.DBSecurityGroups[i] = pointer.ToOrNilIfZeroValue(v)
 		}
 	}
 
@@ -222,19 +222,19 @@ func (e *custom) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DB
 }
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) (err error) {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 
 	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
 	if err != nil {
 		return errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
 	}
-	obj.MasterUserPassword = pointer.String(desiredPassword)
+	obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(desiredPassword)
 
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
 		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
 		for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			obj.VpcSecurityGroupIds[i] = pointer.String(v)
+			obj.VpcSecurityGroupIds[i] = pointer.ToOrNilIfZeroValue(v)
 		}
 	}
 
@@ -291,9 +291,9 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, out
 }
 
 func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceInput) (bool, error) {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
-	obj.FinalDBSnapshotIdentifier = pointer.String(cr.Spec.ForProvider.FinalDBSnapshotIdentifier)
-	obj.SkipFinalSnapshot = pointer.Bool(cr.Spec.ForProvider.SkipFinalSnapshot)
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
+	obj.FinalDBSnapshotIdentifier = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.FinalDBSnapshotIdentifier)
+	obj.SkipFinalSnapshot = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.SkipFinalSnapshot)
 	obj.DeleteAutomatedBackups = cr.Spec.ForProvider.DeleteAutomatedBackups
 
 	_, _ = e.external.Update(ctx, cr)
@@ -336,22 +336,22 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, re
 func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDBInstancesOutput) error { //nolint:gocyclo
 	// (PocketMobsters): The controller should already be checking if out is nil so we *should* have a dbinstance here, always
 	db := out.DBInstances[0]
-	in.DBInstanceClass = pointer.LateInitializeStringPtr(in.DBInstanceClass, db.DBInstanceClass)
-	in.Engine = pointer.LateInitializeStringPtr(in.Engine, db.Engine)
+	in.DBInstanceClass = pointer.LateInitialize(in.DBInstanceClass, db.DBInstanceClass)
+	in.Engine = pointer.LateInitialize(in.Engine, db.Engine)
 
-	in.DBClusterIdentifier = pointer.LateInitializeStringPtr(in.DBClusterIdentifier, db.DBClusterIdentifier)
+	in.DBClusterIdentifier = pointer.LateInitialize(in.DBClusterIdentifier, db.DBClusterIdentifier)
 	// if the instance belongs to a cluster, these fields should not be lateinit,
 	// to allow the user to manage these via the cluster
 	if in.DBClusterIdentifier == nil {
-		in.AllocatedStorage = pointer.LateInitializeInt64Ptr(in.AllocatedStorage, db.AllocatedStorage)
-		in.BackupRetentionPeriod = pointer.LateInitializeInt64Ptr(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
-		in.CopyTagsToSnapshot = pointer.LateInitializeBoolPtr(in.CopyTagsToSnapshot, db.CopyTagsToSnapshot)
-		in.DeletionProtection = pointer.LateInitializeBoolPtr(in.DeletionProtection, db.DeletionProtection)
-		in.EnableIAMDatabaseAuthentication = pointer.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
-		in.PreferredBackupWindow = pointer.LateInitializeStringPtr(in.PreferredBackupWindow, db.PreferredBackupWindow)
-		in.StorageEncrypted = pointer.LateInitializeBoolPtr(in.StorageEncrypted, db.StorageEncrypted)
-		in.StorageType = pointer.LateInitializeStringPtr(in.StorageType, db.StorageType)
-		in.EngineVersion = pointer.LateInitializeStringPtr(in.EngineVersion, db.EngineVersion)
+		in.AllocatedStorage = pointer.LateInitialize(in.AllocatedStorage, db.AllocatedStorage)
+		in.BackupRetentionPeriod = pointer.LateInitialize(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
+		in.CopyTagsToSnapshot = pointer.LateInitialize(in.CopyTagsToSnapshot, db.CopyTagsToSnapshot)
+		in.DeletionProtection = pointer.LateInitialize(in.DeletionProtection, db.DeletionProtection)
+		in.EnableIAMDatabaseAuthentication = pointer.LateInitialize(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
+		in.PreferredBackupWindow = pointer.LateInitialize(in.PreferredBackupWindow, db.PreferredBackupWindow)
+		in.StorageEncrypted = pointer.LateInitialize(in.StorageEncrypted, db.StorageEncrypted)
+		in.StorageType = pointer.LateInitialize(in.StorageType, db.StorageType)
+		in.EngineVersion = pointer.LateInitialize(in.EngineVersion, db.EngineVersion)
 		if in.DBParameterGroupName == nil {
 			for i := range db.DBParameterGroups {
 				if db.DBParameterGroups[i].DBParameterGroupName != nil {
@@ -367,35 +367,35 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 			}
 		}
 	}
-	in.AutoMinorVersionUpgrade = pointer.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
-	in.AvailabilityZone = pointer.LateInitializeStringPtr(in.AvailabilityZone, db.AvailabilityZone)
-	in.CACertificateIdentifier = pointer.LateInitializeStringPtr(in.CACertificateIdentifier, db.CACertificateIdentifier)
-	in.CharacterSetName = pointer.LateInitializeStringPtr(in.CharacterSetName, db.CharacterSetName)
-	in.DBName = pointer.LateInitializeStringPtr(in.DBName, db.DBName)
-	in.EnablePerformanceInsights = pointer.LateInitializeBoolPtr(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
-	in.IOPS = pointer.LateInitializeInt64Ptr(in.IOPS, db.Iops)
+	in.AutoMinorVersionUpgrade = pointer.LateInitialize(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
+	in.AvailabilityZone = pointer.LateInitialize(in.AvailabilityZone, db.AvailabilityZone)
+	in.CACertificateIdentifier = pointer.LateInitialize(in.CACertificateIdentifier, db.CACertificateIdentifier)
+	in.CharacterSetName = pointer.LateInitialize(in.CharacterSetName, db.CharacterSetName)
+	in.DBName = pointer.LateInitialize(in.DBName, db.DBName)
+	in.EnablePerformanceInsights = pointer.LateInitialize(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
+	in.IOPS = pointer.LateInitialize(in.IOPS, db.Iops)
 	kmsKey := handleKmsKey(in.KMSKeyID, db.KmsKeyId)
-	in.KMSKeyID = pointer.LateInitializeStringPtr(in.KMSKeyID, kmsKey)
-	in.LicenseModel = pointer.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
-	in.MasterUsername = pointer.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
-	in.MaxAllocatedStorage = pointer.LateInitializeInt64Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
-	in.StorageThroughput = pointer.LateInitializeInt64Ptr(in.StorageThroughput, db.StorageThroughput)
+	in.KMSKeyID = pointer.LateInitialize(in.KMSKeyID, kmsKey)
+	in.LicenseModel = pointer.LateInitialize(in.LicenseModel, db.LicenseModel)
+	in.MasterUsername = pointer.LateInitialize(in.MasterUsername, db.MasterUsername)
+	in.MaxAllocatedStorage = pointer.LateInitialize(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
+	in.StorageThroughput = pointer.LateInitialize(in.StorageThroughput, db.StorageThroughput)
 
 	if pointer.Int64Value(db.MonitoringInterval) > 0 {
-		in.MonitoringInterval = pointer.LateInitializeInt64Ptr(in.MonitoringInterval, db.MonitoringInterval)
+		in.MonitoringInterval = pointer.LateInitialize(in.MonitoringInterval, db.MonitoringInterval)
 	}
 
-	in.MonitoringRoleARN = pointer.LateInitializeStringPtr(in.MonitoringRoleARN, db.MonitoringRoleArn)
-	in.MultiAZ = pointer.LateInitializeBoolPtr(in.MultiAZ, db.MultiAZ)
-	in.PerformanceInsightsKMSKeyID = pointer.LateInitializeStringPtr(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)
-	in.PerformanceInsightsRetentionPeriod = pointer.LateInitializeInt64Ptr(in.PerformanceInsightsRetentionPeriod, db.PerformanceInsightsRetentionPeriod)
-	in.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
-	in.PromotionTier = pointer.LateInitializeInt64Ptr(in.PromotionTier, db.PromotionTier)
-	in.PubliclyAccessible = pointer.LateInitializeBoolPtr(in.PubliclyAccessible, db.PubliclyAccessible)
-	in.Timezone = pointer.LateInitializeStringPtr(in.Timezone, db.Timezone)
+	in.MonitoringRoleARN = pointer.LateInitialize(in.MonitoringRoleARN, db.MonitoringRoleArn)
+	in.MultiAZ = pointer.LateInitialize(in.MultiAZ, db.MultiAZ)
+	in.PerformanceInsightsKMSKeyID = pointer.LateInitialize(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)
+	in.PerformanceInsightsRetentionPeriod = pointer.LateInitialize(in.PerformanceInsightsRetentionPeriod, db.PerformanceInsightsRetentionPeriod)
+	in.PreferredMaintenanceWindow = pointer.LateInitialize(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
+	in.PromotionTier = pointer.LateInitialize(in.PromotionTier, db.PromotionTier)
+	in.PubliclyAccessible = pointer.LateInitialize(in.PubliclyAccessible, db.PubliclyAccessible)
+	in.Timezone = pointer.LateInitialize(in.Timezone, db.Timezone)
 
 	if db.Endpoint != nil {
-		in.Port = pointer.LateInitializeInt64Ptr(in.Port, db.Endpoint.Port)
+		in.Port = pointer.LateInitialize(in.Port, db.Endpoint.Port)
 	}
 
 	if len(in.DBSecurityGroups) == 0 && len(db.DBSecurityGroups) != 0 {

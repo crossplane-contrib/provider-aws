@@ -90,7 +90,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.CacheParameterGroup, obj *svcsdk.DescribeCacheParameterGroupsInput) error {
-	obj.CacheParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.CacheParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -105,7 +105,7 @@ func postObserve(_ context.Context, cr *svcapitypes.CacheParameterGroup, resp *s
 
 func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.CacheParameterGroup, resp *svcsdk.DescribeCacheParameterGroupsOutput) (bool, string, error) {
 	input := &svcsdk.DescribeCacheParametersInput{
-		CacheParameterGroupName: pointer.String(meta.GetExternalName(cr)),
+		CacheParameterGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}
 	var results []*svcsdk.Parameter
 	err := e.client.DescribeCacheParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeCacheParametersOutput, lastPage bool) bool {
@@ -134,7 +134,7 @@ func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.CacheParameterGr
 }
 
 func preUpdate(ctx context.Context, cr *svcapitypes.CacheParameterGroup, obj *svcsdk.ModifyCacheParameterGroupInput) error {
-	obj.CacheParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.CacheParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ParameterNameValues = make([]*svcsdk.ParameterNameValue, len(cr.Spec.ForProvider.ParameterNameValues))
 
 	for i, v := range cr.Spec.ForProvider.ParameterNameValues {
@@ -157,11 +157,11 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.CacheParameterGr
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.CacheParameterGroup, obj *svcsdk.CreateCacheParameterGroupInput) error {
-	obj.CacheParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.CacheParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.CacheParameterGroup, obj *svcsdk.DeleteCacheParameterGroupInput) (bool, error) {
-	obj.CacheParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.CacheParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }

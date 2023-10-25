@@ -143,7 +143,7 @@ func TestObserve(t *testing.T) {
 					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
 						return &awsiam.GetRoleOutput{
 							Role: &awsiamtypes.Role{
-								Arn: pointer.String(arn),
+								Arn: pointer.ToOrNilIfZeroValue(arn),
 							},
 						}, nil
 					},

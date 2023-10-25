@@ -106,14 +106,14 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 			if currentVal != val {
 				removeTags = append(removeTags, t.Key)
 				addTags = append(addTags, &svcsdk.Tag{
-					Key:   pointer.String(key),
-					Value: pointer.String(val),
+					Key:   pointer.ToOrNilIfZeroValue(key),
+					Value: pointer.ToOrNilIfZeroValue(val),
 				})
 			}
 		} else {
 			addTags = append(addTags, &svcsdk.Tag{
-				Key:   pointer.String(key),
-				Value: pointer.String(val),
+				Key:   pointer.ToOrNilIfZeroValue(key),
+				Value: pointer.ToOrNilIfZeroValue(val),
 			})
 		}
 	}
@@ -121,7 +121,7 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 	for _, t := range current {
 		key := pointer.StringValue(t.Key)
 		if _, exists := specMap[key]; !exists {
-			removeTags = append(removeTags, pointer.String(key))
+			removeTags = append(removeTags, pointer.ToOrNilIfZeroValue(key))
 		}
 	}
 
@@ -149,7 +149,7 @@ func AddExternalTags(mg resource.Managed, spec []*svcapitypes.Tag) []*svcapitype
 func GetExternalTags(mg resource.Managed) []*svcapitypes.Tag {
 	externalTags := []*svcapitypes.Tag{}
 	for k, v := range resource.GetExternalTags(mg) {
-		externalTags = append(externalTags, &svcapitypes.Tag{Key: pointer.String(k), Value: pointer.String(v)})
+		externalTags = append(externalTags, &svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
 	}
 
 	sort.Slice(externalTags, func(i, j int) bool {

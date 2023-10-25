@@ -119,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	resp, err := e.client.DescribeJobsWithContext(ctx, &svcsdk.DescribeJobsInput{
-		Jobs: []*string{pointer.String(meta.GetExternalName(cr))},
+		Jobs: []*string{pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))},
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDescribeJob)
@@ -195,8 +195,8 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 	// No terminate-request needed, when Job is already finished
-	if cr.Status.AtProvider.Status == pointer.String(svcsdk.JobStatusFailed) ||
-		cr.Status.AtProvider.Status == pointer.String(svcsdk.JobStatusSucceeded) {
+	if cr.Status.AtProvider.Status == pointer.ToOrNilIfZeroValue(svcsdk.JobStatusFailed) ||
+		cr.Status.AtProvider.Status == pointer.ToOrNilIfZeroValue(svcsdk.JobStatusSucceeded) {
 		return nil
 	}
 
@@ -206,7 +206,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	// e.g. when Job is PENDING bc it's dependend on another Job to finish,
 	// termination seems to not get through until dependend Job is fisnished ... (-> tested on AWS Console)
 
-	_, err := e.client.TerminateJobWithContext(ctx, generateTerminateJobInput(cr, pointer.String("Terminated for crossplane deletion")))
+	_, err := e.client.TerminateJobWithContext(ctx, generateTerminateJobInput(cr, pointer.ToOrNilIfZeroValue("Terminated for crossplane deletion")))
 	return errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errTerminateJob)
 }
 
@@ -233,7 +233,7 @@ func (e *external) lateInitialize(spec, current *svcapitypes.JobParameters) { //
 		}
 
 		if current.NodeOverrides != nil {
-			spec.NodeOverrides.NumNodes = pointer.LateInitializeInt64Ptr(spec.NodeOverrides.NumNodes, current.NodeOverrides.NumNodes)
+			spec.NodeOverrides.NumNodes = pointer.LateInitialize(spec.NodeOverrides.NumNodes, current.NodeOverrides.NumNodes)
 
 			if current.NodeOverrides.NodePropertyOverrides != nil {
 
@@ -248,7 +248,7 @@ func (e *external) lateInitialize(spec, current *svcapitypes.JobParameters) { //
 						specNoProOver.ContainerOverrides = &svcapitypes.ContainerOverrides{}
 					}
 					lateInitContainerOverrides(specNoProOver.ContainerOverrides, noProOver.ContainerOverrides)
-					specNoProOver.TargetNodes = pointer.LateInitializeString(specNoProOver.TargetNodes, pointer.String(noProOver.TargetNodes))
+					specNoProOver.TargetNodes = pointer.LateInitializeValueFromPtr(specNoProOver.TargetNodes, pointer.ToOrNilIfZeroValue(noProOver.TargetNodes))
 					spec.NodeOverrides.NodePropertyOverrides[i] = specNoProOver
 				}
 			}
@@ -263,8 +263,8 @@ func (e *external) lateInitialize(spec, current *svcapitypes.JobParameters) { //
 // Helper for lateInitialize() with ContainerOverrides
 func lateInitContainerOverrides(spec, current *svcapitypes.ContainerOverrides) {
 
-	spec.Command = pointer.LateInitializeStringPtrSlice(spec.Command, current.Command)
-	spec.InstanceType = pointer.LateInitializeStringPtr(spec.InstanceType, current.InstanceType)
+	spec.Command = pointer.LateInitializeSlice(spec.Command, current.Command)
+	spec.InstanceType = pointer.LateInitialize(spec.InstanceType, current.InstanceType)
 	if spec.Environment == nil && current.Environment != nil {
 		env := []*svcapitypes.KeyValuePair{}
 		for _, pair := range current.Environment {

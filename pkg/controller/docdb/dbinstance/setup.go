@@ -101,7 +101,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesInput) error {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -144,16 +144,16 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.DBInstance, resp *
 func lateInitialize(cr *svcapitypes.DBInstanceParameters, resp *svcsdk.DescribeDBInstancesOutput) error {
 	instance := resp.DBInstances[0]
 
-	cr.AvailabilityZone = pointer.LateInitializeStringPtr(cr.AvailabilityZone, instance.AvailabilityZone)
-	cr.AutoMinorVersionUpgrade = pointer.LateInitializeBoolPtr(cr.AutoMinorVersionUpgrade, instance.AutoMinorVersionUpgrade)
-	cr.CACertificateIdentifier = pointer.LateInitializeStringPtr(cr.CACertificateIdentifier, instance.CACertificateIdentifier)
-	cr.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(cr.PreferredMaintenanceWindow, instance.PreferredMaintenanceWindow)
-	cr.PromotionTier = pointer.LateInitializeInt64Ptr(cr.PromotionTier, instance.PromotionTier)
+	cr.AvailabilityZone = pointer.LateInitialize(cr.AvailabilityZone, instance.AvailabilityZone)
+	cr.AutoMinorVersionUpgrade = pointer.LateInitialize(cr.AutoMinorVersionUpgrade, instance.AutoMinorVersionUpgrade)
+	cr.CACertificateIdentifier = pointer.LateInitialize(cr.CACertificateIdentifier, instance.CACertificateIdentifier)
+	cr.PreferredMaintenanceWindow = pointer.LateInitialize(cr.PreferredMaintenanceWindow, instance.PreferredMaintenanceWindow)
+	cr.PromotionTier = pointer.LateInitialize(cr.PromotionTier, instance.PromotionTier)
 	return nil
 }
 
 func preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) error {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.CACertificateIdentifier = cr.Spec.ForProvider.CACertificateIdentifier
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 	return nil
@@ -167,7 +167,7 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, resp
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.CreateDBInstanceInput) error {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.DBClusterIdentifier = cr.Spec.ForProvider.DBClusterIdentifier
 	return nil
 }
@@ -187,7 +187,7 @@ func preDelete(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.Delete
 		return true, nil
 	}
 
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

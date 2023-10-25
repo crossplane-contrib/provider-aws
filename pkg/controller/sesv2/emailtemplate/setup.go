@@ -79,7 +79,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.G
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.GetEmailTemplateInput) error {
-	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -94,16 +94,16 @@ func postObserve(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.CreateEmailTemplateInput) error {
-	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.UpdateEmailTemplateInput) error {
-	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.DeleteEmailTemplateInput) (bool, error) {
-	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }

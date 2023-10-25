@@ -93,7 +93,7 @@ func postCreate(_ context.Context, cp *svcapitypes.CachePolicy, cpo *svcsdk.Crea
 }
 
 func preObserve(_ context.Context, cp *svcapitypes.CachePolicy, gpi *svcsdk.GetCachePolicyInput) error {
-	gpi.Id = pointer.String(meta.GetExternalName(cp))
+	gpi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cp))
 	return nil
 }
 
@@ -107,13 +107,13 @@ func postObserve(_ context.Context, cp *svcapitypes.CachePolicy, _ *svcsdk.GetCa
 }
 
 func preUpdate(_ context.Context, cp *svcapitypes.CachePolicy, upi *svcsdk.UpdateCachePolicyInput) error {
-	upi.Id = pointer.String(meta.GetExternalName(cp))
+	upi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cp))
 	upi.SetIfMatch(pointer.StringValue(cp.Status.AtProvider.ETag))
 	return nil
 }
 
 func preDelete(_ context.Context, cp *svcapitypes.CachePolicy, dpi *svcsdk.DeleteCachePolicyInput) (bool, error) {
-	dpi.Id = pointer.String(meta.GetExternalName(cp))
+	dpi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cp))
 	dpi.SetIfMatch(pointer.StringValue(cp.Status.AtProvider.ETag))
 	return false, nil
 }

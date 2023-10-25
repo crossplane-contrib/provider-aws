@@ -358,11 +358,11 @@ func (e *external) updateReplicationGroupNumCacheClusters(ctx context.Context, r
 	case newReplicaCount > 5:
 		return errors.New(errReplicationGroupCacheClusterMaximum)
 	case desiredClusterSize > existingClusterSize:
-		input := elasticache.NewIncreaseReplicaCountInput(replicaGroup, pointer.Int32(newReplicaCount))
+		input := elasticache.NewIncreaseReplicaCountInput(replicaGroup, pointer.ToIntAsInt32(newReplicaCount))
 		_, err := e.client.IncreaseReplicaCount(ctx, input)
 		return err
 	case desiredClusterSize < existingClusterSize:
-		input := elasticache.NewDecreaseReplicaCountInput(replicaGroup, pointer.Int32(newReplicaCount))
+		input := elasticache.NewDecreaseReplicaCountInput(replicaGroup, pointer.ToIntAsInt32(newReplicaCount))
 		_, err := e.client.DecreaseReplicaCount(ctx, input)
 		return err
 	default:

@@ -81,7 +81,7 @@ type custom struct {
 
 func preCreate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.CreateVpcEndpointInput) error {
 	obj.VpcId = cr.Spec.ForProvider.VPCID
-	obj.ClientToken = pointer.String(string(cr.UID))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	// Clear SGs, RTs, and Subnets if they're empty
 	if len(cr.Spec.ForProvider.SecurityGroupIDs) == 0 {
 		obj.SecurityGroupIds = nil
@@ -186,7 +186,7 @@ sgCompare:
 
 // preUpdate adds the mutable fields into the update request input
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.ModifyVpcEndpointInput) error {
-	obj.VpcEndpointId = pointer.String(meta.GetExternalName(cr))
+	obj.VpcEndpointId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	// Add fields to upstream AWS
 	obj.SetAddSecurityGroupIds(cr.Spec.ForProvider.SecurityGroupIDs)

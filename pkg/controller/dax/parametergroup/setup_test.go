@@ -91,21 +91,21 @@ func withName(value string) daxModifier {
 
 func withStatusParameterGroupName(value string) daxModifier {
 	return func(o *svcapitypes.ParameterGroup) {
-		o.Status.AtProvider.ParameterGroupName = pointer.String(value)
+		o.Status.AtProvider.ParameterGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDescription(value string) daxModifier {
 	return func(o *svcapitypes.ParameterGroup) {
-		o.Spec.ForProvider.Description = pointer.String(value)
+		o.Spec.ForProvider.Description = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withParameters(k, v string) daxModifier {
 	return func(o *svcapitypes.ParameterGroup) {
 		o.Spec.ForProvider.ParameterNameValues = append(o.Spec.ForProvider.ParameterNameValues, &svcapitypes.ParameterNameValue{
-			ParameterName:  pointer.String(k),
-			ParameterValue: pointer.String(v),
+			ParameterName:  pointer.ToOrNilIfZeroValue(k),
+			ParameterValue: pointer.ToOrNilIfZeroValue(v),
 		})
 	}
 }
@@ -134,16 +134,16 @@ func TestObserve(t *testing.T) {
 					MockDescribeParameterGroupsWithContext: func(c context.Context, dpgi *dax.DescribeParameterGroupsInput, o []request.Option) (*dax.DescribeParameterGroupsOutput, error) {
 						return &dax.DescribeParameterGroupsOutput{ParameterGroups: []*dax.ParameterGroup{
 							{
-								ParameterGroupName: pointer.String(testParameterGroupName),
-								Description:        pointer.String(testDescription),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
+								Description:        pointer.ToOrNilIfZeroValue(testDescription),
 							},
 						}}, nil
 					},
 					MockDescribeParametersWithContext: func(ctx context.Context, input *dax.DescribeParametersInput, o []request.Option) (*dax.DescribeParametersOutput, error) {
 						return &dax.DescribeParametersOutput{
 							Parameters: []*dax.Parameter{{
-								ParameterName:  pointer.String(testParameterName),
-								ParameterValue: pointer.String(testParameterValue),
+								ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+								ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 							}},
 						}, nil
 					},
@@ -180,8 +180,8 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DescribeParametersInput{
-								MaxResults:         pointer.Int64(100),
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								MaxResults:         pointer.ToIntAsInt64(100),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						},
 					},
@@ -194,16 +194,16 @@ func TestObserve(t *testing.T) {
 					MockDescribeParameterGroupsWithContext: func(c context.Context, dpgi *dax.DescribeParameterGroupsInput, o []request.Option) (*dax.DescribeParameterGroupsOutput, error) {
 						return &dax.DescribeParameterGroupsOutput{ParameterGroups: []*dax.ParameterGroup{
 							{
-								ParameterGroupName: pointer.String(testParameterGroupName),
-								Description:        pointer.String(testDescription),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
+								Description:        pointer.ToOrNilIfZeroValue(testDescription),
 							},
 						}}, nil
 					},
 					MockDescribeParametersWithContext: func(ctx context.Context, input *dax.DescribeParametersInput, o []request.Option) (*dax.DescribeParametersOutput, error) {
 						return &dax.DescribeParametersOutput{
 							Parameters: []*dax.Parameter{{
-								ParameterName:  pointer.String(testParameterName),
-								ParameterValue: pointer.String(testParameterValue),
+								ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+								ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 							}},
 						}, nil
 					},
@@ -240,8 +240,8 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DescribeParametersInput{
-								MaxResults:         pointer.Int64(100),
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								MaxResults:         pointer.ToIntAsInt64(100),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						},
 					},
@@ -254,8 +254,8 @@ func TestObserve(t *testing.T) {
 					MockDescribeParameterGroupsWithContext: func(c context.Context, dpgi *dax.DescribeParameterGroupsInput, o []request.Option) (*dax.DescribeParameterGroupsOutput, error) {
 						return &dax.DescribeParameterGroupsOutput{ParameterGroups: []*dax.ParameterGroup{
 							{
-								ParameterGroupName: pointer.String(testParameterGroupName),
-								Description:        pointer.String(testDescription),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
+								Description:        pointer.ToOrNilIfZeroValue(testDescription),
 							},
 						}}, nil
 					},
@@ -364,8 +364,8 @@ func TestUpdate(t *testing.T) {
 					MockUpdateParameterGroupWithContext: func(c context.Context, upgi *dax.UpdateParameterGroupInput, o []request.Option) (*dax.UpdateParameterGroupOutput, error) {
 						return &dax.UpdateParameterGroupOutput{
 							ParameterGroup: &dax.ParameterGroup{
-								ParameterGroupName: pointer.String(testParameterGroupName),
-								Description:        pointer.String(testDescription),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
+								Description:        pointer.ToOrNilIfZeroValue(testDescription),
 							},
 						}, nil
 					},
@@ -390,11 +390,11 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 								ParameterNameValues: []*dax.ParameterNameValue{
 									{
-										ParameterName:  pointer.String(testParameterName),
-										ParameterValue: pointer.String(testParameterValue),
+										ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+										ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 									},
 								},
 							},
@@ -409,8 +409,8 @@ func TestUpdate(t *testing.T) {
 					MockUpdateParameterGroupWithContext: func(c context.Context, upgi *dax.UpdateParameterGroupInput, o []request.Option) (*dax.UpdateParameterGroupOutput, error) {
 						return &dax.UpdateParameterGroupOutput{
 							ParameterGroup: &dax.ParameterGroup{
-								Description:        pointer.String(testDescription),
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								Description:        pointer.ToOrNilIfZeroValue(testDescription),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						}, nil
 					},
@@ -437,15 +437,15 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 								ParameterNameValues: []*dax.ParameterNameValue{
 									{
-										ParameterName:  pointer.String(testParameterName),
-										ParameterValue: pointer.String(testParameterValue),
+										ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+										ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 									},
 									{
-										ParameterName:  pointer.String(testOtherParameterName),
-										ParameterValue: pointer.String(testOtherParameterValue),
+										ParameterName:  pointer.ToOrNilIfZeroValue(testOtherParameterName),
+										ParameterValue: pointer.ToOrNilIfZeroValue(testOtherParameterValue),
 									},
 								},
 							},
@@ -480,11 +480,11 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.UpdateParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 								ParameterNameValues: []*dax.ParameterNameValue{
 									{
-										ParameterName:  pointer.String(testParameterName),
-										ParameterValue: pointer.String(testParameterValue),
+										ParameterName:  pointer.ToOrNilIfZeroValue(testParameterName),
+										ParameterValue: pointer.ToOrNilIfZeroValue(testParameterValue),
 									},
 								},
 							},
@@ -534,7 +534,7 @@ func TestCreate(t *testing.T) {
 					MockCreateParameterGroupWithContext: func(c context.Context, cpgi *dax.CreateParameterGroupInput, o []request.Option) (*dax.CreateParameterGroupOutput, error) {
 						return &dax.CreateParameterGroupOutput{
 							ParameterGroup: &dax.ParameterGroup{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						}, nil
 					},
@@ -557,7 +557,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						},
 					},
@@ -570,7 +570,7 @@ func TestCreate(t *testing.T) {
 					MockCreateParameterGroupWithContext: func(c context.Context, cpgi *dax.CreateParameterGroupInput, o []request.Option) (*dax.CreateParameterGroupOutput, error) {
 						return &dax.CreateParameterGroupOutput{
 							ParameterGroup: &dax.ParameterGroup{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						}, nil
 					},
@@ -596,7 +596,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						},
 					},
@@ -627,7 +627,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						},
 					},
@@ -660,7 +660,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.CreateParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						},
 					},
@@ -723,7 +723,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DeleteParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						},
 					},
@@ -752,7 +752,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &dax.DeleteParameterGroupInput{
-								ParameterGroupName: pointer.String(testParameterGroupName),
+								ParameterGroupName: pointer.ToOrNilIfZeroValue(testParameterGroupName),
 							},
 						},
 					},

@@ -55,7 +55,7 @@ func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
 
 func preObserve(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.DescribeAccessPointsInput) error {
 	obj.FileSystemId = nil
-	obj.AccessPointId = pointer.String(meta.GetExternalName(cr))
+	obj.AccessPointId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -78,7 +78,7 @@ func postObserve(_ context.Context, cr *svcapitypes.AccessPoint, resp *svcsdk.De
 
 func preCreate(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.CreateAccessPointInput) error {
 	obj.FileSystemId = cr.Spec.ForProvider.FileSystemID
-	obj.ClientToken = pointer.String(string(cr.UID))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	return nil
 }
 

@@ -75,7 +75,7 @@ func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcsdk.DescribeVolumesOutput {
-	volumeIdentifier := pointer.String(meta.GetExternalName(cr))
+	volumeIdentifier := pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	resp := &svcsdk.DescribeVolumesOutput{}
 	for _, volume := range obj.Volumes {
 		if pointer.StringValue(volume.VolumeId) == pointer.StringValue(volumeIdentifier) {
@@ -88,7 +88,7 @@ func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcs
 
 func preCreate(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.CreateVolumeInput) error {
 	obj.KmsKeyId = cr.Spec.ForProvider.KMSKeyID
-	obj.ClientToken = pointer.String(string(cr.UID))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	return nil
 }
 

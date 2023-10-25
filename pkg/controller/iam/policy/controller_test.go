@@ -64,9 +64,9 @@ var (
 	errBoom = errors.New("boom")
 
 	getCallerIdentityOutput = &sts.GetCallerIdentityOutput{
-		Account:        pointer.String("123456789012"),
-		Arn:            pointer.String("arn:aws:iam::123456789012:user/DevAdmin"),
-		UserId:         pointer.String("AIDASAMPLEUSERID"),
+		Account:        pointer.ToOrNilIfZeroValue("123456789012"),
+		Arn:            pointer.ToOrNilIfZeroValue("arn:aws:iam::123456789012:user/DevAdmin"),
+		UserId:         pointer.ToOrNilIfZeroValue("AIDASAMPLEUSERID"),
 		ResultMetadata: middleware.Metadata{},
 	}
 
@@ -131,7 +131,7 @@ func withSpec(spec v1beta1.PolicyParameters) policyModifier {
 
 func withPath(path string) policyModifier {
 	return func(r *v1beta1.Policy) {
-		r.Spec.ForProvider.Path = pointer.String(path)
+		r.Spec.ForProvider.Path = pointer.ToOrNilIfZeroValue(path)
 	}
 }
 

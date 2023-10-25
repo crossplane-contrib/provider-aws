@@ -48,7 +48,7 @@ func NewPolicyClient(client s3.BucketPolicyClient) *PolicyClient {
 // Observe checks if the resource exists and if it matches the local configuration
 func (e *PolicyClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (ResourceStatus, error) {
 	resp, err := e.client.GetBucketPolicy(ctx, &awss3.GetBucketPolicyInput{
-		Bucket: pointer.String(meta.GetExternalName(cr)),
+		Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		if s3.IsErrorPolicyNotFound(err) {
@@ -87,7 +87,7 @@ func (e *PolicyClient) CreateOrUpdate(ctx context.Context, cr *v1beta1.Bucket) e
 		return errors.Wrap(err, policyFormatFailed)
 	}
 	_, err = e.client.PutBucketPolicy(ctx, &awss3.PutBucketPolicyInput{
-		Bucket: pointer.String(meta.GetExternalName(cr)),
+		Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		Policy: policy,
 	})
 	return errors.Wrap(err, policyPutFailed)
@@ -96,7 +96,7 @@ func (e *PolicyClient) CreateOrUpdate(ctx context.Context, cr *v1beta1.Bucket) e
 // Delete removes the public access block configuration.
 func (e *PolicyClient) Delete(ctx context.Context, cr *v1beta1.Bucket) error {
 	_, err := e.client.DeleteBucketPolicy(ctx, &awss3.DeleteBucketPolicyInput{
-		Bucket: pointer.String(meta.GetExternalName(cr)),
+		Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	return errors.Wrap(err, policyDeleteFailed)
 }

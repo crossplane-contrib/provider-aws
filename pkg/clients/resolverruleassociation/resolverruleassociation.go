@@ -44,7 +44,7 @@ func NewRoute53ResolverClient(cfg aws.Config) Client {
 // GenerateCreateAssociateResolverRuleInput returns a route53resolver AssociateResolverRuleOutput
 func GenerateCreateAssociateResolverRuleInput(cr *manualv1alpha1.ResolverRuleAssociation) *route53resolver.AssociateResolverRuleInput {
 	reqInput := &route53resolver.AssociateResolverRuleInput{
-		Name:           pointer.String(meta.GetExternalName(cr)),
+		Name:           pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		VPCId:          cr.Spec.ForProvider.VPCId,
 		ResolverRuleId: cr.Spec.ForProvider.ResolverRuleID,
 	}

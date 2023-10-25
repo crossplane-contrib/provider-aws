@@ -51,7 +51,7 @@ func NewTaggingConfigurationClient(client s3.BucketClient) *TaggingConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.BucketTagging
 	if err != nil {
 		if s3.TaggingNotFound(err) && config == nil {
@@ -86,7 +86,7 @@ func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketTagging(ctx,
 		&awss3.DeleteBucketTaggingInput{
-			Bucket: pointer.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)),
 		},
 	)
 	return errorutils.Wrap(err, taggingDeleteFailed)
@@ -95,7 +95,7 @@ func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *TaggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
@@ -141,7 +141,7 @@ func GenerateLocalTagging(config []types.Tag) *v1beta1.Tagging {
 // GeneratePutBucketTagging creates the PutBucketTaggingInput for the aws SDK
 func GeneratePutBucketTagging(name string, config *v1beta1.Tagging) *awss3.PutBucketTaggingInput {
 	return &awss3.PutBucketTaggingInput{
-		Bucket:  pointer.String(name),
+		Bucket:  pointer.ToOrNilIfZeroValue(name),
 		Tagging: GenerateTagging(config),
 	}
 }

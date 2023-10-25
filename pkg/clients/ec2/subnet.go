@@ -61,15 +61,15 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2types.Subnet) {
 		return
 	}
 
-	in.AssignIPv6AddressOnCreation = pointer.LateInitializeBoolPtr(in.AssignIPv6AddressOnCreation, s.AssignIpv6AddressOnCreation)
-	in.AvailabilityZone = pointer.LateInitializeStringPtr(in.AvailabilityZone, s.AvailabilityZone)
-	in.AvailabilityZoneID = pointer.LateInitializeStringPtr(in.AvailabilityZoneID, s.AvailabilityZoneId)
-	in.CIDRBlock = pointer.LateInitializeString(in.CIDRBlock, s.CidrBlock)
-	in.MapPublicIPOnLaunch = pointer.LateInitializeBoolPtr(in.MapPublicIPOnLaunch, s.MapPublicIpOnLaunch)
-	in.VPCID = pointer.LateInitializeStringPtr(in.VPCID, s.VpcId)
+	in.AssignIPv6AddressOnCreation = pointer.LateInitialize(in.AssignIPv6AddressOnCreation, s.AssignIpv6AddressOnCreation)
+	in.AvailabilityZone = pointer.LateInitialize(in.AvailabilityZone, s.AvailabilityZone)
+	in.AvailabilityZoneID = pointer.LateInitialize(in.AvailabilityZoneID, s.AvailabilityZoneId)
+	in.CIDRBlock = pointer.LateInitializeValueFromPtr(in.CIDRBlock, s.CidrBlock)
+	in.MapPublicIPOnLaunch = pointer.LateInitialize(in.MapPublicIPOnLaunch, s.MapPublicIpOnLaunch)
+	in.VPCID = pointer.LateInitialize(in.VPCID, s.VpcId)
 
 	if s.Ipv6CidrBlockAssociationSet != nil && len(s.Ipv6CidrBlockAssociationSet) > 0 {
-		in.IPv6CIDRBlock = pointer.LateInitializeStringPtr(in.IPv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)
+		in.IPv6CIDRBlock = pointer.LateInitialize(in.IPv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)
 	}
 
 	if len(in.Tags) == 0 && len(s.Tags) != 0 {

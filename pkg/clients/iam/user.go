@@ -35,9 +35,9 @@ func LateInitializeUser(in *v1beta1.UserParameters, user *iamtypes.User) {
 		return
 	}
 
-	in.Path = pointer.LateInitializeStringPtr(in.Path, user.Path)
+	in.Path = pointer.LateInitialize(in.Path, user.Path)
 	if user.PermissionsBoundary != nil {
-		in.PermissionsBoundary = pointer.LateInitializeStringPtr(in.PermissionsBoundary, user.PermissionsBoundary.PermissionsBoundaryArn)
+		in.PermissionsBoundary = pointer.LateInitialize(in.PermissionsBoundary, user.PermissionsBoundary.PermissionsBoundaryArn)
 	}
 
 	if in.Tags == nil && user.Tags != nil {

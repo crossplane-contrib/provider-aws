@@ -265,10 +265,10 @@ func DiffTags(spec []svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk.
 		removeMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
 	}
 	for k, v := range addMap {
-		addTags = append(addTags, &svcsdk.Tag{Key: pointer.String(k), Value: pointer.String(v)})
+		addTags = append(addTags, &svcsdk.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
 	}
 	for k, v := range removeMap {
-		remove = append(remove, &svcsdk.Tag{Key: pointer.String(k), Value: pointer.String(v)})
+		remove = append(remove, &svcsdk.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
 	}
 	return
 }
@@ -277,7 +277,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.FlowLog, addTa
 
 	if len(removeTags) > 0 {
 		inputR := &svcsdk.DeleteTagsInput{
-			Resources: pointer.StringSliceToPtr([]string{meta.GetExternalName(cr)}),
+			Resources: pointer.SliceValueToPtr([]string{meta.GetExternalName(cr)}),
 			Tags:      removeTags,
 		}
 
@@ -288,7 +288,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.FlowLog, addTa
 	}
 	if len(addTags) > 0 {
 		inputC := &svcsdk.CreateTagsInput{
-			Resources: pointer.StringSliceToPtr([]string{meta.GetExternalName(cr)}),
+			Resources: pointer.SliceValueToPtr([]string{meta.GetExternalName(cr)}),
 			Tags:      addTags,
 		}
 

@@ -106,7 +106,7 @@ type hooks struct {
 }
 
 func (h *hooks) preDelete(ctx context.Context, cr *svcapitypes.Crawler, obj *svcsdk.DeleteCrawlerInput) (bool, error) {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	// delete-requests to AWS will throw an error while the crawler is still working
 
@@ -125,7 +125,7 @@ func (h *hooks) preDelete(ctx context.Context, cr *svcapitypes.Crawler, obj *svc
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCrawlerInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -158,30 +158,30 @@ func postObserve(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.GetCraw
 //nolint:gocyclo
 func lateInitialize(spec *svcapitypes.CrawlerParameters, resp *svcsdk.GetCrawlerOutput) error {
 
-	spec.Configuration = pointer.LateInitializeStringPtr(spec.Configuration, resp.Crawler.Configuration)
+	spec.Configuration = pointer.LateInitialize(spec.Configuration, resp.Crawler.Configuration)
 
 	if spec.LineageConfiguration == nil {
 		spec.LineageConfiguration = &svcapitypes.LineageConfiguration{}
 	}
-	spec.LineageConfiguration.CrawlerLineageSettings = pointer.LateInitializeStringPtr(spec.LineageConfiguration.CrawlerLineageSettings, resp.Crawler.LineageConfiguration.CrawlerLineageSettings)
+	spec.LineageConfiguration.CrawlerLineageSettings = pointer.LateInitialize(spec.LineageConfiguration.CrawlerLineageSettings, resp.Crawler.LineageConfiguration.CrawlerLineageSettings)
 
 	if spec.RecrawlPolicy == nil {
 		spec.RecrawlPolicy = &svcapitypes.RecrawlPolicy{}
 	}
-	spec.RecrawlPolicy.RecrawlBehavior = pointer.LateInitializeStringPtr(spec.RecrawlPolicy.RecrawlBehavior, resp.Crawler.RecrawlPolicy.RecrawlBehavior)
+	spec.RecrawlPolicy.RecrawlBehavior = pointer.LateInitialize(spec.RecrawlPolicy.RecrawlBehavior, resp.Crawler.RecrawlPolicy.RecrawlBehavior)
 
 	if spec.SchemaChangePolicy == nil {
 		spec.SchemaChangePolicy = &svcapitypes.SchemaChangePolicy{}
 	}
-	spec.SchemaChangePolicy.DeleteBehavior = pointer.LateInitializeStringPtr(spec.SchemaChangePolicy.DeleteBehavior, resp.Crawler.SchemaChangePolicy.DeleteBehavior)
-	spec.SchemaChangePolicy.UpdateBehavior = pointer.LateInitializeStringPtr(spec.SchemaChangePolicy.UpdateBehavior, resp.Crawler.SchemaChangePolicy.UpdateBehavior)
+	spec.SchemaChangePolicy.DeleteBehavior = pointer.LateInitialize(spec.SchemaChangePolicy.DeleteBehavior, resp.Crawler.SchemaChangePolicy.DeleteBehavior)
+	spec.SchemaChangePolicy.UpdateBehavior = pointer.LateInitialize(spec.SchemaChangePolicy.UpdateBehavior, resp.Crawler.SchemaChangePolicy.UpdateBehavior)
 
 	if resp.Crawler.Targets.JdbcTargets != nil && spec.Targets.JDBCTargets != nil {
 
 		for i, jdbcTarsIter := range resp.Crawler.Targets.JdbcTargets {
 
 			if spec.Targets.JDBCTargets[i] != nil {
-				spec.Targets.JDBCTargets[i].Path = pointer.LateInitializeStringPtr(spec.Targets.JDBCTargets[i].Path, jdbcTarsIter.Path)
+				spec.Targets.JDBCTargets[i].Path = pointer.LateInitialize(spec.Targets.JDBCTargets[i].Path, jdbcTarsIter.Path)
 			}
 		}
 	}
@@ -189,7 +189,7 @@ func lateInitialize(spec *svcapitypes.CrawlerParameters, resp *svcsdk.GetCrawler
 
 		for i, monTarsIter := range resp.Crawler.Targets.MongoDBTargets {
 			if spec.Targets.MongoDBTargets[i] != nil {
-				spec.Targets.MongoDBTargets[i].ScanAll = pointer.LateInitializeBoolPtr(spec.Targets.MongoDBTargets[i].ScanAll, monTarsIter.ScanAll)
+				spec.Targets.MongoDBTargets[i].ScanAll = pointer.LateInitialize(spec.Targets.MongoDBTargets[i].ScanAll, monTarsIter.ScanAll)
 			}
 		}
 	}
@@ -244,12 +244,12 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Crawler, resp *svc
 
 //nolint:gocyclo
 func preUpdate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.UpdateCrawlerInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	obj.SetClassifiers(cr.Spec.ForProvider.Classifiers)
 	obj.CrawlerSecurityConfiguration = cr.Spec.ForProvider.CrawlerSecurityConfiguration
 	obj.DatabaseName = cr.Spec.ForProvider.DatabaseName
-	obj.Role = pointer.String(cr.Spec.ForProvider.Role)
+	obj.Role = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.Role)
 
 	obj.Targets = &svcsdk.CrawlerTargets{}
 
@@ -258,7 +258,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.UpdateCra
 		for _, catTarsIter := range cr.Spec.ForProvider.Targets.CatalogTargets {
 			catTarsElem := &svcsdk.CatalogTarget{
 				DatabaseName: ptr.To(catTarsIter.DatabaseName),
-				Tables:       pointer.StringSliceToPtr(catTarsIter.Tables),
+				Tables:       pointer.SliceValueToPtr(catTarsIter.Tables),
 			}
 			catTars = append(catTars, catTarsElem)
 		}
@@ -334,9 +334,9 @@ func (h *hooks) postUpdate(ctx context.Context, cr *svcapitypes.Crawler, obj *sv
 
 //nolint:gocyclo
 func preCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCrawlerInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
-	obj.Role = pointer.String(cr.Spec.ForProvider.Role)
+	obj.Role = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.Role)
 	obj.SetClassifiers(cr.Spec.ForProvider.Classifiers)
 	obj.CrawlerSecurityConfiguration = cr.Spec.ForProvider.CrawlerSecurityConfiguration
 	obj.DatabaseName = cr.Spec.ForProvider.DatabaseName
@@ -348,7 +348,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Crawler, obj *svcsdk.CreateCra
 		for _, catTarsIter := range cr.Spec.ForProvider.Targets.CatalogTargets {
 			catTarsElem := &svcsdk.CatalogTarget{
 				DatabaseName: ptr.To(catTarsIter.DatabaseName),
-				Tables:       pointer.StringSliceToPtr(catTarsIter.Tables),
+				Tables:       pointer.SliceValueToPtr(catTarsIter.Tables),
 			}
 			catTars = append(catTars, catTarsElem)
 		}
@@ -453,7 +453,7 @@ func customGenerateCrawler(resp *svcsdk.GetCrawlerOutput) *svcapitypes.Crawler {
 		for _, catTarsIter := range resp.Crawler.Targets.CatalogTargets {
 			catTarsElem := &svcapitypes.CustomCatalogTarget{
 				DatabaseName: pointer.StringValue(catTarsIter.DatabaseName),
-				Tables:       pointer.StringPtrSliceToValue(catTarsIter.Tables),
+				Tables:       pointer.SlicePtrToValue(catTarsIter.Tables),
 			}
 			catTars = append(catTars, catTarsElem)
 		}

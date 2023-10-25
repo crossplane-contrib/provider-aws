@@ -40,7 +40,7 @@ var (
 func generateVersioningConfig() *v1beta1.VersioningConfiguration {
 	return &v1beta1.VersioningConfiguration{
 		MFADelete: &mfadelete,
-		Status:    pointer.String(enabled),
+		Status:    pointer.ToOrNilIfZeroValue(enabled),
 	}
 }
 

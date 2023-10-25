@@ -89,12 +89,12 @@ func SetupDatabase(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.DeleteDatabaseInput) (bool, error) {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.GetDatabaseInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -111,7 +111,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.GetDat
 
 func lateInitialize(spec *svcapitypes.DatabaseParameters, resp *svcsdk.GetDatabaseOutput) error {
 
-	spec.CatalogID = pointer.LateInitializeStringPtr(spec.CatalogID, resp.Database.CatalogId)
+	spec.CatalogID = pointer.LateInitialize(spec.CatalogID, resp.Database.CatalogId)
 
 	if spec.CustomDatabaseInput == nil {
 		spec.CustomDatabaseInput = &svcapitypes.CustomDatabaseInput{}
@@ -190,12 +190,12 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Database, resp *svcsdk.GetDat
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.UpdateDatabaseInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	obj.DatabaseInput = &svcsdk.DatabaseInput{
 		Description: cr.Spec.ForProvider.CustomDatabaseInput.Description,
 		LocationUri: cr.Spec.ForProvider.CustomDatabaseInput.LocationURI,
-		Name:        pointer.String(meta.GetExternalName(cr)),
+		Name:        pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		Parameters:  cr.Spec.ForProvider.CustomDatabaseInput.Parameters,
 	}
 
@@ -251,11 +251,11 @@ func preCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateDa
 
 	if cr.Spec.ForProvider.CustomDatabaseInput == nil {
 		obj.DatabaseInput = &svcsdk.DatabaseInput{
-			Name: pointer.String(meta.GetExternalName(cr)),
+			Name: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}
 	} else {
 		obj.DatabaseInput = &svcsdk.DatabaseInput{
-			Name:        pointer.String(meta.GetExternalName(cr)),
+			Name:        pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			Description: cr.Spec.ForProvider.CustomDatabaseInput.Description,
 			LocationUri: cr.Spec.ForProvider.CustomDatabaseInput.LocationURI,
 			Parameters:  cr.Spec.ForProvider.CustomDatabaseInput.Parameters,

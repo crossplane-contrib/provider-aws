@@ -79,7 +79,7 @@ type custom struct {
 
 func preObserve(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUserInput) error {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = pointer.String(meta.GetExternalName(cr))
+	obj.Username = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -115,7 +115,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.User, obj *svc
 
 func preDelete(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DeleteUserInput) (bool, error) {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = pointer.String(meta.GetExternalName(cr))
+	obj.Username = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	return false, nil
 }
@@ -139,8 +139,8 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.User, obj *svcsd
 	if resource.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
-	obj.Password = pointer.String(pw)
-	obj.Username = pointer.String(cr.Name)
+	obj.Password = pointer.ToOrNilIfZeroValue(pw)
+	obj.Username = pointer.ToOrNilIfZeroValue(cr.Name)
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
 	return nil
 }
@@ -155,7 +155,7 @@ func postCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserO
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.User, obj *svcsdk.UpdateUserRequest) error {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = pointer.String(cr.Name)
+	obj.Username = pointer.ToOrNilIfZeroValue(cr.Name)
 
 	pw, pwchanged, err := mq.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.PasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {

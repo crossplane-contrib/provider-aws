@@ -60,11 +60,11 @@ func LateInitializeAddress(in *v1beta1.AddressParameters, a *ec2types.Address) {
 	if a == nil {
 		return
 	}
-	in.Address = pointer.LateInitializeStringPtr(in.Address, a.PublicIp)
-	in.Domain = pointer.LateInitializeStringPtr(in.Domain, aws.String(string(a.Domain)))
-	in.CustomerOwnedIPv4Pool = pointer.LateInitializeStringPtr(in.CustomerOwnedIPv4Pool, a.CustomerOwnedIpv4Pool)
-	in.NetworkBorderGroup = pointer.LateInitializeStringPtr(in.NetworkBorderGroup, a.NetworkBorderGroup)
-	in.PublicIPv4Pool = pointer.LateInitializeStringPtr(in.PublicIPv4Pool, a.PublicIpv4Pool)
+	in.Address = pointer.LateInitialize(in.Address, a.PublicIp)
+	in.Domain = pointer.LateInitialize(in.Domain, aws.String(string(a.Domain)))
+	in.CustomerOwnedIPv4Pool = pointer.LateInitialize(in.CustomerOwnedIPv4Pool, a.CustomerOwnedIpv4Pool)
+	in.NetworkBorderGroup = pointer.LateInitialize(in.NetworkBorderGroup, a.NetworkBorderGroup)
+	in.PublicIPv4Pool = pointer.LateInitialize(in.PublicIPv4Pool, a.PublicIpv4Pool)
 	if len(in.Tags) == 0 && len(a.Tags) != 0 {
 		in.Tags = BuildFromEC2Tags(a.Tags)
 	}

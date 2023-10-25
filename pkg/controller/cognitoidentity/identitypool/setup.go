@@ -80,7 +80,7 @@ func SetupIdentityPool(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.DescribeIdentityPoolInput) error {
-	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -121,7 +121,7 @@ func postCreate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.Ide
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.IdentityPool) error {
-	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.OpenIdConnectProviderARNs = cr.Spec.ForProvider.OpenIDConnectProviderARNs
 	if cr.Spec.ForProvider.CognitoIdentityProviders != nil {
 		providers := make([]*svcsdk.Provider, len(cr.Spec.ForProvider.CognitoIdentityProviders))
@@ -139,7 +139,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.Iden
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.DeleteIdentityPoolInput) (bool, error) {
-	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

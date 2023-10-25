@@ -44,14 +44,14 @@ var (
 func clusterParams(m ...func(*v1alpha1.CacheClusterParameters)) *v1alpha1.CacheClusterParameters {
 	o := &v1alpha1.CacheClusterParameters{
 		CacheNodeType:              nodeType,
-		CacheSubnetGroupName:       pointer.String(subnetGroup),
-		Engine:                     pointer.String(redisEngine),
+		CacheSubnetGroupName:       pointer.ToOrNilIfZeroValue(subnetGroup),
+		Engine:                     pointer.ToOrNilIfZeroValue(redisEngine),
 		NumCacheNodes:              2,
-		PreferredAvailabilityZone:  pointer.String(az),
-		PreferredMaintenanceWindow: pointer.String(friday),
-		ReplicationGroupID:         pointer.String(replicationGroupID),
-		SnapshotRetentionLimit:     pointer.Int32(5),
-		SnapshotWindow:             pointer.String(timeWindow),
+		PreferredAvailabilityZone:  pointer.ToOrNilIfZeroValue(az),
+		PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(friday),
+		ReplicationGroupID:         pointer.ToOrNilIfZeroValue(replicationGroupID),
+		SnapshotRetentionLimit:     pointer.ToIntAsInt32(5),
+		SnapshotWindow:             pointer.ToOrNilIfZeroValue(timeWindow),
 	}
 
 	for _, f := range m {
@@ -65,17 +65,17 @@ func cluster(m ...func(*awscachetypes.CacheCluster)) *awscachetypes.CacheCluster
 	o := &awscachetypes.CacheCluster{
 		AtRestEncryptionEnabled:    &boolTrue,
 		AuthTokenEnabled:           &boolTrue,
-		CacheClusterStatus:         pointer.String(v1alpha1.StatusAvailable),
-		CacheClusterId:             pointer.String(clusterID),
-		CacheNodeType:              pointer.String(nodeType),
-		CacheSubnetGroupName:       pointer.String(subnetGroup),
-		Engine:                     pointer.String(redisEngine),
-		NumCacheNodes:              pointer.Int32(2),
-		PreferredMaintenanceWindow: pointer.String(friday),
-		PreferredAvailabilityZone:  pointer.String(az),
-		ReplicationGroupId:         pointer.String(replicationGroupID),
-		SnapshotWindow:             pointer.String(timeWindow),
-		SnapshotRetentionLimit:     pointer.Int32(5),
+		CacheClusterStatus:         pointer.ToOrNilIfZeroValue(v1alpha1.StatusAvailable),
+		CacheClusterId:             pointer.ToOrNilIfZeroValue(clusterID),
+		CacheNodeType:              pointer.ToOrNilIfZeroValue(nodeType),
+		CacheSubnetGroupName:       pointer.ToOrNilIfZeroValue(subnetGroup),
+		Engine:                     pointer.ToOrNilIfZeroValue(redisEngine),
+		NumCacheNodes:              pointer.ToIntAsInt32(2),
+		PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(friday),
+		PreferredAvailabilityZone:  pointer.ToOrNilIfZeroValue(az),
+		ReplicationGroupId:         pointer.ToOrNilIfZeroValue(replicationGroupID),
+		SnapshotWindow:             pointer.ToOrNilIfZeroValue(timeWindow),
+		SnapshotRetentionLimit:     pointer.ToIntAsInt32(5),
 	}
 
 	for _, f := range m {
@@ -118,7 +118,7 @@ func TestLateInitializeCluster(t *testing.T) {
 				in: *cluster(),
 			},
 			want: clusterParams(func(p *v1alpha1.CacheClusterParameters) {
-				p.ReplicationGroupID = pointer.String(replicationGroupID)
+				p.ReplicationGroupID = pointer.ToOrNilIfZeroValue(replicationGroupID)
 			}),
 		},
 	}
@@ -142,15 +142,15 @@ func TestGenerateCreateCacheClusterInput(t *testing.T) {
 			in: *clusterParams(),
 			out: awscache.CreateCacheClusterInput{
 				CacheClusterId:             &clusterID,
-				CacheNodeType:              pointer.String(nodeType),
-				CacheSubnetGroupName:       pointer.String(subnetGroup),
-				Engine:                     pointer.String(redisEngine),
-				NumCacheNodes:              pointer.Int32(2),
-				PreferredAvailabilityZone:  pointer.String(az),
-				PreferredMaintenanceWindow: pointer.String(friday),
-				ReplicationGroupId:         pointer.String(replicationGroupID),
-				SnapshotRetentionLimit:     pointer.Int32(5),
-				SnapshotWindow:             pointer.String(timeWindow),
+				CacheNodeType:              pointer.ToOrNilIfZeroValue(nodeType),
+				CacheSubnetGroupName:       pointer.ToOrNilIfZeroValue(subnetGroup),
+				Engine:                     pointer.ToOrNilIfZeroValue(redisEngine),
+				NumCacheNodes:              pointer.ToIntAsInt32(2),
+				PreferredAvailabilityZone:  pointer.ToOrNilIfZeroValue(az),
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(friday),
+				ReplicationGroupId:         pointer.ToOrNilIfZeroValue(replicationGroupID),
+				SnapshotRetentionLimit:     pointer.ToIntAsInt32(5),
+				SnapshotWindow:             pointer.ToOrNilIfZeroValue(timeWindow),
 			},
 		},
 	}
@@ -174,11 +174,11 @@ func TestGenerateModifyCacheClusterInput(t *testing.T) {
 			in: *clusterParams(),
 			out: awscache.ModifyCacheClusterInput{
 				CacheClusterId:             &clusterID,
-				CacheNodeType:              pointer.String(nodeType),
-				NumCacheNodes:              pointer.Int32(2),
-				PreferredMaintenanceWindow: pointer.String(friday),
-				SnapshotRetentionLimit:     pointer.Int32(5),
-				SnapshotWindow:             pointer.String(timeWindow),
+				CacheNodeType:              pointer.ToOrNilIfZeroValue(nodeType),
+				NumCacheNodes:              pointer.ToIntAsInt32(2),
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(friday),
+				SnapshotRetentionLimit:     pointer.ToIntAsInt32(5),
+				SnapshotWindow:             pointer.ToOrNilIfZeroValue(timeWindow),
 			},
 		},
 	}
@@ -248,7 +248,7 @@ func TestGenerateClusterObservation(t *testing.T) {
 			in: *cluster(func(c *awscachetypes.CacheCluster) {
 				c.CacheNodes = []awscachetypes.CacheNode{
 					{
-						CacheNodeStatus: pointer.String(v1alpha1.StatusAvailable),
+						CacheNodeStatus: pointer.ToOrNilIfZeroValue(v1alpha1.StatusAvailable),
 					},
 				}
 			}),
