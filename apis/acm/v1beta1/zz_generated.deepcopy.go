@@ -149,6 +149,11 @@ func (in *CertificateParameters) DeepCopyInto(out *CertificateParameters) {
 			}
 		}
 	}
+	if in.KeyAlgorithm != nil {
+		in, out := &in.KeyAlgorithm, &out.KeyAlgorithm
+		*out = new(string)
+		**out = **in
+	}
 	if in.Options != nil {
 		in, out := &in.Options, &out.Options
 		*out = new(CertificateOptions)

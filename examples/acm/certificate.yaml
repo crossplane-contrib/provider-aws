@@ -9,6 +9,7 @@ spec:
       name: example
     domainName: dev.crossplane.io
     certificateTransparencyLoggingPreference: DISABLED
+    keyAlgorithm: RSA_2048 # default, see https://docs.aws.amazon.com/acm/latest/userguide/acm-certificate.html#algorithms.title
     tags:
     - key: Name
       value: example

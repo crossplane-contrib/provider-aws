@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.17.3
 	github.com/aws/aws-sdk-go-v2/config v1.11.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.5
-	github.com/aws/aws-sdk-go-v2/service/acm v1.10.0
+	github.com/aws/aws-sdk-go-v2/service/acm v1.16.0
 	github.com/aws/aws-sdk-go-v2/service/acmpca v1.12.0
 	github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider v1.17.3
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.26.0
