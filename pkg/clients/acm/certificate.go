@@ -61,6 +61,8 @@ func GenerateCreateCertificateInput(p v1beta1.CertificateParameters) *acm.Reques
 		}
 	}
 
+	m.KeyAlgorithm = types.KeyAlgorithm(pointer.StringValue(p.KeyAlgorithm))
+
 	m.Tags = make([]types.Tag, len(p.Tags))
 	for i, val := range p.Tags {
 		m.Tags[i] = types.Tag{
