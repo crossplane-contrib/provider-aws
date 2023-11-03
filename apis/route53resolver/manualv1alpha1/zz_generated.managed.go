@@ -40,14 +40,6 @@ func (mg *ResolverRuleAssociation) GetProviderConfigReference() *xpv1.Reference 
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this ResolverRuleAssociation.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *ResolverRuleAssociation) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this ResolverRuleAssociation.
 func (mg *ResolverRuleAssociation) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *ResolverRuleAssociation) SetManagementPolicies(r xpv1.ManagementPolici
 // SetProviderConfigReference of this ResolverRuleAssociation.
 func (mg *ResolverRuleAssociation) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this ResolverRuleAssociation.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *ResolverRuleAssociation) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this ResolverRuleAssociation.

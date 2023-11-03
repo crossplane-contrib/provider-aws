@@ -262,7 +262,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:     instance(withExternalName(instanceID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFail": {

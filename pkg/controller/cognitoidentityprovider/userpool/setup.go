@@ -143,7 +143,7 @@ func postCreate(_ context.Context, cr *svcapitypes.UserPool, obj *svcsdk.CreateU
 	// we cannot do a SetUserPoolMfaConfig-call here, but have to wait until first Update,
 	// bc in zz_controller.go/Create all cr.specs.forProvider are set to obj.Userpool values
 	// (->so no knowledge here of actual user input)
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.UserPool, resp *svcsdk.DescribeUserPoolOutput) (bool, string, error) {

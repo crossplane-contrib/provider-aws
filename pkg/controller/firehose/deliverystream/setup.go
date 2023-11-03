@@ -60,7 +60,6 @@ func SetupDeliveryStream(mgr ctrl.Manager, o controller.Options) error {
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithInitializers(
-			managed.NewDefaultProviderConfig(mgr.GetClient()),
 			managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -126,5 +125,5 @@ func postCreate(_ context.Context, cr *svcapitypes.DeliveryStream, obj *svcsdk.C
 		return managed.ExternalCreation{}, err
 	}
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }

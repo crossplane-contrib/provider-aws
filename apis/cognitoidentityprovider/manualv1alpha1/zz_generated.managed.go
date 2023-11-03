@@ -40,14 +40,6 @@ func (mg *GroupUserMembership) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this GroupUserMembership.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *GroupUserMembership) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this GroupUserMembership.
 func (mg *GroupUserMembership) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *GroupUserMembership) SetManagementPolicies(r xpv1.ManagementPolicies) 
 // SetProviderConfigReference of this GroupUserMembership.
 func (mg *GroupUserMembership) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this GroupUserMembership.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *GroupUserMembership) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this GroupUserMembership.

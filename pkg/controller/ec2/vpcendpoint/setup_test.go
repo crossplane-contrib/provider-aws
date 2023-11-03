@@ -155,10 +155,8 @@ func TestCreate(t *testing.T) {
 					}),
 					withConditions(xpv1.Creating()),
 				),
-				result: managed.ExternalCreation{
-					ExternalNameAssigned: false,
-				},
-				err: errors.Wrap(errors.New(testErrCreateVPCEndpointFailed), errCreate),
+				result: managed.ExternalCreation{},
+				err:    errors.Wrap(errors.New(testErrCreateVPCEndpointFailed), errCreate),
 			},
 		},
 	}

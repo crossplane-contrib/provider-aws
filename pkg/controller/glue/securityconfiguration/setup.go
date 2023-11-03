@@ -104,7 +104,7 @@ func postCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *s
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, pointer.StringValue(obj.Name))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.CreateSecurityConfigurationInput) error {
