@@ -244,7 +244,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateD
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, cr.Name)
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateDatabaseInput) error {

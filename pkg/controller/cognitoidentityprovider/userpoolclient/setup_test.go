@@ -438,7 +438,6 @@ func TestPostCreate(t *testing.T) {
 					withExternalName(testString1),
 				),
 				result: managed.ExternalCreation{
-					ExternalNameAssigned: true,
 					ConnectionDetails: managed.ConnectionDetails{
 						"clientID":     []byte(testString1),
 						"clientSecret": []byte(testString2),

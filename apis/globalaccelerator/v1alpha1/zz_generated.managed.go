@@ -40,14 +40,6 @@ func (mg *Accelerator) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this Accelerator.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *Accelerator) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this Accelerator.
 func (mg *Accelerator) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *Accelerator) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this Accelerator.
 func (mg *Accelerator) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this Accelerator.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *Accelerator) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this Accelerator.
@@ -116,14 +100,6 @@ func (mg *EndpointGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this EndpointGroup.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *EndpointGroup) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this EndpointGroup.
 func (mg *EndpointGroup) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -152,14 +128,6 @@ func (mg *EndpointGroup) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this EndpointGroup.
 func (mg *EndpointGroup) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this EndpointGroup.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *EndpointGroup) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this EndpointGroup.
@@ -192,14 +160,6 @@ func (mg *Listener) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this Listener.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *Listener) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this Listener.
 func (mg *Listener) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -228,14 +188,6 @@ func (mg *Listener) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this Listener.
 func (mg *Listener) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this Listener.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *Listener) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this Listener.

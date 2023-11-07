@@ -40,14 +40,6 @@ func (mg *CertificateAuthority) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this CertificateAuthority.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *CertificateAuthority) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this CertificateAuthority.
 func (mg *CertificateAuthority) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *CertificateAuthority) SetManagementPolicies(r xpv1.ManagementPolicies)
 // SetProviderConfigReference of this CertificateAuthority.
 func (mg *CertificateAuthority) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this CertificateAuthority.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *CertificateAuthority) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this CertificateAuthority.
@@ -116,14 +100,6 @@ func (mg *CertificateAuthorityPermission) GetProviderConfigReference() *xpv1.Ref
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this CertificateAuthorityPermission.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *CertificateAuthorityPermission) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this CertificateAuthorityPermission.
 func (mg *CertificateAuthorityPermission) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -152,14 +128,6 @@ func (mg *CertificateAuthorityPermission) SetManagementPolicies(r xpv1.Managemen
 // SetProviderConfigReference of this CertificateAuthorityPermission.
 func (mg *CertificateAuthorityPermission) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this CertificateAuthorityPermission.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *CertificateAuthorityPermission) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this CertificateAuthorityPermission.

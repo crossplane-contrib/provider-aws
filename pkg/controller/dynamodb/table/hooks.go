@@ -66,7 +66,6 @@ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 		managed.WithExternalConnecter(&customConnector{kube: mgr.GetClient()}),
 		managed.WithInitializers(
 			managed.NewNameAsExternalName(mgr.GetClient()),
-			managed.NewDefaultProviderConfig(mgr.GetClient()),
 			&tagger{kube: mgr.GetClient()}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),

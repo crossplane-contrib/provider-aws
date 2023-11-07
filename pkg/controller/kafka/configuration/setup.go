@@ -88,7 +88,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.Cr
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, pointer.StringValue(obj.Arn))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DescribeConfigurationInput) error {

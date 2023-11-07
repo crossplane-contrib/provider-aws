@@ -70,7 +70,7 @@ func SetupInstance(mgr ctrl.Manager, o controller.Options) error {
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewInstanceClient}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithConnectionPublishers(),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -258,12 +258,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Resources: []string{pointer.StringValue(instance.InstanceId)},
 		Tags:      ec2.GenerateEC2TagsManualV1alpha1(cr.Spec.ForProvider.Tags),
 	}); err != nil {
-		return managed.ExternalCreation{ExternalNameAssigned: false}, errorutils.Wrap(err, errCreateTags)
+		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreateTags)
 	}
 
 	meta.SetExternalName(cr, pointer.StringValue(instance.InstanceId))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo

@@ -571,10 +571,8 @@ func TestPostCreate(t *testing.T) {
 					}),
 					withExternalName(testString1),
 				),
-				result: managed.ExternalCreation{
-					ExternalNameAssigned: true,
-				},
-				err: nil,
+				result: managed.ExternalCreation{},
+				err:    nil,
 			},
 		},
 		"FailedCreation": {

@@ -121,8 +121,7 @@ func postCreate(_ context.Context, cr *svcapitypes.UserPoolClient, obj *svcsdk.C
 		"userPoolID":   []byte(pointer.StringValue(cr.Spec.ForProvider.UserPoolID)),
 	}
 	return managed.ExternalCreation{
-		ExternalNameAssigned: true,
-		ConnectionDetails:    conn,
+		ConnectionDetails: conn,
 	}, nil
 }
 

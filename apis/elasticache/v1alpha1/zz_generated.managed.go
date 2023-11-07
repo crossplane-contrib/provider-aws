@@ -40,14 +40,6 @@ func (mg *CacheParameterGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this CacheParameterGroup.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *CacheParameterGroup) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this CacheParameterGroup.
 func (mg *CacheParameterGroup) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *CacheParameterGroup) SetManagementPolicies(r xpv1.ManagementPolicies) 
 // SetProviderConfigReference of this CacheParameterGroup.
 func (mg *CacheParameterGroup) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this CacheParameterGroup.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *CacheParameterGroup) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this CacheParameterGroup.

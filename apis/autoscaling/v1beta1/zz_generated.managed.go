@@ -40,14 +40,6 @@ func (mg *AutoScalingGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this AutoScalingGroup.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *AutoScalingGroup) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this AutoScalingGroup.
 func (mg *AutoScalingGroup) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *AutoScalingGroup) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this AutoScalingGroup.
 func (mg *AutoScalingGroup) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this AutoScalingGroup.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *AutoScalingGroup) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this AutoScalingGroup.

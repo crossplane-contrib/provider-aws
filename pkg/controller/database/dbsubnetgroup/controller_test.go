@@ -36,10 +36,6 @@ import (
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
-const (
-	providerName = "aws-creds"
-)
-
 var (
 	dbSubnetGroupDescription = "arbitrary description"
 	errBoom                  = errors.New("boom")
@@ -76,13 +72,7 @@ func mockListTagsForResource(ctx context.Context, input *awsrds.ListTagsForResou
 }
 
 func dbSubnetGroup(m ...dbSubnetGroupModifier) *v1beta1.DBSubnetGroup {
-	cr := &v1beta1.DBSubnetGroup{
-		Spec: v1beta1.DBSubnetGroupSpec{
-			ResourceSpec: xpv1.ResourceSpec{
-				ProviderReference: &xpv1.Reference{Name: providerName},
-			},
-		},
-	}
+	cr := &v1beta1.DBSubnetGroup{}
 	for _, f := range m {
 		f(cr)
 	}

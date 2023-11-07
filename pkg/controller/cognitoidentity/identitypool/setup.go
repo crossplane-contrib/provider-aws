@@ -117,7 +117,7 @@ func postCreate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.Ide
 	}
 
 	meta.SetExternalName(cr, pointer.StringValue(obj.IdentityPoolId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.IdentityPool) error {

@@ -40,14 +40,6 @@ func (mg *HostedZone) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this HostedZone.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *HostedZone) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this HostedZone.
 func (mg *HostedZone) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *HostedZone) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this HostedZone.
 func (mg *HostedZone) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this HostedZone.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *HostedZone) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this HostedZone.
@@ -116,14 +100,6 @@ func (mg *ResourceRecordSet) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this ResourceRecordSet.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *ResourceRecordSet) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this ResourceRecordSet.
 func (mg *ResourceRecordSet) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -152,14 +128,6 @@ func (mg *ResourceRecordSet) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this ResourceRecordSet.
 func (mg *ResourceRecordSet) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this ResourceRecordSet.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *ResourceRecordSet) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this ResourceRecordSet.
