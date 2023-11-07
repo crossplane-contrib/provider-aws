@@ -19,7 +19,8 @@ package replicationgroup
 import (
 	"context"
 	"reflect"
-	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awselasticache "github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -61,6 +62,7 @@ const (
 	errUpdateReplicationGroupTags          = "cannot update ElastiCache replication group tags"
 	errReplicationGroupCacheClusterMinimum = "at least 1 replica is required"
 	errReplicationGroupCacheClusterMaximum = "maximum of 5 replicas are allowed"
+	errVersionInput                        = "unable to parse version number"
 )
 
 // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
@@ -190,6 +192,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	cr.Status.SetConditions(xpv1.Creating())
+
 	// Our create request will fail if auth is enabled but transit encryption is
 	// not. We don't check for the latter here because it's less surprising to
 	// submit the request as the operator intended and let the reconcile fail
@@ -209,6 +212,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	if token != nil {
 		return managed.ExternalCreation{
+
 			ConnectionDetails: managed.ConnectionDetails{
 				xpv1.ResourceCredentialsSecretPasswordKey: []byte(*token),
 			},
@@ -227,6 +231,14 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.Status != v1beta1.StatusAvailable {
 		return managed.ExternalUpdate{}, nil
 	}
+
+	// updates the engine version to the required format
+	var version *string
+	version, err := getVersion(cr.Spec.ForProvider.EngineVersion)
+	if err != nil {
+		return managed.ExternalUpdate{}, errorutils.Wrap(err, errVersionInput)
+	}
+	cr.Spec.ForProvider.EngineVersion = version
 
 	rsp, err := e.client.DescribeReplicationGroups(ctx, elasticache.NewDescribeReplicationGroupsInput(meta.GetExternalName(cr)))
 	if err != nil {
@@ -368,4 +380,21 @@ func (e *external) updateReplicationGroupNumCacheClusters(ctx context.Context, r
 	default:
 		return nil
 	}
+}
+
+func getVersion(version *string) (*string, error) {
+	versionSplit := strings.Split(aws.ToString(version), ".")
+	version1, err := strconv.Atoi(versionSplit[0])
+	if err != nil {
+		return nil, errors.Wrap(err, errVersionInput)
+	}
+	versionOut := strconv.Itoa(version1)
+	if len(versionSplit) > 1 {
+		version2, err := strconv.Atoi(versionSplit[1])
+		if err != nil {
+			return nil, errors.Wrap(err, errVersionInput)
+		}
+		versionOut += "." + strconv.Itoa(version2)
+	}
+	return &versionOut, nil
 }

@@ -41,14 +41,15 @@ import (
 )
 
 const (
-	name = "coolGroup"
+	name                = "coolGroup"
+	engineVersionToTest = "5.0.2"
 )
 
 var (
 	cacheNodeType            = "n1.super.cool"
 	autoFailoverEnabled      = true
 	cacheParameterGroupName  = "coolParamGroup"
-	engineVersion            = "5.0.0"
+	engineVersion            = "5.0"
 	port                     = 6379
 	host                     = "172.16.0.1"
 	maintenanceWindow        = "tomorrow"
@@ -138,6 +139,10 @@ func withAtRestEncryptionEnabled(b bool) replicationGroupModifier {
 
 func withNumCacheClusters(n int) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.NumCacheClusters = &n }
+}
+
+func withEngineVersion(e string) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.EngineVersion = &e }
 }
 
 func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup {
@@ -742,6 +747,54 @@ func TestUpdate(t *testing.T) {
 				withNumCacheClusters(4),
 			),
 			want: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(xpv1.Available()),
+				withMemberClusters(cacheClusters),
+				withNumCacheClusters(4),
+			),
+			returnsErr: false,
+		},
+		{
+			name: "IncreaseReplicationsAndCheckBehaviourVersion",
+			e: &external{client: &fake.MockClient{
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{
+							Status:                 aws.String(v1beta1.StatusAvailable),
+							MemberClusters:         cacheClusters,
+							AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+							CacheNodeType:          aws.String(cacheNodeType),
+							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+							SnapshotWindow:         aws.String(snapshotWindow),
+							ClusterEnabled:         aws.Bool(true),
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+						}},
+					}, nil
+				},
+				MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+					return &elasticache.DescribeCacheClustersOutput{
+						CacheClusters: []types.CacheCluster{
+							{EngineVersion: aws.String(engineVersion)},
+							{EngineVersion: aws.String(engineVersion)},
+							{EngineVersion: aws.String(engineVersion)},
+						},
+					}, nil
+				},
+				MockIncreaseReplicaCount: func(ctx context.Context, _ *elasticache.IncreaseReplicaCountInput, opts []func(*elasticache.Options)) (*elasticache.IncreaseReplicaCountOutput, error) {
+					return &elasticache.IncreaseReplicaCountOutput{}, nil
+				},
+			}},
+			r: replicationGroup(
+				withEngineVersion(engineVersionToTest),
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(xpv1.Available()),
+				withMemberClusters(cacheClusters),
+				withNumCacheClusters(4),
+			),
+			want: replicationGroup(
+				withEngineVersion(engineVersion),
 				withReplicationGroupID(name),
 				withProviderStatus(v1beta1.StatusAvailable),
 				withConditions(xpv1.Available()),
