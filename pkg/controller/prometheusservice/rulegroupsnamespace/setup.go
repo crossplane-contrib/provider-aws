@@ -17,17 +17,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/prometheusservice/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
-	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-)
-
-const (
-	errNotRuleGroupsNamespace = "managed resource is not an RuleGroupsNamespace custom resource"
-	errKubeUpdateFailed       = "cannot update RuleGroupsNamespace custom resource"
 )
 
 // SetupRuleGroupsNamespace adds a controller that reconciles RuleGroupsNamespace.
@@ -54,7 +47,6 @@ func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -133,24 +125,6 @@ func postObserve(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, resp *s
 	cr.Status.AtProvider.Status.StatusCode = resp.RuleGroupsNamespace.Status.StatusCode
 
 	return obs, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.RuleGroupsNamespace)
-	if !ok {
-		return errors.New(errNotRuleGroupsNamespace)
-	}
-	if cr.Spec.ForProvider.Tags == nil {
-		cr.Spec.ForProvider.Tags = map[string]*string{}
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = pointer.ToOrNilIfZeroValue(v)
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGroupsNamespaceOutput) (bool, string, error) {

@@ -67,7 +67,7 @@ func SetupEmailIdentity(mgr ctrl.Manager, o controller.Options) error {
 			resource.ManagedKind(svcapitypes.EmailIdentityGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -227,19 +227,6 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 	// All notifications customization should be added through Configuration sets setup
 	return managed.ExternalUpdate{}, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.EmailIdentity)
-	if !ok {
-		return errors.New(errNotEmailIdentity)
-	}
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
 func (e *hooks) getPrivateKeyFromRef(ctx context.Context, in *xpv1.SecretKeySelector) (newPrivateKey string, err error) {

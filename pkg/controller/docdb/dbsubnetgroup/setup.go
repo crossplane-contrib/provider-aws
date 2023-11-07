@@ -28,7 +28,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -37,11 +36,6 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-)
-
-const (
-	errNotDBSubnetGroup = "managed resource is not a DBSubnetGroup custom resource"
-	errKubeUpdateFailed = "cannot update DocDBSubnetGroup custom resource"
 )
 
 // SetupDBSubnetGroup adds a controller that reconciles a DBSubnetGroup.
@@ -57,7 +51,7 @@ func SetupDBSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -184,18 +178,4 @@ func filterList(cr *svcapitypes.DBSubnetGroup, list *svcsdk.DescribeDBSubnetGrou
 		Marker:         list.Marker,
 		DBSubnetGroups: []*svcsdk.DBSubnetGroup{},
 	}
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBSubnetGroup)
-	if !ok {
-		return errors.New(errNotDBSubnetGroup)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

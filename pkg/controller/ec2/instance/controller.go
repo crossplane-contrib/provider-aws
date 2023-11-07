@@ -18,7 +18,6 @@ package instance
 
 import (
 	"context"
-	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -70,7 +69,6 @@ func SetupInstance(mgr ctrl.Manager, o controller.Options) error {
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewInstanceClient}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithConnectionPublishers(),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -363,32 +361,4 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	return errorutils.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.Instance)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	cr.Spec.ForProvider.Tags = make([]svcapitypes.Tag, len(tagMap))
-	i := 0
-	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = svcapitypes.Tag{Key: k, Value: v}
-		i++
-	}
-	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
-	})
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

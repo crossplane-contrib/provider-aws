@@ -2,7 +2,6 @@ package vpcendpoint
 
 import (
 	"context"
-	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -41,7 +40,6 @@ func SetupVPCEndpoint(mgr ctrl.Manager, o controller.Options) error {
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
 	}
@@ -355,53 +353,4 @@ compare:
 	}
 
 	return true
-}
-
-const (
-	errKubeUpdateFailed = "cannot update Address custom resource"
-)
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.VPCEndpoint)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	var vpcEndpointTags svcapitypes.TagSpecification
-	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if tagSpecification == nil {
-			continue
-		}
-		if aws.StringValue(tagSpecification.ResourceType) == "vpc-endpoint" {
-			vpcEndpointTags = *tagSpecification
-		}
-	}
-
-	var tagMap map[string]string
-	if cr.Spec.ForProvider.Tags != nil {
-		tagMap = cr.Spec.ForProvider.Tags
-	} else {
-		tagMap = map[string]string{}
-	}
-
-	tagMap["Name"] = cr.Name
-	for k, v := range cpresource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	vpcEndpointTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	vpcEndpointTags.ResourceType = aws.String("vpc-endpoint")
-	i := 0
-	for k, v := range tagMap {
-		vpcEndpointTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
-		i++
-	}
-	sort.Slice(vpcEndpointTags.Tags, func(i, j int) bool {
-		return aws.StringValue(vpcEndpointTags.Tags[i].Key) < aws.StringValue(vpcEndpointTags.Tags[j].Key)
-	})
-
-	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&vpcEndpointTags}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

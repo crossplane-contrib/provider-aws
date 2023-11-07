@@ -34,7 +34,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -64,9 +63,7 @@ func SetupTable(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&customConnector{kube: mgr.GetClient()}),
-		managed.WithInitializers(
-			managed.NewNameAsExternalName(mgr.GetClient()),
-			&tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -207,36 +204,6 @@ func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.Describe
 	}
 
 	return obs, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (e *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.Table)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
-	}
-	for k, v := range resource.GetExternalTags(cr) {
-		tagMap[k] = v
-	}
-	tags := make([]*svcapitypes.Tag, 0)
-	for k, v := range tagMap {
-		tags = append(tags, &svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
-	}
-	sort.Slice(tags, func(i, j int) bool {
-		return pointer.StringValue(tags[i].Key) < pointer.StringValue(tags[j].Key)
-	})
-	if cmp.Equal(cr.Spec.ForProvider.Tags, tags) {
-		return nil
-	}
-	cr.Spec.ForProvider.Tags = tags
-	return errors.Wrap(e.kube.Update(ctx, cr), "cannot update Table Spec")
 }
 
 func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutput) error { //nolint:gocyclo

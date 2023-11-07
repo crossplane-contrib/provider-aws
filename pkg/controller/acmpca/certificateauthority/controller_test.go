@@ -29,9 +29,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 	acmpca "github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
@@ -59,10 +57,6 @@ var (
 	title                      = "someTitle"
 
 	errBoom = errors.New("boom")
-
-	sortTags = cmpopts.SortSlices(func(a, b v1beta1.Tag) bool {
-		return a.Key > b.Key
-	})
 )
 
 type args struct {
@@ -104,24 +98,6 @@ func withCertificateAuthorityStatus() certificateAuthorityModifier {
 		r.Spec.ForProvider.Status = &status
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
-	}
-}
-
-func withTags(tagMaps ...map[string]string) certificateAuthorityModifier {
-	var tagList []v1beta1.Tag
-	for _, tagMap := range tagMaps {
-		for k, v := range tagMap {
-			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
-		}
-	}
-	return func(r *v1beta1.CertificateAuthority) {
-		r.Spec.ForProvider.Tags = tagList
-	}
-}
-
-func withGroupVersionKind() certificateAuthorityModifier {
-	return func(r *v1beta1.CertificateAuthority) {
-		r.TypeMeta.SetGroupVersionKind(v1beta1.CertificateAuthorityGroupVersionKind)
 	}
 }
 
@@ -549,72 +525,6 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type args struct {
-		cr   resource.Managed
-		kube client.Client
-	}
-	type want struct {
-		cr  *v1beta1.CertificateAuthority
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"InvalidInput": {
-			args: args{
-				cr: unexpectedItem,
-			},
-			want: want{
-				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"Successful": {
-			args: args{
-				cr:   certificateAuthority(withTags(map[string]string{"foo": "bar"})),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: certificateAuthority(withTags(resource.GetExternalTags(certificateAuthority()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"Check Tag values": {
-			args: args{
-				cr:   certificateAuthority(withTags(map[string]string{"foo": "bar"}), withGroupVersionKind()),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: certificateAuthority(withTags(resource.GetExternalTags(certificateAuthority(withGroupVersionKind())), map[string]string{"foo": "bar"}), withGroupVersionKind()),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr:   certificateAuthority(),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, sortTags); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

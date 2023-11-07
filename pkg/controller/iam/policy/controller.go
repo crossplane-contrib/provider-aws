@@ -71,7 +71,6 @@ func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, newSTSClientFn: iam.NewSTSClient}),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 		managed.WithConnectionPublishers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -390,37 +389,4 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 		Resource:  "policy" + pointer.StringValue(policyPath) + policyName}
 
 	return aws.String(policyArn.String()), nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.Policy)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	added := false
-	defaultTags := resource.GetExternalTags(mgd)
-
-	for i, t := range cr.Spec.ForProvider.Tags {
-		v, ok := defaultTags[t.Key]
-		if ok {
-			if v != t.Value {
-				cr.Spec.ForProvider.Tags[i].Value = v
-				added = true
-			}
-			delete(defaultTags, t.Key)
-		}
-	}
-
-	for k, v := range defaultTags {
-		cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
-		added = true
-	}
-	if !added {
-		return nil
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
