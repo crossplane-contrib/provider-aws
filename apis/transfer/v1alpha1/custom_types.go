@@ -53,6 +53,46 @@ type CustomUserParameters struct {
 	// RoleSelector selects references to a IAM role.
 	// +optional
 	RoleSelector *xpv1.Selector `json:"roleSelector,omitempty"`
+
+	// The public portion of the Secure Shell (SSH) key used to authenticate the
+	// user to the server.
+	//
+	// The three standard SSH public key format elements are <key type>, <body base64>,
+	// and an optional <comment>, with spaces between each element.
+	//
+	// Transfer Family accepts RSA, ECDSA, and ED25519 keys.
+	//
+	//    * For RSA keys, the key type is ssh-rsa.
+	//
+	//    * For ED25519 keys, the key type is ssh-ed25519.
+	//
+	//    * For ECDSA keys, the key type is either ecdsa-sha2-nistp256, ecdsa-sha2-nistp384,
+	//    or ecdsa-sha2-nistp521, depending on the size of the key you generated.
+	//
+	// Deprecated: This property is deprecated in favor of SSHPublicKeys.
+	// Changes here will not be reflected in the external resource.
+	SshPublicKeyBody *string `json:"sshPublicKeyBody,omitempty"`
+
+	// SSHPublicKeys that should be added to the server.
+	SSHPublicKeys []SSHPublicKeySpec `json:"sshPublicKeys,omitempty"`
+}
+
+type SSHPublicKeySpec struct {
+	// Body is the public portion of the Secure Shell (SSH) key used to authenticate the
+	// user to the server.
+	//
+	// The three standard SSH public key format elements are <key type>, <body base64>,
+	// and an optional <comment>, with spaces between each element.
+	//
+	// Transfer Family accepts RSA, ECDSA, and ED25519 keys.
+	//
+	//    * For RSA keys, the key type is ssh-rsa.
+	//
+	//    * For ED25519 keys, the key type is ssh-ed25519.
+	//
+	//    * For ECDSA keys, the key type is either ecdsa-sha2-nistp256, ecdsa-sha2-nistp384,
+	//    or ecdsa-sha2-nistp521, depending on the size of the key you generated.
+	Body string `json:"body"`
 }
 
 // CustomServerParameters includes custom additional fields for ServerParameters.
