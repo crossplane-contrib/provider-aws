@@ -487,7 +487,7 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	)
 
 	e.cache.addTags, e.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, db.TagList)
-	tagsChanged := len(e.cache.addTags) != 0 && len(e.cache.removeTags) != 0
+	tagsChanged := len(e.cache.addTags) != 0 || len(e.cache.removeTags) != 0
 
 	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged && !tagsChanged {
 		return true, diff, nil
