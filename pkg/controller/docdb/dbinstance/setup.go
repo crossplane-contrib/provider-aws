@@ -29,7 +29,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,11 +37,6 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-)
-
-const (
-	errNotDBInstance    = "managed resource is not a DocDB instance custom resource"
-	errKubeUpdateFailed = "cannot update DocDB instance custom resource"
 )
 
 // SetupDBInstance adds a controller that reconciles a DBInstance.
@@ -58,7 +52,7 @@ func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -216,18 +210,4 @@ func getConnectionDetails(cr *svcapitypes.DBInstance) managed.ConnectionDetails 
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint.Address)),
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(pointer.Int64Value(cr.Status.AtProvider.Endpoint.Port)))),
 	}
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBInstance)
-	if !ok {
-		return errors.New(errNotDBInstance)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

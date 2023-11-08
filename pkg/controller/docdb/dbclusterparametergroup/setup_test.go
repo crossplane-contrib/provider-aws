@@ -33,8 +33,6 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/docdb/fake"
-	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
-	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
@@ -133,14 +131,6 @@ func withTags(values ...*svcapitypes.Tag) docDBModifier {
 			o.Spec.ForProvider.Tags = []*svcapitypes.Tag{}
 		}
 	}
-}
-
-func mergeTags(lists ...[]*svcapitypes.Tag) []*svcapitypes.Tag {
-	res := []*svcapitypes.Tag{}
-	for _, list := range lists {
-		res = append(res, list...)
-	}
-	return res
 }
 
 func TestObserve(t *testing.T) {
@@ -1140,74 +1130,6 @@ func TestUpdate(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.docdb, tc.args.docdb.Called, cmpopts.IgnoreInterfaces(struct{ context.Context }{})); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type want struct {
-		cr  *svcapitypes.DBClusterParameterGroup
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Successful": {
-			args: args{
-				cr: instance(withTags(
-					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
-					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
-				)),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: instance(withTags(
-					mergeTags(
-						[]*svcapitypes.Tag{
-							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
-							{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
-						},
-						svcutils.GetExternalTags(instance()),
-					)...,
-				)),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr: instance(withTags(
-					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
-					&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
-				)),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errors.New(testErrBoom))},
-			},
-			want: want{
-				cr: instance(withTags(
-					mergeTags(
-						[]*svcapitypes.Tag{
-							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
-							{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
-						},
-						svcutils.GetExternalTags(instance()),
-					)...,
-				)),
-				err: errorutils.Wrap(errors.New(testErrBoom), errKubeUpdateFailed),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

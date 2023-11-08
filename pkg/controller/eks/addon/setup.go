@@ -63,7 +63,6 @@ func SetupAddon(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -258,22 +257,4 @@ func postCreate(_ context.Context, cr *eksv1alpha1.Addon, res *awseks.CreateAddo
 func preDelete(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.DeleteAddonInput) (bool, error) {
 	obj.ClusterName = cr.Spec.ForProvider.ClusterName
 	return false, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*eksv1alpha1.Addon)
-	if !ok {
-		return errors.New(errNotEKSCluster)
-	}
-	if cr.Spec.ForProvider.Tags == nil {
-		cr.Spec.ForProvider.Tags = map[string]*string{}
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = pointer.ToOrNilIfZeroValue(v)
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

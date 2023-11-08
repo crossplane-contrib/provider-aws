@@ -2,7 +2,6 @@ package launchtemplate
 
 import (
 	"context"
-	"sort"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
@@ -13,9 +12,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -36,7 +33,7 @@ func SetupLaunchTemplate(mgr ctrl.Manager, o controller.Options) error {
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
@@ -117,47 +114,4 @@ func postObserve(_ context.Context, cr *svcapitypes.LaunchTemplate, resp *svcsdk
 
 	cr.SetConditions(xpv1.Available())
 	return obs, nil
-}
-
-const (
-	errKubeUpdateFailed = "cannot update LaunchTemplate custom resource"
-)
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.LaunchTemplate)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	var launchTemplateTags svcapitypes.TagSpecification
-	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if aws.StringValue(tagSpecification.ResourceType) == "launch-template" {
-			launchTemplateTags = *tagSpecification
-		}
-	}
-
-	tagMap := map[string]string{}
-	tagMap["Name"] = cr.Name
-	for _, t := range launchTemplateTags.Tags {
-		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	launchTemplateTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	launchTemplateTags.ResourceType = aws.String("launch-template")
-	i := 0
-	for k, v := range tagMap {
-		launchTemplateTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
-		i++
-	}
-	sort.Slice(launchTemplateTags.Tags, func(i, j int) bool {
-		return aws.StringValue(launchTemplateTags.Tags[i].Key) < aws.StringValue(launchTemplateTags.Tags[j].Key)
-	})
-
-	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&launchTemplateTags}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

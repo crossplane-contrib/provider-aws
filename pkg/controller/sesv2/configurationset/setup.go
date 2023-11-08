@@ -39,11 +39,6 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
-const (
-	errNotConfigurationSet = "managed resource is not a SES ConfigurationSet custom resource"
-	errKubeUpdateFailed    = "cannot update SES ConfigurationSet custom resource"
-)
-
 // SetupConfigurationSet adds a controller that reconciles SES ConfigurationSet.
 func SetupConfigurationSet(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ConfigurationSetGroupKind)
@@ -67,7 +62,7 @@ func SetupConfigurationSet(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ConfigurationSetGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -287,17 +282,4 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 	}
 
 	return managed.ExternalUpdate{}, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.ConfigurationSet)
-	if !ok {
-		return errors.New(errNotConfigurationSet)
-	}
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

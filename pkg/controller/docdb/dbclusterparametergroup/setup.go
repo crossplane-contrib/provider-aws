@@ -61,7 +61,7 @@ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -258,18 +258,4 @@ func generateAPIParameter(p *svcsdk.Parameter, o *svcapitypes.CustomParameter) *
 	o.ParameterValue = p.ParameterValue
 
 	return o
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBClusterParameterGroup)
-	if !ok {
-		return errors.New(errNotDBClusterParameterGroup)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

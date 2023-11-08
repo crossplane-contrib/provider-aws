@@ -51,7 +51,7 @@ func SetupEnvironment(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -259,25 +259,4 @@ func diffTags(spec, current map[string]*string) (map[string]*string, []*string) 
 	}
 
 	return addTags, remove
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-// TODO(knappek): split this out as it is used in several controllers
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.Environment)
-	if !ok {
-		return errors.New(errNotEnvironment)
-	}
-
-	if cr.Spec.ForProvider.Tags == nil {
-		cr.Spec.ForProvider.Tags = map[string]*string{}
-	}
-
-	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = pointer.ToOrNilIfZeroValue(v)
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

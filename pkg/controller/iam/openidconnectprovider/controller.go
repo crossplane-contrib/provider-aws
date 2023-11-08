@@ -72,7 +72,6 @@ func SetupOpenIDConnectProvider(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewOpenIDConnectProviderClient}),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -291,30 +290,4 @@ func (e *external) getOpenIDConnectProviderByTags(ctx context.Context, tags map[
 		}
 	}
 	return nil, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.OpenIDConnectProvider)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	added := false
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		if p, ok := tagMap[k]; !ok || v != p {
-			cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
-			added = true
-		}
-	}
-	if !added {
-		return nil
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

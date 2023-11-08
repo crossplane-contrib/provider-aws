@@ -26,10 +26,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -66,16 +64,6 @@ type args struct {
 }
 
 type repositoryModifier func(*v1beta1.Repository)
-
-func withTags(tagMaps ...map[string]string) repositoryModifier {
-	var tagList []v1beta1.Tag
-	for _, tagMap := range tagMaps {
-		for k, v := range tagMap {
-			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
-		}
-	}
-	return func(r *v1beta1.Repository) { r.Spec.ForProvider.Tags = tagList }
-}
 
 func withExternalName(name string) repositoryModifier {
 	return func(r *v1beta1.Repository) { meta.SetExternalName(r, name) }
@@ -620,63 +608,6 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type args struct {
-		cr   *v1beta1.Repository
-		kube client.Client
-	}
-	type want struct {
-		cr  *v1beta1.Repository
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Successful": {
-			args: args{
-				cr:   repository(withTags(map[string]string{"foo": "bar"})),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: repository(withTags(resource.GetExternalTags(repository()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"UpdateNotNeeded": {
-			args: args{
-				cr: repository(withTags(resource.GetExternalTags(repository()), map[string]string{"foo": "bar"})),
-			},
-			want: want{
-				cr: repository(withTags(resource.GetExternalTags(repository()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr:   repository(),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

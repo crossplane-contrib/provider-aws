@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sort"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
@@ -78,7 +77,7 @@ func SetupSecret(mgr ctrl.Manager, o controller.Options) error {
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -435,35 +434,6 @@ func preDelete(_ context.Context, cr *svcapitypes.Secret, obj *svcsdk.DeleteSecr
 	obj.RecoveryWindowInDays = cr.Spec.ForProvider.RecoveryWindowInDays
 	obj.SecretId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-// TODO(knappek): split this out as it is used in several controllers
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.Secret)
-	if !ok {
-		return errors.New(errNotSecret)
-	}
-	tagMap := map[string]string{}
-	for _, tags := range cr.Spec.ForProvider.Tags {
-		tagMap[pointer.StringValue(tags.Key)] = pointer.StringValue(tags.Value)
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		tagMap[k] = v
-	}
-	cr.Spec.ForProvider.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	i := 0
-	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = &svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)}
-		i++
-	}
-	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return pointer.StringValue(cr.Spec.ForProvider.Tags[i].Key) < pointer.StringValue(cr.Spec.ForProvider.Tags[j].Key)
-	})
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
 // DiffTags returns tags that should be added or removed.
