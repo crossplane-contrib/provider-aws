@@ -1747,14 +1747,12 @@ func TestObserve(t *testing.T) {
 					withDeletionTimestamp(&metav1.Time{Time: timeNow}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
 					withExternalName(testDBClusterIdentifier),
-					withConditions(xpv1.Available()),
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withVpcSecurityGroupIds(),
 				),
 				result: managed.ExternalObservation{
-					ResourceExists:    true,
-					ResourceUpToDate:  true,
-					ConnectionDetails: generateConnectionDetails("", "", "", "", 0),
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 				docdb: fake.MockDocDBClientCall{
 					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{

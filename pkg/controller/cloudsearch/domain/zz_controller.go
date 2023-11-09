@@ -92,7 +92,12 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateDomain(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
-
+	if meta.WasDeleted(cr) { // There is no need to run isUpToDate if the resource is deleted
+		return managed.ExternalObservation{
+			ResourceExists:   true,
+			ResourceUpToDate: true,
+		}, nil
+	}
 	upToDate, diff, err := e.isUpToDate(ctx, cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
