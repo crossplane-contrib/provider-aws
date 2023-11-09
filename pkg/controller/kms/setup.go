@@ -21,6 +21,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/kms/alias"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/kms/grant"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
@@ -31,5 +32,6 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		mgr, o,
 		alias.SetupAlias,
 		key.SetupKey,
+		grant.SetupGrant,
 	)
 }
