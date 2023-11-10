@@ -102,22 +102,19 @@ func GenerateCreateUserInput(cr *svcapitypes.User) *svcsdk.CreateUserInput {
 		}
 		res.SetPosixProfile(f4)
 	}
-	if cr.Spec.ForProvider.SshPublicKeyBody != nil {
-		res.SetSshPublicKeyBody(*cr.Spec.ForProvider.SshPublicKeyBody)
-	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f6 := []*svcsdk.Tag{}
-		for _, f6iter := range cr.Spec.ForProvider.Tags {
-			f6elem := &svcsdk.Tag{}
-			if f6iter.Key != nil {
-				f6elem.SetKey(*f6iter.Key)
+		f5 := []*svcsdk.Tag{}
+		for _, f5iter := range cr.Spec.ForProvider.Tags {
+			f5elem := &svcsdk.Tag{}
+			if f5iter.Key != nil {
+				f5elem.SetKey(*f5iter.Key)
 			}
-			if f6iter.Value != nil {
-				f6elem.SetValue(*f6iter.Value)
+			if f5iter.Value != nil {
+				f5elem.SetValue(*f5iter.Value)
 			}
-			f6 = append(f6, f6elem)
+			f5 = append(f5, f5elem)
 		}
-		res.SetTags(f6)
+		res.SetTags(f5)
 	}
 
 	return res

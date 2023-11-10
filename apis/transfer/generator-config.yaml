@@ -3,6 +3,7 @@ ignore:
     - CreateUserInput.ServerId
     - CreateUserInput.UserName
     - CreateUserInput.Role
+    - CreateUserInput.SshPublicKeyBody
     - CreateServerInput.EndpointDetails
     - CreateServerInput.Certificate
     - CreateServerInput.LoggingRole
@@ -19,7 +20,18 @@ resources:
         404:
           code: ResourceNotFoundException
   User:
+    fields:
+      SshPublicKeys:
+        is_read_only: true
+        from:
+          operation: DescribeUser
+          path: User.SshPublicKeys
+      ARN:
+        is_read_only: true
+        from:
+          operation: DescribeUser
+          path: User.Arn
     exceptions:
       errors:
         404:
-          code: ResourceNotFoundException    
+          code: ResourceNotFoundException

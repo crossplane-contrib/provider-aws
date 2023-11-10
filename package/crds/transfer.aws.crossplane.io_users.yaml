@@ -317,8 +317,30 @@ spec:
                       * For RSA keys, the key type is ssh-rsa. \n * For ED25519 keys,
                       the key type is ssh-ed25519. \n * For ECDSA keys, the key type
                       is either ecdsa-sha2-nistp256, ecdsa-sha2-nistp384, or ecdsa-sha2-nistp521,
-                      depending on the size of the key you generated."
+                      depending on the size of the key you generated. \n Deprecated:
+                      This property is deprecated in favor of SSHPublicKeys. Changes
+                      here will not be reflected in the external resource."
                     type: string
+                  sshPublicKeys:
+                    description: SSHPublicKeys that should be added to the server.
+                    items:
+                      properties:
+                        body:
+                          description: "Body is the public portion of the Secure Shell
+                            (SSH) key used to authenticate the user to the server.
+                            \n The three standard SSH public key format elements are
+                            <key type>, <body base64>, and an optional <comment>,
+                            with spaces between each element. \n Transfer Family accepts
+                            RSA, ECDSA, and ED25519 keys. \n * For RSA keys, the key
+                            type is ssh-rsa. \n * For ED25519 keys, the key type is
+                            ssh-ed25519. \n * For ECDSA keys, the key type is either
+                            ecdsa-sha2-nistp256, ecdsa-sha2-nistp384, or ecdsa-sha2-nistp521,
+                            depending on the size of the key you generated."
+                          type: string
+                      required:
+                      - body
+                      type: object
+                    type: array
                   tags:
                     description: Key-value pairs that can be used to group and search
                       for users. Tags are metadata attached to users for any purpose.
@@ -499,10 +521,28 @@ spec:
               atProvider:
                 description: UserObservation defines the observed state of User
                 properties:
+                  arn:
+                    description: Specifies the unique Amazon Resource Name (ARN) for
+                      the user that was requested to be described.
+                    type: string
                   serverID:
                     description: The identifier of the server that the user is attached
                       to.
                     type: string
+                  sshPublicKeys:
+                    description: Specifies the public key portion of the Secure Shell
+                      (SSH) keys stored for the described user.
+                    items:
+                      properties:
+                        dateImported:
+                          format: date-time
+                          type: string
+                        sshPublicKeyBody:
+                          type: string
+                        sshPublicKeyID:
+                          type: string
+                      type: object
+                    type: array
                   userName:
                     description: A unique string that identifies a Transfer Family
                       user.

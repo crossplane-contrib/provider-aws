@@ -48,3 +48,19 @@ func Wrap(err error, msg string) error {
 	}
 	return errors.Wrap(err, msg)
 }
+
+// Combine returns a new error where the message is a comma separated list of
+// all given error messages.
+func Combine(errs []error) error {
+	if len(errs) == 0 {
+		return nil
+	}
+	if len(errs) == 1 {
+		return errs[0]
+	}
+	errStrings := make([]string, 0, len(errs))
+	for _, e := range errs {
+		errStrings = append(errStrings, e.Error())
+	}
+	return errors.New(strings.Join(errStrings, ", "))
+}
