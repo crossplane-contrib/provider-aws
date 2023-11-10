@@ -1,0 +1,480 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.13.0
+  name: provisionedproducts.servicecatalog.aws.crossplane.io
+spec:
+  group: servicecatalog.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: ProvisionedProduct
+    listKind: ProvisionedProductList
+    plural: provisionedproducts
+    singular: provisionedproduct
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ProvisionedProduct is the Schema for the ProvisionedProducts
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ProvisionedProductSpec defines the desired state of ProvisionedProduct
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: 'DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource. This field is planned to be deprecated
+                  in favor of the ManagementPolicies field in a future release. Currently,
+                  both could be set independently and non-default values would be
+                  honored if the feature flag is enabled. See the design doc for more
+                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: ProvisionedProductParameters defines the desired state
+                  of ProvisionedProduct
+                properties:
+                  acceptLanguage:
+                    description: "The language code. \n * jp - Japanese \n * zh -
+                      Chinese"
+                    type: string
+                  notificationARNs:
+                    description: Passed to CloudFormation. The SNS topic ARNs to which
+                      to publish stack-related events.
+                    items:
+                      type: string
+                    type: array
+                  pathID:
+                    description: The path identifier of the product. This value is
+                      optional if the product has a default path, and required if
+                      the product has more than one path. To list the paths for a
+                      product, use ListLaunchPaths. You must provide the name or ID,
+                      but not both.
+                    type: string
+                  pathName:
+                    description: The name of the path. You must provide the name or
+                      ID, but not both.
+                    type: string
+                  productID:
+                    description: The product identifier. You must provide the name
+                      or ID, but not both.
+                    type: string
+                  productName:
+                    description: The name of the product. You must provide the name
+                      or ID, but not both.
+                    type: string
+                  provisioningArtifactID:
+                    description: The identifier of the provisioning artifact. You
+                      must provide the name or ID, but not both.
+                    type: string
+                  provisioningArtifactName:
+                    description: The name of the provisioning artifact. You must provide
+                      the name or ID, but not both.
+                    type: string
+                  provisioningParameters:
+                    description: Parameters specified by the administrator that are
+                      required for provisioning the product.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                  provisioningPreferences:
+                    description: An object that contains information about the provisioning
+                      preferences for a stack set.
+                    properties:
+                      stackSetAccounts:
+                        items:
+                          type: string
+                        type: array
+                      stackSetFailureToleranceCount:
+                        format: int64
+                        type: integer
+                      stackSetFailureTolerancePercentage:
+                        format: int64
+                        type: integer
+                      stackSetMaxConcurrencyCount:
+                        format: int64
+                        type: integer
+                      stackSetMaxConcurrencyPercentage:
+                        format: int64
+                        type: integer
+                      stackSetRegions:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  region:
+                    description: Region is which region the ProvisionedProduct will
+                      be created.
+                    type: string
+                  tags:
+                    description: One or more tags.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                required:
+                - region
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: 'THIS IS A BETA FIELD. It is on by default but can be
+                  opted out through a Crossplane feature flag. ManagementPolicies
+                  specify the array of actions Crossplane is allowed to take on the
+                  managed and external resources. This field is planned to replace
+                  the DeletionPolicy field in a future release. Currently, both could
+                  be set independently and non-default values would be honored if
+                  the feature flag is enabled. If both are custom, the DeletionPolicy
+                  field will be ignored. See the design doc for more information:
+                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                items:
+                  description: A ManagementAction represents an action that the Crossplane
+                    controllers can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: ProvisionedProductStatus defines the observed state of ProvisionedProduct.
+            properties:
+              atProvider:
+                description: ProvisionedProductObservation defines the observed state
+                  of ProvisionedProduct
+                properties:
+                  arn:
+                    description: The ARN of the provisioned product.
+                    type: string
+                  createdTime:
+                    description: The UTC time stamp of the creation time.
+                    format: date-time
+                    type: string
+                  lastProductID:
+                    description: The product identifier. For example, prod-abcdzk7xy33qa.
+                    type: string
+                  lastProvisioningArtifactID:
+                    description: The identifier of the provisioning artifact. For
+                      example, pa-4abcdjnxjj6ne.
+                    type: string
+                  lastProvisioningParameters:
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                  lastProvisioningRecordID:
+                    description: "The record identifier of the last request performed
+                      on this provisioned product of the following types: \n * ProvisionProduct
+                      \n * UpdateProvisionedProduct \n * ExecuteProvisionedProductPlan
+                      \n * TerminateProvisionedProduct"
+                    type: string
+                  launchRoleARN:
+                    description: The ARN of the launch role associated with the provisioned
+                      product.
+                    type: string
+                  outputs:
+                    additionalProperties:
+                      properties:
+                        description:
+                          type: string
+                        outputKey:
+                          type: string
+                        outputValue:
+                          type: string
+                      type: object
+                    type: object
+                  provisionedProductID:
+                    description: The identifier of the provisioned product.
+                    type: string
+                  provisionedProductName:
+                    description: The user-friendly name of the provisioned product.
+                    type: string
+                  provisionedProductType:
+                    description: The type of provisioned product. The supported values
+                      are CFN_STACK, CFN_STACKSET, TERRAFORM_OPEN_SOURCE, and TERRAFORM_CLOUD.
+                    type: string
+                  recordErrors:
+                    description: The errors that occurred.
+                    items:
+                      properties:
+                        code:
+                          type: string
+                        description:
+                          type: string
+                      type: object
+                    type: array
+                  recordID:
+                    description: The identifier of the record.
+                    type: string
+                  recordTags:
+                    description: One or more tags.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                  recordType:
+                    description: "The record type. \n * PROVISION_PRODUCT \n * UPDATE_PROVISIONED_PRODUCT
+                      \n * TERMINATE_PROVISIONED_PRODUCT"
+                    type: string
+                  status:
+                    description: "The current status of the provisioned product. \n
+                      * AVAILABLE - Stable state, ready to perform any operation.
+                      The most recent operation succeeded and completed. \n * UNDER_CHANGE
+                      - Transitive state. Operations performed might not have valid
+                      results. Wait for an AVAILABLE status before performing operations.
+                      \n * TAINTED - Stable state, ready to perform any operation.
+                      The stack has completed the requested operation but is not exactly
+                      what was requested. For example, a request to update to a new
+                      version failed and the stack rolled back to the current version.
+                      \n * ERROR - An unexpected error occurred. The provisioned product
+                      exists but the stack is not running. For example, CloudFormation
+                      received a parameter value that was not valid and could not
+                      launch the stack. \n * PLAN_IN_PROGRESS - Transitive state.
+                      The plan operations were performed to provision a new product,
+                      but resources have not yet been created. After reviewing the
+                      list of resources to be created, execute the plan. Wait for
+                      an AVAILABLE status before performing operations."
+                    type: string
+                  statusMessage:
+                    description: The current status message of the provisioned product.
+                    type: string
+                  updatedTime:
+                    description: The time when the record was last updated.
+                    format: date-time
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
