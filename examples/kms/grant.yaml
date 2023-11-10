@@ -1,0 +1,17 @@
+---
+apiVersion: kms.aws.crossplane.io/v1alpha1
+kind: Grant
+metadata:
+  name: sample-grant
+spec:
+  forProvider:
+    region: us-east-1
+    keyIdRef:
+      name: dev-key
+    granteePrincipal: arn:aws:iam::123456789012:user/root
+    operations:
+      - Encrypt
+      - Decrypt
+      - Verify
+  providerConfigRef:
+    name: example

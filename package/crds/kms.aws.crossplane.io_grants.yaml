@@ -1,0 +1,484 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.13.0
+  name: grants.kms.aws.crossplane.io
+spec:
+  group: kms.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: Grant
+    listKind: GrantList
+    plural: grants
+    singular: grant
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Grant is the Schema for the Grants API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GrantSpec defines the desired state of Grant
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: 'DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource. This field is planned to be deprecated
+                  in favor of the ManagementPolicies field in a future release. Currently,
+                  both could be set independently and non-default values would be
+                  honored if the feature flag is enabled. See the design doc for more
+                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: GrantParameters defines the desired state of Grant
+                properties:
+                  constraints:
+                    description: "Specifies a grant constraint. \n Do not include
+                      confidential or sensitive information in this field. This field
+                      may be displayed in plaintext in CloudTrail logs and other output.
+                      \n KMS supports the EncryptionContextEquals and EncryptionContextSubset
+                      grant constraints, which allow the permissions in the grant
+                      only when the encryption context in the request matches (EncryptionContextEquals)
+                      or includes (EncryptionContextSubset) the encryption context
+                      specified in the constraint. \n The encryption context grant
+                      constraints are supported only on grant operations (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#terms-grant-operations)
+                      that include an EncryptionContext parameter, such as cryptographic
+                      operations on symmetric encryption KMS keys. Grants with grant
+                      constraints can include the DescribeKey and RetireGrant operations,
+                      but the constraint doesn't apply to these operations. If a grant
+                      with a grant constraint includes the CreateGrant operation,
+                      the constraint requires that any grants created with the CreateGrant
+                      permission have an equally strict or stricter encryption context
+                      constraint. \n You cannot use an encryption context grant constraint
+                      for cryptographic operations with asymmetric KMS keys or HMAC
+                      KMS keys. Operations with these keys don't support an encryption
+                      context. \n Each constraint value can include up to 8 encryption
+                      context pairs. The encryption context value in each constraint
+                      cannot exceed 384 characters. For information about grant constraints,
+                      see Using grant constraints (https://docs.aws.amazon.com/kms/latest/developerguide/create-grant-overview.html#grant-constraints)
+                      in the Key Management Service Developer Guide. For more information
+                      about encryption context, see Encryption context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context)
+                      in the Key Management Service Developer Guide ."
+                    properties:
+                      encryptionContextEquals:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      encryptionContextSubset:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  grantTokens:
+                    description: "A list of grant tokens. \n Use a grant token when
+                      your permission to call this operation comes from a new grant
+                      that has not yet achieved eventual consistency. For more information,
+                      see Grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token)
+                      and Using a grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token)
+                      in the Key Management Service Developer Guide."
+                    items:
+                      type: string
+                    type: array
+                  granteePrincipal:
+                    description: "The identity that gets the permissions specified
+                      in the grant. \n To specify the grantee principal, use the Amazon
+                      Resource Name (ARN) of an Amazon Web Services principal. Valid
+                      principals include Amazon Web Services accounts, IAM users,
+                      IAM roles, federated users, and assumed role users. For help
+                      with the ARN syntax for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
+                      in the Identity and Access Management User Guide ."
+                    type: string
+                  keyId:
+                    description: "Identifies the KMS key for the grant. The grant
+                      gives principals permission to use this KMS key. \n Specify
+                      the key ID or key ARN of the KMS key. To specify a KMS key in
+                      a different Amazon Web Services account, you must use the key
+                      ARN. \n For example: \n * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+                      \n * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+                      \n To get the key ID and key ARN for a KMS key, use ListKeys
+                      or DescribeKey. \n KeyID or one of the referencers is a required
+                      parameter."
+                    type: string
+                  keyIdRef:
+                    description: KeyIDRef is a reference to a KeyID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  keyIdSelector:
+                    description: KeyIDSelector selects references to a KeyID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  name:
+                    description: "A friendly name for the grant. Use this value to
+                      prevent the unintended creation of duplicate grants when retrying
+                      this request. \n Do not include confidential or sensitive information
+                      in this field. This field may be displayed in plaintext in CloudTrail
+                      logs and other output. \n When this value is absent, all CreateGrant
+                      requests result in a new grant with a unique GrantId even if
+                      all the supplied parameters are identical. This can result in
+                      unintended duplicates when you retry the CreateGrant request.
+                      \n When this value is present, you can retry a CreateGrant request
+                      with identical parameters; if the grant already exists, the
+                      original GrantId is returned without creating a new grant. Note
+                      that the returned grant token is unique with every CreateGrant
+                      request, even when a duplicate GrantId is returned. All grant
+                      tokens for the same grant ID can be used interchangeably."
+                    type: string
+                  operations:
+                    description: "A list of operations that the grant permits. \n
+                      This list must include only operations that are permitted in
+                      a grant. Also, the operation must be supported on the KMS key.
+                      For example, you cannot create a grant for a symmetric encryption
+                      KMS key that allows the Sign operation, or a grant for an asymmetric
+                      KMS key that allows the GenerateDataKey operation. If you try,
+                      KMS returns a ValidationError exception. For details, see Grant
+                      operations (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#terms-grant-operations)
+                      in the Key Management Service Developer Guide."
+                    items:
+                      type: string
+                    type: array
+                  region:
+                    description: Region is which region the Grant will be created.
+                    type: string
+                  retiringPrincipal:
+                    description: "The principal that has permission to use the RetireGrant
+                      operation to retire the grant. \n To specify the principal,
+                      use the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+                      of an Amazon Web Services principal. Valid principals include
+                      Amazon Web Services accounts, IAM users, IAM roles, federated
+                      users, and assumed role users. For help with the ARN syntax
+                      for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
+                      in the Identity and Access Management User Guide . \n The grant
+                      determines the retiring principal. Other principals might have
+                      permission to retire the grant or revoke the grant. For details,
+                      see RevokeGrant and Retiring and revoking grants (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#grant-delete)
+                      in the Key Management Service Developer Guide."
+                    type: string
+                required:
+                - granteePrincipal
+                - operations
+                - region
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: 'THIS IS A BETA FIELD. It is on by default but can be
+                  opted out through a Crossplane feature flag. ManagementPolicies
+                  specify the array of actions Crossplane is allowed to take on the
+                  managed and external resources. This field is planned to replace
+                  the DeletionPolicy field in a future release. Currently, both could
+                  be set independently and non-default values would be honored if
+                  the feature flag is enabled. If both are custom, the DeletionPolicy
+                  field will be ignored. See the design doc for more information:
+                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                items:
+                  description: A ManagementAction represents an action that the Crossplane
+                    controllers can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: GrantStatus defines the observed state of Grant.
+            properties:
+              atProvider:
+                description: GrantObservation defines the observed state of Grant
+                properties:
+                  grantID:
+                    description: "The unique identifier for the grant. \n You can
+                      use the GrantId in a ListGrants, RetireGrant, or RevokeGrant
+                      operation."
+                    type: string
+                  grantToken:
+                    description: "The grant token. \n Use a grant token when your
+                      permission to call this operation comes from a new grant that
+                      has not yet achieved eventual consistency. For more information,
+                      see Grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token)
+                      and Using a grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token)
+                      in the Key Management Service Developer Guide."
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
