@@ -79,7 +79,6 @@ func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
 
 // GenerateRole assigns the in RoleParamters to role.
 func GenerateRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
-
 	if in.AssumeRolePolicyDocument != "" {
 		s, err := legacypolicy.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
 		if err != nil {
@@ -179,7 +178,10 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		return false, "", err
 	}
 
-	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument"), cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
+	diff := cmp.Diff(desired, &observed,
+		cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}),
+		cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument", "CreateDate", "PermissionsBoundary.PermissionsBoundaryType"),
+		cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
 	if diff == "" && policyUpToDate {
 		return true, diff, nil
 	}
