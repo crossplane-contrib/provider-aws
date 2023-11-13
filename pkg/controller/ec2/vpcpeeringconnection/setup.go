@@ -49,6 +49,7 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithCreationGracePeriod(3 * time.Minute),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
 	}
