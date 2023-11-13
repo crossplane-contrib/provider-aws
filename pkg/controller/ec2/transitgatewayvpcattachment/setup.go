@@ -44,6 +44,7 @@ func SetupTransitGatewayVPCAttachment(mgr ctrl.Manager, o controller.Options) er
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
 	}
