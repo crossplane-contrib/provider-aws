@@ -69,6 +69,7 @@ func SetupCertificateAuthority(mgr ctrl.Manager, o controller.Options) error {
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient}),
 		managed.WithConnectionPublishers(),
+		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
