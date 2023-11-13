@@ -46,10 +46,12 @@ var (
 		  }
 		]
 	   }`
-	roleID   = "some Id"
-	roleName = "some name"
-	tagKey   = "key"
-	tagValue = "value"
+	roleID             = "some Id"
+	roleName           = "some name"
+	tagKey             = "key"
+	tagValue           = "value"
+	permissionBoundary = "arn:aws:iam::111111111111:policy/permission-boundary"
+	createDate         = time.Now()
 )
 
 func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
@@ -262,6 +264,38 @@ func TestIsRoleUpToDate(t *testing.T) {
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
 					MaxSessionDuration:       pointer.ToIntAsInt32(1),
 					Path:                     pointer.ToOrNilIfZeroValue("/"),
+					Tags: []v1beta1.Tag{{
+						Key:   "key1",
+						Value: "value1",
+					}},
+				},
+			},
+			want:     true,
+			wantDiff: "",
+		},
+		"AWSInitializedFields": {
+			args: args{
+				role: iamtypes.Role{
+					AssumeRolePolicyDocument: escapedPolicyJSON(),
+					CreateDate:               &createDate,
+					Description:              &description,
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
+					PermissionsBoundary: &iamtypes.AttachedPermissionsBoundary{
+						PermissionsBoundaryArn:  &permissionBoundary,
+						PermissionsBoundaryType: "Policy",
+					},
+					Tags: []iamtypes.Tag{{
+						Key:   pointer.ToOrNilIfZeroValue("key1"),
+						Value: pointer.ToOrNilIfZeroValue("value1"),
+					}},
+				},
+				p: v1beta1.RoleParameters{
+					Description:              &description,
+					AssumeRolePolicyDocument: assumeRolePolicyDocument,
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
+					PermissionsBoundary:      &permissionBoundary,
 					Tags: []v1beta1.Tag{{
 						Key:   "key1",
 						Value: "value1",
