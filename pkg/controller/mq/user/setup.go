@@ -48,7 +48,7 @@ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
-		managed.WithInitializers(),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
@@ -142,7 +142,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.User, obj *svcsd
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
 	obj.Password = pointer.ToOrNilIfZeroValue(pw)
-	obj.Username = pointer.ToOrNilIfZeroValue(cr.Name)
+	obj.Username = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
 	return nil
 }
@@ -151,13 +151,12 @@ func postCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserO
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, cr.Name)
 	return cre, nil
 }
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.User, obj *svcsdk.UpdateUserRequest) error {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = pointer.ToOrNilIfZeroValue(cr.Name)
+	obj.Username = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	pw, pwchanged, err := mq.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.PasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
