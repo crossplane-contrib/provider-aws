@@ -38,6 +38,7 @@ import (
 	clientsvcdk "github.com/crossplane-contrib/provider-aws/pkg/clients/servicediscovery"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupService adds a controller that reconciles Service.
@@ -67,6 +68,7 @@ func SetupService(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.Service{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ServiceGroupVersionKind),
+			managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(),
 			managed.WithPollInterval(o.PollInterval),

@@ -19,6 +19,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupWorkspace adds a controller that reconciles Workspace for PrometheusService.
@@ -40,6 +41,7 @@ func SetupWorkspace(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
