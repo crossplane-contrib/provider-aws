@@ -30,6 +30,7 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupEmailTemplate adds a controller that reconciles SES EmailTemplate.
@@ -53,6 +54,7 @@ func SetupEmailTemplate(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.EmailTemplate{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.EmailTemplateGroupVersionKind),
+			managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
