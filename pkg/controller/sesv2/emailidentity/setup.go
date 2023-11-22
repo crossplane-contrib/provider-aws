@@ -37,6 +37,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -65,6 +66,7 @@ func SetupEmailIdentity(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.EmailIdentity{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.EmailIdentityGroupVersionKind),
+			managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
