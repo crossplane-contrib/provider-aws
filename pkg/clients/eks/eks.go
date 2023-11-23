@@ -339,6 +339,13 @@ func LateInitialize(in *v1beta1.ClusterParameters, cluster *ekstypes.Cluster) { 
 			in.ResourcesVpcConfig.SubnetIDs = cluster.ResourcesVpcConfig.SubnetIds
 		}
 	}
+	if in.KubernetesNetworkConfig == nil && cluster.KubernetesNetworkConfig != nil {
+		in.KubernetesNetworkConfig = &v1beta1.KubernetesNetworkConfigRequest{
+			ServiceIpv4Cidr: pointer.StringValue(cluster.KubernetesNetworkConfig.ServiceIpv4Cidr),
+			IPFamily:        v1beta1.IPFamily(cluster.KubernetesNetworkConfig.IpFamily),
+		}
+	}
+
 	in.RoleArn = pointer.LateInitializeValueFromPtr(in.RoleArn, cluster.RoleArn)
 	in.Version = pointer.LateInitialize(in.Version, cluster.Version)
 	// NOTE(hasheddan): we always will set the default Crossplane tags in

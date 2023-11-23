@@ -475,6 +475,8 @@ func TestGenerateObservation(t *testing.T) {
 }
 
 func TestLateInitialize(t *testing.T) {
+	ServiceIpv4Cidr := "172.20.0.0/16"
+	Ipv4Family := "ipv4"
 	cases := map[string]struct {
 		parameters *v1beta1.ClusterParameters
 		cluster    *ekstypes.Cluster
@@ -517,6 +519,10 @@ func TestLateInitialize(t *testing.T) {
 					SecurityGroupIds:      []string{"cool-sg-1"},
 					SubnetIds:             []string{"cool-subnet"},
 				},
+				KubernetesNetworkConfig: &ekstypes.KubernetesNetworkConfigResponse{
+					IpFamily:        ekstypes.IpFamily(Ipv4Family),
+					ServiceIpv4Cidr: &ServiceIpv4Cidr,
+				},
 				RoleArn: &roleArn,
 				Tags:    map[string]string{"key": "val"},
 				Version: &version,
@@ -546,6 +552,10 @@ func TestLateInitialize(t *testing.T) {
 					PublicAccessCidrs:     []string{"0.0.0.0/0"},
 					SecurityGroupIDs:      []string{"cool-sg-1"},
 					SubnetIDs:             []string{"cool-subnet"},
+				},
+				KubernetesNetworkConfig: &v1beta1.KubernetesNetworkConfigRequest{
+					ServiceIpv4Cidr: ServiceIpv4Cidr,
+					IPFamily:        v1beta1.IPFamily(Ipv4Family),
 				},
 				RoleArn: roleArn,
 				Tags:    map[string]string{"key": "val"},
