@@ -335,6 +335,21 @@ func TestIsUpToDate(t *testing.T) {
 			},
 			want: true,
 		},
+		"IgnoresDBName": {
+			args: args{
+				db: rdstypes.DBInstance{
+					DBName: nil,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+						},
+					},
+				},
+			},
+			want: true,
+		},
 		"SamePassword": {
 			args: args{
 				db: rdstypes.DBInstance{
