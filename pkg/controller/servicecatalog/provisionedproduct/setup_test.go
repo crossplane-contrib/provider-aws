@@ -92,13 +92,13 @@ func describeProvisionedProduct(m ...describeProvisionedProductOutputModifier) *
 func setupFakeExternal(fakeClient clientset.Client, cache cache) func(*external) {
 	return func(e *external) {
 		c := &custom{client: fakeClient, cache: cache}
-		e.preCreate = preCreate
+		e.preCreate = c.preCreate
 		e.preUpdate = c.preUpdate
 		e.lateInitialize = c.lateInitialize
 		e.isUpToDate = c.isUpToDate
 		e.preObserve = c.preObserve
 		e.postObserve = c.postObserve
-		e.preDelete = preDelete
+		e.preDelete = c.preDelete
 	}
 }
 

@@ -29,4 +29,7 @@ const (
 	// Management Policies. See the below design for more details.
 	// https://github.com/crossplane/crossplane/pull/3531
 	EnableAlphaManagementPolicies feature.Flag = "EnableAlphaManagementPolicies"
+
+	// EnableManagedResourceMetrics enables additional metrics for every managed resource, if implemented
+	EnableManagedResourceMetrics feature.Flag = "EnableManagedResourceMetrics"
 )
