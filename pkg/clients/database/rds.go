@@ -19,7 +19,7 @@ package rds
 import (
 	"context"
 	"encoding/json"
-	"slices"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -49,6 +49,11 @@ const (
 	errGetPasswordSecretFailed = "cannot get password secret"
 )
 
+type Cache struct {
+	AddTags    []rdstypes.Tag
+	RemoveTags []string
+}
+
 // Client defines RDS RDSClient operations
 type Client interface {
 	CreateDBInstance(context.Context, *rds.CreateDBInstanceInput, ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
@@ -59,6 +64,7 @@ type Client interface {
 	ModifyDBInstance(context.Context, *rds.ModifyDBInstanceInput, ...func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
 	DeleteDBInstance(context.Context, *rds.DeleteDBInstanceInput, ...func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
 	AddTagsToResource(context.Context, *rds.AddTagsToResourceInput, ...func(*rds.Options)) (*rds.AddTagsToResourceOutput, error)
+	RemoveTagsFromResource(context.Context, *rds.RemoveTagsFromResourceInput, ...func(*rds.Options)) (*rds.RemoveTagsFromResourceOutput, error)
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
@@ -320,17 +326,10 @@ func GenerateRestoreRDSInstanceToPointInTimeInput(name string, p *v1beta1.RDSIns
 // CreatePatch creates a *v1beta1.RDSInstanceParameters that has only the changed
 // values between the target *v1beta1.RDSInstanceParameters and the current
 // *rds.DBInstance
-func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (*v1beta1.RDSInstanceParameters, error) { //nolint:gocyclo
+func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (*v1beta1.RDSInstanceParameters, error) {
 	target := spec.DeepCopy()
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, in)
-
-	for _, t := range in.TagList {
-		currentParams.Tags = append(currentParams.Tags, v1beta1.Tag{
-			Key:   ptr.Deref(t.Key, ""),
-			Value: ptr.Deref(t.Value, ""),
-		})
-	}
 
 	// AvailabilityZone parameters is not allowed for MultiAZ deployments.
 	// So set this to nil if that is the case to avoid unnecessary diffs.
@@ -367,9 +366,6 @@ func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (
 		}
 	}
 
-	slices.SortFunc(currentParams.Tags, compareTags)
-	slices.SortFunc(target.Tags, compareTags)
-
 	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
@@ -379,10 +375,6 @@ func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (
 		return nil, err
 	}
 	return patch, nil
-}
-
-func compareTags(a, b v1beta1.Tag) int {
-	return strings.Compare(a.Key, b.Key)
 }
 
 // GenerateModifyDBInstanceInput from RDSInstanceSpec
@@ -707,14 +699,15 @@ func lateInitializeOptionGroupName(inOptionGroupName *string, members []rdstypes
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rdstypes.DBInstance) (bool, string, error) {
+func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rdstypes.DBInstance) (bool, string, Cache, error) { //nolint:gocyclo
+	cacheRds := Cache{}
 	_, pwdChanged, err := GetPassword(ctx, kube, r.Spec.ForProvider.MasterPasswordSecretRef, r.Spec.WriteConnectionSecretToReference)
 	if err != nil {
-		return false, "", err
+		return false, "", cacheRds, err
 	}
 	patch, err := CreatePatch(&db, &r.Spec.ForProvider)
 	if err != nil {
-		return false, "", err
+		return false, "", cacheRds, err
 	}
 	diff := cmp.Diff(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
@@ -735,6 +728,9 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "CloudwatchLogsExportConfiguration"),
 	)
 
+	cacheRds.AddTags, cacheRds.RemoveTags = diffTags(r.Spec.ForProvider.Tags, db.TagList)
+	tagsChanged := len(cacheRds.AddTags) != 0 || len(cacheRds.RemoveTags) != 0
+
 	engineVersionChanged := !isEngineVersionUpToDate(r, db)
 
 	optionGroupChanged := !isOptionGroupUpToDate(r, db)
@@ -746,13 +742,17 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cloudwatchLogsExportChanged = !areSameElements(r.Spec.ForProvider.EnableCloudwatchLogsExports, db.EnabledCloudwatchLogsExports)
 	}
 
-	if diff == "" && !pwdChanged && !engineVersionChanged && !optionGroupChanged && !cloudwatchLogsExportChanged {
-		return true, "", nil
+	if diff == "" && !pwdChanged && !engineVersionChanged && !optionGroupChanged && !cloudwatchLogsExportChanged && !tagsChanged {
+		return true, "", cacheRds, nil
 	}
 
 	diff = "Found observed difference in rds\n" + diff
 
-	return false, diff, nil
+	if tagsChanged {
+		diff += fmt.Sprintf("\nadd %d tag(s) and remove %d tag(s)", len(cacheRds.AddTags), len(cacheRds.RemoveTags))
+	}
+
+	return false, diff, cacheRds, nil
 }
 
 func isEngineVersionUpToDate(cr *v1beta1.RDSInstance, db rdstypes.DBInstance) bool {
@@ -890,4 +890,42 @@ func areSameElements(a1, a2 []string) bool {
 	}
 
 	return true
+}
+
+// DiffTags between spec and current
+func diffTags(spec []v1beta1.Tag, current []rdstypes.Tag) (addTags []rdstypes.Tag, removeTags []string) {
+	currentMap := make(map[string]string, len(current))
+	for _, t := range current {
+		currentMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
+	}
+
+	specMap := make(map[string]string, len(spec))
+	for _, t := range spec {
+		key := t.Key
+		val := t.Value
+		specMap[key] = t.Value
+
+		if currentVal, exists := currentMap[key]; exists {
+			if currentVal != val {
+				addTags = append(addTags, rdstypes.Tag{
+					Key:   pointer.ToOrNilIfZeroValue(key),
+					Value: pointer.ToOrNilIfZeroValue(val),
+				})
+			}
+		} else {
+			addTags = append(addTags, rdstypes.Tag{
+				Key:   pointer.ToOrNilIfZeroValue(key),
+				Value: pointer.ToOrNilIfZeroValue(val),
+			})
+		}
+	}
+
+	for _, t := range current {
+		key := pointer.StringValue(t.Key)
+		if _, exists := specMap[key]; !exists {
+			removeTags = append(removeTags, key)
+		}
+	}
+
+	return addTags, removeTags
 }

@@ -32,6 +32,7 @@ type MockRDSClient struct {
 	MockModify             func(context.Context, *rds.ModifyDBInstanceInput, []func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
 	MockDelete             func(context.Context, *rds.DeleteDBInstanceInput, []func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
 	MockAddTags            func(context.Context, *rds.AddTagsToResourceInput, []func(*rds.Options)) (*rds.AddTagsToResourceOutput, error)
+	MockRemoveTags         func(context.Context, *rds.RemoveTagsFromResourceInput, []func(*rds.Options)) (*rds.RemoveTagsFromResourceOutput, error)
 }
 
 // DescribeDBInstances finds RDS Instance by name
@@ -72,4 +73,9 @@ func (m *MockRDSClient) DeleteDBInstance(ctx context.Context, i *rds.DeleteDBIns
 // AddTagsToResource adds tags to RDS Instance.
 func (m *MockRDSClient) AddTagsToResource(ctx context.Context, i *rds.AddTagsToResourceInput, opts ...func(*rds.Options)) (*rds.AddTagsToResourceOutput, error) {
 	return m.MockAddTags(ctx, i, opts)
+}
+
+// RemoveTagsFromResource removes tags from RDS Instance.
+func (m *MockRDSClient) RemoveTagsFromResource(ctx context.Context, i *rds.RemoveTagsFromResourceInput, opts ...func(*rds.Options)) (*rds.RemoveTagsFromResourceOutput, error) {
+	return m.MockRemoveTags(ctx, i, opts)
 }
