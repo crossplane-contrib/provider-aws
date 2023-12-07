@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
+	rdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -112,14 +113,19 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{c.newClientFn(cfg), c.kube, rds.Cache{}}, nil
+	return &external{c.newClientFn(cfg), c.kube, Cache{}}, nil
+}
+
+type Cache struct {
+	AddTags    []rdstypes.Tag
+	RemoveTags []string
 }
 
 type external struct {
 	client rds.Client
 	kube   client.Client
 
-	cache rds.Cache
+	cache Cache
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -155,11 +161,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 
-	var cachecache rds.Cache
+	var upToDate bool
+	var diff string
 
-	upToDate, diff, cachecache, err := rds.IsUpToDate(ctx, e.kube, cr, instance)
-
-	e.cache = cachecache
+	upToDate, diff, e.cache.AddTags, e.cache.RemoveTags, err = rds.IsUpToDate(ctx, e.kube, cr, instance)
 
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(err, errUpToDateFailed)

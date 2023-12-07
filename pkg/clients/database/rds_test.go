@@ -532,7 +532,7 @@ func TestIsUpToDate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
-			got, _, _, _ := IsUpToDate(ctx, tc.args.kube, &tc.args.r, tc.args.db)
+			got, _, _, _, _ := IsUpToDate(ctx, tc.args.kube, &tc.args.r, tc.args.db)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

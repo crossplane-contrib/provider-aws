@@ -49,11 +49,6 @@ const (
 	errGetPasswordSecretFailed = "cannot get password secret"
 )
 
-type Cache struct {
-	AddTags    []rdstypes.Tag
-	RemoveTags []string
-}
-
 // Client defines RDS RDSClient operations
 type Client interface {
 	CreateDBInstance(context.Context, *rds.CreateDBInstanceInput, ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
@@ -699,15 +694,18 @@ func lateInitializeOptionGroupName(inOptionGroupName *string, members []rdstypes
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rdstypes.DBInstance) (bool, string, Cache, error) { //nolint:gocyclo
-	cacheRds := Cache{}
+func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rdstypes.DBInstance) (bool, string, []rdstypes.Tag, []string, error) { //nolint:gocyclo
+
+	addTags := []rdstypes.Tag{}
+	removeTags := []string{}
+
 	_, pwdChanged, err := GetPassword(ctx, kube, r.Spec.ForProvider.MasterPasswordSecretRef, r.Spec.WriteConnectionSecretToReference)
 	if err != nil {
-		return false, "", cacheRds, err
+		return false, "", addTags, removeTags, err
 	}
 	patch, err := CreatePatch(&db, &r.Spec.ForProvider)
 	if err != nil {
-		return false, "", cacheRds, err
+		return false, "", addTags, removeTags, err
 	}
 	diff := cmp.Diff(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
@@ -728,8 +726,8 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "CloudwatchLogsExportConfiguration"),
 	)
 
-	cacheRds.AddTags, cacheRds.RemoveTags = diffTags(r.Spec.ForProvider.Tags, db.TagList)
-	tagsChanged := len(cacheRds.AddTags) != 0 || len(cacheRds.RemoveTags) != 0
+	addTags, removeTags = DiffTags(r.Spec.ForProvider.Tags, db.TagList)
+	tagsChanged := len(addTags) != 0 || len(removeTags) != 0
 
 	engineVersionChanged := !isEngineVersionUpToDate(r, db)
 
@@ -743,16 +741,16 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 	}
 
 	if diff == "" && !pwdChanged && !engineVersionChanged && !optionGroupChanged && !cloudwatchLogsExportChanged && !tagsChanged {
-		return true, "", cacheRds, nil
+		return true, "", addTags, removeTags, nil
 	}
 
 	diff = "Found observed difference in rds\n" + diff
 
 	if tagsChanged {
-		diff += fmt.Sprintf("\nadd %d tag(s) and remove %d tag(s)", len(cacheRds.AddTags), len(cacheRds.RemoveTags))
+		diff += fmt.Sprintf("\nadd %d tag(s) and remove %d tag(s)", len(addTags), len(removeTags))
 	}
 
-	return false, diff, cacheRds, nil
+	return false, diff, addTags, removeTags, nil
 }
 
 func isEngineVersionUpToDate(cr *v1beta1.RDSInstance, db rdstypes.DBInstance) bool {
@@ -893,7 +891,7 @@ func areSameElements(a1, a2 []string) bool {
 }
 
 // DiffTags between spec and current
-func diffTags(spec []v1beta1.Tag, current []rdstypes.Tag) (addTags []rdstypes.Tag, removeTags []string) {
+func DiffTags(spec []v1beta1.Tag, current []rdstypes.Tag) (addTags []rdstypes.Tag, removeTags []string) {
 	currentMap := make(map[string]string, len(current))
 	for _, t := range current {
 		currentMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)

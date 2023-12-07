@@ -100,7 +100,7 @@ func FromTimePtr(t *time.Time) *metav1.Time {
 type args struct {
 	rds   rds.Client
 	kube  client.Client
-	cache rds.Cache
+	cache Cache
 	cr    *v1beta1.RDSInstance
 }
 
@@ -194,8 +194,8 @@ func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 	return cr
 }
 
-func cache(addTagsMap map[string]string, removeTagsMap map[string]string) rds.Cache {
-	c := rds.Cache{}
+func cache(addTagsMap map[string]string, removeTagsMap map[string]string) Cache {
+	c := Cache{}
 	for k, v := range addTagsMap {
 		c.AddTags = append(c.AddTags, awsrdstypes.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
 	}
