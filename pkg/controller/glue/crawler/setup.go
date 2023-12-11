@@ -162,6 +162,12 @@ func lateInitialize(spec *svcapitypes.CrawlerParameters, resp *svcsdk.GetCrawler
 
 	spec.Configuration = pointer.LateInitialize(spec.Configuration, resp.Crawler.Configuration)
 
+	if spec.LakeFormationConfiguration == nil {
+		spec.LakeFormationConfiguration = &svcapitypes.LakeFormationConfiguration{}
+	}
+	spec.LakeFormationConfiguration.AccountID = pointer.LateInitialize(spec.LakeFormationConfiguration.AccountID, resp.Crawler.LakeFormationConfiguration.AccountId)
+	spec.LakeFormationConfiguration.UseLakeFormationCredentials = pointer.LateInitialize(spec.LakeFormationConfiguration.UseLakeFormationCredentials, resp.Crawler.LakeFormationConfiguration.UseLakeFormationCredentials)
+
 	if spec.LineageConfiguration == nil {
 		spec.LineageConfiguration = &svcapitypes.LineageConfiguration{}
 	}
