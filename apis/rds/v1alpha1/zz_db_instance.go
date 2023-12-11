@@ -954,6 +954,9 @@ type DBInstanceObservation struct {
 	// For more information about CoIPs, see Customer-owned IP addresses (https://docs.aws.amazon.com/outposts/latest/userguide/routing.html#ip-addressing)
 	// in the Amazon Web Services Outposts User Guide.
 	CustomerOwnedIPEnabled *bool `json:"customerOwnedIPEnabled,omitempty"`
+	// If the DB instance is a member of a DB cluster, indicates the name of the
+	// DB cluster that the DB instance is a member of.
+	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 	// The Amazon Resource Name (ARN) for the DB instance.
 	DBInstanceARN *string `json:"dbInstanceARN,omitempty"`
 	// The list of replicated automated backups associated with the DB instance.

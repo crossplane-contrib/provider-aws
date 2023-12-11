@@ -3146,6 +3146,11 @@ func (in *DBInstanceObservation) DeepCopyInto(out *DBInstanceObservation) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.DBClusterIdentifier != nil {
+		in, out := &in.DBClusterIdentifier, &out.DBClusterIdentifier
+		*out = new(string)
+		**out = **in
+	}
 	if in.DBInstanceARN != nil {
 		in, out := &in.DBInstanceARN, &out.DBInstanceARN
 		*out = new(string)

@@ -147,12 +147,20 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 
 	obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(pw)
 	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
-	if len(cr.Spec.ForProvider.VPCSecurityGroupIDs) > 0 {
-		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
-		for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			obj.VpcSecurityGroupIds[i] = pointer.ToOrNilIfZeroValue(v)
+
+	// VpcSecurityGroupIds cannot be set on an instance that belongs to a DBCluster
+	// NOTE: Unlike in preUpdate we are using spec here because status is not yet available.
+	if cr.Spec.ForProvider.DBClusterIdentifier == nil {
+		if len(cr.Spec.ForProvider.VPCSecurityGroupIDs) > 0 {
+			obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
+			for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+				obj.VpcSecurityGroupIds[i] = pointer.ToOrNilIfZeroValue(v)
+			}
 		}
+	} else {
+		obj.VpcSecurityGroupIds = nil
 	}
+
 	if len(cr.Spec.ForProvider.DBSecurityGroups) > 0 {
 		obj.DBSecurityGroups = make([]*string, len(cr.Spec.ForProvider.DBSecurityGroups))
 		for i, v := range cr.Spec.ForProvider.DBSecurityGroups {
@@ -233,11 +241,16 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	}
 	obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(desiredPassword)
 
-	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
-		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
-		for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			obj.VpcSecurityGroupIds[i] = pointer.ToOrNilIfZeroValue(v)
+	// VpcSecurityGroupIds cannot be set on an instance that belongs to a DBCluster
+	if cr.Status.AtProvider.DBClusterIdentifier == nil {
+		if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
+			obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
+			for i, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+				obj.VpcSecurityGroupIds[i] = pointer.ToOrNilIfZeroValue(v)
+			}
 		}
+	} else {
+		obj.VpcSecurityGroupIds = nil
 	}
 
 	return nil
@@ -317,6 +330,8 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, re
 	if err != nil {
 		return obs, err
 	}
+
+	cr.Spec.ForProvider.DBClusterIdentifier = resp.DBInstances[0].DBClusterIdentifier
 
 	switch pointer.StringValue(resp.DBInstances[0].DBInstanceStatus) {
 	case "available", "configuring-enhanced-monitoring", "storage-optimization", "backing-up":
@@ -607,6 +622,11 @@ func compareTimeRanges(format string, expectedWindow *string, actualWindow *stri
 }
 
 func areVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBInstance) bool {
+	// VPCSecurityGroupIDs is ignored for instances that belong to a cluster.
+	if out.DBClusterIdentifier != nil {
+		return true
+	}
+
 	desiredIDs := cr.Spec.ForProvider.VPCSecurityGroupIDs
 
 	// if user is fine with default SG or lets DBCluster manage it
