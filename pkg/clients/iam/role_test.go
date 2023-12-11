@@ -52,6 +52,7 @@ var (
 	tagValue           = "value"
 	permissionBoundary = "arn:aws:iam::111111111111:policy/permission-boundary"
 	createDate         = time.Now()
+	region             = "us-east-1"
 )
 
 func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
@@ -93,12 +94,22 @@ func role(m ...func(*iamtypes.Role)) *iamtypes.Role {
 func addRoleOutputFields(r *iamtypes.Role) {
 	r.Arn = pointer.ToOrNilIfZeroValue(roleARN)
 	r.RoleId = pointer.ToOrNilIfZeroValue(roleID)
+	r.CreateDate = &createDate
+	r.RoleLastUsed = &iamtypes.RoleLastUsed{
+		LastUsedDate: &createDate,
+		Region:       &region,
+	}
 }
 
 func roleObservation(m ...func(*v1beta1.RoleExternalStatus)) *v1beta1.RoleExternalStatus {
 	o := &v1beta1.RoleExternalStatus{
-		ARN:    roleARN,
-		RoleID: roleID,
+		ARN:        roleARN,
+		RoleID:     roleID,
+		CreateDate: pointer.TimeToMetaTime(&createDate),
+		RoleLastUsed: &v1beta1.RoleLastUsed{
+			LastUsedDate: pointer.TimeToMetaTime(&createDate),
+			Region:       &region,
+		},
 	}
 
 	for _, f := range m {
@@ -284,6 +295,10 @@ func TestIsRoleUpToDate(t *testing.T) {
 					PermissionsBoundary: &iamtypes.AttachedPermissionsBoundary{
 						PermissionsBoundaryArn:  &permissionBoundary,
 						PermissionsBoundaryType: "Policy",
+					},
+					RoleLastUsed: &iamtypes.RoleLastUsed{
+						LastUsedDate: &createDate,
+						Region:       pointer.ToOrNilIfZeroValue("us-east-1"),
 					},
 					Tags: []iamtypes.Tag{{
 						Key:   pointer.ToOrNilIfZeroValue("key1"),

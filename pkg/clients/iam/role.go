@@ -71,10 +71,20 @@ func GenerateCreateRoleInput(name string, p *v1beta1.RoleParameters) *iam.Create
 
 // GenerateRoleObservation is used to produce RoleExternalStatus from iamtypes.Role
 func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
-	return v1beta1.RoleExternalStatus{
-		ARN:    aws.ToString(role.Arn),
-		RoleID: aws.ToString(role.RoleId),
+	o := v1beta1.RoleExternalStatus{
+		ARN:        pointer.StringValue(role.Arn),
+		CreateDate: pointer.TimeToMetaTime(role.CreateDate),
+		RoleID:     pointer.StringValue(role.RoleId),
 	}
+
+	if role.RoleLastUsed != nil {
+		o.RoleLastUsed = &v1beta1.RoleLastUsed{
+			LastUsedDate: pointer.TimeToMetaTime(role.RoleLastUsed.LastUsedDate),
+			Region:       role.RoleLastUsed.Region,
+		}
+	}
+
+	return o
 }
 
 // GenerateRole assigns the in RoleParamters to role.
@@ -180,7 +190,7 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 
 	diff := cmp.Diff(desired, &observed,
 		cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}),
-		cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument", "CreateDate", "PermissionsBoundary.PermissionsBoundaryType"),
+		cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument", "CreateDate", "PermissionsBoundary.PermissionsBoundaryType", "RoleLastUsed"),
 		cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
 	if diff == "" && policyUpToDate {
 		return true, diff, nil
