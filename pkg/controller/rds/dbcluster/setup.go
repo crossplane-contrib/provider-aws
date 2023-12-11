@@ -556,6 +556,8 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 }
 
 func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, string, error) { //nolint:gocyclo
+	current := GenerateDBCluster(out)
+
 	status := pointer.StringValue(out.DBClusters[0].Status)
 	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" || status == "migrating" || status == "prepairing-data-migration" || status == "creating" {
 		return true, "", nil
@@ -617,6 +619,10 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 	isScalingConfigurationUpToDate, err := isScalingConfigurationUpToDate(cr.Spec.ForProvider.ScalingConfiguration, out.DBClusters[0].ScalingConfigurationInfo)
 	if !isScalingConfigurationUpToDate {
 		return false, "", err
+	}
+
+	if diff := cmp.Diff(cr.Spec.ForProvider.ServerlessV2ScalingConfiguration, current.Spec.ForProvider.ServerlessV2ScalingConfiguration); diff != "" {
+		return false, "ServerlessV2ScalingConfiguration: " + diff, nil
 	}
 
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, out.DBClusters[0].TagList)
