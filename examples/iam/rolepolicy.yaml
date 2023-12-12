@@ -1,0 +1,22 @@
+---
+kind: RolePolicy
+apiVersion: iam.aws.crossplane.io/v1beta1
+metadata:
+  name: somerolepolicy
+spec:
+  forProvider:
+    roleName: somerole
+    document:
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+              "Sid": "VisualEditor0",
+              "Effect": "Allow",
+              "Action": "elastic-inference:Connect",
+              "Resource": "*"
+          }
+        ]
+      }
+  providerConfigRef:
+    name: example

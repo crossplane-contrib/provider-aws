@@ -120,8 +120,17 @@ var (
 	OpenIDConnectProviderGroupVersionKind = SchemeGroupVersion.WithKind(OpenIDConnectProviderKind)
 )
 
+// RolePolicy type metadata.
+var (
+	RolePolicyKind             = reflect.TypeOf(RolePolicy{}).Name()
+	RolePolicyGroupKind        = schema.GroupKind{Group: CRDGroup, Kind: RolePolicyKind}.String()
+	RolePolicyKindAPIVersion   = RolePolicyKind + "." + SchemeGroupVersion.String()
+	RolePolicyGroupVersionKind = SchemeGroupVersion.WithKind(RolePolicyKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&Role{}, &RoleList{})
+	SchemeBuilder.Register(&RolePolicy{}, &RolePolicyList{})
 	SchemeBuilder.Register(&RolePolicyAttachment{}, &RolePolicyAttachmentList{})
 	SchemeBuilder.Register(&User{}, &UserList{})
 	SchemeBuilder.Register(&Policy{}, &PolicyList{})
