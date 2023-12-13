@@ -1665,6 +1665,11 @@ spec:
                       CoIPs, see Customer-owned IP addresses (https://docs.aws.amazon.com/outposts/latest/userguide/routing.html#ip-addressing)
                       in the Amazon Web Services Outposts User Guide."
                     type: boolean
+                  dbClusterIdentifier:
+                    description: If the DB instance is a member of a DB cluster, indicates
+                      the name of the DB cluster that the DB instance is a member
+                      of.
+                    type: string
                   dbInstanceARN:
                     description: The Amazon Resource Name (ARN) for the DB instance.
                     type: string
