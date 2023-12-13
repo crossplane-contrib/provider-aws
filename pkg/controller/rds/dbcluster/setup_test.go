@@ -1,17 +1,18 @@
 package dbcluster
 
 import (
+	"context"
+	_ "embed"
 	"testing"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
 )
-
-func ptr(str string) *string {
-	return &str
-}
 
 func TestIsVPCSecurityGroupIDsUpToDate(t *testing.T) {
 	type args struct {
@@ -43,13 +44,13 @@ func TestIsVPCSecurityGroupIDsUpToDate(t *testing.T) {
 						{
 							VpcSecurityGroups: []*svcsdk.VpcSecurityGroupMembership{
 								{
-									VpcSecurityGroupId: ptr("sg-123"),
+									VpcSecurityGroupId: ptr.To("sg-123"),
 								},
 								{
-									VpcSecurityGroupId: ptr("sg-456"),
+									VpcSecurityGroupId: ptr.To("sg-456"),
 								},
 								{
-									VpcSecurityGroupId: ptr("sg-789"),
+									VpcSecurityGroupId: ptr.To("sg-789"),
 								},
 							},
 						},
@@ -76,10 +77,10 @@ func TestIsVPCSecurityGroupIDsUpToDate(t *testing.T) {
 						{
 							VpcSecurityGroups: []*svcsdk.VpcSecurityGroupMembership{
 								{
-									VpcSecurityGroupId: ptr("sg-456"),
+									VpcSecurityGroupId: ptr.To("sg-456"),
 								},
 								{
-									VpcSecurityGroupId: ptr("sg-123"),
+									VpcSecurityGroupId: ptr.To("sg-123"),
 								},
 							},
 						},
@@ -129,10 +130,10 @@ func TestIsVPCSecurityGroupIDsUpToDate(t *testing.T) {
 						{
 							VpcSecurityGroups: []*svcsdk.VpcSecurityGroupMembership{
 								{
-									VpcSecurityGroupId: ptr("sg-456"),
+									VpcSecurityGroupId: ptr.To("sg-456"),
 								},
 								{
-									VpcSecurityGroupId: ptr("sg-123"),
+									VpcSecurityGroupId: ptr.To("sg-123"),
 								},
 							},
 						},
@@ -159,10 +160,10 @@ func TestIsVPCSecurityGroupIDsUpToDate(t *testing.T) {
 						{
 							VpcSecurityGroups: []*svcsdk.VpcSecurityGroupMembership{
 								{
-									VpcSecurityGroupId: ptr("sg-123"),
+									VpcSecurityGroupId: ptr.To("sg-123"),
 								},
 								{
-									VpcSecurityGroupId: ptr("sg-456"),
+									VpcSecurityGroupId: ptr.To("sg-456"),
 								},
 							},
 						},
@@ -237,7 +238,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				out: &svcsdk.DescribeDBClustersOutput{
 					DBClusters: []*svcsdk.DBCluster{
 						{
-							EngineVersion: ptr("12.3"), // some AWS "default" value
+							EngineVersion: ptr.To("12.3"), // some AWS "default" value
 						},
 					},
 				},
@@ -252,7 +253,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
 							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
-								EngineVersion: ptr("12.3"),
+								EngineVersion: ptr.To("12.3"),
 							},
 						},
 					},
@@ -260,7 +261,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				out: &svcsdk.DescribeDBClustersOutput{
 					DBClusters: []*svcsdk.DBCluster{
 						{
-							EngineVersion: ptr("12.3"), // some AWS "default" value
+							EngineVersion: ptr.To("12.3"), // some AWS "default" value
 						},
 					},
 				},
@@ -275,7 +276,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
 							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
-								EngineVersion: ptr("12"),
+								EngineVersion: ptr.To("12"),
 							},
 						},
 					},
@@ -283,7 +284,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				out: &svcsdk.DescribeDBClustersOutput{
 					DBClusters: []*svcsdk.DBCluster{
 						{
-							EngineVersion: ptr("12.3"), // some AWS "default" value
+							EngineVersion: ptr.To("12.3"), // some AWS "default" value
 						},
 					},
 				},
@@ -298,7 +299,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
 							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
-								EngineVersion: ptr("12.1"),
+								EngineVersion: ptr.To("12.1"),
 							},
 						},
 					},
@@ -306,7 +307,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				out: &svcsdk.DescribeDBClustersOutput{
 					DBClusters: []*svcsdk.DBCluster{
 						{
-							EngineVersion: ptr("12.3"), // some AWS "default" value
+							EngineVersion: ptr.To("12.3"), // some AWS "default" value
 						},
 					},
 				},
@@ -321,7 +322,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
 							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
-								EngineVersion: ptr("13"),
+								EngineVersion: ptr.To("13"),
 							},
 						},
 					},
@@ -329,7 +330,7 @@ func TestIsEngineVersionUpToDate(t *testing.T) {
 				out: &svcsdk.DescribeDBClustersOutput{
 					DBClusters: []*svcsdk.DBCluster{
 						{
-							EngineVersion: ptr("12.3"),
+							EngineVersion: ptr.To("12.3"),
 						},
 					},
 				},
@@ -398,7 +399,7 @@ func TestIsDBClusterParameterGroupNameUpToDate(t *testing.T) {
 				out: &svcsdk.DescribeDBClustersOutput{
 					DBClusters: []*svcsdk.DBCluster{
 						{
-							DBClusterParameterGroup: ptr("default.aurora-postgresql14"), // some AWS "default" value
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql14"), // some AWS "default" value
 						},
 					},
 				},
@@ -412,14 +413,14 @@ func TestIsDBClusterParameterGroupNameUpToDate(t *testing.T) {
 				cr: &svcapitypes.DBCluster{
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
-							DBClusterParameterGroupName: ptr("default.aurora-postgresql14"),
+							DBClusterParameterGroupName: ptr.To("default.aurora-postgresql14"),
 						},
 					},
 				},
 				out: &svcsdk.DescribeDBClustersOutput{
 					DBClusters: []*svcsdk.DBCluster{
 						{
-							DBClusterParameterGroup: ptr("default.aurora-postgresql14"), // some AWS "default" value
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql14"), // some AWS "default" value
 						},
 					},
 				},
@@ -433,14 +434,14 @@ func TestIsDBClusterParameterGroupNameUpToDate(t *testing.T) {
 				cr: &svcapitypes.DBCluster{
 					Spec: svcapitypes.DBClusterSpec{
 						ForProvider: svcapitypes.DBClusterParameters{
-							DBClusterParameterGroupName: ptr("default.aurora-postgresql15"),
+							DBClusterParameterGroupName: ptr.To("default.aurora-postgresql15"),
 						},
 					},
 				},
 				out: &svcsdk.DescribeDBClustersOutput{
 					DBClusters: []*svcsdk.DBCluster{
 						{
-							DBClusterParameterGroup: ptr("default.aurora-postgresql14"),
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql14"),
 						},
 					},
 				},
@@ -457,6 +458,128 @@ func TestIsDBClusterParameterGroupNameUpToDate(t *testing.T) {
 
 			if diff := cmp.Diff(tc.want.isUpToDate, isUpToDate); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsUpToDate(t *testing.T) {
+	type args struct {
+		cr   *svcapitypes.DBCluster
+		out  *svcsdk.DescribeDBClustersOutput
+		kube client.Client
+	}
+
+	type want struct {
+		isUpToDate bool
+		err        error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"DifferentServerlessV2ScalingConfigurationMinimum": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							DBClusterParameterGroupName: ptr.To("default.aurora-postgresql15"),
+							ServerlessV2ScalingConfiguration: &svcapitypes.ServerlessV2ScalingConfiguration{
+								MaxCapacity: ptr.To[float64](5.0),
+								MinCapacity: ptr.To[float64](1.0),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql14"),
+							ServerlessV2ScalingConfiguration: &svcsdk.ServerlessV2ScalingConfigurationInfo{
+								MaxCapacity: ptr.To[float64](5.0),
+								MinCapacity: ptr.To[float64](3.0),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"DifferentServerlessV2ScalingConfigurationMaximum": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							DBClusterParameterGroupName: ptr.To("default.aurora-postgresql15"),
+							ServerlessV2ScalingConfiguration: &svcapitypes.ServerlessV2ScalingConfiguration{
+								MaxCapacity: ptr.To[float64](5.0),
+								MinCapacity: ptr.To[float64](1.0),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql14"),
+							ServerlessV2ScalingConfiguration: &svcsdk.ServerlessV2ScalingConfigurationInfo{
+								MaxCapacity: ptr.To[float64](10.0),
+								MinCapacity: ptr.To[float64](1.0),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"SameServerlessV2ScalingConfiguration": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							DBClusterParameterGroupName: ptr.To("default.aurora-postgresql15"),
+							ServerlessV2ScalingConfiguration: &svcapitypes.ServerlessV2ScalingConfiguration{
+								MaxCapacity: ptr.To[float64](5.0),
+								MinCapacity: ptr.To[float64](1.0),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql14"),
+							ServerlessV2ScalingConfiguration: &svcsdk.ServerlessV2ScalingConfigurationInfo{
+								MaxCapacity: ptr.To[float64](5.0),
+								MinCapacity: ptr.To[float64](1.0),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			custom := custom{kube: tc.args.kube}
+			isUpToDate, _, err := custom.isUpToDate(context.Background(), tc.args.cr, tc.args.out)
+			if diff := cmp.Diff(tc.want.isUpToDate, isUpToDate); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.err, err); diff != "" {
+				t.Errorf("error: -want, +got:\n%s", diff)
 			}
 		})
 	}
