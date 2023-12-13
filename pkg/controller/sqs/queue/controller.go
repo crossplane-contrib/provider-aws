@@ -53,6 +53,7 @@ const (
 	errGetQueueURLFailed        = "cannot get Queue URL"
 	errListQueueTagsFailed      = "cannot list Queue tags"
 	errUpdateFailed             = "failed to update the Queue resource"
+	errIsUpToDate               = "cannot check if resource is up to date"
 )
 
 // SetupQueue adds a controller that reconciles Queue.
@@ -152,10 +153,15 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = sqs.GenerateQueueObservation(*getURLOutput.QueueUrl, resAttributes.Attributes)
+	isUpToDate, diff, err := sqs.IsUpToDate(cr.Spec.ForProvider, resAttributes.Attributes, resTags.Tags)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errIsUpToDate)
+	}
 
 	return managed.ExternalObservation{
 		ResourceExists:    true,
-		ResourceUpToDate:  sqs.IsUpToDate(cr.Spec.ForProvider, resAttributes.Attributes, resTags.Tags),
+		ResourceUpToDate:  isUpToDate,
+		Diff:              diff,
 		ConnectionDetails: sqs.GetConnectionDetails(*cr),
 	}, nil
 }
