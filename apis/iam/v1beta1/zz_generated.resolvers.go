@@ -135,6 +135,32 @@ func (mg *GroupUserMembership) ResolveReferences(ctx context.Context, c client.R
 	return nil
 }
 
+// ResolveReferences of this RolePolicy.
+func (mg *RolePolicy) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.RoleName,
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.RoleNameRef,
+		Selector:     mg.Spec.ForProvider.RoleNameSelector,
+		To: reference.To{
+			List:    &RoleList{},
+			Managed: &Role{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.RoleName")
+	}
+	mg.Spec.ForProvider.RoleName = rsp.ResolvedValue
+	mg.Spec.ForProvider.RoleNameRef = rsp.ResolvedReference
+
+	return nil
+}
+
 // ResolveReferences of this RolePolicyAttachment.
 func (mg *RolePolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)

@@ -28,6 +28,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/openidconnectprovider"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/policy"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/role"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/rolepolicy"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/rolepolicyattachment"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/servicelinkedrole"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam/user"
@@ -47,6 +48,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		policy.SetupPolicy,
 		role.SetupRole,
+		rolepolicy.SetupRolePolicy,
 		rolepolicyattachment.SetupRolePolicyAttachment,
 		servicelinkedrole.SetupServiceLinkedRole,
 		user.SetupUser,
