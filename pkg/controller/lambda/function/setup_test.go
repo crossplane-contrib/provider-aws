@@ -621,7 +621,10 @@ func TestGenerateUpdateFunctionConfigurationInput(t *testing.T) {
 					Runtime:           aws.String("test_runtime"),
 					Timeout:           aws.Int64(128),
 					TracingConfig:     &svcsdk.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)},
-					VpcConfig:         &svcsdk.VpcConfig{SecurityGroupIds: []*string{aws.String("id1")}},
+					VpcConfig: &svcsdk.VpcConfig{
+						SecurityGroupIds: []*string{aws.String("id1")},
+						SubnetIds:        []*string{},
+					},
 				},
 			},
 		},

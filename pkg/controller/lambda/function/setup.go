@@ -476,14 +476,12 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 	}
 	if cr.Spec.ForProvider.Environment != nil {
 		f4 := &svcsdk.Environment{}
-		if cr.Spec.ForProvider.Environment.Variables != nil {
-			f4f0 := map[string]*string{}
-			for f4f0key, f4f0valiter := range cr.Spec.ForProvider.Environment.Variables {
-				var f4f0val = *f4f0valiter
-				f4f0[f4f0key] = &f4f0val
-			}
-			f4.SetVariables(f4f0)
+		f4f0 := map[string]*string{}
+		for f4f0key, f4f0valiter := range cr.Spec.ForProvider.Environment.Variables {
+			var f4f0val = *f4f0valiter
+			f4f0[f4f0key] = &f4f0val
 		}
+		f4.SetVariables(f4f0)
 		res.SetEnvironment(f4)
 	}
 	if cr.Spec.ForProvider.FileSystemConfigs != nil {
@@ -558,22 +556,21 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 	}
 	if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters != nil {
 		f19 := &svcsdk.VpcConfig{}
-		if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs != nil {
-			f19f0 := []*string{}
-			for _, f19f0iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs {
-				var f19f0elem = *f19f0iter
-				f19f0 = append(f19f0, &f19f0elem)
-			}
-			f19.SetSecurityGroupIds(f19f0)
+
+		f19f0 := []*string{}
+		for _, f19f0iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs {
+			var f19f0elem = *f19f0iter
+			f19f0 = append(f19f0, &f19f0elem)
 		}
-		if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs != nil {
-			f19f1 := []*string{}
-			for _, f19f1iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs {
-				var f19f1elem = *f19f1iter
-				f19f1 = append(f19f1, &f19f1elem)
-			}
-			f19.SetSubnetIds(f19f1)
+		f19.SetSecurityGroupIds(f19f0)
+
+		f19f1 := []*string{}
+		for _, f19f1iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs {
+			var f19f1elem = *f19f1iter
+			f19f1 = append(f19f1, &f19f1elem)
 		}
+		f19.SetSubnetIds(f19f1)
+
 		res.SetVpcConfig(f19)
 	}
 	return res
