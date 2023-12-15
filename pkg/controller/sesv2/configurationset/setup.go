@@ -77,10 +77,6 @@ type hooks struct {
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.ConfigurationSet, resp *svcsdk.GetConfigurationSetOutput) (bool, string, error) {
-	if meta.WasDeleted(cr) {
-		return true, "", nil // There is no need to check for updates when we want to delete.
-	}
-
 	if !isUpToDateDeliveryOptions(cr, resp) {
 		return false, "", nil
 	}

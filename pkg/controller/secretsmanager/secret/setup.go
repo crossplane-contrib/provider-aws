@@ -237,10 +237,6 @@ func getAWSSecretData(ref *svcapitypes.SecretReference, s *svcsdk.GetSecretValue
 }
 
 func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, string, error) {
-	if meta.WasDeleted(cr) {
-		return false, "", nil
-	}
-
 	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
 	if resp.DeletedDate != nil {
 		return true, "", nil

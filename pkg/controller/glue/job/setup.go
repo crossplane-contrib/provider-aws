@@ -154,12 +154,6 @@ func lateInitialize(spec *svcapitypes.JobParameters, resp *svcsdk.GetJobOutput) 
 }
 
 func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Job, resp *svcsdk.GetJobOutput) (bool, string, error) {
-	// no checks needed if user deletes the resource
-	// ensures that an error (e.g. missing ARN) here does not prevent deletion
-	if meta.WasDeleted(cr) {
-		return true, "", nil
-	}
-
 	currentParams := customGenerateJob(resp).Spec.ForProvider
 
 	if diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),

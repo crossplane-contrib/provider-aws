@@ -781,12 +781,6 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj 
 		return upd, err
 	}
 
-	if meta.WasDeleted(cr) {
-		// (schroeder-paul): if we are in the deleting state (which can take a while) we do not need to do
-		// any of the following, so we return here.
-		return upd, nil
-	}
-
 	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
 	if err != nil {
 		return upd, errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
