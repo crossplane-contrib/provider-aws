@@ -206,12 +206,6 @@ func lateInitialize(spec *svcapitypes.CrawlerParameters, resp *svcsdk.GetCrawler
 }
 
 func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Crawler, resp *svcsdk.GetCrawlerOutput) (bool, string, error) {
-	// no checks needed if user deletes the resource
-	// ensures that an error (e.g. missing ARN) here does not prevent deletion
-	if meta.WasDeleted(cr) {
-		return true, "", nil
-	}
-
 	currentParams := customGenerateCrawler(resp).Spec.ForProvider
 
 	// separate check bc: 1.lowercase handling 2.field Schedule has different input/output shapes (see generator-config.yaml)

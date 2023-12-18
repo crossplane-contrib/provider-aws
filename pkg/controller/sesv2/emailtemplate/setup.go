@@ -62,10 +62,6 @@ func SetupEmailTemplate(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.GetEmailTemplateOutput) (bool, string, error) {
-	if meta.WasDeleted(cr) {
-		return true, "", nil // There is no need to check for updates when we want to delete.
-	}
-
 	if cr.Spec.ForProvider.TemplateContent != nil && resp.TemplateContent != nil {
 		if pointer.StringValue(cr.Spec.ForProvider.TemplateContent.HTML) != pointer.StringValue(resp.TemplateContent.Html) {
 			return false, "", nil

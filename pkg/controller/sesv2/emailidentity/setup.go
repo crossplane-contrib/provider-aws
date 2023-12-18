@@ -25,7 +25,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -81,10 +80,6 @@ type hooks struct {
 }
 
 func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.EmailIdentity, resp *svcsdk.GetEmailIdentityOutput) (bool, string, error) { //nolint:gocyclo
-	if meta.WasDeleted(cr) {
-		return true, "", nil // There is no need to check for updates when we want to delete.
-	}
-
 	if pointer.StringValue(cr.Spec.ForProvider.ConfigurationSetName) != pointer.StringValue(resp.ConfigurationSetName) {
 		return false, "", nil
 	}

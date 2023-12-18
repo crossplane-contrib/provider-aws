@@ -123,10 +123,11 @@ func (e *hooks) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, resp
 
 	obs.ConnectionDetails = getConnectionDetails(cr)
 
-	pw, _, _ := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-
-	if pw != "" {
-		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+	if !meta.WasDeleted(cr) {
+		pw, _, _ := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+		if pw != "" {
+			obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+		}
 	}
 
 	switch pointer.StringValue(cr.Status.AtProvider.Status) {
@@ -174,10 +175,6 @@ func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDB
 }
 
 func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput) (bool, string, error) {
-	if meta.WasDeleted(cr) {
-		return true, "", nil // There is no need to check for updates when we want to delete.
-	}
-
 	cluster := resp.DBClusters[0]
 
 	_, pwChanged, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)

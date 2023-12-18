@@ -127,13 +127,6 @@ func postObserve(ctx context.Context, cr *svcapitypes.Connection, obj *svcsdk.Ge
 }
 
 func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Connection, resp *svcsdk.GetConnectionOutput) (bool, string, error) {
-
-	// no checks needed if user deletes the resource
-	// ensures that an error (e.g. missing ARN) here does not prevent deletion
-	if meta.WasDeleted(cr) {
-		return true, "", nil
-	}
-
 	currentParams := customGenerateConnection(resp).Spec.ForProvider
 
 	if diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
