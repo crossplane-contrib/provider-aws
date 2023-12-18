@@ -26,6 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
@@ -640,6 +641,77 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				UpdateConfig: &ekstypes.NodegroupUpdateConfig{
 					MaxUnavailable:           &maxUnavailablePercentage,
 					MaxUnavailablePercentage: &maxUnavailable,
+				},
+			},
+		},
+		"DiffTaints": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName: clusterName,
+					Taints: []manualv1alpha1.Taint{
+						{
+							Effect: "effect",
+							Key:    ptr.To("toAdd"),
+							Value:  ptr.To("value"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toChange"),
+							Value:  ptr.To("newValue"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toKeep"),
+							Value:  ptr.To("value"),
+						},
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					NodegroupName: &ngName,
+					ClusterName:   &clusterName,
+					Taints: []ekstypes.Taint{
+						{
+							Effect: "effect",
+							Key:    ptr.To("toKeep"),
+							Value:  ptr.To("value"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toRemove"),
+							Value:  ptr.To("value"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toChange"),
+							Value:  ptr.To("oldValue"),
+						},
+					},
+				},
+			},
+			want: &eks.UpdateNodegroupConfigInput{
+				NodegroupName: &ngName,
+				ClusterName:   &clusterName,
+				Taints: &ekstypes.UpdateTaintsPayload{
+					AddOrUpdateTaints: []ekstypes.Taint{
+						{
+							Effect: "effect",
+							Key:    ptr.To("toAdd"),
+							Value:  ptr.To("value"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toChange"),
+							Value:  ptr.To("newValue"),
+						},
+					},
+					RemoveTaints: []ekstypes.Taint{
+						{
+							Effect: "effect",
+							Key:    ptr.To("toRemove"),
+							Value:  ptr.To("value"),
+						},
+					},
 				},
 			},
 		},
