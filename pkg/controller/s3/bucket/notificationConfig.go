@@ -28,6 +28,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -285,9 +286,18 @@ func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, b
 	return errorutils.Wrap(err, notificationPutFailed)
 }
 
-// Delete does nothing because there is no corresponding deletion call in awsclient.
-func (*NotificationConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
-	return nil
+// Delete resets the buckets notification configuration to empty.
+func (in *NotificationConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
+	_, err := in.client.PutBucketNotificationConfiguration(ctx, &awss3.PutBucketNotificationConfigurationInput{
+		Bucket: ptr.To(meta.GetExternalName(bucket)),
+		NotificationConfiguration: &types.NotificationConfiguration{
+			EventBridgeConfiguration:     &types.EventBridgeConfiguration{},
+			LambdaFunctionConfigurations: []types.LambdaFunctionConfiguration{},
+			QueueConfigurations:          []types.QueueConfiguration{},
+			TopicConfigurations:          []types.TopicConfiguration{},
+		},
+	})
+	return errorutils.Wrap(err, notificationPutFailed)
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
