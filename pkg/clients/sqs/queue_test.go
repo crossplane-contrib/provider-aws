@@ -17,12 +17,14 @@ limitations under the License.
 package sqs
 
 import (
+	_ "embed"
 	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1"
@@ -126,16 +128,31 @@ func TestLateInitialize(t *testing.T) {
 	}
 }
 
+var (
+	//go:embed testdata/queue_policy.min.json
+	testPolicyRawMin string
+
+	//go:embed testdata/queue_policy.json
+	testPolicyRaw string
+
+	//go:embed testdata/queue_policy2.json
+	testPolicy2Raw string
+)
+
 func TestIsUpToDate(t *testing.T) {
 	type args struct {
 		p          v1beta1.QueueParameters
 		attributes map[string]string
 		tags       map[string]string
 	}
+	type want struct {
+		isUpToDate bool
+		err        error
+	}
 
 	cases := map[string]struct {
 		args args
-		want bool
+		want want
 	}{
 		"SameFields": {
 			args: args{
@@ -146,7 +163,9 @@ func TestIsUpToDate(t *testing.T) {
 					v1beta1.AttributeKmsMasterKeyID: kmsMasterKeyID,
 				},
 			},
-			want: true,
+			want: want{
+				isUpToDate: true,
+			},
 		},
 		"DifferentFields": {
 			args: args{
@@ -155,7 +174,35 @@ func TestIsUpToDate(t *testing.T) {
 				},
 				attributes: map[string]string{},
 			},
-			want: false,
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"SamePolicy": {
+			args: args{
+				p: v1beta1.QueueParameters{
+					Policy: &testPolicyRaw,
+				},
+				attributes: map[string]string{
+					v1beta1.AttributePolicy: testPolicyRawMin,
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"DifferentPolicy": {
+			args: args{
+				p: v1beta1.QueueParameters{
+					Policy: &testPolicy2Raw,
+				},
+				attributes: map[string]string{
+					v1beta1.AttributePolicy: testPolicyRawMin,
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
 		},
 		"Tags": {
 			args: args{
@@ -168,15 +215,20 @@ func TestIsUpToDate(t *testing.T) {
 					tagKey: tagValue,
 				},
 			},
-			want: true,
+			want: want{
+				isUpToDate: true,
+			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := IsUpToDate(tc.args.p, tc.args.attributes, tc.args.tags)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
+			isUpToDate, _, err := IsUpToDate(tc.args.p, tc.args.attributes, tc.args.tags)
+			if diff := cmp.Diff(tc.want.isUpToDate, isUpToDate); diff != "" {
+				t.Errorf("isUpToDate: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("error: -want, +got:\n%s", diff)
 			}
 		})
 	}

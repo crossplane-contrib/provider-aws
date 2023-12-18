@@ -19,7 +19,6 @@ package sqs
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -30,10 +29,12 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sqs/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 const (
@@ -180,47 +181,48 @@ func LateInitialize(in *v1beta1.QueueParameters, attributes map[string]string, t
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags map[string]string) bool { //nolint:gocyclo
+func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags map[string]string) (bool, string, error) { //nolint:gocyclo
 	if len(p.Tags) != len(tags) {
-		return false
+		return false, "", nil
 	}
 
 	for k, v := range p.Tags {
 		pVal, ok := tags[k]
 		if !ok || !strings.EqualFold(pVal, v) {
-			return false
+			return false, "", nil
 		}
 	}
 
 	if aws.ToInt64(p.DelaySeconds) != toInt64(attributes[v1beta1.AttributeDelaySeconds]) {
-		return false
+		return false, "", nil
 	}
 	if aws.ToInt64(p.KMSDataKeyReusePeriodSeconds) != toInt64(attributes[v1beta1.AttributeKmsDataKeyReusePeriodSeconds]) {
-		return false
+		return false, "", nil
 	}
 	if aws.ToInt64(p.MaximumMessageSize) != toInt64(attributes[v1beta1.AttributeMaximumMessageSize]) {
-		return false
+		return false, "", nil
 	}
 	if aws.ToInt64(p.MessageRetentionPeriod) != toInt64(attributes[v1beta1.AttributeMessageRetentionPeriod]) {
-		return false
+		return false, "", nil
 	}
 	if aws.ToInt64(p.ReceiveMessageWaitTimeSeconds) != toInt64(attributes[v1beta1.AttributeReceiveMessageWaitTimeSeconds]) {
-		return false
+		return false, "", nil
 	}
 	if aws.ToInt64(p.VisibilityTimeout) != toInt64(attributes[v1beta1.AttributeVisibilityTimeout]) {
-		return false
+		return false, "", nil
 	}
 	if !cmp.Equal(aws.ToString(p.KMSMasterKeyID), attributes[v1beta1.AttributeKmsMasterKeyID]) {
-		return false
+		return false, "", nil
 	}
-	if !cmp.Equal(aws.ToString(p.Policy), attributes[v1beta1.AttributePolicy]) {
-		return false
+	isPolicyUpToDate, policyDiff, err := isSQSPolicyUpToDate(pointer.StringValue(p.Policy), attributes[v1beta1.AttributePolicy])
+	if !isPolicyUpToDate {
+		return false, "Policy: " + policyDiff, errors.Wrap(err, "policy")
 	}
 	if attributes[v1beta1.AttributeContentBasedDeduplication] != "" && strconv.FormatBool(aws.ToBool(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeContentBasedDeduplication] {
-		return false
+		return false, "", nil
 	}
 	if attributes[v1beta1.AttributeSqsManagedSseEnabled] != "" && strconv.FormatBool(aws.ToBool(p.SqsManagedSseEnabled)) != attributes[v1beta1.AttributeSqsManagedSseEnabled] {
-		return false
+		return false, "", nil
 	}
 	if p.RedrivePolicy != nil {
 		r := map[string]interface{}{
@@ -230,11 +232,31 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 		val, err := json.Marshal(r)
 		if err == nil {
 			if string(val) != attributes[v1beta1.AttributeRedrivePolicy] {
-				return false
+				return false, "", nil
 			}
 		}
 	}
-	return true
+	return true, "", nil
+}
+
+// isSQSPolicyUpToDate determines whether a SQS queue policy needs to be updated
+func isSQSPolicyUpToDate(specPolicyStr, currPolicyStr string) (bool, string, error) {
+	if specPolicyStr == "" {
+		return currPolicyStr == "", "", nil
+	} else if currPolicyStr == "" {
+		return false, "", nil
+	}
+
+	currPolicy, err := policyutils.ParsePolicyString(currPolicyStr)
+	if err != nil {
+		return false, "", errors.Wrap(err, "current policy")
+	}
+	specPolicy, err := policyutils.ParsePolicyString(specPolicyStr)
+	if err != nil {
+		return false, "", errors.Wrap(err, "spec policy")
+	}
+	equalPolicies, diff := policyutils.ArePoliciesEqal(&currPolicy, &specPolicy)
+	return equalPolicies, diff, nil
 }
 
 // TagsDiff returns the tags added and removed from spec when compared to the AWS SQS tags.
