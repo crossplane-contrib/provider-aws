@@ -25,6 +25,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/mq"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupBroker adds a controller that reconciles Broker.
@@ -48,7 +49,8 @@ func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+		managed.WithInitializers(),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -79,7 +81,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeBrokerInput) error {
-	obj.BrokerId = pointer.String(meta.GetExternalName(cr))
+	obj.BrokerId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -137,13 +139,13 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.Broker, obj *s
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DeleteBrokerInput) (bool, error) {
-	obj.BrokerId = pointer.String(meta.GetExternalName(cr))
+	obj.BrokerId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBrokerRequest) error {
 
-	obj.BrokerName = pointer.String(cr.Name)
+	obj.BrokerName = pointer.ToOrNilIfZeroValue(cr.Name)
 
 	pw, _, err := mq.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.CustomUsers[0].PasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if resource.IgnoreNotFound(err) != nil || pw == "" {
@@ -156,7 +158,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.Broker, obj *svc
 	obj.Users = []*svcsdk.User{
 		{
 			Username:      cr.Spec.ForProvider.CustomUsers[0].Username,
-			Password:      pointer.String(pw),
+			Password:      pointer.ToOrNilIfZeroValue(pw),
 			ConsoleAccess: cr.Spec.ForProvider.CustomUsers[0].ConsoleAccess,
 			Groups:        cr.Spec.ForProvider.CustomUsers[0].Groups,
 		},
@@ -186,11 +188,11 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 //nolint:gocyclo
 func LateInitialize(cr *svcapitypes.BrokerParameters, obj *svcsdk.DescribeBrokerResponse) error {
 	if cr.AuthenticationStrategy == nil && obj.AuthenticationStrategy != nil {
-		cr.AuthenticationStrategy = pointer.LateInitializeStringPtr(cr.AuthenticationStrategy, obj.AuthenticationStrategy)
+		cr.AuthenticationStrategy = pointer.LateInitialize(cr.AuthenticationStrategy, obj.AuthenticationStrategy)
 	}
 
 	if cr.AutoMinorVersionUpgrade == nil && obj.AutoMinorVersionUpgrade != nil {
-		cr.AutoMinorVersionUpgrade = pointer.LateInitializeBoolPtr(cr.AutoMinorVersionUpgrade, obj.AutoMinorVersionUpgrade)
+		cr.AutoMinorVersionUpgrade = pointer.LateInitialize(cr.AutoMinorVersionUpgrade, obj.AutoMinorVersionUpgrade)
 	}
 
 	if cr.EncryptionOptions == nil && obj.EncryptionOptions != nil {
@@ -216,7 +218,7 @@ func LateInitialize(cr *svcapitypes.BrokerParameters, obj *svcsdk.DescribeBroker
 	}
 
 	if cr.PubliclyAccessible == nil && obj.PubliclyAccessible != nil {
-		cr.PubliclyAccessible = pointer.LateInitializeBoolPtr(cr.PubliclyAccessible, obj.PubliclyAccessible)
+		cr.PubliclyAccessible = pointer.LateInitialize(cr.PubliclyAccessible, obj.PubliclyAccessible)
 	}
 
 	return nil

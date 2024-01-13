@@ -30,6 +30,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupAlias adds a controller that reconciles Alias.
@@ -52,6 +53,7 @@ func SetupAlias(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -93,19 +95,19 @@ func preObserve(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.ListAliase
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.CreateAliasInput) error {
-	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.ToOrNilIfZeroValue("alias/" + meta.GetExternalName(cr))
 	obj.TargetKeyId = cr.Spec.ForProvider.TargetKeyID
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.UpdateAliasInput) error {
-	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.ToOrNilIfZeroValue("alias/" + meta.GetExternalName(cr))
 	obj.TargetKeyId = cr.Spec.ForProvider.TargetKeyID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Alias, obj *svcsdk.DeleteAliasInput) (bool, error) {
-	obj.AliasName = pointer.String("alias/" + meta.GetExternalName(cr))
+	obj.AliasName = pointer.ToOrNilIfZeroValue("alias/" + meta.GetExternalName(cr))
 	return false, nil
 }
 

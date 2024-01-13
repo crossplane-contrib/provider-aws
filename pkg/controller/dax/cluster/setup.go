@@ -16,6 +16,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dax/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupCluster adds a controller that reconciles Cluster.
@@ -34,6 +35,7 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
@@ -58,7 +60,7 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClustersInput) error {
-	obj.ClusterNames = append(obj.ClusterNames, pointer.String(meta.GetExternalName(cr)))
+	obj.ClusterNames = append(obj.ClusterNames, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 	return nil
 }
 
@@ -79,7 +81,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, resp *svcsdk.Descri
 
 func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClusterInput) error {
 	meta.SetExternalName(cr, cr.Name)
-	obj.ClusterName = pointer.String(meta.GetExternalName(cr))
+	obj.ClusterName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.IamRoleArn = cr.Spec.ForProvider.IAMRoleARN
 	obj.ParameterGroupName = cr.Spec.ForProvider.ParameterGroupName
 	obj.SubnetGroupName = cr.Spec.ForProvider.SubnetGroupName
@@ -89,21 +91,21 @@ func preCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateClu
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.UpdateClusterInput) error {
-	obj.ClusterName = pointer.String(meta.GetExternalName(cr))
+	obj.ClusterName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.NotificationTopicArn = cr.Spec.ForProvider.NotificationTopicARN
 	if cr.Spec.ForProvider.ParameterGroupName != nil {
-		obj.ParameterGroupName = pointer.String(*cr.Spec.ForProvider.ParameterGroupName)
+		obj.ParameterGroupName = pointer.ToOrNilIfZeroValue(*cr.Spec.ForProvider.ParameterGroupName)
 	}
 	if cr.Spec.ForProvider.SecurityGroupIDs != nil {
 		for _, s := range cr.Spec.ForProvider.SecurityGroupIDs {
-			obj.SecurityGroupIds = append(obj.SecurityGroupIds, pointer.String(*s))
+			obj.SecurityGroupIds = append(obj.SecurityGroupIds, pointer.ToOrNilIfZeroValue(*s))
 		}
 	}
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterInput) (bool, error) {
-	obj.ClusterName = pointer.String(meta.GetExternalName(cr))
+	obj.ClusterName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -115,8 +117,8 @@ func lateInitialize(in *svcapitypes.ClusterParameters, out *svcsdk.DescribeClust
 			in.AvailabilityZones[i] = group.AvailabilityZone
 		}
 	}
-	in.ClusterEndpointEncryptionType = pointer.LateInitializeStringPtr(in.ClusterEndpointEncryptionType, c.ClusterEndpointEncryptionType)
-	in.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(in.PreferredMaintenanceWindow, c.PreferredMaintenanceWindow)
+	in.ClusterEndpointEncryptionType = pointer.LateInitialize(in.ClusterEndpointEncryptionType, c.ClusterEndpointEncryptionType)
+	in.PreferredMaintenanceWindow = pointer.LateInitialize(in.PreferredMaintenanceWindow, c.PreferredMaintenanceWindow)
 	if in.SecurityGroupIDs == nil {
 		in.SecurityGroupIDs = make([]*string, len(c.SecurityGroups))
 		for i, group := range c.SecurityGroups {

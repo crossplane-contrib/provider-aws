@@ -16,7 +16,7 @@ import (
 var (
 	// an arbitrary managed resource
 	effect      = "Allow"
-	statementID = pointer.String("1")
+	statementID = pointer.ToOrNilIfZeroValue("1")
 	boolCheck   = true
 	testID      = "id"
 	policy      = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":"*"}],"Version":"2012-10-17"}`
@@ -114,15 +114,15 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 				withPrincipal(&v1beta1.RepositoryPrincipal{
 					AWSPrincipals: []v1beta1.AWSPrincipal{
 						{
-							UserARN: pointer.String("arn:aws:iam::111122223333:userARN"),
+							UserARN: pointer.ToOrNilIfZeroValue("arn:aws:iam::111122223333:userARN"),
 						},
 						{
 							// Note: should be converted to full ARN when serialized
 							// to avoid needless updates.
-							AWSAccountID: pointer.String("111122223334"),
+							AWSAccountID: pointer.ToOrNilIfZeroValue("111122223334"),
 						},
 						{
-							IAMRoleARN: pointer.String("arn:aws:iam::111122223333:roleARN"),
+							IAMRoleARN: pointer.ToOrNilIfZeroValue("arn:aws:iam::111122223333:roleARN"),
 						},
 					},
 				}),
@@ -133,11 +133,11 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 						Conditions: []v1beta1.ConditionPair{
 							{
 								ConditionKey:         "test",
-								ConditionStringValue: pointer.String("testKey"),
+								ConditionStringValue: pointer.ToOrNilIfZeroValue("testKey"),
 							},
 							{
 								ConditionKey:         "test2",
-								ConditionStringValue: pointer.String("testKey2"),
+								ConditionStringValue: pointer.ToOrNilIfZeroValue("testKey2"),
 							},
 						},
 					},

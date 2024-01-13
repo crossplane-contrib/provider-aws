@@ -126,12 +126,6 @@ func withTags(tagMaps ...map[string]string) oidcProviderModifier {
 	}
 }
 
-func withGroupVersionKind() oidcProviderModifier {
-	return func(r *v1beta1.OpenIDConnectProvider) {
-		r.TypeMeta.SetGroupVersionKind(v1beta1.OpenIDConnectProviderGroupVersionKind)
-	}
-}
-
 func withClientIDList(l []string) oidcProviderModifier {
 	return func(r *svcapitypes.OpenIDConnectProvider) {
 		r.Spec.ForProvider.ClientIDList = l
@@ -798,85 +792,6 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type args struct {
-		cr   resource.Managed
-		kube client.Client
-	}
-	type want struct {
-		cr  *v1beta1.OpenIDConnectProvider
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"InvalidInput": {
-			args: args{
-				cr: unexpectedItem,
-			},
-			want: want{
-				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"Successful": {
-			args: args{
-				cr:   oidcProvider(withTags(map[string]string{"foo": "bar"})),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: oidcProvider(withTags(resource.GetExternalTags(oidcProvider()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"Check Tag values": {
-			args: args{
-				cr:   oidcProvider(withTags(map[string]string{"foo": "bar"}), withGroupVersionKind()),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: oidcProvider(withTags(resource.GetExternalTags(oidcProvider(withGroupVersionKind())), map[string]string{"foo": "bar"}), withGroupVersionKind()),
-			},
-		},
-		"NoChanges": {
-			args: args{
-				cr: oidcProvider(
-					withTags(map[string]string{"foo": "bar"}),
-					withGroupVersionKind()),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: oidcProvider(
-					withTags(resource.GetExternalTags(oidcProvider(withGroupVersionKind())), map[string]string{"foo": "bar"}),
-					withGroupVersionKind()),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr:   oidcProvider(),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, sortTags); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

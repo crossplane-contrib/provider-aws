@@ -24,8 +24,8 @@ func TestGenerateVPCObservation(t *testing.T) {
 		"AllFilled": {
 			in: ec2types.Vpc{
 				IsDefault: &boolFalse,
-				OwnerId:   pointer.String(vpcOwner),
-				VpcId:     pointer.String(vpcID),
+				OwnerId:   pointer.ToOrNilIfZeroValue(vpcOwner),
+				VpcId:     pointer.ToOrNilIfZeroValue(vpcID),
 				State:     ec2types.VpcStateAvailable,
 			},
 			out: v1beta1.VPCObservation{
@@ -38,7 +38,7 @@ func TestGenerateVPCObservation(t *testing.T) {
 		"NoOwner": {
 			in: ec2types.Vpc{
 				IsDefault: &boolFalse,
-				VpcId:     pointer.String(vpcID),
+				VpcId:     pointer.ToOrNilIfZeroValue(vpcID),
 				State:     ec2types.VpcStateAvailable,
 			},
 			out: v1beta1.VPCObservation{

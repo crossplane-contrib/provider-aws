@@ -1,0 +1,17 @@
+resources:
+  DeliveryStream:
+    fields:
+      DeliveryStreamStatus:
+        is_read_only: true
+        from:
+          operation: DescribeDeliveryStream
+          path: DeliveryStreamDescription.DeliveryStreamStatus
+      DeliveryStreamARN:
+        is_read_only: true
+        from:
+          operation: DescribeDeliveryStream
+          path: DeliveryStreamDescription.DeliveryStreamARN
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException

@@ -284,22 +284,22 @@ func SetupStage(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DescribeStageInput) error {
-	obj.StageName = pointer.String(meta.GetExternalName(cr))
+	obj.StageName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.CreateStageInput) error {
-	obj.StageName = pointer.String(meta.GetExternalName(cr))
+	obj.StageName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.UpdateStageInput) error {
-	obj.StageName = pointer.String(meta.GetExternalName(cr))
+	obj.StageName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) error {
-	obj.StageName = pointer.String(meta.GetExternalName(cr))
+	obj.StageName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 ```

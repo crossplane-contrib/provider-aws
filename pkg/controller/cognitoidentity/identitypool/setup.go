@@ -31,6 +31,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupIdentityPool adds a controller that reconciles IdentityPool.
@@ -56,6 +57,7 @@ func SetupIdentityPool(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -80,7 +82,7 @@ func SetupIdentityPool(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.DescribeIdentityPoolInput) error {
-	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -117,11 +119,11 @@ func postCreate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.Ide
 	}
 
 	meta.SetExternalName(cr, pointer.StringValue(obj.IdentityPoolId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.IdentityPool) error {
-	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.OpenIdConnectProviderARNs = cr.Spec.ForProvider.OpenIDConnectProviderARNs
 	if cr.Spec.ForProvider.CognitoIdentityProviders != nil {
 		providers := make([]*svcsdk.Provider, len(cr.Spec.ForProvider.CognitoIdentityProviders))
@@ -139,7 +141,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.Iden
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.IdentityPool, obj *svcsdk.DeleteIdentityPoolInput) (bool, error) {
-	obj.IdentityPoolId = pointer.String(meta.GetExternalName(cr))
+	obj.IdentityPoolId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

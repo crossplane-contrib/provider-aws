@@ -46,17 +46,20 @@ var (
 		  }
 		]
 	   }`
-	roleID   = "some Id"
-	roleName = "some name"
-	tagKey   = "key"
-	tagValue = "value"
+	roleID             = "some Id"
+	roleName           = "some name"
+	tagKey             = "key"
+	tagValue           = "value"
+	permissionBoundary = "arn:aws:iam::111111111111:policy/permission-boundary"
+	createDate         = time.Now()
+	region             = "us-east-1"
 )
 
 func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
 	o := &v1beta1.RoleParameters{
 		Description:              &description,
 		AssumeRolePolicyDocument: assumeRolePolicyDocument,
-		MaxSessionDuration:       pointer.Int32(1),
+		MaxSessionDuration:       pointer.ToIntAsInt32(1),
 	}
 
 	for _, f := range m {
@@ -78,7 +81,7 @@ func role(m ...func(*iamtypes.Role)) *iamtypes.Role {
 	o := &iamtypes.Role{
 		Description:              &description,
 		AssumeRolePolicyDocument: &assumeRolePolicyDocument,
-		MaxSessionDuration:       pointer.Int32(1),
+		MaxSessionDuration:       pointer.ToIntAsInt32(1),
 	}
 
 	for _, f := range m {
@@ -89,14 +92,24 @@ func role(m ...func(*iamtypes.Role)) *iamtypes.Role {
 }
 
 func addRoleOutputFields(r *iamtypes.Role) {
-	r.Arn = pointer.String(roleARN)
-	r.RoleId = pointer.String(roleID)
+	r.Arn = pointer.ToOrNilIfZeroValue(roleARN)
+	r.RoleId = pointer.ToOrNilIfZeroValue(roleID)
+	r.CreateDate = &createDate
+	r.RoleLastUsed = &iamtypes.RoleLastUsed{
+		LastUsedDate: &createDate,
+		Region:       &region,
+	}
 }
 
 func roleObservation(m ...func(*v1beta1.RoleExternalStatus)) *v1beta1.RoleExternalStatus {
 	o := &v1beta1.RoleExternalStatus{
-		ARN:    roleARN,
-		RoleID: roleID,
+		ARN:        roleARN,
+		RoleID:     roleID,
+		CreateDate: pointer.TimeToMetaTime(&createDate),
+		RoleLastUsed: &v1beta1.RoleLastUsed{
+			LastUsedDate: pointer.TimeToMetaTime(&createDate),
+			Region:       &region,
+		},
 	}
 
 	for _, f := range m {
@@ -114,10 +127,10 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 		"FilledInput": {
 			in: *roleParams(),
 			out: iam.CreateRoleInput{
-				RoleName:                 pointer.String(roleName),
+				RoleName:                 pointer.ToOrNilIfZeroValue(roleName),
 				Description:              &description,
-				AssumeRolePolicyDocument: pointer.String(assumeRolePolicyDocument),
-				MaxSessionDuration:       pointer.Int32(1),
+				AssumeRolePolicyDocument: pointer.ToOrNilIfZeroValue(assumeRolePolicyDocument),
+				MaxSessionDuration:       pointer.ToIntAsInt32(1),
 			},
 		},
 	}
@@ -250,18 +263,54 @@ func TestIsRoleUpToDate(t *testing.T) {
 				role: iamtypes.Role{
 					AssumeRolePolicyDocument: escapedPolicyJSON(),
 					Description:              &description,
-					MaxSessionDuration:       pointer.Int32(1),
-					Path:                     pointer.String("/"),
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
 					Tags: []iamtypes.Tag{{
-						Key:   pointer.String("key1"),
-						Value: pointer.String("value1"),
+						Key:   pointer.ToOrNilIfZeroValue("key1"),
+						Value: pointer.ToOrNilIfZeroValue("value1"),
 					}},
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
-					MaxSessionDuration:       pointer.Int32(1),
-					Path:                     pointer.String("/"),
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
+					Tags: []v1beta1.Tag{{
+						Key:   "key1",
+						Value: "value1",
+					}},
+				},
+			},
+			want:     true,
+			wantDiff: "",
+		},
+		"AWSInitializedFields": {
+			args: args{
+				role: iamtypes.Role{
+					AssumeRolePolicyDocument: escapedPolicyJSON(),
+					CreateDate:               &createDate,
+					Description:              &description,
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
+					PermissionsBoundary: &iamtypes.AttachedPermissionsBoundary{
+						PermissionsBoundaryArn:  &permissionBoundary,
+						PermissionsBoundaryType: "Policy",
+					},
+					RoleLastUsed: &iamtypes.RoleLastUsed{
+						LastUsedDate: &createDate,
+						Region:       pointer.ToOrNilIfZeroValue("us-east-1"),
+					},
+					Tags: []iamtypes.Tag{{
+						Key:   pointer.ToOrNilIfZeroValue("key1"),
+						Value: pointer.ToOrNilIfZeroValue("value1"),
+					}},
+				},
+				p: v1beta1.RoleParameters{
+					Description:              &description,
+					AssumeRolePolicyDocument: assumeRolePolicyDocument,
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
+					PermissionsBoundary:      &permissionBoundary,
 					Tags: []v1beta1.Tag{{
 						Key:   "key1",
 						Value: "value1",
@@ -276,14 +325,14 @@ func TestIsRoleUpToDate(t *testing.T) {
 				role: iamtypes.Role{
 					AssumeRolePolicyDocument: escapedPolicyJSON(),
 					Description:              &description,
-					MaxSessionDuration:       pointer.Int32(1),
-					Path:                     pointer.String("/"),
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument2,
-					MaxSessionDuration:       pointer.Int32(1),
-					Path:                     pointer.String("/"),
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
 				},
 			},
 			want: false,
@@ -297,18 +346,18 @@ observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%
 				role: iamtypes.Role{
 					AssumeRolePolicyDocument: &assumeRolePolicyDocument,
 					Description:              &description,
-					MaxSessionDuration:       pointer.Int32(1),
-					Path:                     pointer.String("//"),
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("//"),
 					Tags: []iamtypes.Tag{{
-						Key:   pointer.String("key1"),
-						Value: pointer.String("value1"),
+						Key:   pointer.ToOrNilIfZeroValue("key1"),
+						Value: pointer.ToOrNilIfZeroValue("value1"),
 					}},
 				},
 				p: v1beta1.RoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
-					MaxSessionDuration:       pointer.Int32(1),
-					Path:                     pointer.String("/"),
+					MaxSessionDuration:       pointer.ToIntAsInt32(1),
+					Path:                     pointer.ToOrNilIfZeroValue("/"),
 					Tags: []v1beta1.Tag{{
 						Key:   "key1",
 						Value: "value1",

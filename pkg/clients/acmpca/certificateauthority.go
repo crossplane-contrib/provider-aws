@@ -56,8 +56,8 @@ func GenerateCreateCertificateAuthorityInput(p *v1beta1.CertificateAuthorityPara
 	m.Tags = make([]types.Tag, len(p.Tags))
 	for i, val := range p.Tags {
 		m.Tags[i] = types.Tag{
-			Key:   pointer.String(val.Key),
-			Value: pointer.String(val.Value),
+			Key:   pointer.ToOrNilIfZeroValue(val.Key),
+			Value: pointer.ToOrNilIfZeroValue(val.Value),
 		}
 	}
 
@@ -69,18 +69,18 @@ func GenerateCertificateAuthorityConfiguration(p v1beta1.CertificateAuthorityCon
 
 	m := &types.CertificateAuthorityConfiguration{
 		Subject: &types.ASN1Subject{
-			CommonName:                 pointer.String(p.Subject.CommonName),
-			Country:                    pointer.String(p.Subject.Country),
+			CommonName:                 pointer.ToOrNilIfZeroValue(p.Subject.CommonName),
+			Country:                    pointer.ToOrNilIfZeroValue(p.Subject.Country),
 			DistinguishedNameQualifier: p.Subject.DistinguishedNameQualifier,
 			GenerationQualifier:        p.Subject.GenerationQualifier,
 			GivenName:                  p.Subject.GivenName,
 			Initials:                   p.Subject.Initials,
-			Locality:                   pointer.String(p.Subject.Locality),
-			Organization:               pointer.String(p.Subject.Organization),
-			OrganizationalUnit:         pointer.String(p.Subject.OrganizationalUnit),
+			Locality:                   pointer.ToOrNilIfZeroValue(p.Subject.Locality),
+			Organization:               pointer.ToOrNilIfZeroValue(p.Subject.Organization),
+			OrganizationalUnit:         pointer.ToOrNilIfZeroValue(p.Subject.OrganizationalUnit),
 			Pseudonym:                  p.Subject.Pseudonym,
 			SerialNumber:               p.Subject.SerialNumber,
-			State:                      pointer.String(p.Subject.State),
+			State:                      pointer.ToOrNilIfZeroValue(p.Subject.State),
 			Surname:                    p.Subject.Surname,
 			Title:                      p.Subject.Title,
 		},
@@ -124,7 +124,7 @@ func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParamete
 	// so these are the only variants we support in spec. The current status
 	// in the status.atProvider.
 	if aws.ToString(in.Status) == "" && (certificateAuthority.Status == types.CertificateAuthorityStatusActive || certificateAuthority.Status == types.CertificateAuthorityStatusDisabled) {
-		in.Status = pointer.String(string(certificateAuthority.Status))
+		in.Status = pointer.ToOrNilIfZeroValue(string(certificateAuthority.Status))
 	}
 
 	if certificateAuthority.RevocationConfiguration.CrlConfiguration.Enabled {

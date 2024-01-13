@@ -12,10 +12,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
+	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/convert"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
@@ -71,15 +71,24 @@ func GenerateCreateRoleInput(name string, p *v1beta1.RoleParameters) *iam.Create
 
 // GenerateRoleObservation is used to produce RoleExternalStatus from iamtypes.Role
 func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
-	return v1beta1.RoleExternalStatus{
-		ARN:    aws.ToString(role.Arn),
-		RoleID: aws.ToString(role.RoleId),
+	o := v1beta1.RoleExternalStatus{
+		ARN:        pointer.StringValue(role.Arn),
+		CreateDate: pointer.TimeToMetaTime(role.CreateDate),
+		RoleID:     pointer.StringValue(role.RoleId),
 	}
+
+	if role.RoleLastUsed != nil {
+		o.RoleLastUsed = &v1beta1.RoleLastUsed{
+			LastUsedDate: pointer.TimeToMetaTime(role.RoleLastUsed.LastUsedDate),
+			Region:       role.RoleLastUsed.Region,
+		}
+	}
+
+	return o
 }
 
 // GenerateRole assigns the in RoleParamters to role.
 func GenerateRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
-
 	if in.AssumeRolePolicyDocument != "" {
 		s, err := legacypolicy.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
 		if err != nil {
@@ -115,13 +124,13 @@ func LateInitializeRole(in *v1beta1.RoleParameters, role *iamtypes.Role) {
 	if role == nil {
 		return
 	}
-	in.AssumeRolePolicyDocument = pointer.LateInitializeString(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
-	in.Description = pointer.LateInitializeStringPtr(in.Description, role.Description)
-	in.MaxSessionDuration = pointer.LateInitializeInt32Ptr(in.MaxSessionDuration, role.MaxSessionDuration)
-	in.Path = pointer.LateInitializeStringPtr(in.Path, role.Path)
+	in.AssumeRolePolicyDocument = pointer.LateInitializeValueFromPtr(in.AssumeRolePolicyDocument, role.AssumeRolePolicyDocument)
+	in.Description = pointer.LateInitialize(in.Description, role.Description)
+	in.MaxSessionDuration = pointer.LateInitialize(in.MaxSessionDuration, role.MaxSessionDuration)
+	in.Path = pointer.LateInitialize(in.Path, role.Path)
 
 	if role.PermissionsBoundary != nil {
-		in.PermissionsBoundary = pointer.LateInitializeStringPtr(in.PermissionsBoundary, role.PermissionsBoundary.PermissionsBoundaryArn)
+		in.PermissionsBoundary = pointer.LateInitialize(in.PermissionsBoundary, role.PermissionsBoundary.PermissionsBoundaryArn)
 	}
 
 	if in.Tags == nil && role.Tags != nil {
@@ -169,16 +178,8 @@ func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
 func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, string, error) {
-	generated, err := copystructure.Copy(&observed)
-	if err != nil {
-		return true, "", errors.Wrap(err, errCheckUpToDate)
-	}
-	desired, ok := generated.(*iamtypes.Role)
-	if !ok {
-		return true, "", errors.New(errCheckUpToDate)
-	}
-
-	if err = GenerateRole(in, desired); err != nil {
+	desired := (&convert.ConverterImpl{}).DeepCopyAWSRole(&observed)
+	if err := GenerateRole(in, desired); err != nil {
 		return false, "", err
 	}
 
@@ -187,7 +188,10 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		return false, "", err
 	}
 
-	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument"), cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
+	diff := cmp.Diff(desired, &observed,
+		cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}),
+		cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument", "CreateDate", "PermissionsBoundary.PermissionsBoundaryType", "RoleLastUsed"),
+		cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
 	if diff == "" && policyUpToDate {
 		return true, diff, nil
 	}

@@ -105,7 +105,7 @@ func TestPolicyObserve(t *testing.T) {
 				Resource: []string{
 					"arn:aws:s3:::test-bucket-xxxx/*",
 				},
-				SID: pointer.String("DenyIncorrectEncryptionHeader"),
+				SID: pointer.ToOrNilIfZeroValue("DenyIncorrectEncryptionHeader"),
 			},
 			{
 				Action: []string{
@@ -117,7 +117,7 @@ func TestPolicyObserve(t *testing.T) {
 						Conditions: []common.ConditionPair{
 							{
 								ConditionKey:          "s3:x-amz-server-side-encryption",
-								ConditionBooleanValue: pointer.Bool(true),
+								ConditionBooleanValue: pointer.ToOrNilIfZeroValue(true),
 							},
 						},
 					},
@@ -129,7 +129,7 @@ func TestPolicyObserve(t *testing.T) {
 				Resource: []string{
 					"arn:aws:s3:::test-bucket-xxxx/*",
 				},
-				SID: pointer.String("DenyUnEncryptedObjectUploads"),
+				SID: pointer.ToOrNilIfZeroValue("DenyUnEncryptedObjectUploads"),
 			},
 			{
 				Action: []string{
@@ -153,7 +153,7 @@ func TestPolicyObserve(t *testing.T) {
 						Conditions: []common.ConditionPair{
 							{
 								ConditionKey:         "aws:PrincipalAccount",
-								ConditionStringValue: pointer.String("123456789012"),
+								ConditionStringValue: pointer.ToOrNilIfZeroValue("123456789012"),
 							},
 						},
 					},
@@ -166,7 +166,7 @@ func TestPolicyObserve(t *testing.T) {
 					"arn:aws:s3:::test-bucket-xxxx",
 					"arn:aws:s3:::test-bucket-xxxx/*",
 				},
-				SID: pointer.String("AllowTenantReadWrite"),
+				SID: pointer.ToOrNilIfZeroValue("AllowTenantReadWrite"),
 			},
 			{
 				Action: []string{
@@ -191,7 +191,7 @@ func TestPolicyObserve(t *testing.T) {
 					"arn:aws:s3:::test-bucket-xxxx",
 					"arn:aws:s3:::test-bucket-xxxx/*",
 				},
-				SID: pointer.String("AllowSSLRequestsOnly"),
+				SID: pointer.ToOrNilIfZeroValue("AllowSSLRequestsOnly"),
 			},
 		},
 	}

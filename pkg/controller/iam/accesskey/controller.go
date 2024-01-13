@@ -40,6 +40,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -60,6 +61,7 @@ func SetupAccessKey(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewAccessClient}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
@@ -134,7 +136,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	current := cr.Spec.ForProvider.Status
-	cr.Spec.ForProvider.Status = pointer.LateInitializeString(cr.Spec.ForProvider.Status, aws.String(string(accessKey.Status)))
+	cr.Spec.ForProvider.Status = pointer.LateInitializeValueFromPtr(cr.Spec.ForProvider.Status, aws.String(string(accessKey.Status)))
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        string(accessKey.Status) == cr.Spec.ForProvider.Status,

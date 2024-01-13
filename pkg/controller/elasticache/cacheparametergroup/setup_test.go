@@ -54,15 +54,15 @@ func withExternalName(value string) cacheParameterGroupModifier {
 
 func withCacheParameterGroupName(value string) cacheParameterGroupModifier {
 	return func(o *svcapitypes.CacheParameterGroup) {
-		o.Status.AtProvider.CacheParameterGroupName = pointer.String(value)
+		o.Status.AtProvider.CacheParameterGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withParameter(k, v string) cacheParameterGroupModifier {
 	return func(o *svcapitypes.CacheParameterGroup) {
 		o.Spec.ForProvider.ParameterNameValues = append(o.Spec.ForProvider.ParameterNameValues, svcapitypes.ParameterNameValue{
-			ParameterName:  pointer.String(k),
-			ParameterValue: pointer.String(v),
+			ParameterName:  pointer.ToOrNilIfZeroValue(k),
+			ParameterValue: pointer.ToOrNilIfZeroValue(v),
 		})
 	}
 }
@@ -101,24 +101,24 @@ func TestIsUpToDate(t *testing.T) {
 						cb(&svcsdk.DescribeCacheParametersOutput{
 							Parameters: []*svcsdk.Parameter{
 								{
-									Source:         pointer.String(svcsdk.SourceTypeUser),
-									ParameterName:  pointer.String("c"),
-									ParameterValue: pointer.String("val3"),
+									Source:         pointer.ToOrNilIfZeroValue(svcsdk.SourceTypeUser),
+									ParameterName:  pointer.ToOrNilIfZeroValue("c"),
+									ParameterValue: pointer.ToOrNilIfZeroValue("val3"),
 								},
 								{
-									Source:         pointer.String(svcsdk.SourceTypeUser),
-									ParameterName:  pointer.String("a"),
-									ParameterValue: pointer.String("val1"),
+									Source:         pointer.ToOrNilIfZeroValue(svcsdk.SourceTypeUser),
+									ParameterName:  pointer.ToOrNilIfZeroValue("a"),
+									ParameterValue: pointer.ToOrNilIfZeroValue("val1"),
 								},
 								{
-									Source:         pointer.String(svcsdk.SourceTypeUser),
-									ParameterName:  pointer.String("b"),
-									ParameterValue: pointer.String("val2"),
+									Source:         pointer.ToOrNilIfZeroValue(svcsdk.SourceTypeUser),
+									ParameterName:  pointer.ToOrNilIfZeroValue("b"),
+									ParameterValue: pointer.ToOrNilIfZeroValue("val2"),
 								},
 								{
-									Source:         pointer.String(svcsdk.SourceTypeCacheParameterGroup),
-									ParameterName:  pointer.String("as-default"),
-									ParameterValue: pointer.String("untouched"),
+									Source:         pointer.ToOrNilIfZeroValue(svcsdk.SourceTypeCacheParameterGroup),
+									ParameterName:  pointer.ToOrNilIfZeroValue("as-default"),
+									ParameterValue: pointer.ToOrNilIfZeroValue("untouched"),
 								},
 							},
 						}, true)
@@ -144,14 +144,14 @@ func TestIsUpToDate(t *testing.T) {
 						cb(&svcsdk.DescribeCacheParametersOutput{
 							Parameters: []*svcsdk.Parameter{
 								{
-									Source:         pointer.String(svcsdk.SourceTypeUser),
-									ParameterName:  pointer.String("a"),
-									ParameterValue: pointer.String("valx"),
+									Source:         pointer.ToOrNilIfZeroValue(svcsdk.SourceTypeUser),
+									ParameterName:  pointer.ToOrNilIfZeroValue("a"),
+									ParameterValue: pointer.ToOrNilIfZeroValue("valx"),
 								},
 								{
-									Source:         pointer.String(svcsdk.SourceTypeUser),
-									ParameterName:  pointer.String("b"),
-									ParameterValue: pointer.String("val2"),
+									Source:         pointer.ToOrNilIfZeroValue(svcsdk.SourceTypeUser),
+									ParameterName:  pointer.ToOrNilIfZeroValue("b"),
+									ParameterValue: pointer.ToOrNilIfZeroValue("val2"),
 								},
 							},
 						}, true)

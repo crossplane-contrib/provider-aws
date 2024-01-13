@@ -1,7 +1,11 @@
 ignore:
+  field_paths:
+    - CreateGrantInput.KeyId
+    # - RevokeGrantInput.KeyId
+    - CreateGrantInput.DryRun
+    # - RevokeGrantInput.DryRun
   resource_names:
     - CustomKeyStore
-    - Grant
     - Alias
 resources:
   Key:

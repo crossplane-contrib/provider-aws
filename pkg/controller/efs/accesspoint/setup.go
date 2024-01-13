@@ -1,6 +1,8 @@
 package accesspoint
 
 import (
+	"context"
+
 	svcsdk "github.com/aws/aws-sdk-go/service/efs"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -8,12 +10,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"golang.org/x/net/context"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/efs/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupAccessPoint adds a controller that reconciles AccessPoint.
@@ -30,6 +32,7 @@ func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -54,7 +57,7 @@ func SetupAccessPoint(mgr ctrl.Manager, o controller.Options) error {
 
 func preObserve(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.DescribeAccessPointsInput) error {
 	obj.FileSystemId = nil
-	obj.AccessPointId = pointer.String(meta.GetExternalName(cr))
+	obj.AccessPointId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -77,7 +80,7 @@ func postObserve(_ context.Context, cr *svcapitypes.AccessPoint, resp *svcsdk.De
 
 func preCreate(_ context.Context, cr *svcapitypes.AccessPoint, obj *svcsdk.CreateAccessPointInput) error {
 	obj.FileSystemId = cr.Spec.ForProvider.FileSystemID
-	obj.ClientToken = pointer.String(string(cr.UID))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	return nil
 }
 

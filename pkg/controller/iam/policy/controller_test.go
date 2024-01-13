@@ -64,9 +64,9 @@ var (
 	errBoom = errors.New("boom")
 
 	getCallerIdentityOutput = &sts.GetCallerIdentityOutput{
-		Account:        pointer.String("123456789012"),
-		Arn:            pointer.String("arn:aws:iam::123456789012:user/DevAdmin"),
-		UserId:         pointer.String("AIDASAMPLEUSERID"),
+		Account:        pointer.ToOrNilIfZeroValue("123456789012"),
+		Arn:            pointer.ToOrNilIfZeroValue("arn:aws:iam::123456789012:user/DevAdmin"),
+		UserId:         pointer.ToOrNilIfZeroValue("AIDASAMPLEUSERID"),
 		ResultMetadata: middleware.Metadata{},
 	}
 
@@ -131,7 +131,7 @@ func withSpec(spec v1beta1.PolicyParameters) policyModifier {
 
 func withPath(path string) policyModifier {
 	return func(r *v1beta1.Policy) {
-		r.Spec.ForProvider.Path = pointer.String(path)
+		r.Spec.ForProvider.Path = pointer.ToOrNilIfZeroValue(path)
 	}
 }
 
@@ -144,12 +144,6 @@ func withTags(tagMaps ...map[string]string) policyModifier {
 	}
 	return func(r *v1beta1.Policy) {
 		r.Spec.ForProvider.Tags = tagList
-	}
-}
-
-func withGroupVersionKind() policyModifier {
-	return func(iamRole *v1beta1.Policy) {
-		iamRole.TypeMeta.SetGroupVersionKind(v1beta1.PolicyGroupVersionKind)
 	}
 }
 
@@ -974,95 +968,6 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type args struct {
-		cr   resource.Managed
-		kube client.Client
-	}
-	type want struct {
-		cr  *v1beta1.Policy
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Unexpected": {
-			args: args{
-				cr:   unexpectedItem,
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"Successful": {
-			args: args{
-				cr:   policy(withTags(map[string]string{"foo": "bar"})),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: policy(withTags(resource.GetExternalTags(policy()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"DefaultTags": {
-			args: args{
-				cr:   policy(withTags(map[string]string{"foo": "bar"}), withGroupVersionKind()),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: policy(withTags(resource.GetExternalTags(policy(withGroupVersionKind())), map[string]string{"foo": "bar"}), withGroupVersionKind()),
-			},
-		},
-		"UpdateDefaultTags": {
-			args: args{
-				cr:   policy(withTags(map[string]string{resource.ExternalResourceTagKeyKind: "bar"}), withGroupVersionKind()),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: policy(withTags(resource.GetExternalTags(policy(withGroupVersionKind()))), withGroupVersionKind()),
-			},
-		},
-		"NoChanges": {
-			args: args{
-				cr: policy(
-					withTags(resource.GetExternalTags(policy(withGroupVersionKind())), map[string]string{"foo": "bar"}),
-					withGroupVersionKind()),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: policy(
-					withTags(resource.GetExternalTags(policy(withGroupVersionKind())), map[string]string{"foo": "bar"}),
-					withGroupVersionKind()),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr:   policy(),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

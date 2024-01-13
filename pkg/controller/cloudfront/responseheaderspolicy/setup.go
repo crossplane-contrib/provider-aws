@@ -34,6 +34,7 @@ import (
 	cloudfront "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupResponseHeadersPolicy adds a controller that reconciles ResponseHeadersPolicy.
@@ -46,6 +47,7 @@ func SetupResponseHeadersPolicy(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{
 			kube: mgr.GetClient(),
 			opts: []option{
@@ -86,30 +88,30 @@ func SetupResponseHeadersPolicy(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.ResponseHeadersPolicy, crhpi *svcsdk.CreateResponseHeadersPolicyInput) error {
-	crhpi.ResponseHeadersPolicyConfig.Name = pointer.String(cr.Name)
+	crhpi.ResponseHeadersPolicyConfig.Name = pointer.ToOrNilIfZeroValue(cr.Name)
 
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CustomHeadersConfig != nil {
 		crhpi.ResponseHeadersPolicyConfig.CustomHeadersConfig.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CustomHeadersConfig.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CustomHeadersConfig.Items))
 	}
 
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig != nil && cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowHeaders != nil {
 		crhpi.ResponseHeadersPolicyConfig.CorsConfig.AccessControlAllowHeaders.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowHeaders.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowHeaders.Items))
 	}
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig != nil && cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowMethods != nil {
 		crhpi.ResponseHeadersPolicyConfig.CorsConfig.AccessControlAllowMethods.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowMethods.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowMethods.Items))
 	}
 
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig != nil && cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowOrigins != nil {
 		crhpi.ResponseHeadersPolicyConfig.CorsConfig.AccessControlAllowOrigins.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowOrigins.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowOrigins.Items))
 	}
 
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig != nil && cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlExposeHeaders != nil {
 		crhpi.ResponseHeadersPolicyConfig.CorsConfig.AccessControlExposeHeaders.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlExposeHeaders.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlExposeHeaders.Items))
 	}
 
 	return nil
@@ -127,7 +129,7 @@ func postCreate(_ context.Context, cr *svcapitypes.ResponseHeadersPolicy, crhpo 
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.ResponseHeadersPolicy, grhpi *svcsdk.GetResponseHeadersPolicyInput) error {
-	grhpi.Id = pointer.String(meta.GetExternalName(cr))
+	grhpi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -142,31 +144,31 @@ func postObserve(_ context.Context, cr *svcapitypes.ResponseHeadersPolicy, grhpo
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.ResponseHeadersPolicy, urhpi *svcsdk.UpdateResponseHeadersPolicyInput) error {
-	urhpi.Id = pointer.String(meta.GetExternalName(cr))
+	urhpi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	urhpi.SetIfMatch(pointer.StringValue(cr.Status.AtProvider.ETag))
 
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CustomHeadersConfig != nil {
 		urhpi.ResponseHeadersPolicyConfig.CustomHeadersConfig.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CustomHeadersConfig.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CustomHeadersConfig.Items))
 	}
 
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig != nil && cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowHeaders != nil {
 		urhpi.ResponseHeadersPolicyConfig.CorsConfig.AccessControlAllowHeaders.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowHeaders.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowHeaders.Items))
 	}
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig != nil && cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowMethods != nil {
 		urhpi.ResponseHeadersPolicyConfig.CorsConfig.AccessControlAllowMethods.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowMethods.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowMethods.Items))
 	}
 
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig != nil && cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowOrigins != nil {
 		urhpi.ResponseHeadersPolicyConfig.CorsConfig.AccessControlAllowOrigins.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowOrigins.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlAllowOrigins.Items))
 	}
 
 	if cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig != nil && cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlExposeHeaders != nil {
 		urhpi.ResponseHeadersPolicyConfig.CorsConfig.AccessControlExposeHeaders.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlExposeHeaders.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.ResponseHeadersPolicyConfig.CORSConfig.AccessControlExposeHeaders.Items))
 	}
 	return nil
 }
@@ -186,7 +188,7 @@ type deleter struct {
 }
 
 func (d *deleter) preDelete(_ context.Context, cr *svcapitypes.ResponseHeadersPolicy, drhpi *svcsdk.DeleteResponseHeadersPolicyInput) (bool, error) {
-	drhpi.Id = pointer.String(meta.GetExternalName(cr))
+	drhpi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	drhpi.SetIfMatch(pointer.StringValue(cr.Status.AtProvider.ETag))
 	return false, nil
 }

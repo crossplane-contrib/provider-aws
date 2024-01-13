@@ -42,6 +42,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -74,6 +75,7 @@ func SetupConnection(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -103,12 +105,12 @@ type hooks struct {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.DeleteConnectionInput) (bool, error) {
-	obj.ConnectionName = pointer.String(meta.GetExternalName(cr))
+	obj.ConnectionName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.GetConnectionInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -125,13 +127,6 @@ func postObserve(ctx context.Context, cr *svcapitypes.Connection, obj *svcsdk.Ge
 }
 
 func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Connection, resp *svcsdk.GetConnectionOutput) (bool, string, error) {
-
-	// no checks needed if user deletes the resource
-	// ensures that an error (e.g. missing ARN) here does not prevent deletion
-	if meta.WasDeleted(cr) {
-		return true, "", nil
-	}
-
 	currentParams := customGenerateConnection(resp).Spec.ForProvider
 
 	if diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
@@ -153,13 +148,13 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Connection, resp *
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.UpdateConnectionInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	if cr.Spec.ForProvider.CustomConnectionInput != nil {
 		obj.ConnectionInput = &svcsdk.ConnectionInput{
-			Name:                 pointer.String(meta.GetExternalName(cr)),
+			Name:                 pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			ConnectionProperties: cr.Spec.ForProvider.CustomConnectionInput.ConnectionProperties,
-			ConnectionType:       pointer.String(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
+			ConnectionType:       pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
 			Description:          cr.Spec.ForProvider.CustomConnectionInput.Description,
 			MatchCriteria:        cr.Spec.ForProvider.CustomConnectionInput.MatchCriteria,
 		}
@@ -196,9 +191,9 @@ func preCreate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.Create
 
 	if cr.Spec.ForProvider.CustomConnectionInput != nil {
 		obj.ConnectionInput = &svcsdk.ConnectionInput{
-			Name:                 pointer.String(meta.GetExternalName(cr)),
+			Name:                 pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			ConnectionProperties: cr.Spec.ForProvider.CustomConnectionInput.ConnectionProperties,
-			ConnectionType:       pointer.String(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
+			ConnectionType:       pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.CustomConnectionInput.ConnectionType),
 			Description:          cr.Spec.ForProvider.CustomConnectionInput.Description,
 			MatchCriteria:        cr.Spec.ForProvider.CustomConnectionInput.MatchCriteria,
 		}

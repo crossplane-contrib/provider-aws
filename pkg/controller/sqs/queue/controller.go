@@ -40,6 +40,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -52,6 +53,7 @@ const (
 	errGetQueueURLFailed        = "cannot get Queue URL"
 	errListQueueTagsFailed      = "cannot list Queue tags"
 	errUpdateFailed             = "failed to update the Queue resource"
+	errIsUpToDate               = "cannot check if resource is up to date"
 )
 
 // SetupQueue adds a controller that reconciles Queue.
@@ -64,6 +66,7 @@ func SetupQueue(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sqs.NewClient}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -150,10 +153,15 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = sqs.GenerateQueueObservation(*getURLOutput.QueueUrl, resAttributes.Attributes)
+	isUpToDate, diff, err := sqs.IsUpToDate(cr.Spec.ForProvider, resAttributes.Attributes, resTags.Tags)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errIsUpToDate)
+	}
 
 	return managed.ExternalObservation{
 		ResourceExists:    true,
-		ResourceUpToDate:  sqs.IsUpToDate(cr.Spec.ForProvider, resAttributes.Attributes, resTags.Tags),
+		ResourceUpToDate:  isUpToDate,
+		Diff:              diff,
 		ConnectionDetails: sqs.GetConnectionDetails(*cr),
 	}, nil
 }

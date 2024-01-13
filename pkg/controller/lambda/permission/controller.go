@@ -42,6 +42,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -63,8 +64,9 @@ func SetupPermission(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newLambdaClientFn: svcsdk.NewFromConfig}),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &externalNameGenerator{kube: mgr.GetClient()}),
+		managed.WithInitializers(&externalNameGenerator{kube: mgr.GetClient()}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -194,10 +196,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.PermissionParameters) {
-	spec.EventSourceToken = pointer.LateInitializeStringPtr(spec.EventSourceToken, current.EventSourceToken)
-	spec.PrincipalOrgID = pointer.LateInitializeStringPtr(spec.PrincipalOrgID, current.PrincipalOrgID)
-	spec.SourceAccount = pointer.LateInitializeStringPtr(spec.SourceAccount, current.SourceAccount)
-	spec.SourceArn = pointer.LateInitializeStringPtr(spec.SourceArn, current.SourceArn)
+	spec.EventSourceToken = pointer.LateInitialize(spec.EventSourceToken, current.EventSourceToken)
+	spec.PrincipalOrgID = pointer.LateInitialize(spec.PrincipalOrgID, current.PrincipalOrgID)
+	spec.SourceAccount = pointer.LateInitialize(spec.SourceAccount, current.SourceAccount)
+	spec.SourceArn = pointer.LateInitialize(spec.SourceArn, current.SourceArn)
 }
 
 // IsErrorNotFound helper function to test for ResourceNotFoundException error.

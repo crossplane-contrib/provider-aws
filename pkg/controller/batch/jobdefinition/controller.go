@@ -42,6 +42,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -63,8 +64,9 @@ func SetupJobDefinition(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &externalNameGenerator{kube: mgr.GetClient()}),
+		managed.WithInitializers(&externalNameGenerator{kube: mgr.GetClient()}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -117,7 +119,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	resp, err := e.client.DescribeJobDefinitionsWithContext(ctx, &svcsdk.DescribeJobDefinitionsInput{
 		JobDefinitionName: &cr.Name,
-		Status:            pointer.String("ACTIVE"), // to not get an older, inactive version/revision before we finish create!
+		Status:            pointer.ToOrNilIfZeroValue("ACTIVE"), // to not get an older, inactive version/revision before we finish create!
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDescribeJobDefinition)
@@ -186,7 +188,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotBatchJobDefinition)
 	}
 
-	if cr.Status.AtProvider.Status == pointer.String("INACTIVE") {
+	if cr.Status.AtProvider.Status == pointer.ToOrNilIfZeroValue("INACTIVE") {
 		return nil
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -196,13 +198,13 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.JobDefinitionParameters) {
-	// spec.PlatformCapabilities = pointer.LateInitializeStringPtrSlice(spec.PlatformCapabilities, current.PlatformCapabilities)
-	// spec.PropagateTags = pointer.LateInitializeBoolPtr(spec.PropagateTags, current.PropagateTags)
+	// spec.PlatformCapabilities = pointer.LateInitializeSlice(spec.PlatformCapabilities, current.PlatformCapabilities)
+	// spec.PropagateTags = pointer.LateInitialize(spec.PropagateTags, current.PropagateTags)
 	// ^ doc hints default value, however these fields (also in AWS Console) stay empty...
 
 	if current.ContainerProperties != nil {
 
-		if cmp.Equal(spec.PlatformCapabilities, []*string{pointer.String(svcsdk.PlatformCapabilityFargate)}) && spec.ContainerProperties.FargatePlatformConfiguration == nil {
+		if cmp.Equal(spec.PlatformCapabilities, []*string{pointer.ToOrNilIfZeroValue(svcsdk.PlatformCapabilityFargate)}) && spec.ContainerProperties.FargatePlatformConfiguration == nil {
 			spec.ContainerProperties.FargatePlatformConfiguration = &svcapitypes.FargatePlatformConfiguration{PlatformVersion: current.ContainerProperties.FargatePlatformConfiguration.PlatformVersion}
 		}
 	}

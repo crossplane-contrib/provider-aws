@@ -63,11 +63,11 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 				},
 				Filter: &v1beta1.LifecycleRuleFilter{
 					And: &v1beta1.LifecycleRuleAndOperator{
-						Prefix: pointer.String(prefix),
+						Prefix: pointer.ToOrNilIfZeroValue(prefix),
 						Tags:   tags,
 					},
 				},
-				ID:                          pointer.String(id),
+				ID:                          pointer.ToOrNilIfZeroValue(id),
 				NoncurrentVersionExpiration: &v1beta1.NoncurrentVersionExpiration{NoncurrentDays: days},
 				NoncurrentVersionTransitions: []v1beta1.NoncurrentVersionTransition{{
 					NoncurrentDays: days,
@@ -96,11 +96,11 @@ func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 				},
 				Filter: &s3types.LifecycleRuleFilterMemberAnd{
 					Value: s3types.LifecycleRuleAndOperator{
-						Prefix: pointer.String(prefix),
+						Prefix: pointer.ToOrNilIfZeroValue(prefix),
 						Tags:   awsTags,
 					},
 				},
-				ID:                          pointer.String(id),
+				ID:                          pointer.ToOrNilIfZeroValue(id),
 				NoncurrentVersionExpiration: &s3types.NoncurrentVersionExpiration{NoncurrentDays: days},
 				NoncurrentVersionTransitions: []s3types.NoncurrentVersionTransition{{
 					NoncurrentDays: days,

@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupHTTPNamespace adds a controller that reconciles HTTPNamespace.
@@ -59,6 +60,7 @@ func SetupHTTPNamespace(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
@@ -88,7 +90,7 @@ type hooks struct {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {
-	obj.CreatorRequestId = pointer.String(string(cr.UID))
+	obj.CreatorRequestId = pointer.ToOrNilIfZeroValue(string(cr.UID))
 
 	return nil
 }
@@ -100,8 +102,8 @@ func postCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, resp *svcsdk.C
 
 func preUpdate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.UpdateHttpNamespaceInput) error {
 
-	obj.UpdaterRequestId = pointer.String(string(cr.UID))
-	obj.Id = pointer.String(meta.GetExternalName(cr))
+	obj.UpdaterRequestId = pointer.ToOrNilIfZeroValue(string(cr.UID))
+	obj.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	obj.Namespace = &svcsdk.HttpNamespaceChange{
 		Description: cr.GetDescription(),

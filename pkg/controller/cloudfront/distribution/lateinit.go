@@ -50,14 +50,14 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 
 	// "CallerReference" is not exposed to users from the console, therefore we need to derive it from the AWS output
 	// during import scenarios
-	in.CallerReference = pointer.LateInitializeStringPtr(in.CallerReference, from.CallerReference)
+	in.CallerReference = pointer.LateInitialize(in.CallerReference, from.CallerReference)
 
 	if from.Aliases != nil {
 		if in.Aliases == nil {
 			in.Aliases = &svcapitypes.Aliases{}
 		}
 
-		in.Aliases.Items = pointer.LateInitializeStringPtrSlice(in.Aliases.Items, from.Aliases.Items)
+		in.Aliases.Items = pointer.LateInitializeSlice(in.Aliases.Items, from.Aliases.Items)
 	}
 
 	if from.CacheBehaviors != nil {
@@ -68,7 +68,7 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 		lateInitCacheBehaviors(in.CacheBehaviors, from.CacheBehaviors)
 	}
 
-	in.Comment = pointer.LateInitializeStringPtr(in.Comment, from.Comment)
+	in.Comment = pointer.LateInitialize(in.Comment, from.Comment)
 
 	if from.CustomErrorResponses != nil {
 		if in.CustomErrorResponses == nil {
@@ -86,19 +86,19 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 		lateInitDefaultCacheBehavior(in.DefaultCacheBehavior, from.DefaultCacheBehavior)
 	}
 
-	in.DefaultRootObject = pointer.LateInitializeStringPtr(in.DefaultRootObject, from.DefaultRootObject)
-	in.Enabled = pointer.LateInitializeBoolPtr(in.Enabled, from.Enabled)
-	in.HTTPVersion = pointer.LateInitializeStringPtr(in.HTTPVersion, from.HttpVersion)
-	in.IsIPV6Enabled = pointer.LateInitializeBoolPtr(in.IsIPV6Enabled, from.IsIPV6Enabled)
+	in.DefaultRootObject = pointer.LateInitialize(in.DefaultRootObject, from.DefaultRootObject)
+	in.Enabled = pointer.LateInitialize(in.Enabled, from.Enabled)
+	in.HTTPVersion = pointer.LateInitialize(in.HTTPVersion, from.HttpVersion)
+	in.IsIPV6Enabled = pointer.LateInitialize(in.IsIPV6Enabled, from.IsIPV6Enabled)
 
 	if from.Logging != nil {
 		if in.Logging == nil {
 			in.Logging = &svcapitypes.LoggingConfig{}
 		}
-		in.Logging.Bucket = pointer.LateInitializeStringPtr(in.Logging.Bucket, from.Logging.Bucket)
-		in.Logging.Enabled = pointer.LateInitializeBoolPtr(in.Logging.Enabled, from.Logging.Enabled)
-		in.Logging.IncludeCookies = pointer.LateInitializeBoolPtr(in.Logging.IncludeCookies, from.Logging.IncludeCookies)
-		in.Logging.Prefix = pointer.LateInitializeStringPtr(in.Logging.Prefix, from.Logging.Prefix)
+		in.Logging.Bucket = pointer.LateInitialize(in.Logging.Bucket, from.Logging.Bucket)
+		in.Logging.Enabled = pointer.LateInitialize(in.Logging.Enabled, from.Logging.Enabled)
+		in.Logging.IncludeCookies = pointer.LateInitialize(in.Logging.IncludeCookies, from.Logging.IncludeCookies)
+		in.Logging.Prefix = pointer.LateInitialize(in.Logging.Prefix, from.Logging.Prefix)
 	}
 
 	if from.OriginGroups != nil {
@@ -117,7 +117,7 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 		lateInitOrigins(in.Origins, from.Origins)
 	}
 
-	in.PriceClass = pointer.LateInitializeStringPtr(in.PriceClass, from.PriceClass)
+	in.PriceClass = pointer.LateInitialize(in.PriceClass, from.PriceClass)
 
 	if from.Restrictions != nil {
 		if in.Restrictions == nil {
@@ -129,8 +129,8 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 				in.Restrictions.GeoRestriction = &svcapitypes.GeoRestriction{}
 			}
 
-			in.Restrictions.GeoRestriction.Items = pointer.LateInitializeStringPtrSlice(in.Restrictions.GeoRestriction.Items, from.Restrictions.GeoRestriction.Items)
-			in.Restrictions.GeoRestriction.RestrictionType = pointer.LateInitializeStringPtr(in.Restrictions.GeoRestriction.RestrictionType, from.Restrictions.GeoRestriction.RestrictionType)
+			in.Restrictions.GeoRestriction.Items = pointer.LateInitializeSlice(in.Restrictions.GeoRestriction.Items, from.Restrictions.GeoRestriction.Items)
+			in.Restrictions.GeoRestriction.RestrictionType = pointer.LateInitialize(in.Restrictions.GeoRestriction.RestrictionType, from.Restrictions.GeoRestriction.RestrictionType)
 		}
 	}
 	if from.ViewerCertificate != nil {
@@ -138,16 +138,16 @@ func lateInitialize(dp *svcapitypes.DistributionParameters, gdo *svcsdk.GetDistr
 			in.ViewerCertificate = &svcapitypes.ViewerCertificate{}
 		}
 
-		in.ViewerCertificate.ACMCertificateARN = pointer.LateInitializeStringPtr(in.ViewerCertificate.ACMCertificateARN, from.ViewerCertificate.ACMCertificateArn)
-		in.ViewerCertificate.Certificate = pointer.LateInitializeStringPtr(in.ViewerCertificate.Certificate, from.ViewerCertificate.Certificate)
-		in.ViewerCertificate.CertificateSource = pointer.LateInitializeStringPtr(in.ViewerCertificate.CertificateSource, from.ViewerCertificate.CertificateSource)
-		in.ViewerCertificate.CloudFrontDefaultCertificate = pointer.LateInitializeBoolPtr(in.ViewerCertificate.CloudFrontDefaultCertificate, from.ViewerCertificate.CloudFrontDefaultCertificate)
-		in.ViewerCertificate.IAMCertificateID = pointer.LateInitializeStringPtr(in.ViewerCertificate.IAMCertificateID, from.ViewerCertificate.IAMCertificateId)
-		in.ViewerCertificate.MinimumProtocolVersion = pointer.LateInitializeStringPtr(in.ViewerCertificate.MinimumProtocolVersion, from.ViewerCertificate.MinimumProtocolVersion)
-		in.ViewerCertificate.SSLSupportMethod = pointer.LateInitializeStringPtr(in.ViewerCertificate.SSLSupportMethod, from.ViewerCertificate.SSLSupportMethod)
+		in.ViewerCertificate.ACMCertificateARN = pointer.LateInitialize(in.ViewerCertificate.ACMCertificateARN, from.ViewerCertificate.ACMCertificateArn)
+		in.ViewerCertificate.Certificate = pointer.LateInitialize(in.ViewerCertificate.Certificate, from.ViewerCertificate.Certificate)
+		in.ViewerCertificate.CertificateSource = pointer.LateInitialize(in.ViewerCertificate.CertificateSource, from.ViewerCertificate.CertificateSource)
+		in.ViewerCertificate.CloudFrontDefaultCertificate = pointer.LateInitialize(in.ViewerCertificate.CloudFrontDefaultCertificate, from.ViewerCertificate.CloudFrontDefaultCertificate)
+		in.ViewerCertificate.IAMCertificateID = pointer.LateInitialize(in.ViewerCertificate.IAMCertificateID, from.ViewerCertificate.IAMCertificateId)
+		in.ViewerCertificate.MinimumProtocolVersion = pointer.LateInitialize(in.ViewerCertificate.MinimumProtocolVersion, from.ViewerCertificate.MinimumProtocolVersion)
+		in.ViewerCertificate.SSLSupportMethod = pointer.LateInitialize(in.ViewerCertificate.SSLSupportMethod, from.ViewerCertificate.SSLSupportMethod)
 	}
 
-	in.WebACLID = pointer.LateInitializeStringPtr(in.WebACLID, from.WebACLId)
+	in.WebACLID = pointer.LateInitialize(in.WebACLID, from.WebACLId)
 
 	return nil
 }
@@ -158,21 +158,21 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 			in.AllowedMethods = &svcapitypes.AllowedMethods{}
 		}
 
-		in.AllowedMethods.Items = pointer.LateInitializeStringPtrSlice(in.AllowedMethods.Items, from.AllowedMethods.Items)
+		in.AllowedMethods.Items = pointer.LateInitializeSlice(in.AllowedMethods.Items, from.AllowedMethods.Items)
 
 		if from.AllowedMethods.CachedMethods != nil {
 			if in.AllowedMethods.CachedMethods == nil {
 				in.AllowedMethods.CachedMethods = &svcapitypes.CachedMethods{}
 			}
 
-			in.AllowedMethods.CachedMethods.Items = pointer.LateInitializeStringPtrSlice(in.AllowedMethods.CachedMethods.Items, from.AllowedMethods.CachedMethods.Items)
+			in.AllowedMethods.CachedMethods.Items = pointer.LateInitializeSlice(in.AllowedMethods.CachedMethods.Items, from.AllowedMethods.CachedMethods.Items)
 		}
 	}
 
-	in.CachePolicyID = pointer.LateInitializeStringPtr(in.CachePolicyID, from.CachePolicyId)
-	in.Compress = pointer.LateInitializeBoolPtr(in.Compress, from.Compress)
-	in.DefaultTTL = pointer.LateInitializeInt64Ptr(in.DefaultTTL, from.DefaultTTL)
-	in.FieldLevelEncryptionID = pointer.LateInitializeStringPtr(in.FieldLevelEncryptionID, from.FieldLevelEncryptionId)
+	in.CachePolicyID = pointer.LateInitialize(in.CachePolicyID, from.CachePolicyId)
+	in.Compress = pointer.LateInitialize(in.Compress, from.Compress)
+	in.DefaultTTL = pointer.LateInitialize(in.DefaultTTL, from.DefaultTTL)
+	in.FieldLevelEncryptionID = pointer.LateInitialize(in.FieldLevelEncryptionID, from.FieldLevelEncryptionId)
 
 	if from.ForwardedValues != nil {
 		if in.ForwardedValues == nil {
@@ -184,14 +184,14 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 				in.ForwardedValues.Cookies = &svcapitypes.CookiePreference{}
 			}
 
-			in.ForwardedValues.Cookies.Forward = pointer.LateInitializeStringPtr(in.ForwardedValues.Cookies.Forward, from.ForwardedValues.Cookies.Forward)
+			in.ForwardedValues.Cookies.Forward = pointer.LateInitialize(in.ForwardedValues.Cookies.Forward, from.ForwardedValues.Cookies.Forward)
 
 			if from.ForwardedValues.Cookies.WhitelistedNames != nil {
 				if in.ForwardedValues.Cookies.WhitelistedNames == nil {
 					in.ForwardedValues.Cookies.WhitelistedNames = &svcapitypes.CookieNames{}
 				}
 
-				in.ForwardedValues.Cookies.WhitelistedNames.Items = pointer.LateInitializeStringPtrSlice(in.ForwardedValues.Cookies.WhitelistedNames.Items, from.ForwardedValues.Cookies.WhitelistedNames.Items)
+				in.ForwardedValues.Cookies.WhitelistedNames.Items = pointer.LateInitializeSlice(in.ForwardedValues.Cookies.WhitelistedNames.Items, from.ForwardedValues.Cookies.WhitelistedNames.Items)
 			}
 		}
 
@@ -200,17 +200,17 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 				in.ForwardedValues.Headers = &svcapitypes.Headers{}
 			}
 
-			in.ForwardedValues.Headers.Items = pointer.LateInitializeStringPtrSlice(in.ForwardedValues.Headers.Items, from.ForwardedValues.Headers.Items)
+			in.ForwardedValues.Headers.Items = pointer.LateInitializeSlice(in.ForwardedValues.Headers.Items, from.ForwardedValues.Headers.Items)
 		}
 
-		in.ForwardedValues.QueryString = pointer.LateInitializeBoolPtr(in.ForwardedValues.QueryString, from.ForwardedValues.QueryString)
+		in.ForwardedValues.QueryString = pointer.LateInitialize(in.ForwardedValues.QueryString, from.ForwardedValues.QueryString)
 
 		if from.ForwardedValues.QueryStringCacheKeys != nil {
 			if in.ForwardedValues.QueryStringCacheKeys == nil {
 				in.ForwardedValues.QueryStringCacheKeys = &svcapitypes.QueryStringCacheKeys{}
 			}
 
-			in.ForwardedValues.QueryStringCacheKeys.Items = pointer.LateInitializeStringPtrSlice(in.ForwardedValues.QueryStringCacheKeys.Items, from.ForwardedValues.QueryStringCacheKeys.Items)
+			in.ForwardedValues.QueryStringCacheKeys.Items = pointer.LateInitializeSlice(in.ForwardedValues.QueryStringCacheKeys.Items, from.ForwardedValues.QueryStringCacheKeys.Items)
 		}
 	}
 
@@ -228,21 +228,21 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 		lateInitLambdaFunctionAssociations(in.LambdaFunctionAssociations, from.LambdaFunctionAssociations)
 	}
 
-	in.MaxTTL = pointer.LateInitializeInt64Ptr(in.MaxTTL, from.MaxTTL)
-	in.MinTTL = pointer.LateInitializeInt64Ptr(in.MinTTL, from.MinTTL)
-	in.OriginRequestPolicyID = pointer.LateInitializeStringPtr(in.OriginRequestPolicyID, from.OriginRequestPolicyId)
-	in.RealtimeLogConfigARN = pointer.LateInitializeStringPtr(in.RealtimeLogConfigARN, from.RealtimeLogConfigArn)
-	in.SmoothStreaming = pointer.LateInitializeBoolPtr(in.SmoothStreaming, from.SmoothStreaming)
-	in.ResponseHeadersPolicyID = pointer.LateInitializeStringPtr(in.ResponseHeadersPolicyID, from.ResponseHeadersPolicyId)
-	in.TargetOriginID = pointer.LateInitializeStringPtr(in.TargetOriginID, from.TargetOriginId)
+	in.MaxTTL = pointer.LateInitialize(in.MaxTTL, from.MaxTTL)
+	in.MinTTL = pointer.LateInitialize(in.MinTTL, from.MinTTL)
+	in.OriginRequestPolicyID = pointer.LateInitialize(in.OriginRequestPolicyID, from.OriginRequestPolicyId)
+	in.RealtimeLogConfigARN = pointer.LateInitialize(in.RealtimeLogConfigARN, from.RealtimeLogConfigArn)
+	in.SmoothStreaming = pointer.LateInitialize(in.SmoothStreaming, from.SmoothStreaming)
+	in.ResponseHeadersPolicyID = pointer.LateInitialize(in.ResponseHeadersPolicyID, from.ResponseHeadersPolicyId)
+	in.TargetOriginID = pointer.LateInitialize(in.TargetOriginID, from.TargetOriginId)
 
 	if from.TrustedKeyGroups != nil {
 		if in.TrustedKeyGroups == nil {
 			in.TrustedKeyGroups = &svcapitypes.TrustedKeyGroups{}
 		}
 
-		in.TrustedKeyGroups.Enabled = pointer.LateInitializeBoolPtr(in.TrustedKeyGroups.Enabled, from.TrustedKeyGroups.Enabled)
-		in.TrustedKeyGroups.Items = pointer.LateInitializeStringPtrSlice(in.TrustedKeyGroups.Items, from.TrustedKeyGroups.Items)
+		in.TrustedKeyGroups.Enabled = pointer.LateInitialize(in.TrustedKeyGroups.Enabled, from.TrustedKeyGroups.Enabled)
+		in.TrustedKeyGroups.Items = pointer.LateInitializeSlice(in.TrustedKeyGroups.Items, from.TrustedKeyGroups.Items)
 	}
 
 	if from.TrustedSigners != nil {
@@ -250,11 +250,11 @@ func lateInitDefaultCacheBehavior(in *svcapitypes.DefaultCacheBehavior, from *sv
 			in.TrustedSigners = &svcapitypes.TrustedSigners{}
 		}
 
-		in.TrustedSigners.Enabled = pointer.LateInitializeBoolPtr(in.TrustedSigners.Enabled, from.TrustedSigners.Enabled)
-		in.TrustedSigners.Items = pointer.LateInitializeStringPtrSlice(in.TrustedSigners.Items, from.TrustedSigners.Items)
+		in.TrustedSigners.Enabled = pointer.LateInitialize(in.TrustedSigners.Enabled, from.TrustedSigners.Enabled)
+		in.TrustedSigners.Items = pointer.LateInitializeSlice(in.TrustedSigners.Items, from.TrustedSigners.Items)
 	}
 
-	in.ViewerProtocolPolicy = pointer.LateInitializeStringPtr(in.ViewerProtocolPolicy, from.ViewerProtocolPolicy)
+	in.ViewerProtocolPolicy = pointer.LateInitialize(in.ViewerProtocolPolicy, from.ViewerProtocolPolicy)
 }
 
 func lateInitCacheBehaviors(in *svcapitypes.CacheBehaviors, from *svcsdk.CacheBehaviors) {
@@ -307,21 +307,21 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 			in.AllowedMethods = &svcapitypes.AllowedMethods{}
 		}
 
-		in.AllowedMethods.Items = pointer.LateInitializeStringPtrSlice(in.AllowedMethods.Items, from.AllowedMethods.Items)
+		in.AllowedMethods.Items = pointer.LateInitializeSlice(in.AllowedMethods.Items, from.AllowedMethods.Items)
 
 		if from.AllowedMethods.CachedMethods != nil {
 			if in.AllowedMethods.CachedMethods == nil {
 				in.AllowedMethods.CachedMethods = &svcapitypes.CachedMethods{}
 			}
 
-			in.AllowedMethods.CachedMethods.Items = pointer.LateInitializeStringPtrSlice(in.AllowedMethods.CachedMethods.Items, from.AllowedMethods.CachedMethods.Items)
+			in.AllowedMethods.CachedMethods.Items = pointer.LateInitializeSlice(in.AllowedMethods.CachedMethods.Items, from.AllowedMethods.CachedMethods.Items)
 		}
 	}
 
-	in.CachePolicyID = pointer.LateInitializeStringPtr(in.CachePolicyID, from.CachePolicyId)
-	in.Compress = pointer.LateInitializeBoolPtr(in.Compress, from.Compress)
-	in.DefaultTTL = pointer.LateInitializeInt64Ptr(in.DefaultTTL, from.DefaultTTL)
-	in.FieldLevelEncryptionID = pointer.LateInitializeStringPtr(in.FieldLevelEncryptionID, from.FieldLevelEncryptionId)
+	in.CachePolicyID = pointer.LateInitialize(in.CachePolicyID, from.CachePolicyId)
+	in.Compress = pointer.LateInitialize(in.Compress, from.Compress)
+	in.DefaultTTL = pointer.LateInitialize(in.DefaultTTL, from.DefaultTTL)
+	in.FieldLevelEncryptionID = pointer.LateInitialize(in.FieldLevelEncryptionID, from.FieldLevelEncryptionId)
 
 	if from.ForwardedValues != nil {
 		if in.ForwardedValues == nil {
@@ -333,14 +333,14 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 				in.ForwardedValues.Cookies = &svcapitypes.CookiePreference{}
 			}
 
-			in.ForwardedValues.Cookies.Forward = pointer.LateInitializeStringPtr(in.ForwardedValues.Cookies.Forward, from.ForwardedValues.Cookies.Forward)
+			in.ForwardedValues.Cookies.Forward = pointer.LateInitialize(in.ForwardedValues.Cookies.Forward, from.ForwardedValues.Cookies.Forward)
 
 			if from.ForwardedValues.Cookies.WhitelistedNames != nil {
 				if in.ForwardedValues.Cookies.WhitelistedNames == nil {
 					in.ForwardedValues.Cookies.WhitelistedNames = &svcapitypes.CookieNames{}
 				}
 
-				in.ForwardedValues.Cookies.WhitelistedNames.Items = pointer.LateInitializeStringPtrSlice(in.ForwardedValues.Cookies.WhitelistedNames.Items, from.ForwardedValues.Cookies.WhitelistedNames.Items)
+				in.ForwardedValues.Cookies.WhitelistedNames.Items = pointer.LateInitializeSlice(in.ForwardedValues.Cookies.WhitelistedNames.Items, from.ForwardedValues.Cookies.WhitelistedNames.Items)
 			}
 		}
 
@@ -349,17 +349,17 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 				in.ForwardedValues.Headers = &svcapitypes.Headers{}
 			}
 
-			in.ForwardedValues.Headers.Items = pointer.LateInitializeStringPtrSlice(in.ForwardedValues.Headers.Items, from.ForwardedValues.Headers.Items)
+			in.ForwardedValues.Headers.Items = pointer.LateInitializeSlice(in.ForwardedValues.Headers.Items, from.ForwardedValues.Headers.Items)
 		}
 
-		in.ForwardedValues.QueryString = pointer.LateInitializeBoolPtr(in.ForwardedValues.QueryString, from.ForwardedValues.QueryString)
+		in.ForwardedValues.QueryString = pointer.LateInitialize(in.ForwardedValues.QueryString, from.ForwardedValues.QueryString)
 
 		if from.ForwardedValues.QueryStringCacheKeys != nil {
 			if in.ForwardedValues.QueryStringCacheKeys == nil {
 				in.ForwardedValues.QueryStringCacheKeys = &svcapitypes.QueryStringCacheKeys{}
 			}
 
-			in.ForwardedValues.QueryStringCacheKeys.Items = pointer.LateInitializeStringPtrSlice(in.ForwardedValues.QueryStringCacheKeys.Items, from.ForwardedValues.QueryStringCacheKeys.Items)
+			in.ForwardedValues.QueryStringCacheKeys.Items = pointer.LateInitializeSlice(in.ForwardedValues.QueryStringCacheKeys.Items, from.ForwardedValues.QueryStringCacheKeys.Items)
 		}
 	}
 
@@ -371,22 +371,22 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 		lateInitLambdaFunctionAssociations(in.LambdaFunctionAssociations, from.LambdaFunctionAssociations)
 	}
 
-	in.MaxTTL = pointer.LateInitializeInt64Ptr(in.MaxTTL, from.MaxTTL)
-	in.MinTTL = pointer.LateInitializeInt64Ptr(in.MinTTL, from.MinTTL)
-	in.OriginRequestPolicyID = pointer.LateInitializeStringPtr(in.OriginRequestPolicyID, from.OriginRequestPolicyId)
-	in.PathPattern = pointer.LateInitializeStringPtr(in.PathPattern, from.PathPattern)
-	in.RealtimeLogConfigARN = pointer.LateInitializeStringPtr(in.RealtimeLogConfigARN, from.RealtimeLogConfigArn)
-	in.SmoothStreaming = pointer.LateInitializeBoolPtr(in.SmoothStreaming, from.SmoothStreaming)
-	in.TargetOriginID = pointer.LateInitializeStringPtr(in.TargetOriginID, from.TargetOriginId)
-	in.ResponseHeadersPolicyID = pointer.LateInitializeStringPtr(in.ResponseHeadersPolicyID, from.ResponseHeadersPolicyId)
+	in.MaxTTL = pointer.LateInitialize(in.MaxTTL, from.MaxTTL)
+	in.MinTTL = pointer.LateInitialize(in.MinTTL, from.MinTTL)
+	in.OriginRequestPolicyID = pointer.LateInitialize(in.OriginRequestPolicyID, from.OriginRequestPolicyId)
+	in.PathPattern = pointer.LateInitialize(in.PathPattern, from.PathPattern)
+	in.RealtimeLogConfigARN = pointer.LateInitialize(in.RealtimeLogConfigARN, from.RealtimeLogConfigArn)
+	in.SmoothStreaming = pointer.LateInitialize(in.SmoothStreaming, from.SmoothStreaming)
+	in.TargetOriginID = pointer.LateInitialize(in.TargetOriginID, from.TargetOriginId)
+	in.ResponseHeadersPolicyID = pointer.LateInitialize(in.ResponseHeadersPolicyID, from.ResponseHeadersPolicyId)
 
 	if from.TrustedKeyGroups != nil && *from.TrustedKeyGroups.Enabled && len(from.TrustedKeyGroups.Items) != 0 {
 		if in.TrustedKeyGroups == nil {
 			in.TrustedKeyGroups = &svcapitypes.TrustedKeyGroups{}
 		}
 
-		in.TrustedKeyGroups.Enabled = pointer.LateInitializeBoolPtr(in.TrustedKeyGroups.Enabled, from.TrustedKeyGroups.Enabled)
-		in.TrustedKeyGroups.Items = pointer.LateInitializeStringPtrSlice(in.TrustedKeyGroups.Items, from.TrustedKeyGroups.Items)
+		in.TrustedKeyGroups.Enabled = pointer.LateInitialize(in.TrustedKeyGroups.Enabled, from.TrustedKeyGroups.Enabled)
+		in.TrustedKeyGroups.Items = pointer.LateInitializeSlice(in.TrustedKeyGroups.Items, from.TrustedKeyGroups.Items)
 	}
 
 	if from.TrustedSigners != nil && *from.TrustedSigners.Enabled && len(from.TrustedSigners.Items) != 0 {
@@ -394,11 +394,11 @@ func lateInitCacheBehavior(in *svcapitypes.CacheBehavior, from *svcsdk.CacheBeha
 			in.TrustedSigners = &svcapitypes.TrustedSigners{}
 		}
 
-		in.TrustedSigners.Enabled = pointer.LateInitializeBoolPtr(in.TrustedSigners.Enabled, from.TrustedSigners.Enabled)
-		in.TrustedSigners.Items = pointer.LateInitializeStringPtrSlice(in.TrustedSigners.Items, from.TrustedSigners.Items)
+		in.TrustedSigners.Enabled = pointer.LateInitialize(in.TrustedSigners.Enabled, from.TrustedSigners.Enabled)
+		in.TrustedSigners.Items = pointer.LateInitializeSlice(in.TrustedSigners.Items, from.TrustedSigners.Items)
 	}
 
-	in.ViewerProtocolPolicy = pointer.LateInitializeStringPtr(in.ViewerProtocolPolicy, from.ViewerProtocolPolicy)
+	in.ViewerProtocolPolicy = pointer.LateInitialize(in.ViewerProtocolPolicy, from.ViewerProtocolPolicy)
 }
 
 func lateInitCustomErrorResponses(in *svcapitypes.CustomErrorResponses, from *svcsdk.CustomErrorResponses) {
@@ -444,10 +444,10 @@ func lateInitCustomErrorResponses(in *svcapitypes.CustomErrorResponses, from *sv
 }
 
 func lateInitCustomErrorResponse(in *svcapitypes.CustomErrorResponse, from *svcsdk.CustomErrorResponse) {
-	in.ErrorCachingMinTTL = pointer.LateInitializeInt64Ptr(in.ErrorCachingMinTTL, from.ErrorCachingMinTTL)
-	in.ErrorCode = pointer.LateInitializeInt64Ptr(in.ErrorCode, from.ErrorCode)
-	in.ResponseCode = pointer.LateInitializeStringPtr(in.ResponseCode, from.ResponseCode)
-	in.ResponsePagePath = pointer.LateInitializeStringPtr(in.ResponsePagePath, from.ResponsePagePath)
+	in.ErrorCachingMinTTL = pointer.LateInitialize(in.ErrorCachingMinTTL, from.ErrorCachingMinTTL)
+	in.ErrorCode = pointer.LateInitialize(in.ErrorCode, from.ErrorCode)
+	in.ResponseCode = pointer.LateInitialize(in.ResponseCode, from.ResponseCode)
+	in.ResponsePagePath = pointer.LateInitialize(in.ResponsePagePath, from.ResponsePagePath)
 }
 
 func lateInitOriginGroups(in *svcapitypes.OriginGroups, from *svcsdk.OriginGroups) {
@@ -502,11 +502,11 @@ func lateInitOriginGroup(in *svcapitypes.OriginGroup, from *svcsdk.OriginGroup) 
 				in.FailoverCriteria.StatusCodes = &svcapitypes.StatusCodes{}
 			}
 
-			in.FailoverCriteria.StatusCodes.Items = pointer.LateInitializeInt64PtrSlice(in.FailoverCriteria.StatusCodes.Items, from.FailoverCriteria.StatusCodes.Items)
+			in.FailoverCriteria.StatusCodes.Items = pointer.LateInitializeSlice(in.FailoverCriteria.StatusCodes.Items, from.FailoverCriteria.StatusCodes.Items)
 		}
 	}
 
-	in.ID = pointer.LateInitializeStringPtr(in.ID, from.Id)
+	in.ID = pointer.LateInitialize(in.ID, from.Id)
 
 	if from.Members != nil {
 		if in.Members == nil {
@@ -533,7 +533,7 @@ func lateInitOriginGroupMembers(in *svcapitypes.OriginGroupMembers, from *svcsdk
 }
 
 func lateInitOriginGroupMember(in *svcapitypes.OriginGroupMember, from *svcsdk.OriginGroupMember) {
-	in.OriginID = pointer.LateInitializeStringPtr(in.OriginID, from.OriginId)
+	in.OriginID = pointer.LateInitialize(in.OriginID, from.OriginId)
 }
 
 // NOTE(negz): The CloudFront API relies heavily on late-initialization. There
@@ -595,8 +595,8 @@ func lateInitOrigins(in *svcapitypes.Origins, from *svcsdk.Origins) {
 }
 
 func lateInitOrigin(in *svcapitypes.Origin, from *svcsdk.Origin) {
-	in.ConnectionAttempts = pointer.LateInitializeInt64Ptr(in.ConnectionAttempts, from.ConnectionAttempts)
-	in.ConnectionTimeout = pointer.LateInitializeInt64Ptr(in.ConnectionTimeout, from.ConnectionTimeout)
+	in.ConnectionAttempts = pointer.LateInitialize(in.ConnectionAttempts, from.ConnectionAttempts)
+	in.ConnectionTimeout = pointer.LateInitialize(in.ConnectionTimeout, from.ConnectionTimeout)
 
 	if from.CustomHeaders != nil {
 		if in.CustomHeaders == nil {
@@ -611,32 +611,32 @@ func lateInitOrigin(in *svcapitypes.Origin, from *svcsdk.Origin) {
 			in.CustomOriginConfig = &svcapitypes.CustomOriginConfig{}
 		}
 
-		in.CustomOriginConfig.HTTPPort = pointer.LateInitializeInt64Ptr(in.CustomOriginConfig.HTTPPort, from.CustomOriginConfig.HTTPPort)
-		in.CustomOriginConfig.HTTPSPort = pointer.LateInitializeInt64Ptr(in.CustomOriginConfig.HTTPSPort, from.CustomOriginConfig.HTTPSPort)
-		in.CustomOriginConfig.OriginKeepaliveTimeout = pointer.LateInitializeInt64Ptr(in.CustomOriginConfig.OriginKeepaliveTimeout, from.CustomOriginConfig.OriginKeepaliveTimeout)
-		in.CustomOriginConfig.OriginProtocolPolicy = pointer.LateInitializeStringPtr(in.CustomOriginConfig.OriginProtocolPolicy, from.CustomOriginConfig.OriginProtocolPolicy)
-		in.CustomOriginConfig.OriginReadTimeout = pointer.LateInitializeInt64Ptr(in.CustomOriginConfig.OriginReadTimeout, from.CustomOriginConfig.OriginReadTimeout)
+		in.CustomOriginConfig.HTTPPort = pointer.LateInitialize(in.CustomOriginConfig.HTTPPort, from.CustomOriginConfig.HTTPPort)
+		in.CustomOriginConfig.HTTPSPort = pointer.LateInitialize(in.CustomOriginConfig.HTTPSPort, from.CustomOriginConfig.HTTPSPort)
+		in.CustomOriginConfig.OriginKeepaliveTimeout = pointer.LateInitialize(in.CustomOriginConfig.OriginKeepaliveTimeout, from.CustomOriginConfig.OriginKeepaliveTimeout)
+		in.CustomOriginConfig.OriginProtocolPolicy = pointer.LateInitialize(in.CustomOriginConfig.OriginProtocolPolicy, from.CustomOriginConfig.OriginProtocolPolicy)
+		in.CustomOriginConfig.OriginReadTimeout = pointer.LateInitialize(in.CustomOriginConfig.OriginReadTimeout, from.CustomOriginConfig.OriginReadTimeout)
 
 		if from.CustomOriginConfig.OriginSslProtocols != nil {
 			if in.CustomOriginConfig.OriginSSLProtocols == nil {
 				in.CustomOriginConfig.OriginSSLProtocols = &svcapitypes.OriginSSLProtocols{}
 			}
 
-			in.CustomOriginConfig.OriginSSLProtocols.Items = pointer.LateInitializeStringPtrSlice(in.CustomOriginConfig.OriginSSLProtocols.Items, from.CustomOriginConfig.OriginSslProtocols.Items)
+			in.CustomOriginConfig.OriginSSLProtocols.Items = pointer.LateInitializeSlice(in.CustomOriginConfig.OriginSSLProtocols.Items, from.CustomOriginConfig.OriginSslProtocols.Items)
 		}
 	}
 
-	in.DomainName = pointer.LateInitializeStringPtr(in.DomainName, from.DomainName)
-	in.ID = pointer.LateInitializeStringPtr(in.ID, from.Id)
-	in.OriginPath = pointer.LateInitializeStringPtr(in.OriginPath, from.OriginPath)
+	in.DomainName = pointer.LateInitialize(in.DomainName, from.DomainName)
+	in.ID = pointer.LateInitialize(in.ID, from.Id)
+	in.OriginPath = pointer.LateInitialize(in.OriginPath, from.OriginPath)
 
 	if from.OriginShield != nil {
 		if in.OriginShield == nil {
 			in.OriginShield = &svcapitypes.OriginShield{}
 		}
 
-		in.OriginShield.Enabled = pointer.LateInitializeBoolPtr(in.OriginShield.Enabled, from.OriginShield.Enabled)
-		in.OriginShield.OriginShieldRegion = pointer.LateInitializeStringPtr(in.OriginShield.OriginShieldRegion, from.OriginShield.OriginShieldRegion)
+		in.OriginShield.Enabled = pointer.LateInitialize(in.OriginShield.Enabled, from.OriginShield.Enabled)
+		in.OriginShield.OriginShieldRegion = pointer.LateInitialize(in.OriginShield.OriginShieldRegion, from.OriginShield.OriginShieldRegion)
 	}
 
 	if from.S3OriginConfig != nil {
@@ -644,7 +644,7 @@ func lateInitOrigin(in *svcapitypes.Origin, from *svcsdk.Origin) {
 			in.S3OriginConfig = &svcapitypes.S3OriginConfig{}
 		}
 
-		in.S3OriginConfig.OriginAccessIdentity = pointer.LateInitializeStringPtr(in.S3OriginConfig.OriginAccessIdentity, from.S3OriginConfig.OriginAccessIdentity)
+		in.S3OriginConfig.OriginAccessIdentity = pointer.LateInitialize(in.S3OriginConfig.OriginAccessIdentity, from.S3OriginConfig.OriginAccessIdentity)
 	}
 }
 
@@ -686,8 +686,8 @@ func lateInitOriginCustomHeaders(in *svcapitypes.CustomHeaders, from *svcsdk.Cus
 }
 
 func lateInitOriginCustomHeader(in *svcapitypes.OriginCustomHeader, from *svcsdk.OriginCustomHeader) {
-	in.HeaderName = pointer.LateInitializeStringPtr(in.HeaderName, from.HeaderName)
-	in.HeaderValue = pointer.LateInitializeStringPtr(in.HeaderValue, from.HeaderValue)
+	in.HeaderName = pointer.LateInitialize(in.HeaderName, from.HeaderName)
+	in.HeaderValue = pointer.LateInitialize(in.HeaderValue, from.HeaderValue)
 }
 
 func lateInitLambdaFunctionAssociations(in *svcapitypes.LambdaFunctionAssociations, from *svcsdk.LambdaFunctionAssociations) {
@@ -733,9 +733,9 @@ func lateInitLambdaFunctionAssociations(in *svcapitypes.LambdaFunctionAssociatio
 }
 
 func lateInitLambdaFunctionAssociation(in *svcapitypes.LambdaFunctionAssociation, from *svcsdk.LambdaFunctionAssociation) {
-	in.EventType = pointer.LateInitializeStringPtr(in.EventType, from.EventType)
-	in.IncludeBody = pointer.LateInitializeBoolPtr(in.IncludeBody, from.IncludeBody)
-	in.LambdaFunctionARN = pointer.LateInitializeStringPtr(in.LambdaFunctionARN, from.LambdaFunctionARN)
+	in.EventType = pointer.LateInitialize(in.EventType, from.EventType)
+	in.IncludeBody = pointer.LateInitialize(in.IncludeBody, from.IncludeBody)
+	in.LambdaFunctionARN = pointer.LateInitialize(in.LambdaFunctionARN, from.LambdaFunctionARN)
 }
 
 func lateInitFunctionAssociations(in *svcapitypes.FunctionAssociations, from *svcsdk.FunctionAssociations) {
@@ -780,6 +780,6 @@ func lateInitFunctionAssociations(in *svcapitypes.FunctionAssociations, from *sv
 }
 
 func lateInitFunctionAssociation(in *svcapitypes.FunctionAssociation, from *svcsdk.FunctionAssociation) {
-	in.EventType = pointer.LateInitializeStringPtr(in.EventType, from.EventType)
-	in.FunctionARN = pointer.LateInitializeStringPtr(in.FunctionARN, from.FunctionARN)
+	in.EventType = pointer.LateInitialize(in.EventType, from.EventType)
+	in.FunctionARN = pointer.LateInitialize(in.FunctionARN, from.FunctionARN)
 }

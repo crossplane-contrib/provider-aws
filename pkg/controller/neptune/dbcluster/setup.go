@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 type dbClusterStatus string
@@ -67,6 +68,7 @@ func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -160,29 +162,29 @@ func lateInitialize(in *svcapitypes.DBClusterParameters, out *svcsdk.DescribeDBC
 
 	from := out.DBClusters[0]
 
-	in.AvailabilityZones = pointer.LateInitializeStringPtrSlice(in.AvailabilityZones, from.AvailabilityZones)
-	in.BackupRetentionPeriod = pointer.LateInitializeInt64Ptr(in.BackupRetentionPeriod, from.BackupRetentionPeriod)
-	in.CharacterSetName = pointer.LateInitializeStringPtr(in.CharacterSetName, from.CharacterSetName)
-	in.DatabaseName = pointer.LateInitializeStringPtr(in.DatabaseName, from.DatabaseName)
-	in.DBClusterParameterGroupName = pointer.LateInitializeStringPtr(in.DBClusterParameterGroupName, from.DBClusterParameterGroup)
-	in.DBSubnetGroupName = pointer.LateInitializeStringPtr(in.DBSubnetGroupName, from.DBSubnetGroup)
-	in.DeletionProtection = pointer.LateInitializeBoolPtr(in.DeletionProtection, from.DeletionProtection)
-	in.EnableCloudwatchLogsExports = pointer.LateInitializeStringPtrSlice(in.EnableCloudwatchLogsExports, from.EnabledCloudwatchLogsExports)
-	in.Engine = pointer.LateInitializeStringPtr(in.Engine, from.Engine)
-	in.EngineVersion = pointer.LateInitializeStringPtr(in.EngineVersion, from.EngineVersion)
-	in.EnableIAMDatabaseAuthentication = pointer.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, from.IAMDatabaseAuthenticationEnabled)
-	in.KMSKeyID = pointer.LateInitializeStringPtr(in.KMSKeyID, from.KmsKeyId)
-	in.MasterUsername = pointer.LateInitializeStringPtr(in.MasterUsername, from.MasterUsername)
-	in.Port = pointer.LateInitializeInt64Ptr(in.Port, from.Port)
-	in.PreferredBackupWindow = pointer.LateInitializeStringPtr(in.PreferredBackupWindow, from.PreferredBackupWindow)
-	in.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(in.PreferredMaintenanceWindow, from.PreferredMaintenanceWindow)
-	in.ReplicationSourceIdentifier = pointer.LateInitializeStringPtr(in.ReplicationSourceIdentifier, from.ReplicationSourceIdentifier)
-	in.StorageEncrypted = pointer.LateInitializeBoolPtr(in.StorageEncrypted, from.StorageEncrypted)
+	in.AvailabilityZones = pointer.LateInitializeSlice(in.AvailabilityZones, from.AvailabilityZones)
+	in.BackupRetentionPeriod = pointer.LateInitialize(in.BackupRetentionPeriod, from.BackupRetentionPeriod)
+	in.CharacterSetName = pointer.LateInitialize(in.CharacterSetName, from.CharacterSetName)
+	in.DatabaseName = pointer.LateInitialize(in.DatabaseName, from.DatabaseName)
+	in.DBClusterParameterGroupName = pointer.LateInitialize(in.DBClusterParameterGroupName, from.DBClusterParameterGroup)
+	in.DBSubnetGroupName = pointer.LateInitialize(in.DBSubnetGroupName, from.DBSubnetGroup)
+	in.DeletionProtection = pointer.LateInitialize(in.DeletionProtection, from.DeletionProtection)
+	in.EnableCloudwatchLogsExports = pointer.LateInitializeSlice(in.EnableCloudwatchLogsExports, from.EnabledCloudwatchLogsExports)
+	in.Engine = pointer.LateInitialize(in.Engine, from.Engine)
+	in.EngineVersion = pointer.LateInitialize(in.EngineVersion, from.EngineVersion)
+	in.EnableIAMDatabaseAuthentication = pointer.LateInitialize(in.EnableIAMDatabaseAuthentication, from.IAMDatabaseAuthenticationEnabled)
+	in.KMSKeyID = pointer.LateInitialize(in.KMSKeyID, from.KmsKeyId)
+	in.MasterUsername = pointer.LateInitialize(in.MasterUsername, from.MasterUsername)
+	in.Port = pointer.LateInitialize(in.Port, from.Port)
+	in.PreferredBackupWindow = pointer.LateInitialize(in.PreferredBackupWindow, from.PreferredBackupWindow)
+	in.PreferredMaintenanceWindow = pointer.LateInitialize(in.PreferredMaintenanceWindow, from.PreferredMaintenanceWindow)
+	in.ReplicationSourceIdentifier = pointer.LateInitialize(in.ReplicationSourceIdentifier, from.ReplicationSourceIdentifier)
+	in.StorageEncrypted = pointer.LateInitialize(in.StorageEncrypted, from.StorageEncrypted)
 
 	if len(in.VPCSecurityGroupIDs) == 0 && len(from.VpcSecurityGroups) != 0 {
 		in.VPCSecurityGroupIDs = make([]*string, len(from.VpcSecurityGroups))
 		for i, val := range from.VpcSecurityGroups {
-			in.VPCSecurityGroupIDs[i] = pointer.LateInitializeStringPtr(in.VPCSecurityGroupIDs[i], val.VpcSecurityGroupId)
+			in.VPCSecurityGroupIDs[i] = pointer.LateInitialize(in.VPCSecurityGroupIDs[i], val.VpcSecurityGroupId)
 		}
 	}
 	return nil

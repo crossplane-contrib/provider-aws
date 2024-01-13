@@ -19,7 +19,7 @@ var (
 func igAttachments() []ec2types.InternetGatewayAttachment {
 	return []ec2types.InternetGatewayAttachment{
 		{
-			VpcId: pointer.String(vpcID),
+			VpcId: pointer.ToOrNilIfZeroValue(vpcID),
 			State: ec2types.AttachmentStatusAttached,
 		},
 	}
@@ -47,10 +47,10 @@ func TestIsIGUpToDate(t *testing.T) {
 			args: args{
 				ig: ec2types.InternetGateway{
 					Attachments:       igAttachments(),
-					InternetGatewayId: pointer.String(igID),
+					InternetGatewayId: pointer.ToOrNilIfZeroValue(igID),
 				},
 				p: v1beta1.InternetGatewayParameters{
-					VPCID: pointer.String(vpcID),
+					VPCID: pointer.ToOrNilIfZeroValue(vpcID),
 				},
 			},
 			want: true,
@@ -59,7 +59,7 @@ func TestIsIGUpToDate(t *testing.T) {
 			args: args{
 				ig: ec2types.InternetGateway{
 					Attachments:       igAttachments(),
-					InternetGatewayId: pointer.String(igID),
+					InternetGatewayId: pointer.ToOrNilIfZeroValue(igID),
 				},
 				p: v1beta1.InternetGatewayParameters{},
 			},
@@ -85,8 +85,8 @@ func TestGenerateIGObservation(t *testing.T) {
 		"AllFilled": {
 			in: ec2types.InternetGateway{
 				Attachments:       igAttachments(),
-				InternetGatewayId: pointer.String(igID),
-				OwnerId:           pointer.String(ownerID),
+				InternetGatewayId: pointer.ToOrNilIfZeroValue(igID),
+				OwnerId:           pointer.ToOrNilIfZeroValue(ownerID),
 			},
 			out: v1beta1.InternetGatewayObservation{
 				Attachments:       specAttachments(),
@@ -97,7 +97,7 @@ func TestGenerateIGObservation(t *testing.T) {
 		"NoOwnerId": {
 			in: ec2types.InternetGateway{
 				Attachments:       igAttachments(),
-				InternetGatewayId: pointer.String(igID),
+				InternetGatewayId: pointer.ToOrNilIfZeroValue(igID),
 			},
 			out: v1beta1.InternetGatewayObservation{
 				Attachments:       specAttachments(),

@@ -40,6 +40,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -67,8 +68,9 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: eks.NewEKSClient, newSTSClientFn: eks.NewSTSClient}),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -204,13 +206,13 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	if patch.EncryptionConfig != nil {
 		_, err := e.client.AssociateEncryptionConfig(ctx, &awseks.AssociateEncryptionConfigInput{
-			ClusterName:      pointer.String(meta.GetExternalName(cr)),
+			ClusterName:      pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			EncryptionConfig: eks.GenerateEncryptionConfig(&cr.Spec.ForProvider),
 		})
 		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	if patch.Version != nil {
-		_, err := e.client.UpdateClusterVersion(ctx, &awseks.UpdateClusterVersionInput{Name: pointer.String(meta.GetExternalName(cr)), Version: patch.Version})
+		_, err := e.client.UpdateClusterVersion(ctx, &awseks.UpdateClusterVersionInput{Name: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)), Version: patch.Version})
 		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	if patch.Logging != nil {
@@ -230,24 +232,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if cr.Status.AtProvider.Status == v1beta1.ClusterStatusDeleting {
 		return nil
 	}
-	_, err := e.client.DeleteCluster(ctx, &awseks.DeleteClusterInput{Name: pointer.String(meta.GetExternalName(cr))})
+	_, err := e.client.DeleteCluster(ctx, &awseks.DeleteClusterInput{Name: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))})
 	return errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1beta1.Cluster)
-	if !ok {
-		return errors.New(errNotEKSCluster)
-	}
-	if cr.Spec.ForProvider.Tags == nil {
-		cr.Spec.ForProvider.Tags = map[string]string{}
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = v
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

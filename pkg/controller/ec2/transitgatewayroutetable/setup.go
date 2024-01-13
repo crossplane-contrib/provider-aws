@@ -2,10 +2,8 @@ package transitgatewayroutetable
 
 import (
 	"context"
-	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -23,10 +21,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-)
-
-const (
-	errKubeUpdateFailed = "cannot update TransitGateway"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupTransitGatewayRouteTable adds a controller that reconciles TransitGatewayRouteTable.
@@ -49,10 +44,11 @@ func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
 	}
@@ -147,43 +143,4 @@ func postDelete(_ context.Context, cr *svcapitypes.TransitGatewayRouteTable, obj
 		return err
 	}
 	return err
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.TransitGatewayRouteTable)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	var transitGatewayRouteTableTags svcapitypes.TagSpecification
-	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if pointer.StringValue(tagSpecification.ResourceType) == "transit-gateway-route-table" {
-			transitGatewayRouteTableTags = *tagSpecification
-		}
-	}
-
-	tagMap := map[string]string{}
-	tagMap["Name"] = cr.Name
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
-	}
-	for k, v := range cpresource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	transitGatewayRouteTableTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	transitGatewayRouteTableTags.ResourceType = aws.String("transit-gateway-route-table")
-	i := 0
-	for k, v := range tagMap {
-		transitGatewayRouteTableTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
-		i++
-	}
-	sort.Slice(transitGatewayRouteTableTags.Tags, func(i, j int) bool {
-		return pointer.StringValue(transitGatewayRouteTableTags.Tags[i].Key) < pointer.StringValue(transitGatewayRouteTableTags.Tags[j].Key)
-	})
-
-	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&transitGatewayRouteTableTags}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

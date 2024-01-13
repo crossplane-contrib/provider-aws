@@ -26,6 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/manualv1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
@@ -585,8 +586,8 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 						SourceSecurityGroups: []string{"cool-group"},
 					},
 					ScalingConfig: &manualv1alpha1.NodeGroupScalingConfig{
-						MaxSize: pointer.Int32(10),
-						MinSize: pointer.Int32(6),
+						MaxSize: pointer.ToIntAsInt32(10),
+						MinSize: pointer.ToIntAsInt32(6),
 					},
 					Subnets: []string{"cool-subnet"},
 					Tags:    map[string]string{"cool": "tag"},
@@ -597,9 +598,9 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 					NodegroupName: &ngName,
 					Labels:        map[string]string{"cool": "label"},
 					ScalingConfig: &ekstypes.NodegroupScalingConfig{
-						DesiredSize: pointer.Int32(5),
-						MaxSize:     pointer.Int32(10),
-						MinSize:     pointer.Int32(3),
+						DesiredSize: pointer.ToIntAsInt32(5),
+						MaxSize:     pointer.ToIntAsInt32(10),
+						MinSize:     pointer.ToIntAsInt32(3),
 					},
 				},
 			},
@@ -608,9 +609,9 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				Labels:        nil,
 				NodegroupName: &ngName,
 				ScalingConfig: &ekstypes.NodegroupScalingConfig{
-					DesiredSize: pointer.Int32(6),
-					MaxSize:     pointer.Int32(10),
-					MinSize:     pointer.Int32(6),
+					DesiredSize: pointer.ToIntAsInt32(6),
+					MaxSize:     pointer.ToIntAsInt32(10),
+					MinSize:     pointer.ToIntAsInt32(6),
 				},
 			},
 		},
@@ -640,6 +641,77 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				UpdateConfig: &ekstypes.NodegroupUpdateConfig{
 					MaxUnavailable:           &maxUnavailablePercentage,
 					MaxUnavailablePercentage: &maxUnavailable,
+				},
+			},
+		},
+		"DiffTaints": {
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName: clusterName,
+					Taints: []manualv1alpha1.Taint{
+						{
+							Effect: "effect",
+							Key:    ptr.To("toAdd"),
+							Value:  ptr.To("value"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toChange"),
+							Value:  ptr.To("newValue"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toKeep"),
+							Value:  ptr.To("value"),
+						},
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					NodegroupName: &ngName,
+					ClusterName:   &clusterName,
+					Taints: []ekstypes.Taint{
+						{
+							Effect: "effect",
+							Key:    ptr.To("toKeep"),
+							Value:  ptr.To("value"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toRemove"),
+							Value:  ptr.To("value"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toChange"),
+							Value:  ptr.To("oldValue"),
+						},
+					},
+				},
+			},
+			want: &eks.UpdateNodegroupConfigInput{
+				NodegroupName: &ngName,
+				ClusterName:   &clusterName,
+				Taints: &ekstypes.UpdateTaintsPayload{
+					AddOrUpdateTaints: []ekstypes.Taint{
+						{
+							Effect: "effect",
+							Key:    ptr.To("toAdd"),
+							Value:  ptr.To("value"),
+						},
+						{
+							Effect: "effect",
+							Key:    ptr.To("toChange"),
+							Value:  ptr.To("newValue"),
+						},
+					},
+					RemoveTaints: []ekstypes.Taint{
+						{
+							Effect: "effect",
+							Key:    ptr.To("toRemove"),
+							Value:  ptr.To("value"),
+						},
+					},
 				},
 			},
 		},

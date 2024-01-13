@@ -73,13 +73,13 @@ func withExternalName(value string) docDBModifier {
 
 func withDBSubnetGroupName(value string) docDBModifier {
 	return func(o *svcapitypes.DBSubnetGroup) {
-		o.Status.AtProvider.DBSubnetGroupName = pointer.String(value)
+		o.Status.AtProvider.DBSubnetGroupName = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDescription(value string) docDBModifier {
 	return func(o *svcapitypes.DBSubnetGroup) {
-		o.Spec.ForProvider.DBSubnetGroupDescription = pointer.String(value)
+		o.Spec.ForProvider.DBSubnetGroupDescription = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -87,7 +87,7 @@ func withSubnetIds(values ...string) docDBModifier {
 	return func(o *svcapitypes.DBSubnetGroup) {
 		strArr := make([]*string, len(values))
 		for i, val := range values {
-			strArr[i] = pointer.String(val)
+			strArr[i] = pointer.ToOrNilIfZeroValue(val)
 		}
 		o.Spec.ForProvider.SubnetIDs = strArr
 	}
@@ -98,7 +98,7 @@ func withSubnetIDStatus(values ...string) docDBModifier {
 		subnetArr := make([]*svcapitypes.Subnet, len(values))
 		for i, val := range values {
 			subnetArr[i] = &svcapitypes.Subnet{
-				SubnetIdentifier: pointer.String(val),
+				SubnetIdentifier: pointer.ToOrNilIfZeroValue(val),
 			}
 		}
 		o.Status.AtProvider.Subnets = subnetArr
@@ -130,7 +130,7 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBSubnetGroupsOutput{
 							DBSubnetGroups: []*docdb.DBSubnetGroup{
 								{
-									DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+									DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 								},
 							},
 						}, nil
@@ -159,7 +159,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -178,8 +178,8 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBSubnetGroupsOutput{
 							DBSubnetGroups: []*docdb.DBSubnetGroup{
 								{
-									DBSubnetGroupName:        pointer.String(testDBSubnetGroupName),
-									DBSubnetGroupDescription: pointer.String(testDescription),
+									DBSubnetGroupName:        pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
+									DBSubnetGroupDescription: pointer.ToOrNilIfZeroValue(testDescription),
 								},
 							},
 						}, nil
@@ -207,7 +207,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -221,9 +221,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBSubnetGroupsOutput{
 							DBSubnetGroups: []*docdb.DBSubnetGroup{
 								{
-									DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+									DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 									Subnets: []*docdb.Subnet{
-										{SubnetIdentifier: pointer.String(testSubnetID)},
+										{SubnetIdentifier: pointer.ToOrNilIfZeroValue(testSubnetID)},
 									},
 								},
 							},
@@ -256,7 +256,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -275,9 +275,9 @@ func TestObserve(t *testing.T) {
 						return &docdb.DescribeDBSubnetGroupsOutput{
 							DBSubnetGroups: []*docdb.DBSubnetGroup{
 								{
-									DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+									DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 									Subnets: []*docdb.Subnet{
-										{SubnetIdentifier: pointer.String(testSubnetID)},
+										{SubnetIdentifier: pointer.ToOrNilIfZeroValue(testSubnetID)},
 									},
 								},
 							},
@@ -307,7 +307,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -338,7 +338,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -373,7 +373,7 @@ func TestObserve(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DescribeDBSubnetGroupsInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -422,7 +422,7 @@ func TestCreate(t *testing.T) {
 					MockCreateDBSubnetGroupWithContext: func(c context.Context, cdgi *docdb.CreateDBSubnetGroupInput, o []request.Option) (*docdb.CreateDBSubnetGroupOutput, error) {
 						return &docdb.CreateDBSubnetGroupOutput{
 							DBSubnetGroup: &docdb.DBSubnetGroup{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						}, nil
 					},
@@ -444,7 +444,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBSubnetGroupInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -476,7 +476,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBSubnetGroupInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -541,7 +541,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBSubnetGroupInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -572,7 +572,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBSubnetGroupInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},
@@ -618,7 +618,7 @@ func TestModify(t *testing.T) {
 					MockModifyDBSubnetGroupWithContext: func(c context.Context, mdgi *docdb.ModifyDBSubnetGroupInput, o []request.Option) (*docdb.ModifyDBSubnetGroupOutput, error) {
 						return &docdb.ModifyDBSubnetGroupOutput{
 							DBSubnetGroup: &docdb.DBSubnetGroup{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						}, nil
 					},
@@ -645,8 +645,8 @@ func TestModify(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBSubnetGroupInput{
-								DBSubnetGroupName:        pointer.String(testDBSubnetGroupName),
-								DBSubnetGroupDescription: pointer.String(testDescription),
+								DBSubnetGroupName:        pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
+								DBSubnetGroupDescription: pointer.ToOrNilIfZeroValue(testDescription),
 							},
 						},
 					},
@@ -664,9 +664,9 @@ func TestModify(t *testing.T) {
 					MockModifyDBSubnetGroupWithContext: func(c context.Context, mdgi *docdb.ModifyDBSubnetGroupInput, o []request.Option) (*docdb.ModifyDBSubnetGroupOutput, error) {
 						return &docdb.ModifyDBSubnetGroupOutput{
 							DBSubnetGroup: &docdb.DBSubnetGroup{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 								Subnets: []*docdb.Subnet{
-									{SubnetIdentifier: pointer.String(testSubnetID)},
+									{SubnetIdentifier: pointer.ToOrNilIfZeroValue(testSubnetID)},
 								},
 							},
 						}, nil
@@ -694,9 +694,9 @@ func TestModify(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBSubnetGroupInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 								SubnetIds: []*string{
-									pointer.String(testSubnetID),
+									pointer.ToOrNilIfZeroValue(testSubnetID),
 								},
 							},
 						},
@@ -733,7 +733,7 @@ func TestModify(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBSubnetGroupInput{
-								DBSubnetGroupName: pointer.String(testDBSubnetGroupName),
+								DBSubnetGroupName: pointer.ToOrNilIfZeroValue(testDBSubnetGroupName),
 							},
 						},
 					},

@@ -50,3 +50,29 @@ func (mg *Alias) ResolveReferences(ctx context.Context, c client.Reader) error {
 
 	return nil
 }
+
+// ResolveReferences of this Grant.
+func (mg *Grant) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomGrantParameters.KeyID),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomGrantParameters.KeyIDRef,
+		Selector:     mg.Spec.ForProvider.CustomGrantParameters.KeyIDSelector,
+		To: reference.To{
+			List:    &KeyList{},
+			Managed: &Key{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomGrantParameters.KeyID")
+	}
+	mg.Spec.ForProvider.CustomGrantParameters.KeyID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomGrantParameters.KeyIDRef = rsp.ResolvedReference
+
+	return nil
+}

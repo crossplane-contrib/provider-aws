@@ -40,14 +40,6 @@ func (mg *IdentityPool) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this IdentityPool.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *IdentityPool) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this IdentityPool.
 func (mg *IdentityPool) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *IdentityPool) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this IdentityPool.
 func (mg *IdentityPool) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this IdentityPool.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *IdentityPool) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this IdentityPool.

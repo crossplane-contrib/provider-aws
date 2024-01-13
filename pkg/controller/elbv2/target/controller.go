@@ -39,6 +39,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -58,8 +59,9 @@ func SetupTarget(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: awselasticloadbalancingv2.NewFromConfig}),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+		managed.WithInitializers(),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -119,7 +121,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               pointer.String(meta.GetExternalName(cr)),
+				Id:               pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
@@ -157,7 +159,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               pointer.String(meta.GetExternalName(cr)),
+				Id:               pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},
@@ -185,7 +187,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
 		Targets: []types.TargetDescription{
 			{
-				Id:               pointer.String(meta.GetExternalName(cr)),
+				Id:               pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 				AvailabilityZone: cr.Spec.ForProvider.AvailabilityZone,
 				Port:             cr.Spec.ForProvider.Port,
 			},

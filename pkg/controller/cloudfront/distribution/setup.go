@@ -38,6 +38,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // TODO: Aren't these defined as an API constant somewhere in aws-sdk-go?
@@ -56,6 +57,7 @@ func SetupDistribution(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{
 			kube: mgr.GetClient(),
 			opts: []option{
@@ -99,163 +101,163 @@ func preCreate(_ context.Context, cr *svcapitypes.Distribution, cdi *svcsdk.Crea
 	if pointer.StringValue(cr.Spec.ForProvider.DistributionConfig.CallerReference) != "" {
 		cdi.DistributionConfig.CallerReference = cr.Spec.ForProvider.DistributionConfig.CallerReference
 	} else {
-		cdi.DistributionConfig.CallerReference = pointer.String(string(cr.UID))
+		cdi.DistributionConfig.CallerReference = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	}
 
 	// if cr.Spec.ForProvider.DistributionConfig.Origins is not nil then cdi.DistributionConfig.Origins is not nil
 	if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
 		cdi.DistributionConfig.Origins.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items))
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.Aliases != nil {
 		cdi.DistributionConfig.Aliases.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.Aliases.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.Aliases.Items))
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses != nil {
 		cdi.DistributionConfig.CustomErrorResponses.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items))
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.Restrictions != nil && cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction != nil {
 		cdi.DistributionConfig.Restrictions.GeoRestriction.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items))
 	}
 
 	dcb := cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior
 	if dcb != nil {
 		if dcb.AllowedMethods != nil {
 			cdi.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity =
-				pointer.Int64(len(dcb.AllowedMethods.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.AllowedMethods.Items))
 
 			if dcb.AllowedMethods != nil && dcb.AllowedMethods.CachedMethods != nil {
 				cdi.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity =
-					pointer.Int64(len(dcb.AllowedMethods.CachedMethods.Items), 0)
+					pointer.ToIntAsInt64(len(dcb.AllowedMethods.CachedMethods.Items))
 			}
 		}
 
 		if dcb.ForwardedValues != nil {
 			if dcb.ForwardedValues.Cookies != nil && dcb.ForwardedValues.Cookies.WhitelistedNames != nil {
 				cdi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity =
-					pointer.Int64(len(dcb.ForwardedValues.Cookies.WhitelistedNames.Items), 0)
+					pointer.ToIntAsInt64(len(dcb.ForwardedValues.Cookies.WhitelistedNames.Items))
 			}
 
 			if dcb.ForwardedValues.Headers != nil {
 				cdi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity =
-					pointer.Int64(len(dcb.ForwardedValues.Headers.Items), 0)
+					pointer.ToIntAsInt64(len(dcb.ForwardedValues.Headers.Items))
 			}
 
 			if dcb.ForwardedValues.QueryStringCacheKeys != nil {
 				cdi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity =
-					pointer.Int64(len(dcb.ForwardedValues.QueryStringCacheKeys.Items), 0)
+					pointer.ToIntAsInt64(len(dcb.ForwardedValues.QueryStringCacheKeys.Items))
 			}
 		}
 
 		if dcb.FunctionAssociations != nil {
 			cdi.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity =
-				pointer.Int64(len(dcb.FunctionAssociations.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.FunctionAssociations.Items))
 		}
 
 		if dcb.LambdaFunctionAssociations != nil {
 			cdi.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity =
-				pointer.Int64(len(dcb.LambdaFunctionAssociations.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.LambdaFunctionAssociations.Items))
 		}
 
 		if dcb.TrustedKeyGroups != nil {
 			cdi.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity =
-				pointer.Int64(len(dcb.TrustedKeyGroups.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.TrustedKeyGroups.Items))
 		}
 
 		if dcb.TrustedSigners != nil {
 			cdi.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity =
-				pointer.Int64(len(dcb.TrustedSigners.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.TrustedSigners.Items))
 		}
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.CacheBehaviors != nil {
 		cdi.DistributionConfig.CacheBehaviors.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items))
 
 		for i, cbi := range cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items {
 			if cbi.AllowedMethods != nil {
 				cdi.DistributionConfig.CacheBehaviors.Items[i].AllowedMethods.Quantity =
-					pointer.Int64(len(cbi.AllowedMethods.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.AllowedMethods.Items))
 			}
 
 			if cbi.AllowedMethods != nil && cbi.AllowedMethods.CachedMethods != nil {
 				cdi.DistributionConfig.CacheBehaviors.Items[i].AllowedMethods.CachedMethods.Quantity =
-					pointer.Int64(len(cbi.AllowedMethods.CachedMethods.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.AllowedMethods.CachedMethods.Items))
 			}
 
 			if cbi.ForwardedValues != nil {
 				if cbi.ForwardedValues.Cookies != nil && cbi.ForwardedValues.Cookies.WhitelistedNames != nil {
 					cdi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.Cookies.WhitelistedNames.Quantity =
-						pointer.Int64(len(cbi.ForwardedValues.Cookies.WhitelistedNames.Items), 0)
+						pointer.ToIntAsInt64(len(cbi.ForwardedValues.Cookies.WhitelistedNames.Items))
 				}
 
 				if cbi.ForwardedValues.Headers != nil {
 					cdi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.Headers.Quantity =
-						pointer.Int64(len(cbi.ForwardedValues.Headers.Items), 0)
+						pointer.ToIntAsInt64(len(cbi.ForwardedValues.Headers.Items))
 				}
 
 				if cbi.ForwardedValues.QueryStringCacheKeys != nil {
 					cdi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.QueryStringCacheKeys.Quantity =
-						pointer.Int64(len(cbi.ForwardedValues.QueryStringCacheKeys.Items), 0)
+						pointer.ToIntAsInt64(len(cbi.ForwardedValues.QueryStringCacheKeys.Items))
 				}
 			}
 
 			if cbi.FunctionAssociations != nil {
 				cdi.DistributionConfig.CacheBehaviors.Items[i].FunctionAssociations.Quantity =
-					pointer.Int64(len(cbi.FunctionAssociations.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.FunctionAssociations.Items))
 			}
 
 			if cbi.LambdaFunctionAssociations != nil {
 				cdi.DistributionConfig.CacheBehaviors.Items[i].LambdaFunctionAssociations.Quantity =
-					pointer.Int64(len(cbi.LambdaFunctionAssociations.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.LambdaFunctionAssociations.Items))
 			}
 
 			if cbi.TrustedKeyGroups != nil {
 				cdi.DistributionConfig.CacheBehaviors.Items[i].TrustedKeyGroups.Quantity =
-					pointer.Int64(len(cbi.TrustedKeyGroups.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.TrustedKeyGroups.Items))
 			}
 
 			if cbi.TrustedSigners != nil {
 				cdi.DistributionConfig.CacheBehaviors.Items[i].TrustedSigners.Quantity =
-					pointer.Int64(len(cbi.TrustedSigners.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.TrustedSigners.Items))
 			}
 		}
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.OriginGroups != nil {
 		cdi.DistributionConfig.OriginGroups.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items))
 
 		for i, ogi := range cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items {
 			if ogi.FailoverCriteria != nil && ogi.FailoverCriteria.StatusCodes != nil {
 				cdi.DistributionConfig.OriginGroups.Items[i].FailoverCriteria.StatusCodes.Quantity =
-					pointer.Int64(len(ogi.FailoverCriteria.StatusCodes.Items), 0)
+					pointer.ToIntAsInt64(len(ogi.FailoverCriteria.StatusCodes.Items))
 			}
 
 			if ogi.Members != nil {
-				cdi.DistributionConfig.OriginGroups.Items[i].Members.Quantity = pointer.Int64(len(ogi.Members.Items), 0)
+				cdi.DistributionConfig.OriginGroups.Items[i].Members.Quantity = pointer.ToIntAsInt64(len(ogi.Members.Items))
 			}
 		}
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
 		cdi.DistributionConfig.Origins.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items))
 
 		for i, io := range cr.Spec.ForProvider.DistributionConfig.Origins.Items {
 			if io.CustomHeaders != nil {
 				cdi.DistributionConfig.Origins.Items[i].CustomHeaders.Quantity =
-					pointer.Int64(len(io.CustomHeaders.Items), 0)
+					pointer.ToIntAsInt64(len(io.CustomHeaders.Items))
 			}
 
 			if io.CustomOriginConfig != nil && io.CustomOriginConfig.OriginSSLProtocols != nil {
 				cdi.DistributionConfig.Origins.Items[i].CustomOriginConfig.OriginSslProtocols.Quantity =
-					pointer.Int64(len(io.CustomOriginConfig.OriginSSLProtocols.Items), 0)
+					pointer.ToIntAsInt64(len(io.CustomOriginConfig.OriginSSLProtocols.Items))
 			}
 		}
 	}
@@ -274,7 +276,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Distribution, cdo *svcsdk.Cre
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Distribution, gdi *svcsdk.GetDistributionInput) error {
-	gdi.Id = pointer.String(meta.GetExternalName(cr))
+	gdi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -348,157 +350,157 @@ func postUpdate(_ context.Context, cr *svcapitypes.Distribution, resp *svcsdk.Up
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Distribution, udi *svcsdk.UpdateDistributionInput) error {
-	udi.Id = pointer.String(meta.GetExternalName(cr))
+	udi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	udi.SetIfMatch(pointer.StringValue(cr.Status.AtProvider.ETag))
 	udi.DistributionConfig.Origins.Quantity =
-		pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items), 0)
+		pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items))
 
 	if cr.Spec.ForProvider.DistributionConfig.Aliases != nil {
 		udi.DistributionConfig.Aliases.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.Aliases.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.Aliases.Items))
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses != nil {
 		udi.DistributionConfig.CustomErrorResponses.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.CustomErrorResponses.Items))
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.Restrictions != nil && cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction != nil {
 		udi.DistributionConfig.Restrictions.GeoRestriction.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.Restrictions.GeoRestriction.Items))
 	}
 
 	dcb := cr.Spec.ForProvider.DistributionConfig.DefaultCacheBehavior
 	if dcb != nil {
 		if dcb.AllowedMethods != nil {
 			udi.DistributionConfig.DefaultCacheBehavior.AllowedMethods.Quantity =
-				pointer.Int64(len(dcb.AllowedMethods.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.AllowedMethods.Items))
 
 			if dcb.AllowedMethods != nil && dcb.AllowedMethods.CachedMethods != nil {
 				udi.DistributionConfig.DefaultCacheBehavior.AllowedMethods.CachedMethods.Quantity =
-					pointer.Int64(len(dcb.AllowedMethods.CachedMethods.Items), 0)
+					pointer.ToIntAsInt64(len(dcb.AllowedMethods.CachedMethods.Items))
 			}
 		}
 
 		if dcb.ForwardedValues != nil {
 			if dcb.ForwardedValues.Cookies != nil && dcb.ForwardedValues.Cookies.WhitelistedNames != nil {
 				udi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Cookies.WhitelistedNames.Quantity =
-					pointer.Int64(len(dcb.ForwardedValues.Cookies.WhitelistedNames.Items), 0)
+					pointer.ToIntAsInt64(len(dcb.ForwardedValues.Cookies.WhitelistedNames.Items))
 			}
 
 			if dcb.ForwardedValues.Headers != nil {
 				udi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.Headers.Quantity =
-					pointer.Int64(len(dcb.ForwardedValues.Headers.Items), 0)
+					pointer.ToIntAsInt64(len(dcb.ForwardedValues.Headers.Items))
 			}
 
 			if dcb.ForwardedValues.QueryStringCacheKeys != nil {
 				udi.DistributionConfig.DefaultCacheBehavior.ForwardedValues.QueryStringCacheKeys.Quantity =
-					pointer.Int64(len(dcb.ForwardedValues.QueryStringCacheKeys.Items), 0)
+					pointer.ToIntAsInt64(len(dcb.ForwardedValues.QueryStringCacheKeys.Items))
 			}
 		}
 		if dcb.FunctionAssociations != nil {
 			udi.DistributionConfig.DefaultCacheBehavior.FunctionAssociations.Quantity =
-				pointer.Int64(len(dcb.FunctionAssociations.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.FunctionAssociations.Items))
 		}
 
 		if dcb.LambdaFunctionAssociations != nil {
 			udi.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Quantity =
-				pointer.Int64(len(dcb.LambdaFunctionAssociations.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.LambdaFunctionAssociations.Items))
 		}
 
 		if dcb.TrustedKeyGroups != nil {
 			udi.DistributionConfig.DefaultCacheBehavior.TrustedKeyGroups.Quantity =
-				pointer.Int64(len(dcb.TrustedKeyGroups.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.TrustedKeyGroups.Items))
 		}
 
 		if dcb.TrustedSigners != nil {
 			udi.DistributionConfig.DefaultCacheBehavior.TrustedSigners.Quantity =
-				pointer.Int64(len(dcb.TrustedSigners.Items), 0)
+				pointer.ToIntAsInt64(len(dcb.TrustedSigners.Items))
 		}
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.CacheBehaviors != nil {
 		udi.DistributionConfig.CacheBehaviors.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items))
 
 		for i, cbi := range cr.Spec.ForProvider.DistributionConfig.CacheBehaviors.Items {
 			if cbi.AllowedMethods != nil {
 				udi.DistributionConfig.CacheBehaviors.Items[i].AllowedMethods.Quantity =
-					pointer.Int64(len(cbi.AllowedMethods.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.AllowedMethods.Items))
 			}
 
 			if cbi.AllowedMethods != nil && cbi.AllowedMethods.CachedMethods != nil {
 				udi.DistributionConfig.CacheBehaviors.Items[i].AllowedMethods.CachedMethods.Quantity =
-					pointer.Int64(len(cbi.AllowedMethods.CachedMethods.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.AllowedMethods.CachedMethods.Items))
 			}
 
 			if cbi.ForwardedValues != nil {
 				if cbi.ForwardedValues.Cookies != nil && cbi.ForwardedValues.Cookies.WhitelistedNames != nil {
 					udi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.Cookies.WhitelistedNames.Quantity =
-						pointer.Int64(len(cbi.ForwardedValues.Cookies.WhitelistedNames.Items), 0)
+						pointer.ToIntAsInt64(len(cbi.ForwardedValues.Cookies.WhitelistedNames.Items))
 				}
 
 				if cbi.ForwardedValues.Headers != nil {
 					udi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.Headers.Quantity =
-						pointer.Int64(len(cbi.ForwardedValues.Headers.Items), 0)
+						pointer.ToIntAsInt64(len(cbi.ForwardedValues.Headers.Items))
 				}
 
 				if cbi.ForwardedValues.QueryStringCacheKeys != nil {
 					udi.DistributionConfig.CacheBehaviors.Items[i].ForwardedValues.QueryStringCacheKeys.Quantity =
-						pointer.Int64(len(cbi.ForwardedValues.QueryStringCacheKeys.Items), 0)
+						pointer.ToIntAsInt64(len(cbi.ForwardedValues.QueryStringCacheKeys.Items))
 				}
 			}
 
 			if cbi.FunctionAssociations != nil {
 				udi.DistributionConfig.CacheBehaviors.Items[i].FunctionAssociations.Quantity =
-					pointer.Int64(len(cbi.FunctionAssociations.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.FunctionAssociations.Items))
 			}
 
 			if cbi.LambdaFunctionAssociations != nil {
 				udi.DistributionConfig.CacheBehaviors.Items[i].LambdaFunctionAssociations.Quantity =
-					pointer.Int64(len(cbi.LambdaFunctionAssociations.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.LambdaFunctionAssociations.Items))
 			}
 
 			if cbi.TrustedKeyGroups != nil {
 				udi.DistributionConfig.CacheBehaviors.Items[i].TrustedKeyGroups.Quantity =
-					pointer.Int64(len(cbi.TrustedKeyGroups.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.TrustedKeyGroups.Items))
 			}
 
 			if cbi.TrustedSigners != nil {
 				udi.DistributionConfig.CacheBehaviors.Items[i].TrustedSigners.Quantity =
-					pointer.Int64(len(cbi.TrustedSigners.Items), 0)
+					pointer.ToIntAsInt64(len(cbi.TrustedSigners.Items))
 			}
 		}
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.OriginGroups != nil {
 		udi.DistributionConfig.OriginGroups.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items))
 
 		for i, ogi := range cr.Spec.ForProvider.DistributionConfig.OriginGroups.Items {
 			if ogi.FailoverCriteria != nil && ogi.FailoverCriteria.StatusCodes != nil {
 				udi.DistributionConfig.OriginGroups.Items[i].FailoverCriteria.StatusCodes.Quantity =
-					pointer.Int64(len(ogi.FailoverCriteria.StatusCodes.Items), 0)
+					pointer.ToIntAsInt64(len(ogi.FailoverCriteria.StatusCodes.Items))
 			}
 
 			if ogi.Members != nil {
-				udi.DistributionConfig.OriginGroups.Items[i].Members.Quantity = pointer.Int64(len(ogi.Members.Items), 0)
+				udi.DistributionConfig.OriginGroups.Items[i].Members.Quantity = pointer.ToIntAsInt64(len(ogi.Members.Items))
 			}
 		}
 	}
 
 	if cr.Spec.ForProvider.DistributionConfig.Origins != nil {
 		udi.DistributionConfig.Origins.Quantity =
-			pointer.Int64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items), 0)
+			pointer.ToIntAsInt64(len(cr.Spec.ForProvider.DistributionConfig.Origins.Items))
 
 		for i, io := range cr.Spec.ForProvider.DistributionConfig.Origins.Items {
 			if io.CustomHeaders != nil {
 				udi.DistributionConfig.Origins.Items[i].CustomHeaders.Quantity =
-					pointer.Int64(len(io.CustomHeaders.Items), 0)
+					pointer.ToIntAsInt64(len(io.CustomHeaders.Items))
 			}
 			if io.CustomOriginConfig != nil && io.CustomOriginConfig.OriginSSLProtocols != nil {
 				udi.DistributionConfig.Origins.Items[i].CustomOriginConfig.OriginSslProtocols.Quantity =
-					pointer.Int64(len(io.CustomOriginConfig.OriginSSLProtocols.Items), 0)
+					pointer.ToIntAsInt64(len(io.CustomOriginConfig.OriginSSLProtocols.Items))
 			}
 		}
 	}
@@ -526,7 +528,7 @@ func (d *deleter) preDelete(ctx context.Context, cr *svcapitypes.Distribution, d
 			return false, errorutils.Wrap(err, errUpdate)
 		}
 	}
-	ddi.Id = pointer.String(meta.GetExternalName(cr))
+	ddi.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	ddi.SetIfMatch(pointer.StringValue(cr.Status.AtProvider.ETag))
 	return false, nil
 }

@@ -51,7 +51,7 @@ func NewWebsiteConfigurationClient(client s3.BucketClient) *WebsiteConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
-	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.WebsiteConfiguration
 	if err != nil {
 		if s3.WebsiteConfigurationNotFound(err) && config == nil {
@@ -96,7 +96,7 @@ func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketWebsite(ctx,
 		&awss3.DeleteBucketWebsiteInput{
-			Bucket: pointer.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)),
 		},
 	)
 	return errorutils.Wrap(err, websiteDeleteFailed)
@@ -105,7 +105,7 @@ func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *WebsiteConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
 	}
@@ -135,14 +135,14 @@ func (in *WebsiteConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) 
 func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *types.WebsiteConfiguration {
 	wi := &types.WebsiteConfiguration{}
 	if config.ErrorDocument != nil {
-		wi.ErrorDocument = &types.ErrorDocument{Key: pointer.String(config.ErrorDocument.Key)}
+		wi.ErrorDocument = &types.ErrorDocument{Key: pointer.ToOrNilIfZeroValue(config.ErrorDocument.Key)}
 	}
 	if config.IndexDocument != nil {
-		wi.IndexDocument = &types.IndexDocument{Suffix: pointer.String(config.IndexDocument.Suffix)}
+		wi.IndexDocument = &types.IndexDocument{Suffix: pointer.ToOrNilIfZeroValue(config.IndexDocument.Suffix)}
 	}
 	if config.RedirectAllRequestsTo != nil {
 		wi.RedirectAllRequestsTo = &types.RedirectAllRequestsTo{
-			HostName: pointer.String(config.RedirectAllRequestsTo.HostName),
+			HostName: pointer.ToOrNilIfZeroValue(config.RedirectAllRequestsTo.HostName),
 			Protocol: types.Protocol(config.RedirectAllRequestsTo.Protocol),
 		}
 	}
@@ -174,7 +174,7 @@ func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *types.W
 // GeneratePutBucketWebsiteInput creates the input for the PutBucketWebsite request for the S3 Client
 func GeneratePutBucketWebsiteInput(name string, config *v1beta1.WebsiteConfiguration) *awss3.PutBucketWebsiteInput {
 	wi := &awss3.PutBucketWebsiteInput{
-		Bucket:               pointer.String(name),
+		Bucket:               pointer.ToOrNilIfZeroValue(name),
 		WebsiteConfiguration: GenerateWebsiteConfiguration(config),
 	}
 	return wi
@@ -185,25 +185,25 @@ func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, con
 		if config.ErrorDocument == nil {
 			config.ErrorDocument = &v1beta1.ErrorDocument{}
 		}
-		config.ErrorDocument.Key = pointer.LateInitializeString(config.ErrorDocument.Key, external.ErrorDocument.Key)
+		config.ErrorDocument.Key = pointer.LateInitializeValueFromPtr(config.ErrorDocument.Key, external.ErrorDocument.Key)
 	}
 	if external.IndexDocument != nil {
 		if config.IndexDocument == nil {
 			config.IndexDocument = &v1beta1.IndexDocument{}
 		}
-		config.IndexDocument.Suffix = pointer.LateInitializeString(config.IndexDocument.Suffix, external.IndexDocument.Suffix)
+		config.IndexDocument.Suffix = pointer.LateInitializeValueFromPtr(config.IndexDocument.Suffix, external.IndexDocument.Suffix)
 	}
 	if external.RedirectAllRequestsTo != nil {
 		if config.RedirectAllRequestsTo == nil {
 			config.RedirectAllRequestsTo = &v1beta1.RedirectAllRequestsTo{}
 		}
 		if external.RedirectAllRequestsTo.Protocol != "" {
-			config.RedirectAllRequestsTo.Protocol = pointer.LateInitializeString(
+			config.RedirectAllRequestsTo.Protocol = pointer.LateInitializeValueFromPtr(
 				config.RedirectAllRequestsTo.Protocol,
-				pointer.String(string(external.RedirectAllRequestsTo.Protocol)),
+				pointer.ToOrNilIfZeroValue(string(external.RedirectAllRequestsTo.Protocol)),
 			)
 		}
-		config.RedirectAllRequestsTo.HostName = pointer.LateInitializeString(
+		config.RedirectAllRequestsTo.HostName = pointer.LateInitializeValueFromPtr(
 			config.RedirectAllRequestsTo.HostName,
 			external.RedirectAllRequestsTo.HostName,
 		)
@@ -212,26 +212,26 @@ func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, con
 		config.RoutingRules = make([]v1beta1.RoutingRule, len(external.RoutingRules))
 		for i, rr := range external.RoutingRules {
 			if rr.Redirect != nil {
-				config.RoutingRules[i].Redirect.HostName = pointer.LateInitializeStringPtr(
+				config.RoutingRules[i].Redirect.HostName = pointer.LateInitialize(
 					config.RoutingRules[i].Redirect.HostName,
 					rr.Redirect.HostName,
 				)
-				config.RoutingRules[i].Redirect.HTTPRedirectCode = pointer.LateInitializeStringPtr(
+				config.RoutingRules[i].Redirect.HTTPRedirectCode = pointer.LateInitialize(
 					config.RoutingRules[i].Redirect.HTTPRedirectCode,
 					rr.Redirect.HttpRedirectCode,
 				)
-				config.RoutingRules[i].Redirect.ReplaceKeyPrefixWith = pointer.LateInitializeStringPtr(
+				config.RoutingRules[i].Redirect.ReplaceKeyPrefixWith = pointer.LateInitialize(
 					config.RoutingRules[i].Redirect.ReplaceKeyPrefixWith,
 					rr.Redirect.ReplaceKeyPrefixWith,
 				)
-				config.RoutingRules[i].Redirect.ReplaceKeyWith = pointer.LateInitializeStringPtr(
+				config.RoutingRules[i].Redirect.ReplaceKeyWith = pointer.LateInitialize(
 					config.RoutingRules[i].Redirect.ReplaceKeyWith,
 					rr.Redirect.ReplaceKeyWith,
 				)
 				if rr.Redirect.Protocol != "" {
-					config.RoutingRules[i].Redirect.Protocol = pointer.LateInitializeString(
+					config.RoutingRules[i].Redirect.Protocol = pointer.LateInitializeValueFromPtr(
 						config.RoutingRules[i].Redirect.Protocol,
-						pointer.String(string(rr.Redirect.Protocol)),
+						pointer.ToOrNilIfZeroValue(string(rr.Redirect.Protocol)),
 					)
 				}
 			}
@@ -239,11 +239,11 @@ func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, con
 				if config.RoutingRules[i].Condition == nil {
 					config.RoutingRules[i].Condition = &v1beta1.Condition{}
 				}
-				config.RoutingRules[i].Condition.HTTPErrorCodeReturnedEquals = pointer.LateInitializeStringPtr(
+				config.RoutingRules[i].Condition.HTTPErrorCodeReturnedEquals = pointer.LateInitialize(
 					config.RoutingRules[i].Condition.HTTPErrorCodeReturnedEquals,
 					rr.Condition.HttpErrorCodeReturnedEquals,
 				)
-				config.RoutingRules[i].Condition.KeyPrefixEquals = pointer.LateInitializeStringPtr(
+				config.RoutingRules[i].Condition.KeyPrefixEquals = pointer.LateInitialize(
 					config.RoutingRules[i].Condition.KeyPrefixEquals,
 					rr.Condition.KeyPrefixEquals,
 				)

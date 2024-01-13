@@ -31,6 +31,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupUserPoolClient adds a controller that reconciles UserPoolClient.
@@ -57,6 +58,7 @@ func SetupUserPoolClient(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -82,14 +84,14 @@ func SetupUserPoolClient(mgr ctrl.Manager, o controller.Options) error {
 
 func preObserve(_ context.Context, cr *svcapitypes.UserPoolClient, obj *svcsdk.DescribeUserPoolClientInput) error {
 	if meta.GetExternalName(cr) != "" {
-		obj.ClientId = pointer.String(meta.GetExternalName(cr))
+		obj.ClientId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	}
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.UserPoolClient, obj *svcsdk.DeleteUserPoolClientInput) (bool, error) {
-	obj.ClientId = pointer.String(meta.GetExternalName(cr))
+	obj.ClientId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return false, nil
 }
@@ -121,8 +123,7 @@ func postCreate(_ context.Context, cr *svcapitypes.UserPoolClient, obj *svcsdk.C
 		"userPoolID":   []byte(pointer.StringValue(cr.Spec.ForProvider.UserPoolID)),
 	}
 	return managed.ExternalCreation{
-		ExternalNameAssigned: true,
-		ConnectionDetails:    conn,
+		ConnectionDetails: conn,
 	}, nil
 }
 
@@ -195,6 +196,6 @@ func areTokenValidityUnitsEqual(spec *svcapitypes.TokenValidityUnitsType, curren
 func lateInitialize(cr *svcapitypes.UserPoolClientParameters, resp *svcsdk.DescribeUserPoolClientOutput) error {
 	instance := resp.UserPoolClient
 
-	cr.RefreshTokenValidity = pointer.LateInitializeInt64Ptr(cr.RefreshTokenValidity, instance.RefreshTokenValidity)
+	cr.RefreshTokenValidity = pointer.LateInitialize(cr.RefreshTokenValidity, instance.RefreshTokenValidity)
 	return nil
 }

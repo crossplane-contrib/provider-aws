@@ -47,6 +47,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elasticloadbalancing"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/emrcontainers"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/firehose"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/globalaccelerator"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/glue"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/iam"
@@ -68,6 +69,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/s3"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/s3control"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/secretsmanager"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicecatalog"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sfn"
@@ -109,6 +111,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		elasticloadbalancing.Setup,
 		elbv2.Setup,
 		emrcontainers.Setup,
+		firehose.Setup,
 		glue.Setup,
 		globalaccelerator.Setup,
 		iam.Setup,
@@ -130,6 +133,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		s3.Setup,
 		s3control.Setup,
 		secretsmanager.Setup,
+		servicecatalog.Setup,
 		servicediscovery.Setup,
 		sesv2.Setup,
 		sfn.Setup,

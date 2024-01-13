@@ -1,0 +1,1654 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.13.0
+  name: deliverystreams.firehose.aws.crossplane.io
+spec:
+  group: firehose.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: DeliveryStream
+    listKind: DeliveryStreamList
+    plural: deliverystreams
+    singular: deliverystream
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: DeliveryStream is the Schema for the DeliveryStreams API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DeliveryStreamSpec defines the desired state of DeliveryStream
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: 'DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource. This field is planned to be deprecated
+                  in favor of the ManagementPolicies field in a future release. Currently,
+                  both could be set independently and non-default values would be
+                  honored if the feature flag is enabled. See the design doc for more
+                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: DeliveryStreamParameters defines the desired state of
+                  DeliveryStream
+                properties:
+                  amazonOpenSearchServerlessDestinationConfiguration:
+                    description: The destination in the Serverless offering for Amazon
+                      OpenSearch Service. You can specify only one destination.
+                    properties:
+                      bufferingHints:
+                        description: Describes the buffering to perform before delivering
+                          data to the Serverless offering for Amazon OpenSearch Service
+                          destination.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      collectionEndpoint:
+                        type: string
+                      indexName:
+                        type: string
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      retryOptions:
+                        description: Configures retry behavior in case Kinesis Data
+                          Firehose is unable to deliver documents to the Serverless
+                          offering for Amazon OpenSearch Service.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: Describes hints for the buffering to perform
+                              before delivering data to the destination. These options
+                              are treated as hints, and therefore Kinesis Data Firehose
+                              might choose to use different values when it is optimal.
+                              The SizeInMBs and IntervalInSeconds parameters are optional.
+                              However, if specify a value for one of them, you must
+                              also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      vpcConfiguration:
+                        description: The details of the VPC of the Amazon ES destination.
+                        properties:
+                          roleARN:
+                            type: string
+                          securityGroupIDs:
+                            items:
+                              type: string
+                            type: array
+                          subnetIDs:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                    type: object
+                  amazonopensearchserviceDestinationConfiguration:
+                    description: The destination in Amazon OpenSearch Service. You
+                      can specify only one destination.
+                    properties:
+                      bufferingHints:
+                        description: Describes the buffering to perform before delivering
+                          data to the Amazon OpenSearch Service destination.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      clusterEndpoint:
+                        type: string
+                      domainARN:
+                        type: string
+                      indexName:
+                        type: string
+                      indexRotationPeriod:
+                        type: string
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      retryOptions:
+                        description: Configures retry behavior in case Kinesis Data
+                          Firehose is unable to deliver documents to Amazon OpenSearch
+                          Service.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: Describes hints for the buffering to perform
+                              before delivering data to the destination. These options
+                              are treated as hints, and therefore Kinesis Data Firehose
+                              might choose to use different values when it is optimal.
+                              The SizeInMBs and IntervalInSeconds parameters are optional.
+                              However, if specify a value for one of them, you must
+                              also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      typeName:
+                        type: string
+                      vpcConfiguration:
+                        description: The details of the VPC of the Amazon ES destination.
+                        properties:
+                          roleARN:
+                            type: string
+                          securityGroupIDs:
+                            items:
+                              type: string
+                            type: array
+                          subnetIDs:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                    type: object
+                  deliveryStreamEncryptionConfigurationInput:
+                    description: Used to specify the type and Amazon Resource Name
+                      (ARN) of the KMS key needed for Server-Side Encryption (SSE).
+                    properties:
+                      keyARN:
+                        type: string
+                      keyType:
+                        type: string
+                    type: object
+                  deliveryStreamName:
+                    description: The name of the delivery stream. This name must be
+                      unique per Amazon Web Services account in the same Amazon Web
+                      Services Region. If the delivery streams are in different accounts
+                      or different Regions, you can have multiple delivery streams
+                      with the same name.
+                    type: string
+                  deliveryStreamType:
+                    description: "The delivery stream type. This parameter can be
+                      one of the following values: \n * DirectPut: Provider applications
+                      access the delivery stream directly. \n * KinesisStreamAsSource:
+                      The delivery stream uses a Kinesis data stream as a source."
+                    type: string
+                  elasticsearchDestinationConfiguration:
+                    description: The destination in Amazon ES. You can specify only
+                      one destination.
+                    properties:
+                      bufferingHints:
+                        description: Describes the buffering to perform before delivering
+                          data to the Amazon ES destination.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      clusterEndpoint:
+                        type: string
+                      domainARN:
+                        type: string
+                      indexName:
+                        type: string
+                      indexRotationPeriod:
+                        type: string
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      retryOptions:
+                        description: Configures retry behavior in case Kinesis Data
+                          Firehose is unable to deliver documents to Amazon ES.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: Describes hints for the buffering to perform
+                              before delivering data to the destination. These options
+                              are treated as hints, and therefore Kinesis Data Firehose
+                              might choose to use different values when it is optimal.
+                              The SizeInMBs and IntervalInSeconds parameters are optional.
+                              However, if specify a value for one of them, you must
+                              also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      typeName:
+                        type: string
+                      vpcConfiguration:
+                        description: The details of the VPC of the Amazon ES destination.
+                        properties:
+                          roleARN:
+                            type: string
+                          securityGroupIDs:
+                            items:
+                              type: string
+                            type: array
+                          subnetIDs:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                    type: object
+                  extendedS3DestinationConfiguration:
+                    description: The destination in Amazon S3. You can specify only
+                      one destination.
+                    properties:
+                      bucketARN:
+                        type: string
+                      bufferingHints:
+                        description: Describes hints for the buffering to perform
+                          before delivering data to the destination. These options
+                          are treated as hints, and therefore Kinesis Data Firehose
+                          might choose to use different values when it is optimal.
+                          The SizeInMBs and IntervalInSeconds parameters are optional.
+                          However, if specify a value for one of them, you must also
+                          provide a value for the other.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      compressionFormat:
+                        type: string
+                      dataFormatConversionConfiguration:
+                        description: Specifies that you want Kinesis Data Firehose
+                          to convert data from the JSON format to the Parquet or ORC
+                          format before writing it to Amazon S3. Kinesis Data Firehose
+                          uses the serializer and deserializer that you specify, in
+                          addition to the column information from the Amazon Web Services
+                          Glue table, to deserialize your input data from JSON and
+                          then serialize it to the Parquet or ORC format. For more
+                          information, see Kinesis Data Firehose Record Format Conversion
+                          (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
+                        properties:
+                          enabled:
+                            type: boolean
+                          inputFormatConfiguration:
+                            description: Specifies the deserializer you want to use
+                              to convert the format of the input data. This parameter
+                              is required if Enabled is set to true.
+                            properties:
+                              deserializer:
+                                description: 'The deserializer you want Kinesis Data
+                                  Firehose to use for converting the input data from
+                                  JSON. Kinesis Data Firehose then serializes the
+                                  data to its final format using the Serializer. Kinesis
+                                  Data Firehose supports two types of deserializers:
+                                  the Apache Hive JSON SerDe (https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-JSON)
+                                  and the OpenX JSON SerDe (https://github.com/rcongiu/Hive-JSON-Serde).'
+                                properties:
+                                  hiveJSONSerDe:
+                                    description: The native Hive / HCatalog JsonSerDe.
+                                      Used by Kinesis Data Firehose for deserializing
+                                      data, which means converting it from the JSON
+                                      format in preparation for serializing it to
+                                      the Parquet or ORC format. This is one of two
+                                      deserializers you can choose, depending on which
+                                      one offers the functionality you need. The other
+                                      option is the OpenX SerDe.
+                                    properties:
+                                      timestampFormats:
+                                        items:
+                                          type: string
+                                        type: array
+                                    type: object
+                                  openXJSONSerDe:
+                                    description: The OpenX SerDe. Used by Kinesis
+                                      Data Firehose for deserializing data, which
+                                      means converting it from the JSON format in
+                                      preparation for serializing it to the Parquet
+                                      or ORC format. This is one of two deserializers
+                                      you can choose, depending on which one offers
+                                      the functionality you need. The other option
+                                      is the native Hive / HCatalog JsonSerDe.
+                                    properties:
+                                      caseInsensitive:
+                                        type: boolean
+                                      columnToJSONKeyMappings:
+                                        additionalProperties:
+                                          type: string
+                                        type: object
+                                      convertDotsInJSONKeysToUnderscores:
+                                        type: boolean
+                                    type: object
+                                type: object
+                            type: object
+                          outputFormatConfiguration:
+                            description: Specifies the serializer that you want Kinesis
+                              Data Firehose to use to convert the format of your data
+                              before it writes it to Amazon S3. This parameter is
+                              required if Enabled is set to true.
+                            properties:
+                              serializer:
+                                description: 'The serializer that you want Kinesis
+                                  Data Firehose to use to convert data to the target
+                                  format before writing it to Amazon S3. Kinesis Data
+                                  Firehose supports two types of serializers: the
+                                  ORC SerDe (https://hive.apache.org/javadocs/r1.2.2/api/org/apache/hadoop/hive/ql/io/orc/OrcSerde.html)
+                                  and the Parquet SerDe (https://hive.apache.org/javadocs/r1.2.2/api/org/apache/hadoop/hive/ql/io/parquet/serde/ParquetHiveSerDe.html).'
+                                properties:
+                                  orcSerDe:
+                                    description: A serializer to use for converting
+                                      data to the ORC format before storing it in
+                                      Amazon S3. For more information, see Apache
+                                      ORC (https://orc.apache.org/docs/).
+                                    properties:
+                                      blockSizeBytes:
+                                        format: int64
+                                        type: integer
+                                      bloomFilterColumns:
+                                        items:
+                                          type: string
+                                        type: array
+                                      bloomFilterFalsePositiveProbability:
+                                        type: number
+                                      compression:
+                                        type: string
+                                      dictionaryKeyThreshold:
+                                        type: number
+                                      enablePadding:
+                                        type: boolean
+                                      formatVersion:
+                                        type: string
+                                      paddingTolerance:
+                                        type: number
+                                      rowIndexStride:
+                                        format: int64
+                                        type: integer
+                                      stripeSizeBytes:
+                                        format: int64
+                                        type: integer
+                                    type: object
+                                  parquetSerDe:
+                                    description: A serializer to use for converting
+                                      data to the Parquet format before storing it
+                                      in Amazon S3. For more information, see Apache
+                                      Parquet (https://parquet.apache.org/documentation/latest/).
+                                    properties:
+                                      blockSizeBytes:
+                                        format: int64
+                                        type: integer
+                                      compression:
+                                        type: string
+                                      enableDictionaryCompression:
+                                        type: boolean
+                                      maxPaddingBytes:
+                                        format: int64
+                                        type: integer
+                                      pageSizeBytes:
+                                        format: int64
+                                        type: integer
+                                      writerVersion:
+                                        type: string
+                                    type: object
+                                type: object
+                            type: object
+                          schemaConfiguration:
+                            description: Specifies the schema to which you want Kinesis
+                              Data Firehose to configure your data before it writes
+                              it to Amazon S3. This parameter is required if Enabled
+                              is set to true.
+                            properties:
+                              catalogID:
+                                type: string
+                              databaseName:
+                                type: string
+                              region:
+                                type: string
+                              roleARN:
+                                type: string
+                              tableName:
+                                type: string
+                              versionID:
+                                type: string
+                            type: object
+                        type: object
+                      dynamicPartitioningConfiguration:
+                        description: The configuration of the dynamic partitioning
+                          mechanism that creates smaller data sets from the streaming
+                          data by partitioning it based on partition keys. Currently,
+                          dynamic partitioning is only supported for Amazon S3 destinations.
+                        properties:
+                          enabled:
+                            type: boolean
+                          retryOptions:
+                            description: The retry behavior in case Kinesis Data Firehose
+                              is unable to deliver data to an Amazon S3 prefix.
+                            properties:
+                              durationInSeconds:
+                                format: int64
+                                type: integer
+                            type: object
+                        type: object
+                      encryptionConfiguration:
+                        description: Describes the encryption for a destination in
+                          Amazon S3.
+                        properties:
+                          kmsEncryptionConfig:
+                            description: Describes an encryption key for a destination
+                              in Amazon S3.
+                            properties:
+                              awsKMSKeyARN:
+                                type: string
+                            type: object
+                          noEncryptionConfig:
+                            type: string
+                        type: object
+                      errorOutputPrefix:
+                        type: string
+                      prefix:
+                        type: string
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupConfiguration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: Describes hints for the buffering to perform
+                              before delivering data to the destination. These options
+                              are treated as hints, and therefore Kinesis Data Firehose
+                              might choose to use different values when it is optimal.
+                              The SizeInMBs and IntervalInSeconds parameters are optional.
+                              However, if specify a value for one of them, you must
+                              also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      s3BackupMode:
+                        type: string
+                    type: object
+                  httpEndpointDestinationConfiguration:
+                    description: Enables configuring Kinesis Firehose to deliver data
+                      to any HTTP endpoint destination. You can specify only one destination.
+                    properties:
+                      bufferingHints:
+                        description: Describes the buffering options that can be applied
+                          before data is delivered to the HTTP endpoint destination.
+                          Kinesis Data Firehose treats these options as hints, and
+                          it might choose to use more optimal values. The SizeInMBs
+                          and IntervalInSeconds parameters are optional. However,
+                          if specify a value for one of them, you must also provide
+                          a value for the other.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      endpointConfiguration:
+                        description: Describes the configuration of the HTTP endpoint
+                          to which Kinesis Firehose delivers data.
+                        properties:
+                          accessKey:
+                            type: string
+                          name:
+                            type: string
+                          url:
+                            type: string
+                        type: object
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      requestConfiguration:
+                        description: The configuration of the HTTP endpoint request.
+                        properties:
+                          commonAttributes:
+                            items:
+                              properties:
+                                attributeName:
+                                  type: string
+                                attributeValue:
+                                  type: string
+                              type: object
+                            type: array
+                          contentEncoding:
+                            type: string
+                        type: object
+                      retryOptions:
+                        description: Describes the retry behavior in case Kinesis
+                          Data Firehose is unable to deliver data to the specified
+                          HTTP endpoint destination, or if it doesn't receive a valid
+                          acknowledgment of receipt from the specified HTTP endpoint
+                          destination.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: Describes hints for the buffering to perform
+                              before delivering data to the destination. These options
+                              are treated as hints, and therefore Kinesis Data Firehose
+                              might choose to use different values when it is optimal.
+                              The SizeInMBs and IntervalInSeconds parameters are optional.
+                              However, if specify a value for one of them, you must
+                              also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                    type: object
+                  kinesisStreamSourceConfiguration:
+                    description: When a Kinesis data stream is used as the source
+                      for the delivery stream, a KinesisStreamSourceConfiguration
+                      containing the Kinesis data stream Amazon Resource Name (ARN)
+                      and the role ARN for the source stream.
+                    properties:
+                      kinesisStreamARN:
+                        type: string
+                      roleARN:
+                        type: string
+                    type: object
+                  kmsKeyARN:
+                    type: string
+                  kmsKeyARNRef:
+                    description: A Reference to a named object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  kmsKeyARNSelector:
+                    description: A Selector selects an object.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  redshiftDestinationConfiguration:
+                    description: The destination in Amazon Redshift. You can specify
+                      only one destination.
+                    properties:
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      clusterJDBCURL:
+                        type: string
+                      copyCommand:
+                        description: Describes a COPY command for Amazon Redshift.
+                        properties:
+                          copyOptions:
+                            type: string
+                          dataTableColumns:
+                            type: string
+                          dataTableName:
+                            type: string
+                        type: object
+                      password:
+                        type: string
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      retryOptions:
+                        description: Configures retry behavior in case Kinesis Data
+                          Firehose is unable to deliver documents to Amazon Redshift.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupConfiguration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: Describes hints for the buffering to perform
+                              before delivering data to the destination. These options
+                              are treated as hints, and therefore Kinesis Data Firehose
+                              might choose to use different values when it is optimal.
+                              The SizeInMBs and IntervalInSeconds parameters are optional.
+                              However, if specify a value for one of them, you must
+                              also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: Describes hints for the buffering to perform
+                              before delivering data to the destination. These options
+                              are treated as hints, and therefore Kinesis Data Firehose
+                              might choose to use different values when it is optimal.
+                              The SizeInMBs and IntervalInSeconds parameters are optional.
+                              However, if specify a value for one of them, you must
+                              also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      username:
+                        type: string
+                    type: object
+                  region:
+                    description: Region is which region the DeliveryStream will be
+                      created.
+                    type: string
+                  s3DestinationConfiguration:
+                    description: '[Deprecated] The destination in Amazon S3. You can
+                      specify only one destination.'
+                    properties:
+                      bucketARN:
+                        type: string
+                      bufferingHints:
+                        description: Describes hints for the buffering to perform
+                          before delivering data to the destination. These options
+                          are treated as hints, and therefore Kinesis Data Firehose
+                          might choose to use different values when it is optimal.
+                          The SizeInMBs and IntervalInSeconds parameters are optional.
+                          However, if specify a value for one of them, you must also
+                          provide a value for the other.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      compressionFormat:
+                        type: string
+                      encryptionConfiguration:
+                        description: Describes the encryption for a destination in
+                          Amazon S3.
+                        properties:
+                          kmsEncryptionConfig:
+                            description: Describes an encryption key for a destination
+                              in Amazon S3.
+                            properties:
+                              awsKMSKeyARN:
+                                type: string
+                            type: object
+                          noEncryptionConfig:
+                            type: string
+                        type: object
+                      errorOutputPrefix:
+                        type: string
+                      prefix:
+                        type: string
+                      roleARN:
+                        type: string
+                    type: object
+                  splunkDestinationConfiguration:
+                    description: The destination in Splunk. You can specify only one
+                      destination.
+                    properties:
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      hECAcknowledgmentTimeoutInSeconds:
+                        format: int64
+                        type: integer
+                      hECEndpoint:
+                        type: string
+                      hECEndpointType:
+                        type: string
+                      hECToken:
+                        type: string
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      retryOptions:
+                        description: Configures retry behavior in case Kinesis Data
+                          Firehose is unable to deliver documents to Splunk, or if
+                          it doesn't receive an acknowledgment from Splunk.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: Describes hints for the buffering to perform
+                              before delivering data to the destination. These options
+                              are treated as hints, and therefore Kinesis Data Firehose
+                              might choose to use different values when it is optimal.
+                              The SizeInMBs and IntervalInSeconds parameters are optional.
+                              However, if specify a value for one of them, you must
+                              also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                    type: object
+                  tags:
+                    description: "A set of tags to assign to the delivery stream.
+                      A tag is a key-value pair that you can define and assign to
+                      Amazon Web Services resources. Tags are metadata. For example,
+                      you can add friendly names and descriptions or other types of
+                      information that can help you distinguish the delivery stream.
+                      For more information about tags, see Using Cost Allocation Tags
+                      (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
+                      in the Amazon Web Services Billing and Cost Management User
+                      Guide. \n You can specify up to 50 tags when creating a delivery
+                      stream."
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                required:
+                - deliveryStreamName
+                - region
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: 'THIS IS A BETA FIELD. It is on by default but can be
+                  opted out through a Crossplane feature flag. ManagementPolicies
+                  specify the array of actions Crossplane is allowed to take on the
+                  managed and external resources. This field is planned to replace
+                  the DeletionPolicy field in a future release. Currently, both could
+                  be set independently and non-default values would be honored if
+                  the feature flag is enabled. If both are custom, the DeletionPolicy
+                  field will be ignored. See the design doc for more information:
+                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                items:
+                  description: A ManagementAction represents an action that the Crossplane
+                    controllers can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: Resolution specifies whether resolution of this
+                          reference is required. The default is 'Required', which
+                          means the reconcile will fail if the reference cannot be
+                          resolved. 'Optional' means this reference will be a no-op
+                          if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: Resolve specifies when this reference should
+                          be resolved. The default is 'IfNotPresent', which will attempt
+                          to resolve the reference only when the corresponding field
+                          is not present. Use 'Always' to resolve the reference on
+                          every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
+              publishConnectionDetailsTo:
+                description: PublishConnectionDetailsTo specifies the connection secret
+                  config which contains a name, metadata and a reference to secret
+                  store config to which any connection details for this managed resource
+                  should be written. Connection details frequently include the endpoint,
+                  username, and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: SecretStoreConfigRef specifies which secret store
+                      config should be used for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: Resolution specifies whether resolution of
+                              this reference is required. The default is 'Required',
+                              which means the reconcile will fail if the reference
+                              cannot be resolved. 'Optional' means this reference
+                              will be a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: Resolve specifies when this reference should
+                              be resolved. The default is 'IfNotPresent', which will
+                              attempt to resolve the reference only when the corresponding
+                              field is not present. Use 'Always' to resolve the reference
+                              on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations are the annotations to be added to
+                          connection secret. - For Kubernetes secrets, this will be
+                          used as "metadata.annotations". - It is up to Secret Store
+                          implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels are the labels/tags to be added to connection
+                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store
+                          types.
+                        type: object
+                      type:
+                        description: Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource. This field is planned to be replaced in a future
+                  release in favor of PublishConnectionDetailsTo. Currently, both
+                  could be set independently and connection details would be published
+                  to both without affecting each other.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: DeliveryStreamStatus defines the observed state of DeliveryStream.
+            properties:
+              atProvider:
+                description: DeliveryStreamObservation defines the observed state
+                  of DeliveryStream
+                properties:
+                  deliveryStreamARN:
+                    description: The Amazon Resource Name (ARN) of the delivery stream.
+                      For more information, see Amazon Resource Names (ARNs) and Amazon
+                      Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+                    type: string
+                  deliveryStreamStatus:
+                    description: The status of the delivery stream. If the status
+                      of a delivery stream is CREATING_FAILED, this status doesn't
+                      change, and you can't invoke CreateDeliveryStream again on it.
+                      However, you can invoke the DeleteDeliveryStream operation to
+                      delete it.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

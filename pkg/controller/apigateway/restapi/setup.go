@@ -37,6 +37,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupRestAPI adds a controller that reconciles RestAPI.
@@ -58,6 +59,7 @@ func SetupRestAPI(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
@@ -86,7 +88,7 @@ type custom struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.RestAPI, obj *svcsdk.GetRestApiInput) error {
-	obj.RestApiId = pointer.String(meta.GetExternalName(cr))
+	obj.RestApiId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -110,7 +112,7 @@ func postCreate(_ context.Context, cr *svcapitypes.RestAPI, resp *svcsdk.RestApi
 
 func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.RestAPI, obj *svcsdk.UpdateRestApiInput) error {
 
-	rapi, err := c.Client.GetRestAPIByID(ctx, pointer.String(meta.GetExternalName(cr)))
+	rapi, err := c.Client.GetRestAPIByID(ctx, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 	if err != nil {
 		return errors.Wrap(err, "cannot get rest api")
 	}
@@ -135,13 +137,13 @@ func (c *custom) preUpdate(ctx context.Context, cr *svcapitypes.RestAPI, obj *sv
 	}
 
 	obj.PatchOperations = pOps
-	obj.RestApiId = pointer.String(meta.GetExternalName(cr))
+	obj.RestApiId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.RestAPI, obj *svcsdk.DeleteRestApiInput) (bool, error) {
-	obj.RestApiId = pointer.String(meta.GetExternalName(cr))
+	obj.RestApiId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -175,18 +177,18 @@ func isUpToDate(_ context.Context, cr *svcapitypes.RestAPI, cur *svcsdk.RestApi)
 }
 
 func lateInitialize(in *svcapitypes.RestAPIParameters, cur *svcsdk.RestApi) error {
-	in.APIKeySource = pointer.LateInitializeStringPtr(in.APIKeySource, cur.ApiKeySource)
-	in.BinaryMediaTypes = pointer.LateInitializeStringPtrSlice(in.BinaryMediaTypes, cur.BinaryMediaTypes)
-	in.Description = pointer.LateInitializeStringPtr(in.Description, cur.Description)
-	in.DisableExecuteAPIEndpoint = pointer.LateInitializeBoolPtr(in.DisableExecuteAPIEndpoint, cur.DisableExecuteApiEndpoint)
-	in.MinimumCompressionSize = pointer.LateInitializeInt64Ptr(in.MinimumCompressionSize, cur.MinimumCompressionSize)
+	in.APIKeySource = pointer.LateInitialize(in.APIKeySource, cur.ApiKeySource)
+	in.BinaryMediaTypes = pointer.LateInitializeSlice(in.BinaryMediaTypes, cur.BinaryMediaTypes)
+	in.Description = pointer.LateInitialize(in.Description, cur.Description)
+	in.DisableExecuteAPIEndpoint = pointer.LateInitialize(in.DisableExecuteAPIEndpoint, cur.DisableExecuteApiEndpoint)
+	in.MinimumCompressionSize = pointer.LateInitialize(in.MinimumCompressionSize, cur.MinimumCompressionSize)
 
 	if cur.EndpointConfiguration != nil {
 		if in.EndpointConfiguration == nil {
 			in.EndpointConfiguration = &svcapitypes.EndpointConfiguration{}
 		}
-		in.EndpointConfiguration.Types = pointer.LateInitializeStringPtrSlice(in.EndpointConfiguration.Types, cur.EndpointConfiguration.Types)
-		in.EndpointConfiguration.VPCEndpointIDs = pointer.LateInitializeStringPtrSlice(in.EndpointConfiguration.VPCEndpointIDs, cur.EndpointConfiguration.VpcEndpointIds)
+		in.EndpointConfiguration.Types = pointer.LateInitializeSlice(in.EndpointConfiguration.Types, cur.EndpointConfiguration.Types)
+		in.EndpointConfiguration.VPCEndpointIDs = pointer.LateInitializeSlice(in.EndpointConfiguration.VPCEndpointIDs, cur.EndpointConfiguration.VpcEndpointIds)
 	}
 
 	return lateInitializePolicies(in, cur)
@@ -226,7 +228,7 @@ func lateInitializePolicies(in *svcapitypes.RestAPIParameters, cur *svcsdk.RestA
 			return err
 		}
 	}
-	in.Policy = pointer.LateInitializeStringPtr(in.Policy, cur.Policy)
+	in.Policy = pointer.LateInitialize(in.Policy, cur.Policy)
 
 	return err
 }

@@ -124,6 +124,24 @@ type CertificateParameters struct {
 	// +immutable
 	DomainValidationOptions []*DomainValidationOption `json:"domainValidationOptions,omitempty"`
 
+	// Specifies the algorithm of the public and private key pair that your certificate
+	// uses to encrypt data. RSA is the default key algorithm for ACM certificates.
+	// Elliptic Curve Digital Signature Algorithm (ECDSA) keys are smaller, offering
+	// security comparable to RSA keys but with greater computing efficiency. However,
+	// ECDSA is not supported by all network clients. Some AWS services may require RSA
+	// keys, or only support ECDSA keys of a particular size, while others allow the
+	// use of either RSA and ECDSA keys to ensure that compatibility is not broken.
+	// Check the requirements for the AWS service where you plan to deploy your
+	// certificate.
+	// Default: RSA_2048
+	// Note: ACM can request the issue of new certificates using the following algorithms:
+	// "RSA_2048", "EC_prime256v1" and "EC_secp384r1".
+	// The remaining algorithms are supported only for imported certificates.
+	// See also AWS docs: https://docs.aws.amazon.com/acm/latest/userguide/acm-certificate.html#algorithms.title
+	// +optional
+	// +immutable
+	KeyAlgorithm *string `json:"keyAlgorithm,omitempty"`
+
 	// Currently, you can use this parameter to specify whether to add the certificate
 	// to a certificate transparency log. Certificate transparency makes it possible to
 	// detect SSL/TLS certificates that have been mistakenly or maliciously issued.

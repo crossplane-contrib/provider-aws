@@ -243,7 +243,7 @@ func getContainerOverridesFromProperties(co *svcsdk.ContainerProperties) *svcapi
 
 func generateSubmitJobInput(cr *svcapitypes.Job) *svcsdk.SubmitJobInput { //nolint:gocyclo
 	res := &svcsdk.SubmitJobInput{}
-	res.JobName = pointer.String(cr.Name)
+	res.JobName = pointer.ToOrNilIfZeroValue(cr.Name)
 
 	if cr.Spec.ForProvider.ArrayProperties != nil {
 		res.ArrayProperties = &svcsdk.ArrayProperties{Size: cr.Spec.ForProvider.ArrayProperties.Size}
@@ -266,8 +266,8 @@ func generateSubmitJobInput(cr *svcapitypes.Job) *svcsdk.SubmitJobInput { //noli
 		res.DependsOn = nil
 	}
 
-	res.JobDefinition = pointer.String(cr.Spec.ForProvider.JobDefinition)
-	res.JobQueue = pointer.String(cr.Spec.ForProvider.JobQueue)
+	res.JobDefinition = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.JobDefinition)
+	res.JobQueue = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.JobQueue)
 
 	np := cr.Spec.ForProvider.NodeOverrides
 	if np != nil {
@@ -279,7 +279,7 @@ func generateSubmitJobInput(cr *svcapitypes.Job) *svcsdk.SubmitJobInput { //noli
 				if noProOvers.ContainerOverrides != nil {
 					sdkNoProOver.ContainerOverrides = assignContainerOverrides(noProOvers.ContainerOverrides)
 				}
-				sdkNoProOver.TargetNodes = pointer.String(noProOvers.TargetNodes)
+				sdkNoProOver.TargetNodes = pointer.ToOrNilIfZeroValue(noProOvers.TargetNodes)
 				noProOver = append(noProOver, sdkNoProOver)
 			}
 			nodeOvers.NodePropertyOverrides = noProOver
@@ -305,7 +305,7 @@ func generateSubmitJobInput(cr *svcapitypes.Job) *svcsdk.SubmitJobInput { //noli
 			eoes := []*svcsdk.EvaluateOnExit{}
 			for _, eoe := range cr.Spec.ForProvider.RetryStrategy.EvaluateOnExit {
 				eoes = append(eoes, &svcsdk.EvaluateOnExit{
-					Action:         pointer.String(eoe.Action),
+					Action:         pointer.ToOrNilIfZeroValue(eoe.Action),
 					OnExitCode:     eoe.OnExitCode,
 					OnReason:       eoe.OnReason,
 					OnStatusReason: eoe.OnStatusReason,
@@ -351,8 +351,8 @@ func assignContainerOverrides(co *svcapitypes.ContainerOverrides) *svcsdk.Contai
 			resReqs := []*svcsdk.ResourceRequirement{}
 			for _, resReq := range co.ResourceRequirements {
 				resReqs = append(resReqs, &svcsdk.ResourceRequirement{
-					Type:  pointer.String(resReq.ResourceType),
-					Value: pointer.String(resReq.Value),
+					Type:  pointer.ToOrNilIfZeroValue(resReq.ResourceType),
+					Value: pointer.ToOrNilIfZeroValue(resReq.Value),
 				})
 			}
 			specco.ResourceRequirements = resReqs
@@ -363,7 +363,7 @@ func assignContainerOverrides(co *svcapitypes.ContainerOverrides) *svcsdk.Contai
 
 func generateTerminateJobInput(cr *svcapitypes.Job, msg *string) *svcsdk.TerminateJobInput {
 	res := &svcsdk.TerminateJobInput{
-		JobId:  pointer.String(meta.GetExternalName(cr)),
+		JobId:  pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		Reason: msg,
 	}
 

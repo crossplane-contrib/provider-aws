@@ -40,14 +40,6 @@ func (mg *ELB) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this ELB.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *ELB) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this ELB.
 func (mg *ELB) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *ELB) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this ELB.
 func (mg *ELB) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this ELB.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *ELB) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this ELB.
@@ -116,14 +100,6 @@ func (mg *ELBAttachment) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this ELBAttachment.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *ELBAttachment) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this ELBAttachment.
 func (mg *ELBAttachment) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -152,14 +128,6 @@ func (mg *ELBAttachment) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this ELBAttachment.
 func (mg *ELBAttachment) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this ELBAttachment.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *ELBAttachment) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this ELBAttachment.

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
@@ -31,6 +32,7 @@ import (
 	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
 	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
+	stscredsv1 "github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	requestv1 "github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -80,6 +82,18 @@ var userAgentV1 = requestv1.NamedHandler{
 	Name: "crossplane.UserAgentHandler",
 	Fn:   requestv1.MakeAddToUserAgentHandler("crossplane-provider-aws", version.Version),
 }
+
+// userAgentV2 constructs the Crossplane user agent for AWS v2 clients
+var userAgentV2 = config.WithAPIOptions([]func(*middleware.Stack) error{
+	awsmiddleware.AddUserAgentKeyValue("crossplane-provider-aws", version.Version),
+})
+
+var (
+	muV1            sync.Mutex
+	muV2            sync.Mutex
+	defaultConfigV2 *aws.Config
+	defaultConfigV1 *awsv1.Config
+)
 
 // GetConfig constructs an *aws.Config that can be used to authenticate to AWS
 // API by the AWS clients.
@@ -178,7 +192,7 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //no
 			HostnameImmutable: pointer.BoolValue(pc.Spec.Endpoint.HostnameImmutable),
 			PartitionID:       pointer.StringValue(pc.Spec.Endpoint.PartitionID),
 			SigningName:       pointer.StringValue(pc.Spec.Endpoint.SigningName),
-			SigningRegion:     pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningRegion:     pointer.StringValue(pointer.LateInitialize(pc.Spec.Endpoint.SigningRegion, &region)),
 			SigningMethod:     pointer.StringValue(pc.Spec.Endpoint.SigningMethod),
 		}
 		// Only IAM does not have a region parameter and "aws-global" is used in
@@ -187,7 +201,7 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //no
 		if region == "aws-global" {
 			switch pointer.StringValue(pc.Spec.Endpoint.PartitionID) {
 			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
-				e.SigningRegion = pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+				e.SigningRegion = pointer.StringValue(pointer.LateInitialize(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
 			}
@@ -376,25 +390,37 @@ func getWebidentityTokenFilePath() string {
 	return webIdentityTokenFileDefaultPath
 }
 
+// GetDefaultConfigV2 returns a shallow copy of a default SDK
+// config. We use this to get a shared credentials cache.
+func GetDefaultConfigV2(ctx context.Context) (aws.Config, error) {
+	// TODO: Possible performance improvement by using an RWMutex and RLock
+	//       to allow parallel copying.
+	//       However, this would likely increase the complexity of the code.
+	muV2.Lock()
+	defer muV2.Unlock()
+
+	if defaultConfigV2 == nil {
+		cfg, err := config.LoadDefaultConfig(ctx, userAgentV2)
+		if err != nil {
+			return aws.Config{}, errors.Wrap(err, "failed to load default AWS config")
+		}
+		defaultConfigV2 = &cfg
+	}
+
+	return defaultConfigV2.Copy(), nil
+}
+
 // UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
 func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
-	if region == GlobalRegion {
-		cfg, err := config.LoadDefaultConfig(
-			ctx,
-			middlewareV2,
-		)
-		return &cfg, errors.Wrap(err, "failed to load default AWS config")
-	}
-	cfg, err := config.LoadDefaultConfig(
-		ctx,
-		middlewareV2,
-		config.WithRegion(region),
-	)
+	cfg, err := GetDefaultConfigV2(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to load default AWS config with region %s", region))
+		return nil, err
 	}
-	return &cfg, err
+	if region != GlobalRegion {
+		cfg.Region = region
+	}
+	return &cfg, nil
 }
 
 // NOTE(muvaf): ACK-generated controllers use aws/aws-sdk-go instead of
@@ -637,28 +663,41 @@ func UsePodServiceAccountV1AssumeRoleWithWebIdentity(ctx context.Context, _ []by
 	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
 }
 
+// GetDefaultConfigV1 returns a shallow copy of a default SDK
+// config. We use this to get a shared credentials cache.
+func GetDefaultConfigV1() (*awsv1.Config, error) {
+	// TODO: Possible performance improvement by using an RWMutex and RLock
+	//       to allow parallel copying.
+	//       However, this would likely increase the complexity of the code.
+	muV1.Lock()
+	defer muV1.Unlock()
+	if defaultConfigV1 == nil {
+		cfg := awsv1.NewConfig()
+		sess, err := GetSessionV1(cfg)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to load default AWS config")
+		}
+		envCfg, err := config.NewEnvConfig()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to load default AWS env config")
+		}
+		creds := stscredsv1.NewWebIdentityCredentials(sess, envCfg.RoleARN, envCfg.RoleSessionName, envCfg.WebIdentityTokenFilePath) //nolint:staticcheck
+		defaultConfigV1 = cfg.WithCredentials(creds)
+	}
+	return defaultConfigV1.Copy(), nil
+}
+
 // UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
 func UsePodServiceAccountV1(ctx context.Context, _ []byte, pc *v1beta1.ProviderConfig, _, region string) (*awsv1.Config, error) {
-	cfg, err := config.LoadDefaultConfig(
-		ctx,
-		middlewareV2,
-	)
+	cfg, err := GetDefaultConfigV1()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to load default AWS config")
+		return nil, err
 	}
-	v2creds, err := cfg.Credentials.Retrieve(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to retrieve credentials")
+	if region != GlobalRegion {
+		cfg = cfg.WithRegion(region)
 	}
-	if region == GlobalRegion {
-		region = cfg.Region
-	}
-	v1creds := credentialsv1.NewStaticCredentials(
-		v2creds.AccessKeyID,
-		v2creds.SecretAccessKey,
-		v2creds.SessionToken)
-	return SetResolverV1(pc, awsv1.NewConfig().WithCredentials(v1creds).WithRegion(region)), nil
+	return SetResolverV1(pc, cfg), nil
 }
 
 // SetResolverV1 parses annotations from the managed resource
@@ -692,7 +731,7 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 			URL:           fullURL,
 			PartitionID:   pointer.StringValue(pc.Spec.Endpoint.PartitionID),
 			SigningName:   pointer.StringValue(pc.Spec.Endpoint.SigningName),
-			SigningRegion: pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region)),
+			SigningRegion: pointer.StringValue(pointer.LateInitialize(pc.Spec.Endpoint.SigningRegion, &region)),
 			SigningMethod: pointer.StringValue(pc.Spec.Endpoint.SigningMethod),
 		}
 		// Only IAM does not have a region parameter and "aws-global" is used in
@@ -701,7 +740,7 @@ func SetResolverV1(pc *v1beta1.ProviderConfig, cfg *awsv1.Config) *awsv1.Config 
 		if region == "aws-global" {
 			switch pointer.StringValue(pc.Spec.Endpoint.PartitionID) {
 			case "aws-us-gov", "aws-cn", "aws-iso", "aws-iso-b":
-				e.SigningRegion = pointer.StringValue(pointer.LateInitializeStringPtr(pc.Spec.Endpoint.SigningRegion, &region))
+				e.SigningRegion = pointer.StringValue(pointer.LateInitialize(pc.Spec.Endpoint.SigningRegion, &region))
 			default:
 				e.SigningRegion = "us-east-1"
 			}

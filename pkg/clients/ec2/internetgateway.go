@@ -78,7 +78,7 @@ func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2types.Intern
 		return
 	}
 	if ig.Attachments != nil && len(ig.Attachments) > 0 {
-		in.VPCID = pointer.LateInitializeStringPtr(in.VPCID, ig.Attachments[0].VpcId)
+		in.VPCID = pointer.LateInitialize(in.VPCID, ig.Attachments[0].VpcId)
 	}
 	if len(in.Tags) == 0 && len(ig.Tags) != 0 {
 		in.Tags = BuildFromEC2TagsV1Beta1(ig.Tags)

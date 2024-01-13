@@ -29,7 +29,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,11 +37,7 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-)
-
-const (
-	errNotDBInstance    = "managed resource is not a DocDB instance custom resource"
-	errKubeUpdateFailed = "cannot update DocDB instance custom resource"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupDBInstance adds a controller that reconciles a DBInstance.
@@ -56,9 +51,10 @@ func SetupDBInstance(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -101,7 +97,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesInput) error {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -144,16 +140,16 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.DBInstance, resp *
 func lateInitialize(cr *svcapitypes.DBInstanceParameters, resp *svcsdk.DescribeDBInstancesOutput) error {
 	instance := resp.DBInstances[0]
 
-	cr.AvailabilityZone = pointer.LateInitializeStringPtr(cr.AvailabilityZone, instance.AvailabilityZone)
-	cr.AutoMinorVersionUpgrade = pointer.LateInitializeBoolPtr(cr.AutoMinorVersionUpgrade, instance.AutoMinorVersionUpgrade)
-	cr.CACertificateIdentifier = pointer.LateInitializeStringPtr(cr.CACertificateIdentifier, instance.CACertificateIdentifier)
-	cr.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(cr.PreferredMaintenanceWindow, instance.PreferredMaintenanceWindow)
-	cr.PromotionTier = pointer.LateInitializeInt64Ptr(cr.PromotionTier, instance.PromotionTier)
+	cr.AvailabilityZone = pointer.LateInitialize(cr.AvailabilityZone, instance.AvailabilityZone)
+	cr.AutoMinorVersionUpgrade = pointer.LateInitialize(cr.AutoMinorVersionUpgrade, instance.AutoMinorVersionUpgrade)
+	cr.CACertificateIdentifier = pointer.LateInitialize(cr.CACertificateIdentifier, instance.CACertificateIdentifier)
+	cr.PreferredMaintenanceWindow = pointer.LateInitialize(cr.PreferredMaintenanceWindow, instance.PreferredMaintenanceWindow)
+	cr.PromotionTier = pointer.LateInitialize(cr.PromotionTier, instance.PromotionTier)
 	return nil
 }
 
 func preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) error {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.CACertificateIdentifier = cr.Spec.ForProvider.CACertificateIdentifier
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 	return nil
@@ -167,7 +163,7 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, resp
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.CreateDBInstanceInput) error {
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.DBClusterIdentifier = cr.Spec.ForProvider.DBClusterIdentifier
 	return nil
 }
@@ -187,7 +183,7 @@ func preDelete(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.Delete
 		return true, nil
 	}
 
-	obj.DBInstanceIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -216,18 +212,4 @@ func getConnectionDetails(cr *svcapitypes.DBInstance) managed.ConnectionDetails 
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint.Address)),
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(pointer.Int64Value(cr.Status.AtProvider.Endpoint.Port)))),
 	}
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBInstance)
-	if !ok {
-		return errors.New(errNotDBInstance)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

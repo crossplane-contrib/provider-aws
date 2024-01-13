@@ -43,6 +43,7 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -65,9 +66,10 @@ func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -110,7 +112,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersInput) error {
-	obj.DBClusterIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -121,10 +123,11 @@ func (e *hooks) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, resp
 
 	obs.ConnectionDetails = getConnectionDetails(cr)
 
-	pw, _, _ := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-
-	if pw != "" {
-		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+	if !meta.WasDeleted(cr) {
+		pw, _, _ := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+		if pw != "" {
+			obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+		}
 	}
 
 	switch pointer.StringValue(cr.Status.AtProvider.Status) {
@@ -147,16 +150,16 @@ func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDB
 		cr.AvailabilityZones = cluster.AvailabilityZones
 	}
 
-	cr.BackupRetentionPeriod = pointer.LateInitializeInt64Ptr(cr.BackupRetentionPeriod, cluster.BackupRetentionPeriod)
-	cr.DBClusterParameterGroupName = pointer.LateInitializeStringPtr(cr.DBClusterParameterGroupName, cluster.DBClusterParameterGroup)
-	cr.DBSubnetGroupName = pointer.LateInitializeStringPtr(cr.DBSubnetGroupName, cluster.DBSubnetGroup)
-	cr.DeletionProtection = pointer.LateInitializeBoolPtr(cr.DeletionProtection, cluster.DeletionProtection)
-	cr.EngineVersion = pointer.LateInitializeStringPtr(cr.EngineVersion, cluster.EngineVersion)
-	cr.KMSKeyID = pointer.LateInitializeStringPtr(cr.KMSKeyID, cluster.KmsKeyId)
-	cr.Port = pointer.LateInitializeInt64Ptr(cr.Port, cluster.Port)
-	cr.PreferredBackupWindow = pointer.LateInitializeStringPtr(cr.PreferredBackupWindow, cluster.PreferredBackupWindow)
-	cr.PreferredMaintenanceWindow = pointer.LateInitializeStringPtr(cr.PreferredMaintenanceWindow, cluster.PreferredMaintenanceWindow)
-	cr.StorageEncrypted = pointer.LateInitializeBoolPtr(cr.StorageEncrypted, cluster.StorageEncrypted)
+	cr.BackupRetentionPeriod = pointer.LateInitialize(cr.BackupRetentionPeriod, cluster.BackupRetentionPeriod)
+	cr.DBClusterParameterGroupName = pointer.LateInitialize(cr.DBClusterParameterGroupName, cluster.DBClusterParameterGroup)
+	cr.DBSubnetGroupName = pointer.LateInitialize(cr.DBSubnetGroupName, cluster.DBSubnetGroup)
+	cr.DeletionProtection = pointer.LateInitialize(cr.DeletionProtection, cluster.DeletionProtection)
+	cr.EngineVersion = pointer.LateInitialize(cr.EngineVersion, cluster.EngineVersion)
+	cr.KMSKeyID = pointer.LateInitialize(cr.KMSKeyID, cluster.KmsKeyId)
+	cr.Port = pointer.LateInitialize(cr.Port, cluster.Port)
+	cr.PreferredBackupWindow = pointer.LateInitialize(cr.PreferredBackupWindow, cluster.PreferredBackupWindow)
+	cr.PreferredMaintenanceWindow = pointer.LateInitialize(cr.PreferredMaintenanceWindow, cluster.PreferredMaintenanceWindow)
+	cr.StorageEncrypted = pointer.LateInitialize(cr.StorageEncrypted, cluster.StorageEncrypted)
 
 	if cr.EnableCloudwatchLogsExports == nil {
 		cr.EnableCloudwatchLogsExports = cluster.EnabledCloudwatchLogsExports
@@ -172,10 +175,6 @@ func lateInitialize(cr *svcapitypes.DBClusterParameters, resp *svcsdk.DescribeDB
 }
 
 func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput) (bool, string, error) {
-	if meta.WasDeleted(cr) {
-		return true, "", nil // There is no need to check for updates when we want to delete.
-	}
-
 	cluster := resp.DBClusters[0]
 
 	_, pwChanged, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
@@ -199,7 +198,7 @@ func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp 
 }
 
 func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
-	obj.DBClusterIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.CloudwatchLogsExportConfiguration = generateCloudWatchExportConfiguration(
 		cr.Spec.ForProvider.EnableCloudwatchLogsExports,
 		cr.Status.AtProvider.EnabledCloudwatchLogsExports)
@@ -224,7 +223,7 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.DBCluster, resp *s
 }
 
 func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error { //nolint:gocyclo
-	obj.DBClusterIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	pw, _, err := e.getPasswordFromRef(ctx, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if resource.IgnoreNotFound(err) != nil {
@@ -240,7 +239,7 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *s
 		}
 	}
 
-	obj.MasterUserPassword = pointer.String(pw)
+	obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(pw)
 	if cr.Spec.ForProvider.RestoreFrom != nil {
 		switch cr.Spec.ForProvider.RestoreFrom.Source {
 		case svcapitypes.RestoreSourceSnapshot:
@@ -369,7 +368,7 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterInput) (bool, error) {
-	obj.DBClusterIdentifier = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.FinalDBSnapshotIdentifier = cr.Spec.ForProvider.FinalDBSnapshotIdentifier
 	obj.SkipFinalSnapshot = cr.Spec.ForProvider.SkipFinalSnapshot
 	return false, nil
@@ -482,20 +481,6 @@ func getConnectionDetails(cr *svcapitypes.DBCluster) managed.ConnectionDetails {
 		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(pointer.Int64Value(cr.Spec.ForProvider.Port)))),
 		"readerEndpoint":                          []byte(pointer.StringValue(cr.Status.AtProvider.ReaderEndpoint)),
 	}
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBCluster)
-	if !ok {
-		return errors.New(errNotDBCluster)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
 func (e *hooks) savePasswordSecret(ctx context.Context, cr *svcapitypes.DBCluster, pw string) error {

@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -61,6 +62,7 @@ func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -87,8 +89,8 @@ func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
 // LateInitialize fills the empty fields in *svcapitypes.FunctionParameters with
 // the values seen in svcsdk.GetFunctionOutput.
 func LateInitialize(cr *svcapitypes.FunctionParameters, resp *svcsdk.GetFunctionOutput) error {
-	cr.MemorySize = pointer.LateInitializeInt64Ptr(cr.MemorySize, resp.Configuration.MemorySize)
-	cr.Timeout = pointer.LateInitializeInt64Ptr(cr.Timeout, resp.Configuration.Timeout)
+	cr.MemorySize = pointer.LateInitialize(cr.MemorySize, resp.Configuration.MemorySize)
+	cr.Timeout = pointer.LateInitialize(cr.Timeout, resp.Configuration.Timeout)
 	if cr.TracingConfig == nil {
 		cr.TracingConfig = &svcapitypes.TracingConfig{Mode: resp.Configuration.TracingConfig.Mode}
 	}
@@ -474,14 +476,12 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 	}
 	if cr.Spec.ForProvider.Environment != nil {
 		f4 := &svcsdk.Environment{}
-		if cr.Spec.ForProvider.Environment.Variables != nil {
-			f4f0 := map[string]*string{}
-			for f4f0key, f4f0valiter := range cr.Spec.ForProvider.Environment.Variables {
-				var f4f0val = *f4f0valiter
-				f4f0[f4f0key] = &f4f0val
-			}
-			f4.SetVariables(f4f0)
+		f4f0 := map[string]*string{}
+		for f4f0key, f4f0valiter := range cr.Spec.ForProvider.Environment.Variables {
+			var f4f0val = *f4f0valiter
+			f4f0[f4f0key] = &f4f0val
 		}
+		f4.SetVariables(f4f0)
 		res.SetEnvironment(f4)
 	}
 	if cr.Spec.ForProvider.FileSystemConfigs != nil {
@@ -556,22 +556,21 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 	}
 	if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters != nil {
 		f19 := &svcsdk.VpcConfig{}
-		if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs != nil {
-			f19f0 := []*string{}
-			for _, f19f0iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs {
-				var f19f0elem = *f19f0iter
-				f19f0 = append(f19f0, &f19f0elem)
-			}
-			f19.SetSecurityGroupIds(f19f0)
+
+		f19f0 := []*string{}
+		for _, f19f0iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs {
+			var f19f0elem = *f19f0iter
+			f19f0 = append(f19f0, &f19f0elem)
 		}
-		if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs != nil {
-			f19f1 := []*string{}
-			for _, f19f1iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs {
-				var f19f1elem = *f19f1iter
-				f19f1 = append(f19f1, &f19f1elem)
-			}
-			f19.SetSubnetIds(f19f1)
+		f19.SetSecurityGroupIds(f19f0)
+
+		f19f1 := []*string{}
+		for _, f19f1iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs {
+			var f19f1elem = *f19f1iter
+			f19f1 = append(f19f1, &f19f1elem)
 		}
+		f19.SetSubnetIds(f19f1)
+
 		res.SetVpcConfig(f19)
 	}
 	return res

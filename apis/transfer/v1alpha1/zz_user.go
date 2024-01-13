@@ -86,21 +86,6 @@ type UserParameters struct {
 	// and directories in Amazon EFS determine the level of access your users get
 	// when transferring files into and out of your Amazon EFS file systems.
 	PosixProfile *PosixProfile `json:"posixProfile,omitempty"`
-	// The public portion of the Secure Shell (SSH) key used to authenticate the
-	// user to the server.
-	//
-	// The three standard SSH public key format elements are <key type>, <body base64>,
-	// and an optional <comment>, with spaces between each element.
-	//
-	// Transfer Family accepts RSA, ECDSA, and ED25519 keys.
-	//
-	//    * For RSA keys, the key type is ssh-rsa.
-	//
-	//    * For ED25519 keys, the key type is ssh-ed25519.
-	//
-	//    * For ECDSA keys, the key type is either ecdsa-sha2-nistp256, ecdsa-sha2-nistp384,
-	//    or ecdsa-sha2-nistp521, depending on the size of the key you generated.
-	SshPublicKeyBody *string `json:"sshPublicKeyBody,omitempty"`
 	// Key-value pairs that can be used to group and search for users. Tags are
 	// metadata attached to users for any purpose.
 	Tags                 []*Tag `json:"tags,omitempty"`
@@ -115,8 +100,14 @@ type UserSpec struct {
 
 // UserObservation defines the observed state of User
 type UserObservation struct {
+	// Specifies the unique Amazon Resource Name (ARN) for the user that was requested
+	// to be described.
+	ARN *string `json:"arn,omitempty"`
 	// The identifier of the server that the user is attached to.
 	ServerID *string `json:"serverID,omitempty"`
+	// Specifies the public key portion of the Secure Shell (SSH) keys stored for
+	// the described user.
+	SshPublicKeys []*SshPublicKey `json:"sshPublicKeys,omitempty"`
 	// A unique string that identifies a Transfer Family user.
 	UserName *string `json:"userName,omitempty"`
 }

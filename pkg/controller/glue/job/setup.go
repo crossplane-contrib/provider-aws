@@ -42,6 +42,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -75,6 +76,7 @@ func SetupJob(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -104,12 +106,12 @@ type hooks struct {
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.DeleteJobInput) (bool, error) {
-	obj.JobName = pointer.String(meta.GetExternalName(cr))
+	obj.JobName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.GetJobInput) error {
-	obj.JobName = pointer.String(meta.GetExternalName(cr))
+	obj.JobName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -130,17 +132,17 @@ func lateInitialize(spec *svcapitypes.JobParameters, resp *svcsdk.GetJobOutput) 
 
 	// Command is required, so spec should never be nil
 	if resp.Job.Command != nil {
-		spec.Command.PythonVersion = pointer.LateInitializeStringPtr(spec.Command.PythonVersion, resp.Job.Command.PythonVersion)
+		spec.Command.PythonVersion = pointer.LateInitialize(spec.Command.PythonVersion, resp.Job.Command.PythonVersion)
 	}
 
 	if spec.ExecutionProperty == nil {
 		spec.ExecutionProperty = &svcapitypes.ExecutionProperty{}
 	}
-	spec.ExecutionProperty.MaxConcurrentRuns = pointer.LateInitializeInt64Ptr(spec.ExecutionProperty.MaxConcurrentRuns, resp.Job.ExecutionProperty.MaxConcurrentRuns)
+	spec.ExecutionProperty.MaxConcurrentRuns = pointer.LateInitialize(spec.ExecutionProperty.MaxConcurrentRuns, resp.Job.ExecutionProperty.MaxConcurrentRuns)
 
-	spec.GlueVersion = pointer.LateInitializeStringPtr(spec.GlueVersion, resp.Job.GlueVersion)
-	spec.MaxRetries = pointer.LateInitializeInt64Ptr(spec.MaxRetries, resp.Job.MaxRetries)
-	spec.Timeout = pointer.LateInitializeInt64Ptr(spec.Timeout, resp.Job.Timeout)
+	spec.GlueVersion = pointer.LateInitialize(spec.GlueVersion, resp.Job.GlueVersion)
+	spec.MaxRetries = pointer.LateInitialize(spec.MaxRetries, resp.Job.MaxRetries)
+	spec.Timeout = pointer.LateInitialize(spec.Timeout, resp.Job.Timeout)
 
 	// if WorkerType & NumberOfWorkers are used, AWS is in charge of setting MaxCapacity (not the user, not we)
 	if spec.MaxCapacity == nil || (spec.WorkerType != nil && spec.NumberOfWorkers != nil) {
@@ -152,12 +154,6 @@ func lateInitialize(spec *svcapitypes.JobParameters, resp *svcsdk.GetJobOutput) 
 }
 
 func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Job, resp *svcsdk.GetJobOutput) (bool, string, error) {
-	// no checks needed if user deletes the resource
-	// ensures that an error (e.g. missing ARN) here does not prevent deletion
-	if meta.WasDeleted(cr) {
-		return true, "", nil
-	}
-
 	currentParams := customGenerateJob(resp).Spec.ForProvider
 
 	if diff := cmp.Diff(cr.Spec.ForProvider, currentParams, cmpopts.EquateEmpty(),
@@ -176,7 +172,7 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.Job, resp *svcsdk.
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.UpdateJobInput) error {
-	obj.JobName = pointer.String(meta.GetExternalName(cr))
+	obj.JobName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	obj.JobUpdate = &svcsdk.JobUpdate{
 		DefaultArguments:        cr.Spec.ForProvider.DefaultArguments,
@@ -242,9 +238,9 @@ func (h *hooks) postUpdate(ctx context.Context, cr *svcapitypes.Job, obj *svcsdk
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.CreateJobInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
-	obj.Role = pointer.String(cr.Spec.ForProvider.Role)
+	obj.Role = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.Role)
 	obj.SecurityConfiguration = cr.Spec.ForProvider.SecurityConfiguration
 
 	if cr.Spec.ForProvider.Connections != nil {

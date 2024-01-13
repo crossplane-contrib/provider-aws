@@ -22,6 +22,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupAutoScalingGroup adds a controller that reconciles AutoScalingGroup.
@@ -44,6 +45,7 @@ func SetupAutoScalingGroup(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -241,23 +243,23 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 
 func lateInitialize(in *svcapitypes.AutoScalingGroupParameters, asg *svcsdk.DescribeAutoScalingGroupsOutput) error {
 	obs := asg.AutoScalingGroups[0]
-	in.AvailabilityZones = pointer.LateInitializeStringPtrSlice(in.AvailabilityZones, obs.AvailabilityZones)
-	in.Context = pointer.LateInitializeStringPtr(in.Context, obs.Context)
-	in.CapacityRebalance = pointer.LateInitializeBoolPtr(in.CapacityRebalance, obs.CapacityRebalance)
-	in.DefaultCooldown = pointer.LateInitializeInt64Ptr(in.DefaultCooldown, obs.DefaultCooldown)
-	in.DefaultInstanceWarmup = pointer.LateInitializeInt64Ptr(in.DefaultInstanceWarmup, obs.DefaultInstanceWarmup)
-	in.DesiredCapacity = pointer.LateInitializeInt64Ptr(in.DesiredCapacity, obs.DesiredCapacity)
-	in.DesiredCapacityType = pointer.LateInitializeStringPtr(in.DesiredCapacityType, obs.DesiredCapacityType)
-	in.HealthCheckGracePeriod = pointer.LateInitializeInt64Ptr(in.HealthCheckGracePeriod, obs.HealthCheckGracePeriod)
-	in.HealthCheckType = pointer.LateInitializeStringPtr(in.HealthCheckType, obs.HealthCheckType)
-	in.LoadBalancerNames = pointer.LateInitializeStringPtrSlice(in.LoadBalancerNames, obs.LoadBalancerNames)
-	in.MaxInstanceLifetime = pointer.LateInitializeInt64Ptr(in.MaxInstanceLifetime, obs.MaxInstanceLifetime)
-	in.NewInstancesProtectedFromScaleIn = pointer.LateInitializeBoolPtr(in.NewInstancesProtectedFromScaleIn, obs.NewInstancesProtectedFromScaleIn)
-	in.PlacementGroup = pointer.LateInitializeStringPtr(in.PlacementGroup, obs.PlacementGroup)
-	in.ServiceLinkedRoleARN = pointer.LateInitializeStringPtr(in.ServiceLinkedRoleARN, obs.ServiceLinkedRoleARN)
-	in.TargetGroupARNs = pointer.LateInitializeStringPtrSlice(in.TargetGroupARNs, obs.TargetGroupARNs)
-	in.TerminationPolicies = pointer.LateInitializeStringPtrSlice(in.TerminationPolicies, obs.TerminationPolicies)
-	in.VPCZoneIdentifier = pointer.LateInitializeStringPtr(in.VPCZoneIdentifier, obs.VPCZoneIdentifier)
+	in.AvailabilityZones = pointer.LateInitializeSlice(in.AvailabilityZones, obs.AvailabilityZones)
+	in.Context = pointer.LateInitialize(in.Context, obs.Context)
+	in.CapacityRebalance = pointer.LateInitialize(in.CapacityRebalance, obs.CapacityRebalance)
+	in.DefaultCooldown = pointer.LateInitialize(in.DefaultCooldown, obs.DefaultCooldown)
+	in.DefaultInstanceWarmup = pointer.LateInitialize(in.DefaultInstanceWarmup, obs.DefaultInstanceWarmup)
+	in.DesiredCapacity = pointer.LateInitialize(in.DesiredCapacity, obs.DesiredCapacity)
+	in.DesiredCapacityType = pointer.LateInitialize(in.DesiredCapacityType, obs.DesiredCapacityType)
+	in.HealthCheckGracePeriod = pointer.LateInitialize(in.HealthCheckGracePeriod, obs.HealthCheckGracePeriod)
+	in.HealthCheckType = pointer.LateInitialize(in.HealthCheckType, obs.HealthCheckType)
+	in.LoadBalancerNames = pointer.LateInitializeSlice(in.LoadBalancerNames, obs.LoadBalancerNames)
+	in.MaxInstanceLifetime = pointer.LateInitialize(in.MaxInstanceLifetime, obs.MaxInstanceLifetime)
+	in.NewInstancesProtectedFromScaleIn = pointer.LateInitialize(in.NewInstancesProtectedFromScaleIn, obs.NewInstancesProtectedFromScaleIn)
+	in.PlacementGroup = pointer.LateInitialize(in.PlacementGroup, obs.PlacementGroup)
+	in.ServiceLinkedRoleARN = pointer.LateInitialize(in.ServiceLinkedRoleARN, obs.ServiceLinkedRoleARN)
+	in.TargetGroupARNs = pointer.LateInitializeSlice(in.TargetGroupARNs, obs.TargetGroupARNs)
+	in.TerminationPolicies = pointer.LateInitializeSlice(in.TerminationPolicies, obs.TerminationPolicies)
+	in.VPCZoneIdentifier = pointer.LateInitialize(in.VPCZoneIdentifier, obs.VPCZoneIdentifier)
 
 	return nil
 }

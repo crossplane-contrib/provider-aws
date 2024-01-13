@@ -42,6 +42,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -70,9 +71,10 @@ func SetupPolicy(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, newSTSClientFn: iam.NewSTSClient}),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 		managed.WithConnectionPublishers(),
+		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -379,7 +381,7 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 	// slashes. In addition, it can contain any ASCII character from the ! (\u0021 ) through the
 	// DEL character (\u007F ), including most punctuation characters, digits, and upper and lowercased letters.
 	if policyPath == nil {
-		policyPath = pointer.String("/")
+		policyPath = pointer.ToOrNilIfZeroValue("/")
 	}
 
 	// Use it to construct an arn for the policy
@@ -390,37 +392,4 @@ func (e *external) getPolicyArnByNameAndPath(ctx context.Context, policyName str
 		Resource:  "policy" + pointer.StringValue(policyPath) + policyName}
 
 	return aws.String(policyArn.String()), nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.Policy)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	added := false
-	defaultTags := resource.GetExternalTags(mgd)
-
-	for i, t := range cr.Spec.ForProvider.Tags {
-		v, ok := defaultTags[t.Key]
-		if ok {
-			if v != t.Value {
-				cr.Spec.ForProvider.Tags[i].Value = v
-				added = true
-			}
-			delete(defaultTags, t.Key)
-		}
-	}
-
-	for k, v := range defaultTags {
-		cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1beta1.Tag{Key: k, Value: v})
-		added = true
-	}
-	if !added {
-		return nil
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

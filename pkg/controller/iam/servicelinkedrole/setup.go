@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/arn"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -65,6 +66,7 @@ func SetupServiceLinkedRole(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.ServiceLinkedRole{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ServiceLinkedRoleGroupVersionKind),
+			managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(o.PollInterval),
@@ -88,7 +90,7 @@ func (e *hooks) observe(ctx context.Context, mg resource.Managed) (managed.Exter
 	}
 
 	res, err := e.client.GetRoleWithContext(ctx, &svcsdk.GetRoleInput{
-		RoleName: pointer.String(meta.GetExternalName(cr)),
+		RoleName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(IsNotFound, err), errGetRole)
@@ -163,6 +165,6 @@ func postCreate(ctx context.Context, cr *svcapitypes.ServiceLinkedRole, obj *svc
 }
 
 func preDelete(ctx context.Context, cr *svcapitypes.ServiceLinkedRole, obj *svcsdk.DeleteServiceLinkedRoleInput) (bool, error) {
-	obj.RoleName = pointer.String(meta.GetExternalName(cr))
+	obj.RoleName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }

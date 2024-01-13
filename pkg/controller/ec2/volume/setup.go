@@ -30,6 +30,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupVolume adds a controller that reconciles Volume.
@@ -50,7 +51,8 @@ func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+		managed.WithInitializers(),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -75,7 +77,7 @@ func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcsdk.DescribeVolumesOutput {
-	volumeIdentifier := pointer.String(meta.GetExternalName(cr))
+	volumeIdentifier := pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	resp := &svcsdk.DescribeVolumesOutput{}
 	for _, volume := range obj.Volumes {
 		if pointer.StringValue(volume.VolumeId) == pointer.StringValue(volumeIdentifier) {
@@ -88,7 +90,7 @@ func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcs
 
 func preCreate(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.CreateVolumeInput) error {
 	obj.KmsKeyId = cr.Spec.ForProvider.KMSKeyID
-	obj.ClientToken = pointer.String(string(cr.UID))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	return nil
 }
 
@@ -97,7 +99,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.Volume, c
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, pointer.StringValue(obj.VolumeId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

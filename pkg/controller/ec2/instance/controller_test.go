@@ -26,10 +26,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -67,16 +65,6 @@ func withSpec(p manualv1alpha1.InstanceParameters) instanceModifier {
 
 func withStatus(s manualv1alpha1.InstanceObservation) instanceModifier {
 	return func(r *manualv1alpha1.Instance) { r.Status.AtProvider = s }
-}
-
-func withTags(tagMaps ...map[string]string) instanceModifier {
-	var tagList []manualv1alpha1.Tag
-	for _, tagMap := range tagMaps {
-		for k, v := range tagMap {
-			tagList = append(tagList, manualv1alpha1.Tag{Key: k, Value: v})
-		}
-	}
-	return func(r *manualv1alpha1.Instance) { r.Spec.ForProvider.Tags = tagList }
 }
 
 func instance(m ...instanceModifier) *manualv1alpha1.Instance {
@@ -262,7 +250,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:     instance(withExternalName(instanceID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFail": {
@@ -413,55 +401,6 @@ func TestUpdate(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.result, u); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type args struct {
-		cr   *manualv1alpha1.Instance
-		kube client.Client
-	}
-	type want struct {
-		cr  *manualv1alpha1.Instance
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Successful": {
-			args: args{
-				cr:   instance(withTags(map[string]string{"foo": "bar"})),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: instance(withTags(resource.GetExternalTags(instance()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr:   instance(),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b manualv1alpha1.Tag) bool { return a.Key < b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

@@ -43,6 +43,7 @@ import (
 )
 
 var (
+	allFieldsName                      = "allfieldsName"
 	allocatedStorage             int32 = 20
 	address                            = "address"
 	arn                                = "my:arn"
@@ -50,6 +51,7 @@ var (
 	characterSetName                   = "utf8"
 	clusterName                        = "testCluster"
 	dbName                             = "example-name"
+	dbSecurityGroups                   = []string{"test"}
 	description                        = "testDescription"
 	domain                             = "domain"
 	enableCloudwatchExports            = []string{"test"}
@@ -57,6 +59,7 @@ var (
 	enabledCloudwatchExportsNone       = []string{}
 	engine                             = "5.6.41"
 	falseFlag                          = false
+	iamRole                            = "iamRole"
 	instanceClass                      = "class"
 	kmsID                              = "kms"
 	monitoring                         = 3
@@ -79,6 +82,7 @@ var (
 	username                           = "username"
 	value                              = "testValue"
 	vpc                                = "vpc"
+	vpcIds                             = []string{"test"}
 	window                             = "window"
 	zone                               = "zone"
 
@@ -113,7 +117,7 @@ func TestCreatePatch(t *testing.T) {
 					DBName:           &dbName,
 				},
 				p: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: pointer.IntAddress(pointer.Int64(20)),
+					AllocatedStorage: ptr.To(20),
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
@@ -131,7 +135,7 @@ func TestCreatePatch(t *testing.T) {
 					AvailabilityZone: ptr.To("az1"),
 				},
 				p: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
+					AllocatedStorage: ptr.To(30),
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 					AvailabilityZone: ptr.To("az2"),
@@ -139,78 +143,9 @@ func TestCreatePatch(t *testing.T) {
 			},
 			want: want{
 				patch: &v1beta1.RDSInstanceParameters{
-					AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
+					AllocatedStorage: ptr.To(30),
 					AvailabilityZone: ptr.To("az2"),
 				},
-			},
-		},
-		"DifferentTags": {
-			args: args{
-				db: &rdstypes.DBInstance{
-					TagList: []rdstypes.Tag{
-						{Key: ptr.To("tag1")},
-						{Key: ptr.To("tag2")},
-						{Key: ptr.To("tag3")},
-					},
-				},
-				p: &v1beta1.RDSInstanceParameters{
-					Tags: []v1beta1.Tag{
-						{Key: "tag1"},
-						{Key: "tag5"},
-						{Key: "tag6"},
-					},
-				},
-			},
-			want: want{
-				patch: &v1beta1.RDSInstanceParameters{
-					Tags: []v1beta1.Tag{
-						{Key: "tag1"},
-						{Key: "tag5"},
-						{Key: "tag6"},
-					},
-				},
-			},
-		},
-		"SameTags": {
-			args: args{
-				db: &rdstypes.DBInstance{
-					TagList: []rdstypes.Tag{
-						{Key: ptr.To("tag1")},
-						{Key: ptr.To("tag2")},
-						{Key: ptr.To("tag3")},
-					},
-				},
-				p: &v1beta1.RDSInstanceParameters{
-					Tags: []v1beta1.Tag{
-						{Key: "tag1"},
-						{Key: "tag2"},
-						{Key: "tag3"},
-					},
-				},
-			},
-			want: want{
-				patch: &v1beta1.RDSInstanceParameters{},
-			},
-		},
-		"SameTagsDifferentOrder": {
-			args: args{
-				db: &rdstypes.DBInstance{
-					TagList: []rdstypes.Tag{
-						{Key: ptr.To("tag1"), Value: ptr.To("val")},
-						{Key: ptr.To("tag2"), Value: ptr.To("val")},
-						{Key: ptr.To("tag3"), Value: ptr.To("val")},
-					},
-				},
-				p: &v1beta1.RDSInstanceParameters{
-					Tags: []v1beta1.Tag{
-						{Key: "tag3", Value: "val"},
-						{Key: "tag2", Value: "val"},
-						{Key: "tag1", Value: "val"},
-					},
-				},
-			},
-			want: want{
-				patch: &v1beta1.RDSInstanceParameters{},
 			},
 		},
 		"IgnoreDifferentAvailabilityZoneForMultiAZ": {
@@ -263,7 +198,7 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage: pointer.IntAddress(pointer.Int64(20)),
+							AllocatedStorage: ptr.To(20),
 							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
 						},
@@ -282,12 +217,12 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage:                pointer.IntAddress(pointer.Int64(20)),
+							AllocatedStorage:                ptr.To(20),
 							CharacterSetName:                &characterSetName,
 							DBName:                          &dbName,
-							DeleteAutomatedBackups:          pointer.Bool(true),
-							SkipFinalSnapshotBeforeDeletion: pointer.Bool(true),
-							FinalDBSnapshotIdentifier:       pointer.String("final"),
+							DeleteAutomatedBackups:          pointer.ToOrNilIfZeroValue(true),
+							SkipFinalSnapshotBeforeDeletion: pointer.ToOrNilIfZeroValue(true),
+							FinalDBSnapshotIdentifier:       pointer.ToOrNilIfZeroValue("final"),
 						},
 					},
 				},
@@ -304,7 +239,7 @@ func TestIsUpToDate(t *testing.T) {
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
-							AllocatedStorage: pointer.IntAddress(pointer.Int64(30)),
+							AllocatedStorage: ptr.To(30),
 							CharacterSetName: &characterSetName,
 							DBName:           &dbName,
 						},
@@ -325,6 +260,21 @@ func TestIsUpToDate(t *testing.T) {
 							DBName:               &dbName,
 							DBSubnetGroupName:    &dbSubnetGroupName,
 							DBSubnetGroupNameRef: &xpv1.Reference{Name: "coolgroup"},
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		"IgnoresDBName": {
+			args: args{
+				db: rdstypes.DBInstance{
+					DBName: nil,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
 						},
 					},
 				},
@@ -508,12 +458,81 @@ func TestIsUpToDate(t *testing.T) {
 			},
 			want: true,
 		},
+		"SameTags": {
+			args: args{
+				db: rdstypes.DBInstance{
+					TagList: []rdstypes.Tag{
+						{Key: ptr.To("tag1")},
+						{Key: ptr.To("tag2")},
+						{Key: ptr.To("tag3")},
+					},
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							Tags: []v1beta1.Tag{
+								{Key: "tag1"},
+								{Key: "tag2"},
+								{Key: "tag3"},
+							},
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		"SameTagsDifferentOrder": {
+			args: args{
+				db: rdstypes.DBInstance{
+					TagList: []rdstypes.Tag{
+						{Key: ptr.To("tag1"), Value: ptr.To("val")},
+						{Key: ptr.To("tag2"), Value: ptr.To("val")},
+						{Key: ptr.To("tag3"), Value: ptr.To("val")},
+					},
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							Tags: []v1beta1.Tag{
+								{Key: "tag3", Value: "val"},
+								{Key: "tag2", Value: "val"},
+								{Key: "tag1", Value: "val"},
+							},
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		"DifferentTags": {
+			args: args{
+				db: rdstypes.DBInstance{
+					TagList: []rdstypes.Tag{
+						{Key: ptr.To("tag1")},
+						{Key: ptr.To("tag2")},
+						{Key: ptr.To("tag3")},
+					},
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							Tags: []v1beta1.Tag{
+								{Key: "tag1"},
+								{Key: "tag5"},
+								{Key: "tag6"},
+							},
+						},
+					},
+				},
+			},
+			want: false,
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
-			got, _, _ := IsUpToDate(ctx, tc.args.kube, &tc.args.r, tc.args.db)
+			got, _, _, _, _ := IsUpToDate(ctx, tc.args.kube, &tc.args.r, tc.args.db)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -1255,11 +1274,7 @@ func TestLateInitialize(t *testing.T) {
 }
 
 func TestGenerateModifyDBInstanceInput(t *testing.T) {
-	dbSecurityGroups := []string{name}
-	allFieldsName := "allfieldsName"
 	emptyName := "emptyProcessor"
-	iamRole := "iamRole"
-	vpcIds := []string{name}
 
 	cases := map[string]struct {
 		name   string
@@ -1382,6 +1397,124 @@ func TestGenerateModifyDBInstanceInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got := GenerateModifyDBInstanceInput(tc.name, &tc.params, &tc.db)
+			if diff := cmp.Diff(&tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateCreateRDSInstanceInput(t *testing.T) {
+	cases := map[string]struct {
+		name     string
+		password string
+		params   v1beta1.RDSInstanceParameters
+		want     rds.CreateDBInstanceInput
+	}{
+		"AllFields": {
+			name: allFieldsName,
+			params: v1beta1.RDSInstanceParameters{
+				AllocatedStorage:                   &storage,
+				DBInstanceClass:                    instanceClass,
+				ApplyModificationsImmediately:      &trueFlag,
+				Engine:                             engine,
+				EngineVersion:                      &engine,
+				AutoMinorVersionUpgrade:            &trueFlag,
+				AllowMajorVersionUpgrade:           &trueFlag,
+				AvailabilityZone:                   &az,
+				BackupRetentionPeriod:              &retention,
+				CACertificateIdentifier:            &name,
+				CharacterSetName:                   &name,
+				CopyTagsToSnapshot:                 &trueFlag,
+				DBClusterIdentifier:                &clusterName,
+				DBName:                             &name,
+				DBParameterGroupName:               &name,
+				DeletionProtection:                 &trueFlag,
+				Domain:                             &domain,
+				DomainIAMRoleName:                  &iamRole,
+				EnableIAMDatabaseAuthentication:    &trueFlag,
+				EnablePerformanceInsights:          &trueFlag,
+				IOPS:                               &storage,
+				KMSKeyID:                           &kmsID,
+				LicenseModel:                       &name,
+				MasterUsername:                     &username,
+				MonitoringInterval:                 &monitoring,
+				MonitoringRoleARN:                  &arn,
+				MultiAZ:                            &multiAZ,
+				OptionGroupName:                    &name,
+				PerformanceInsightsKMSKeyID:        &kmsID,
+				PerformanceInsightsRetentionPeriod: &retention,
+				Port:                               &port,
+				PreferredBackupWindow:              &window,
+				PreferredMaintenanceWindow:         &window,
+				PromotionTier:                      &tier,
+				PubliclyAccessible:                 &trueFlag,
+				StorageEncrypted:                   &trueFlag,
+				StorageType:                        &storageType,
+				Timezone:                           &zone,
+				DBSecurityGroups:                   dbSecurityGroups,
+				DBSubnetGroupName:                  &name,
+				EnableCloudwatchLogsExports:        enableCloudwatchExports,
+				ProcessorFeatures: []v1beta1.ProcessorFeature{{
+					Name:  name,
+					Value: value,
+				}},
+				VPCSecurityGroupIDs:         vpcIds,
+				UseDefaultProcessorFeatures: &trueFlag,
+			},
+			want: rds.CreateDBInstanceInput{
+				DBInstanceIdentifier:               &allFieldsName,
+				AvailabilityZone:                   &az,
+				AllocatedStorage:                   &storage32,
+				AutoMinorVersionUpgrade:            &trueFlag,
+				BackupRetentionPeriod:              &retention32,
+				CACertificateIdentifier:            &name,
+				CharacterSetName:                   &name,
+				CopyTagsToSnapshot:                 &trueFlag,
+				DBClusterIdentifier:                &clusterName,
+				DBInstanceClass:                    &instanceClass,
+				DBName:                             &name,
+				DBParameterGroupName:               &name,
+				DBSecurityGroups:                   dbSecurityGroups,
+				DBSubnetGroupName:                  &name,
+				DeletionProtection:                 &trueFlag,
+				Domain:                             &domain,
+				DomainIAMRoleName:                  &iamRole,
+				EnableIAMDatabaseAuthentication:    &trueFlag,
+				EnableCloudwatchLogsExports:        enableCloudwatchExports,
+				EnablePerformanceInsights:          &trueFlag,
+				Engine:                             &engine,
+				EngineVersion:                      &engine,
+				Iops:                               &storage32,
+				KmsKeyId:                           &kmsID,
+				LicenseModel:                       &name,
+				MasterUsername:                     &username,
+				MonitoringInterval:                 &monitoring32,
+				MonitoringRoleArn:                  &arn,
+				MultiAZ:                            &multiAZ,
+				OptionGroupName:                    &name,
+				PerformanceInsightsRetentionPeriod: &retention32,
+				PerformanceInsightsKMSKeyId:        &kmsID,
+				Port:                               &port32,
+				PreferredBackupWindow:              &window,
+				PreferredMaintenanceWindow:         &window,
+				PromotionTier:                      &tier32,
+				PubliclyAccessible:                 &trueFlag,
+				StorageEncrypted:                   &trueFlag,
+				StorageType:                        &storageType,
+				Timezone:                           &zone,
+				VpcSecurityGroupIds:                vpcIds,
+				ProcessorFeatures: []rdstypes.ProcessorFeature{{
+					Name:  &name,
+					Value: &value,
+				}},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GenerateCreateRDSInstanceInput(tc.name, tc.password, &tc.params)
 			if diff := cmp.Diff(&tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

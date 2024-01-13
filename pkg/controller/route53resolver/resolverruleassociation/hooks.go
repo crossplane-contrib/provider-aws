@@ -38,6 +38,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -57,6 +58,7 @@ func SetupResolverRuleAssociation(mgr ctrl.Manager, o controller.Options) error 
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newRoute53ResolverClientFn: resolverruleassociation.NewRoute53ResolverClient}),
 		managed.WithInitializers(),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
@@ -116,7 +118,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
-	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(pointer.String(meta.GetExternalName(cr))))
+	res, err := e.client.GetResolverRuleAssociation(ctx, resolverruleassociation.GenerateGetAssociateResolverRuleAssociationInput(pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))))
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errGet)
 	}

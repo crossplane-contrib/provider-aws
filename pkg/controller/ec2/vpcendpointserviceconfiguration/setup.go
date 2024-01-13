@@ -2,7 +2,6 @@ package vpcendpointserviceconfiguration
 
 import (
 	"context"
-	"sort"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
@@ -16,7 +15,6 @@ import (
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -24,10 +22,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-)
-
-const (
-	errKubeUpdateFailed = "cannot update VPCEndpointServiceConfiguration"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupVPCEndpointServiceConfiguration adds a controller that reconciles VPCEndpointServiceConfiguration.
@@ -53,9 +48,10 @@ func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, o controller.Options
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
 	}
@@ -111,7 +107,7 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfigurat
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.CreateVpcEndpointServiceConfigurationInput) error {
-	obj.ClientToken = pointer.String(meta.GetExternalName(cr))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.GatewayLoadBalancerArns = append(obj.GatewayLoadBalancerArns, cr.Spec.ForProvider.GatewayLoadBalancerARNs...)
 	obj.NetworkLoadBalancerArns = append(obj.NetworkLoadBalancerArns, cr.Spec.ForProvider.NetworkLoadBalancerARNs...)
 
@@ -164,7 +160,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfigurati
 func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration, obj *svcsdk.ModifyVpcEndpointServiceConfigurationInput) error {
 
 	input := &svcsdk.DescribeVpcEndpointServiceConfigurationsInput{}
-	input.ServiceIds = append(input.ServiceIds, pointer.String(meta.GetExternalName(cr)))
+	input.ServiceIds = append(input.ServiceIds, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 
 	resp, err := u.client.DescribeVpcEndpointServiceConfigurations(input)
 	if err != nil {
@@ -194,7 +190,7 @@ func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServic
 		obj.RemovePrivateDnsName = aws.Bool(true)
 	}
 
-	obj.ServiceId = pointer.String(meta.GetExternalName(cr))
+	obj.ServiceId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	return nil
 }
@@ -208,52 +204,10 @@ func (u *updater) delete(ctx context.Context, mg cpresource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	input := &svcsdk.DeleteVpcEndpointServiceConfigurationsInput{}
-	input.ServiceIds = append(input.ServiceIds, pointer.String(meta.GetExternalName(cr)))
+	input.ServiceIds = append(input.ServiceIds, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 
 	_, err := u.client.DeleteVpcEndpointServiceConfigurationsWithContext(ctx, input)
 	return errorutils.Wrap(cpresource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.VPCEndpointServiceConfiguration)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	var vpcEndpointTags svcapitypes.TagSpecification
-	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if tagSpecification == nil {
-			continue
-		}
-		if aws.StringValue(tagSpecification.ResourceType) == "vpc-endpoint-service" {
-			vpcEndpointTags = *tagSpecification
-		}
-	}
-
-	tagMap := map[string]string{}
-	tagMap["Name"] = cr.Name
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
-	}
-	for k, v := range cpresource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	vpcEndpointTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	vpcEndpointTags.ResourceType = aws.String("vpc-endpoint-service")
-	i := 0
-	for k, v := range tagMap {
-		vpcEndpointTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
-		i++
-	}
-	sort.Slice(vpcEndpointTags.Tags, func(i, j int) bool {
-		return aws.StringValue(vpcEndpointTags.Tags[i].Key) < aws.StringValue(vpcEndpointTags.Tags[j].Key)
-	})
-
-	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&vpcEndpointTags}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
 // DifferenceARN returns the lists of ARNs that need to be removed and added according

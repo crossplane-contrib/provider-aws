@@ -38,11 +38,11 @@ var (
 		Version: "2012-10-17",
 		Statements: []common.BucketPolicyStatement{
 			{
-				SID:    pointer.String("AllowPublicRead"),
+				SID:    pointer.ToOrNilIfZeroValue("AllowPublicRead"),
 				Effect: "Allow",
 				Principal: &common.BucketPrincipal{
 					AWSPrincipals: []common.AWSPrincipal{
-						{IAMRoleARN: pointer.String("arn:aws:iam::1234567890:role/sso/role")},
+						{IAMRoleARN: pointer.ToOrNilIfZeroValue("arn:aws:iam::1234567890:role/sso/role")},
 					},
 				},
 				Action:   []string{"s3:GetObject"},
@@ -55,11 +55,11 @@ var (
 		Version: "2012-10-17",
 		Statements: []common.BucketPolicyStatement{
 			{
-				SID:    pointer.String("AllowPublicWrite"),
+				SID:    pointer.ToOrNilIfZeroValue("AllowPublicWrite"),
 				Effect: "Allow",
 				Principal: &common.BucketPrincipal{
 					AWSPrincipals: []common.AWSPrincipal{
-						{IAMRoleARN: pointer.String("arn:aws:iam::1234567890:role/sso/role")},
+						{IAMRoleARN: pointer.ToOrNilIfZeroValue("arn:aws:iam::1234567890:role/sso/role")},
 					},
 				},
 				Action:   []string{"s3:GetObject"},

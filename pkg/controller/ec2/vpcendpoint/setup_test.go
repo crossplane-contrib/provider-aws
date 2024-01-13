@@ -27,12 +27,10 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
@@ -59,10 +57,6 @@ type args struct {
 }
 
 type vpcEndpointModifier func(*v1alpha1.VPCEndpoint)
-
-func withName(name string) vpcEndpointModifier {
-	return func(r *v1alpha1.VPCEndpoint) { r.SetName(name) }
-}
 
 func withExternalName(name string) vpcEndpointModifier {
 	return func(r *v1alpha1.VPCEndpoint) { meta.SetExternalName(r, name) }
@@ -155,10 +149,8 @@ func TestCreate(t *testing.T) {
 					}),
 					withConditions(xpv1.Creating()),
 				),
-				result: managed.ExternalCreation{
-					ExternalNameAssigned: false,
-				},
-				err: errors.Wrap(errors.New(testErrCreateVPCEndpointFailed), errCreate),
+				result: managed.ExternalCreation{},
+				err:    errors.Wrap(errors.New(testErrCreateVPCEndpointFailed), errCreate),
 			},
 		},
 	}
@@ -570,141 +562,6 @@ func TestObserve(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.result, o); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestTagger(t *testing.T) {
-	type want struct {
-		cr  *v1alpha1.VPCEndpoint
-		err error
-	}
-
-	tag := func(k, v string) *v1alpha1.Tag {
-		return &v1alpha1.Tag{Key: ptr.To(k), Value: ptr.To(v)}
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"ShouldAddTagsIfSpecIsNil": {
-			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil),
-				},
-				cr: vpcEndpoint(
-					withName("test"),
-					withSpec(v1alpha1.VPCEndpointParameters{}),
-				),
-			},
-			want: want{
-				cr: vpcEndpoint(
-					withName("test"),
-					withSpec(v1alpha1.VPCEndpointParameters{
-						TagSpecifications: []*v1alpha1.TagSpecification{
-							{
-								ResourceType: aws.String("vpc-endpoint"),
-								Tags: []*v1alpha1.Tag{
-									tag("Name", "test"),
-									tag(cpresource.ExternalResourceTagKeyKind, ""),
-									tag(cpresource.ExternalResourceTagKeyName, "test"),
-								},
-							},
-						},
-					}),
-				),
-			},
-		},
-		"ShouldOverwriteTags": {
-			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil),
-				},
-				cr: vpcEndpoint(
-					withName("test"),
-					withSpec(v1alpha1.VPCEndpointParameters{
-						TagSpecifications: []*v1alpha1.TagSpecification{
-							{
-								ResourceType: aws.String("vpc-endpoint"),
-								Tags: []*v1alpha1.Tag{
-									tag(cpresource.ExternalResourceTagKeyName, "preset"),
-								},
-							},
-						},
-					}),
-				),
-			},
-			want: want{
-				cr: vpcEndpoint(
-					withName("test"),
-					withSpec(v1alpha1.VPCEndpointParameters{
-						TagSpecifications: []*v1alpha1.TagSpecification{
-							{
-								ResourceType: aws.String("vpc-endpoint"),
-								Tags: []*v1alpha1.Tag{
-									tag("Name", "test"),
-									tag(cpresource.ExternalResourceTagKeyKind, ""),
-									tag(cpresource.ExternalResourceTagKeyName, "test"),
-								},
-							},
-						},
-					}),
-				),
-			},
-		},
-		"ShouldMergeTags": {
-			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil),
-				},
-				cr: vpcEndpoint(
-					withName("test"),
-					withSpec(v1alpha1.VPCEndpointParameters{
-						TagSpecifications: []*v1alpha1.TagSpecification{
-							{
-								ResourceType: aws.String("vpc-endpoint"),
-								Tags: []*v1alpha1.Tag{
-									tag("Name", "test"),
-									tag(cpresource.ExternalResourceTagKeyKind, ""),
-									tag(cpresource.ExternalResourceTagKeyName, "test"),
-								},
-							},
-						},
-					}),
-				),
-			},
-			want: want{
-				cr: vpcEndpoint(
-					withName("test"),
-					withSpec(v1alpha1.VPCEndpointParameters{
-						TagSpecifications: []*v1alpha1.TagSpecification{
-							{
-								ResourceType: aws.String("vpc-endpoint"),
-								Tags: []*v1alpha1.Tag{
-									tag("Name", "test"),
-									tag(cpresource.ExternalResourceTagKeyKind, ""),
-									tag(cpresource.ExternalResourceTagKeyName, "test"),
-								},
-							},
-						},
-					}),
-				),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			ta := tagger{kube: tc.args.kube}
-			err := ta.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

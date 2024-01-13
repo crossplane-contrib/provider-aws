@@ -85,7 +85,7 @@ func generateNotificationConfig() *v1beta1.NotificationConfiguration {
 			Events:   generateNotificationEvents(),
 			Filter:   generateNotificationFilter(),
 			ID:       &id,
-			QueueArn: pointer.String(queueArn),
+			QueueArn: pointer.ToOrNilIfZeroValue(queueArn),
 		}},
 		TopicConfigurations: []v1beta1.TopicConfiguration{{
 			Events:   generateNotificationEvents(),
@@ -408,7 +408,7 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 						Events:   generateNotificationEvents(),
 						Filter:   generateNotificationFilter(),
 						ID:       &id,
-						QueueArn: pointer.String(queueArn),
+						QueueArn: pointer.ToOrNilIfZeroValue(queueArn),
 					}},
 					TopicConfigurations: []v1beta1.TopicConfiguration{{
 						Events:   generateNotificationEvents(),
@@ -448,19 +448,19 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 					LambdaFunctionConfigurations: []v1beta1.LambdaFunctionConfiguration{{
 						Events:            generateNotificationEvents(),
 						Filter:            generateNotificationFilter(),
-						ID:                pointer.String("lambda-id-1"),
+						ID:                pointer.ToOrNilIfZeroValue("lambda-id-1"),
 						LambdaFunctionArn: lambdaArn,
 					}},
 					QueueConfigurations: []v1beta1.QueueConfiguration{{
 						Events:   generateNotificationEvents(),
 						Filter:   generateNotificationFilter(),
-						ID:       pointer.String("queue-id-1"),
-						QueueArn: pointer.String(queueArn),
+						ID:       pointer.ToOrNilIfZeroValue("queue-id-1"),
+						QueueArn: pointer.ToOrNilIfZeroValue(queueArn),
 					}},
 					TopicConfigurations: []v1beta1.TopicConfiguration{{
 						Events:   generateNotificationEvents(),
 						Filter:   generateNotificationFilter(),
-						ID:       pointer.String("topic-id-1"),
+						ID:       pointer.ToOrNilIfZeroValue("topic-id-1"),
 						TopicArn: &topicArn,
 					}},
 				},
@@ -468,19 +468,19 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 					LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
 						Events:            generateNotificationAWSEvents(),
 						Filter:            generateAWSNotificationFilter(),
-						Id:                pointer.String("lambda-id-2"),
+						Id:                pointer.ToOrNilIfZeroValue("lambda-id-2"),
 						LambdaFunctionArn: &lambdaArn,
 					}},
 					QueueConfigurations: []s3types.QueueConfiguration{{
 						Events:   generateNotificationAWSEvents(),
 						Filter:   generateAWSNotificationFilter(),
-						Id:       pointer.String("queue-id-2"),
+						Id:       pointer.ToOrNilIfZeroValue("queue-id-2"),
 						QueueArn: &queueArn,
 					}},
 					TopicConfigurations: []s3types.TopicConfiguration{{
 						Events:   generateNotificationAWSEvents(),
 						Filter:   generateAWSNotificationFilter(),
-						Id:       pointer.String("topic-id-2"),
+						Id:       pointer.ToOrNilIfZeroValue("topic-id-2"),
 						TopicArn: &topicArn,
 					}},
 				},
@@ -501,7 +501,7 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 						{
 							Events:            generateNotificationEvents(),
 							Filter:            generateNotificationFilter(),
-							ID:                pointer.String("test-id-2"),
+							ID:                pointer.ToOrNilIfZeroValue("test-id-2"),
 							LambdaFunctionArn: "lambda:321",
 						}},
 				},
@@ -510,8 +510,8 @@ func TestIsNotificationConfigurationUpToDate(t *testing.T) {
 						{
 							Events:            generateNotificationAWSEvents(),
 							Filter:            generateAWSNotificationFilter(),
-							Id:                pointer.String("test-id-2"),
-							LambdaFunctionArn: pointer.String("lambda:321"),
+							Id:                pointer.ToOrNilIfZeroValue("test-id-2"),
+							LambdaFunctionArn: pointer.ToOrNilIfZeroValue("lambda:321"),
 						},
 						{
 							Events:            generateNotificationAWSEvents(),

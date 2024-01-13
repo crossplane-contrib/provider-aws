@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupComputeEnvironment adds a controller that reconciles a ComputeEnvironment.
@@ -54,11 +55,10 @@ func SetupComputeEnvironment(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(
-			managed.NewDefaultProviderConfig(mgr.GetClient()),
-			managed.NewNameAsExternalName(mgr.GetClient())),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -85,7 +85,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DescribeComputeEnvironmentsInput) error {
-	obj.ComputeEnvironments = []*string{pointer.String(meta.GetExternalName(cr))} // we only want to observe our CE
+	obj.ComputeEnvironments = []*string{pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))} // we only want to observe our CE
 	return nil
 }
 
@@ -117,7 +117,7 @@ func postObserve(_ context.Context, cr *svcapitypes.ComputeEnvironment, resp *sv
 
 //nolint:gocyclo
 func preUpdate(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsdk.UpdateComputeEnvironmentInput) error {
-	obj.ComputeEnvironment = pointer.String(meta.GetExternalName(cr))
+	obj.ComputeEnvironment = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ServiceRole = cr.Spec.ForProvider.ServiceRoleARN
 	obj.State = cr.Spec.ForProvider.DesiredState
 
@@ -194,7 +194,7 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.ComputeEnvironme
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsdk.CreateComputeEnvironmentInput) error {
-	obj.ComputeEnvironmentName = pointer.String(cr.Name)
+	obj.ComputeEnvironmentName = pointer.ToOrNilIfZeroValue(cr.Name)
 	obj.ServiceRole = cr.Spec.ForProvider.ServiceRoleARN
 
 	if obj.ComputeResources != nil {
@@ -208,7 +208,7 @@ func preCreate(_ context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsd
 }
 
 func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.ComputeEnvironment, obj *svcsdk.DeleteComputeEnvironmentInput) (bool, error) {
-	obj.ComputeEnvironment = pointer.String(meta.GetExternalName(cr))
+	obj.ComputeEnvironment = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	// Skip Deletion if CE is updating or already deleting
 	if pointer.StringValue(cr.Status.AtProvider.Status) == svcsdk.CEStatusUpdating ||
@@ -224,8 +224,8 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.ComputeEnvironmen
 	}
 	// Update the CE to set the state to DISABLED
 	_, err := e.client.UpdateComputeEnvironmentWithContext(ctx, &svcsdk.UpdateComputeEnvironmentInput{
-		ComputeEnvironment: pointer.String(meta.GetExternalName(cr)),
-		State:              pointer.String(svcsdk.CEStateDisabled)})
+		ComputeEnvironment: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+		State:              pointer.ToOrNilIfZeroValue(svcsdk.CEStateDisabled)})
 	return true, errorutils.Wrap(err, errUpdate)
 
 }
@@ -302,12 +302,12 @@ func lateInitialize(spec *svcapitypes.ComputeEnvironmentParameters, resp *svcsdk
 
 	ce := resp.ComputeEnvironments[0]
 
-	spec.DesiredState = pointer.LateInitializeStringPtr(spec.DesiredState, ce.State)
-	spec.ServiceRoleARN = pointer.LateInitializeStringPtr(spec.ServiceRoleARN, ce.ServiceRole)
+	spec.DesiredState = pointer.LateInitialize(spec.DesiredState, ce.State)
+	spec.ServiceRoleARN = pointer.LateInitialize(spec.ServiceRoleARN, ce.ServiceRole)
 
 	if ce.ComputeResources != nil {
-		spec.ComputeResources.MinvCPUs = pointer.LateInitializeInt64Ptr(spec.ComputeResources.MinvCPUs, ce.ComputeResources.MinvCpus)
-		spec.ComputeResources.MaxvCPUs = pointer.LateInitializeInt64Ptr(spec.ComputeResources.MaxvCPUs, ce.ComputeResources.MaxvCpus)
+		spec.ComputeResources.MinvCPUs = pointer.LateInitialize(spec.ComputeResources.MinvCPUs, ce.ComputeResources.MinvCpus)
+		spec.ComputeResources.MaxvCPUs = pointer.LateInitialize(spec.ComputeResources.MaxvCPUs, ce.ComputeResources.MaxvCpus)
 
 		if pointer.StringValue(ce.ComputeResources.Type) == string(svcsdk.CRTypeEc2) ||
 			pointer.StringValue(ce.ComputeResources.Type) == string(svcsdk.CRTypeSpot) {

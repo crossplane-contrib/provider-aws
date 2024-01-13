@@ -53,7 +53,7 @@ func NewReplicationConfigurationClient(client s3.BucketClient) *ReplicationConfi
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { //nolint:gocyclo
-	external, err := in.client.GetBucketReplication(ctx, &awss3.GetBucketReplicationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketReplication(ctx, &awss3.GetBucketReplicationInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.ReplicationConfiguration
 	if err != nil {
 		if s3.ReplicationConfigurationNotFound(err) && config == nil {
@@ -99,7 +99,7 @@ func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bu
 func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketReplication(ctx,
 		&awss3.DeleteBucketReplicationInput{
-			Bucket: pointer.String(meta.GetExternalName(bucket)),
+			Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)),
 		},
 	)
 	return errorutils.Wrap(err, replicationDeleteFailed)
@@ -108,7 +108,7 @@ func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *ReplicationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketReplication(ctx, &awss3.GetBucketReplicationInput{Bucket: pointer.String(meta.GetExternalName(bucket))})
+	external, err := in.client.GetBucketReplication(ctx, &awss3.GetBucketReplicationInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
 	if err != nil {
 		return errorutils.Wrap(resource.Ignore(s3.ReplicationConfigurationNotFound, err), replicationGetFailed)
 	}
@@ -122,7 +122,7 @@ func (in *ReplicationConfigurationClient) LateInitialize(ctx context.Context, bu
 		// We need the configuration to exist so we can initialize
 		fp.ReplicationConfiguration = &v1beta1.ReplicationConfiguration{}
 	}
-	fp.ReplicationConfiguration.Role = pointer.LateInitializeStringPtr(fp.ReplicationConfiguration.Role, external.ReplicationConfiguration.Role)
+	fp.ReplicationConfiguration.Role = pointer.LateInitialize(fp.ReplicationConfiguration.Role, external.ReplicationConfiguration.Role)
 	if fp.ReplicationConfiguration.Rules == nil {
 		createReplicationRulesFromExternal(external.ReplicationConfiguration, fp.ReplicationConfiguration)
 	}
@@ -181,7 +181,7 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 		if rule.Destination != nil {
 			config.Rules[i].Destination.Account = rule.Destination.Account
 			config.Rules[i].Destination.Bucket = rule.Destination.Bucket
-			config.Rules[i].Destination.StorageClass = pointer.String(string(rule.Destination.StorageClass))
+			config.Rules[i].Destination.StorageClass = pointer.ToOrNilIfZeroValue(string(rule.Destination.StorageClass))
 			if rule.Destination.AccessControlTranslation != nil {
 				config.Rules[i].Destination.AccessControlTranslation = &v1beta1.AccessControlTranslation{}
 				config.Rules[i].Destination.AccessControlTranslation.Owner = string(rule.Destination.AccessControlTranslation.Owner)
@@ -296,7 +296,7 @@ func createRule(input v1beta1.ReplicationRule) types.ReplicationRule {
 			}
 			newRule.Filter = &types.ReplicationRuleFilterMemberAnd{Value: *andOperator}
 		case Rule.Filter.Tag != nil:
-			newRule.Filter = &types.ReplicationRuleFilterMemberTag{Value: types.Tag{Key: pointer.String(Rule.Filter.Tag.Key), Value: pointer.String(Rule.Filter.Tag.Value)}}
+			newRule.Filter = &types.ReplicationRuleFilterMemberTag{Value: types.Tag{Key: pointer.ToOrNilIfZeroValue(Rule.Filter.Tag.Key), Value: pointer.ToOrNilIfZeroValue(Rule.Filter.Tag.Value)}}
 		case Rule.Filter.Prefix != nil:
 			newRule.Filter = &types.ReplicationRuleFilterMemberPrefix{Value: *Rule.Filter.Prefix}
 		}
@@ -337,7 +337,7 @@ func GenerateReplicationConfiguration(config *v1beta1.ReplicationConfiguration) 
 // GeneratePutBucketReplicationInput creates the input for the PutBucketReplication request for the S3 Client
 func GeneratePutBucketReplicationInput(name string, config *v1beta1.ReplicationConfiguration) *awss3.PutBucketReplicationInput {
 	return &awss3.PutBucketReplicationInput{
-		Bucket:                   pointer.String(name),
+		Bucket:                   pointer.ToOrNilIfZeroValue(name),
 		ReplicationConfiguration: GenerateReplicationConfiguration(config),
 	}
 }

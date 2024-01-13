@@ -39,6 +39,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -62,8 +63,9 @@ func SetupAddon(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -134,7 +136,7 @@ func postObserve(_ context.Context, cr *eksv1alpha1.Addon, _ *awseks.DescribeAdd
 
 func lateInitialize(spec *eksv1alpha1.AddonParameters, resp *awseks.DescribeAddonOutput) error {
 	if resp.Addon != nil {
-		spec.ServiceAccountRoleARN = pointer.LateInitializeStringPtr(spec.ServiceAccountRoleARN, resp.Addon.ServiceAccountRoleArn)
+		spec.ServiceAccountRoleARN = pointer.LateInitialize(spec.ServiceAccountRoleARN, resp.Addon.ServiceAccountRoleArn)
 	}
 	return nil
 }
@@ -220,7 +222,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *eksv1alpha1.Addon, resp *aws
 	add, remove := tags.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, desc.Addon.Tags)
 	if len(add) > 0 {
 		_, err := h.client.TagResourceWithContext(ctx, &awseks.TagResourceInput{
-			ResourceArn: pointer.String(meta.GetExternalName(cr)),
+			ResourceArn: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			Tags:        add,
 		})
 		if err != nil {
@@ -229,7 +231,7 @@ func (h *hooks) postUpdate(ctx context.Context, cr *eksv1alpha1.Addon, resp *aws
 	}
 	if len(remove) > 0 {
 		_, err := h.client.UntagResourceWithContext(ctx, &awseks.UntagResourceInput{
-			ResourceArn: pointer.String(meta.GetExternalName(cr)),
+			ResourceArn: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			TagKeys:     remove,
 		})
 		if err != nil {
@@ -258,22 +260,4 @@ func postCreate(_ context.Context, cr *eksv1alpha1.Addon, res *awseks.CreateAddo
 func preDelete(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.DeleteAddonInput) (bool, error) {
 	obj.ClusterName = cr.Spec.ForProvider.ClusterName
 	return false, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*eksv1alpha1.Addon)
-	if !ok {
-		return errors.New(errNotEKSCluster)
-	}
-	if cr.Spec.ForProvider.Tags == nil {
-		cr.Spec.ForProvider.Tags = map[string]*string{}
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		cr.Spec.ForProvider.Tags[k] = pointer.String(v)
-	}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

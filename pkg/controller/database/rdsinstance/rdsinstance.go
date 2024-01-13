@@ -19,11 +19,10 @@ package rdsinstance
 import (
 	"context"
 	"reflect"
-	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
-	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
+	rdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -42,6 +41,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -55,6 +55,7 @@ const (
 	errUnknownRestoreSource               = "unknown RDS restore source"
 	errModifyFailed                       = "cannot modify RDS instance"
 	errAddTagsFailed                      = "cannot add tags to RDS instance"
+	errRemoveTagsFailed                   = "cannot remove tags from  RDS instance"
 	errDeleteFailed                       = "cannot delete RDS instance"
 	errDescribeFailed                     = "cannot describe RDS instance"
 	errPatchCreationFailed                = "cannot create a patch object"
@@ -72,8 +73,9 @@ func SetupRDSInstance(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient}),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -111,12 +113,19 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{c.newClientFn(cfg), c.kube}, nil
+	return &external{c.newClientFn(cfg), c.kube, Cache{}}, nil
+}
+
+type Cache struct {
+	AddTags    []rdstypes.Tag
+	RemoveTags []string
 }
 
 type external struct {
 	client rds.Client
 	kube   client.Client
+
+	cache Cache
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -151,7 +160,12 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	default:
 		cr.Status.SetConditions(xpv1.Unavailable())
 	}
-	upToDate, diff, err := rds.IsUpToDate(ctx, e.kube, cr, instance)
+
+	var upToDate bool
+	var diff string
+
+	upToDate, diff, e.cache.AddTags, e.cache.RemoveTags, err = rds.IsUpToDate(ctx, e.kube, cr, instance)
+
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(err, errUpToDateFailed)
 	}
@@ -272,14 +286,22 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyFailed)
 	}
-	if len(patch.Tags) > 0 {
-		tags := make([]awsrdstypes.Tag, len(patch.Tags))
-		for i, t := range patch.Tags {
-			tags[i] = awsrdstypes.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
-		}
-		_, err = e.client.AddTagsToResource(ctx, &awsrds.AddTagsToResourceInput{
+
+	// Update tags if necessary
+	if len(e.cache.RemoveTags) > 0 {
+		_, err := e.client.RemoveTagsFromResource(ctx, &awsrds.RemoveTagsFromResourceInput{
 			ResourceName: aws.String(cr.Status.AtProvider.DBInstanceArn),
-			Tags:         tags,
+			TagKeys:      e.cache.RemoveTags,
+		})
+		if err != nil {
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errRemoveTagsFailed)
+		}
+	}
+	// remove before add for case where we just simply update a tag value
+	if len(e.cache.AddTags) > 0 {
+		_, err := e.client.AddTagsToResource(ctx, &awsrds.AddTagsToResourceInput{
+			ResourceName: aws.String(cr.Status.AtProvider.DBInstanceArn),
+			Tags:         e.cache.AddTags,
 		})
 		if err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errAddTagsFailed)
@@ -316,32 +338,4 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	_, err = e.client.DeleteDBInstance(ctx, &input)
 	return errorutils.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1beta1.RDSInstance)
-	if !ok {
-		return errors.New(errNotRDSInstance)
-	}
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		tagMap[k] = v
-	}
-	cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
-	i := 0
-	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
-		i++
-	}
-	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
-	})
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

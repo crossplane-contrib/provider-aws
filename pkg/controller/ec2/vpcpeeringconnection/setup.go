@@ -3,7 +3,6 @@ package vpcpeeringconnection
 import (
 	"context"
 	"reflect"
-	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -25,10 +24,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-)
-
-const (
-	errKubeUpdateFailed = "cannot update VPCPeeringConnection"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupVPCPeeringConnection adds a controller that reconciles VPCPeeringConnection.
@@ -51,10 +47,11 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithCreationGracePeriod(3 * time.Minute),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
 	}
@@ -111,7 +108,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConn
 
 	if pointer.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest && !meta.WasDeleted(cr) {
 		req := svcsdk.AcceptVpcPeeringConnectionInput{
-			VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+			VpcPeeringConnectionId: pointer.ToOrNilIfZeroValue(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 		}
 		request, _ := pc.AcceptVpcPeeringConnectionRequest(&req)
 		err = request.Send()
@@ -131,13 +128,13 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConn
 		if !reflect.DeepEqual(obj.VpcPeeringConnections[0].AccepterVpcInfo.PeeringOptions, cr.Spec.ForProvider.AccepterPeeringOptions) ||
 			!reflect.DeepEqual(obj.VpcPeeringConnections[0].RequesterVpcInfo.PeeringOptions, cr.Spec.ForProvider.RequesterPeeringOptions) {
 			req := svcsdk.ModifyVpcPeeringConnectionOptionsInput{
-				VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+				VpcPeeringConnectionId: pointer.ToOrNilIfZeroValue(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 			}
 			if *cr.Spec.ForProvider.PeerRegion == cr.Spec.ForProvider.Region {
 				setAccepterRequester(&req, cr)
 			} else {
 				acc := svcsdk.ModifyVpcPeeringConnectionOptionsInput{
-					VpcPeeringConnectionId: pointer.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+					VpcPeeringConnectionId: pointer.ToOrNilIfZeroValue(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 				}
 				setAccepter(&acc, cr)
 				request, _ := pc.ModifyVpcPeeringConnectionOptionsRequest(&acc)
@@ -234,46 +231,4 @@ func (e *custom) postCreate(_ context.Context, cr *svcapitypes.VPCPeeringConnect
 	// set peering connection id as external name annotation on k8s object after creation
 	meta.SetExternalName(cr, aws.StringValue(obj.VpcPeeringConnection.VpcPeeringConnectionId))
 	return cre, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.VPCPeeringConnection)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	var vpcPeeringConnectionTags svcapitypes.TagSpecification
-	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if tagSpecification == nil {
-			continue
-		}
-		if aws.StringValue(tagSpecification.ResourceType) == "vpc-peering-connection" {
-			vpcPeeringConnectionTags = *tagSpecification
-		}
-	}
-
-	tagMap := map[string]string{}
-	tagMap["Name"] = cr.Name
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	vpcPeeringConnectionTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	vpcPeeringConnectionTags.ResourceType = aws.String("vpc-peering-connection")
-	i := 0
-	for k, v := range tagMap {
-		vpcPeeringConnectionTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
-		i++
-	}
-	sort.Slice(vpcPeeringConnectionTags.Tags, func(i, j int) bool {
-		return aws.StringValue(vpcPeeringConnectionTags.Tags[i].Key) < aws.StringValue(vpcPeeringConnectionTags.Tags[j].Key)
-	})
-
-	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&vpcPeeringConnectionTags}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

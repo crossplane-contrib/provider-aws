@@ -25,10 +25,8 @@ import (
 	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,6 +37,7 @@ import (
 	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/database"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/database/fake"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
 const (
@@ -99,9 +98,10 @@ func FromTimePtr(t *time.Time) *metav1.Time {
 }
 
 type args struct {
-	rds  rds.Client
-	kube client.Client
-	cr   *v1beta1.RDSInstance
+	rds   rds.Client
+	kube  client.Client
+	cache Cache
+	cr    *v1beta1.RDSInstance
 }
 
 type rdsModifier func(*v1beta1.RDSInstance)
@@ -192,6 +192,17 @@ func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 		f(cr)
 	}
 	return cr
+}
+
+func cache(addTagsMap map[string]string, removeTagsMap map[string]string) Cache {
+	c := Cache{}
+	for k, v := range addTagsMap {
+		c.AddTags = append(c.AddTags, awsrdstypes.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
+	}
+	for k := range removeTagsMap {
+		c.RemoveTags = append(c.RemoveTags, k)
+	}
+	return c
 }
 
 var _ managed.ExternalClient = &external{}
@@ -843,18 +854,42 @@ func TestUpdate(t *testing.T) {
 						return nil, errBoom
 					},
 				},
-				cr: instance(withTags(map[string]string{"foo": "bar"})),
+				cr:    instance(withTags(map[string]string{"foo": "bar"})),
+				cache: cache(map[string]string{"foo": "bar"}, map[string]string{}),
 			},
 			want: want{
 				cr:  instance(withTags(map[string]string{"foo": "bar"})),
 				err: errorutils.Wrap(errBoom, errAddTagsFailed),
 			},
 		},
+		"FailedRemoveTags": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{}},
+						}, nil
+					},
+					MockRemoveTags: func(ctx context.Context, input *awsrds.RemoveTagsFromResourceInput, opts []func(*awsrds.Options)) (*awsrds.RemoveTagsFromResourceOutput, error) {
+						return nil, errBoom
+					},
+				},
+				cr:    instance(withTags(map[string]string{"foo": "bar"})),
+				cache: cache(map[string]string{}, map[string]string{"foo": "bar"}),
+			},
+			want: want{
+				cr:  instance(withTags(map[string]string{"foo": "bar"})),
+				err: errorutils.Wrap(errBoom, errRemoveTagsFailed),
+			},
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.rds}
+			e := &external{kube: tc.kube, client: tc.rds, cache: tc.cache}
 			u, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -980,51 +1015,6 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type want struct {
-		cr  *v1beta1.RDSInstance
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Successful": {
-			args: args{
-				cr:   instance(withTags(map[string]string{"foo": "bar"})),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: instance(withTags(resource.GetExternalTags(instance()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr:   instance(),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
-			},
-			want: want{
-				err: errorutils.Wrap(errBoom, errKubeUpdateFailed),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

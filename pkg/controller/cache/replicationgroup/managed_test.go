@@ -27,17 +27,13 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache/fake"
-	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
 const (
@@ -117,16 +113,6 @@ func withMemberClusters(members []string) replicationGroupModifier {
 
 func withClusterEnabled(e bool) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.ClusterEnabled = e }
-}
-
-func withTags(tagMaps ...map[string]string) replicationGroupModifier {
-	var tagList []v1beta1.Tag
-	for _, tagMap := range tagMaps {
-		for k, v := range tagMap {
-			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
-		}
-	}
-	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.Tags = tagList }
 }
 
 func withNumNodeGroups(n int) replicationGroupModifier {
@@ -883,55 +869,6 @@ func TestDelete(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(tc.want, tc.r, test.EquateConditions()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type args struct {
-		cr   *v1beta1.ReplicationGroup
-		kube client.Client
-	}
-	type want struct {
-		cr  *v1beta1.ReplicationGroup
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Successful": {
-			args: args{
-				cr:   replicationGroup(withTags(map[string]string{"foo": "bar"})),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: replicationGroup(withTags(resource.GetExternalTags(replicationGroup()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr:   replicationGroup(),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errorBoom)},
-			},
-			want: want{
-				err: errorutils.Wrap(errorBoom, errUpdateReplicationGroupCR),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

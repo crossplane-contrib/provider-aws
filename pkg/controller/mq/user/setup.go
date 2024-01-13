@@ -22,6 +22,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/mq"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupUser adds a controller that reconciles User.
@@ -47,7 +48,8 @@ func SetupUser(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -79,7 +81,7 @@ type custom struct {
 
 func preObserve(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DescribeUserInput) error {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = pointer.String(meta.GetExternalName(cr))
+	obj.Username = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -115,7 +117,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.User, obj *svc
 
 func preDelete(_ context.Context, cr *svcapitypes.User, obj *svcsdk.DeleteUserInput) (bool, error) {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = pointer.String(meta.GetExternalName(cr))
+	obj.Username = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	return false, nil
 }
@@ -139,8 +141,8 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.User, obj *svcsd
 	if resource.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "cannot get password from the given secret")
 	}
-	obj.Password = pointer.String(pw)
-	obj.Username = pointer.String(cr.Name)
+	obj.Password = pointer.ToOrNilIfZeroValue(pw)
+	obj.Username = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
 	return nil
 }
@@ -149,13 +151,12 @@ func postCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserO
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, cr.Name)
 	return cre, nil
 }
 
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.User, obj *svcsdk.UpdateUserRequest) error {
 	obj.BrokerId = cr.Spec.ForProvider.BrokerID
-	obj.Username = pointer.String(cr.Name)
+	obj.Username = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	pw, pwchanged, err := mq.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.PasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {

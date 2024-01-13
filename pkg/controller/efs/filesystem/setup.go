@@ -18,6 +18,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupFileSystem adds a controller that reconciles FileSystem.
@@ -42,6 +43,7 @@ func SetupFileSystem(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -77,7 +79,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Descr
 func preObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsInput) error {
 	// Describe query doesn't allow both CreationToken and FileSystemId to be given.
 	obj.CreationToken = nil
-	obj.FileSystemId = pointer.String(meta.GetExternalName(cr))
+	obj.FileSystemId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -95,7 +97,7 @@ func postObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Desc
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.UpdateFileSystemInput) error {
-	obj.FileSystemId = pointer.String(meta.GetExternalName(cr))
+	obj.FileSystemId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	// Type of this field is *float64 but in practice, only integer values are allowed.
 	if cr.Spec.ForProvider.ProvisionedThroughputInMibps != nil {
 		obj.ProvisionedThroughputInMibps = aws.Float64(float64(pointer.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
@@ -104,12 +106,12 @@ func preUpdate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Update
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.DeleteFileSystemInput) (bool, error) {
-	obj.FileSystemId = pointer.String(meta.GetExternalName(cr))
+	obj.FileSystemId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.CreateFileSystemInput) error {
-	obj.CreationToken = pointer.String(string(cr.UID))
+	obj.CreationToken = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	// Type of this field is *float64 but in practice, only integer values are allowed.
 	if cr.Spec.ForProvider.ProvisionedThroughputInMibps != nil {
 		obj.ProvisionedThroughputInMibps = aws.Float64(float64(pointer.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))

@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sort"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
@@ -43,6 +42,7 @@ import (
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -76,9 +76,10 @@ func SetupSecret(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -113,7 +114,7 @@ func setupExternal(e *external) {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Secret, obj *svcsdk.DescribeSecretInput) error {
-	obj.SecretId = pointer.String(meta.GetExternalName(cr))
+	obj.SecretId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -159,7 +160,7 @@ func (e *hooks) lateInitialize(spec *svcapitypes.SecretParameters, resp *svcsdk.
 			if err := e.kube.Get(context.TODO(), nn, sc); err != nil {
 				return err
 			}
-			ref.Type = pointer.String(string(sc.Type))
+			ref.Type = pointer.ToOrNilIfZeroValue(string(sc.Type))
 		}
 
 		return nil
@@ -236,10 +237,6 @@ func getAWSSecretData(ref *svcapitypes.SecretReference, s *svcsdk.GetSecretValue
 }
 
 func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, string, error) {
-	if meta.WasDeleted(cr) {
-		return false, "", nil
-	}
-
 	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
 	if resp.DeletedDate != nil {
 		return true, "", nil
@@ -269,7 +266,7 @@ func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Secret, resp *sv
 
 func (e *hooks) isPolicyUpToDate(ctx context.Context, cr *svcapitypes.Secret) (bool, error) {
 	res, err := e.client.GetResourcePolicyWithContext(ctx, &svcsdk.GetResourcePolicyInput{
-		SecretId: pointer.String(meta.GetExternalName(cr)),
+		SecretId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return false, errors.Wrap(err, errGetResourcePolicy)
@@ -293,7 +290,7 @@ func (e *hooks) isPolicyUpToDate(ctx context.Context, cr *svcapitypes.Secret) (b
 
 func (e *hooks) isPayloadUpToDate(ctx context.Context, cr *svcapitypes.Secret) (bool, error) {
 	s, err := e.client.GetSecretValueWithContext(ctx, &svcsdk.GetSecretValueInput{
-		SecretId: pointer.String(meta.GetExternalName(cr)),
+		SecretId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return false, errorutils.Wrap(err, errGetSecretValue)
@@ -358,7 +355,7 @@ func getSecretRef(params *svcapitypes.SecretParameters) (*svcapitypes.SecretRefe
 
 func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.UpdateSecretInput) error { //nolint:gocyclo
 	resp, err := e.client.DescribeSecretWithContext(ctx, &svcsdk.DescribeSecretInput{
-		SecretId: pointer.String(meta.GetExternalName(cr)),
+		SecretId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return errorutils.Wrap(err, errDescribe)
@@ -366,7 +363,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, resp.Tags)
 	if len(remove) != 0 {
 		if _, err := e.client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{
-			SecretId: pointer.String(meta.GetExternalName(cr)),
+			SecretId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			TagKeys:  remove,
 		}); err != nil {
 			return errorutils.Wrap(err, errRemoveTags)
@@ -374,7 +371,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 	}
 	if len(add) != 0 {
 		if _, err := e.client.TagResourceWithContext(ctx, &svcsdk.TagResourceInput{
-			SecretId: pointer.String(meta.GetExternalName(cr)),
+			SecretId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			Tags:     add,
 		}); err != nil {
 			return errorutils.Wrap(err, errCreateTags)
@@ -384,7 +381,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 	// Update resource policy
 	if cr.Spec.ForProvider.ResourcePolicy != nil {
 		_, err := e.client.PutResourcePolicyWithContext(ctx, &svcsdk.PutResourcePolicyInput{
-			SecretId:       pointer.String(meta.GetExternalName(cr)),
+			SecretId:       pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			ResourcePolicy: cr.Spec.ForProvider.ResourcePolicy,
 		})
 		if err != nil {
@@ -392,7 +389,7 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 		}
 	} else {
 		_, err := e.client.DeleteResourcePolicyWithContext(ctx, &svcsdk.DeleteResourcePolicyInput{
-			SecretId: pointer.String(meta.GetExternalName(cr)),
+			SecretId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		})
 		if err != nil {
 			return errors.Wrap(err, errDeleteResourcePolicy)
@@ -405,11 +402,11 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 	}
 	switch {
 	case cr.Spec.ForProvider.StringSecretRef != nil:
-		obj.SecretString = pointer.String(string(payload))
+		obj.SecretString = pointer.ToOrNilIfZeroValue(string(payload))
 	case cr.Spec.ForProvider.BinarySecretRef != nil:
 		obj.SecretBinary = payload
 	}
-	obj.SecretId = pointer.String(meta.GetExternalName(cr))
+	obj.SecretId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.Description = cr.Spec.ForProvider.Description
 	obj.KmsKeyId = cr.Spec.ForProvider.KMSKeyID
 	return nil
@@ -422,48 +419,19 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 	}
 	switch {
 	case cr.Spec.ForProvider.StringSecretRef != nil:
-		obj.SecretString = pointer.String(string(payload))
+		obj.SecretString = pointer.ToOrNilIfZeroValue(string(payload))
 	case cr.Spec.ForProvider.BinarySecretRef != nil:
 		obj.SecretBinary = payload
 	}
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Secret, obj *svcsdk.DeleteSecretInput) (bool, error) {
 	obj.ForceDeleteWithoutRecovery = cr.Spec.ForProvider.ForceDeleteWithoutRecovery
 	obj.RecoveryWindowInDays = cr.Spec.ForProvider.RecoveryWindowInDays
-	obj.SecretId = pointer.String(meta.GetExternalName(cr))
+	obj.SecretId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-// TODO(knappek): split this out as it is used in several controllers
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.Secret)
-	if !ok {
-		return errors.New(errNotSecret)
-	}
-	tagMap := map[string]string{}
-	for _, tags := range cr.Spec.ForProvider.Tags {
-		tagMap[pointer.StringValue(tags.Key)] = pointer.StringValue(tags.Value)
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		tagMap[k] = v
-	}
-	cr.Spec.ForProvider.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	i := 0
-	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = &svcapitypes.Tag{Key: pointer.String(k), Value: pointer.String(v)}
-		i++
-	}
-	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return pointer.StringValue(cr.Spec.ForProvider.Tags[i].Key) < pointer.StringValue(cr.Spec.ForProvider.Tags[j].Key)
-	})
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
 // DiffTags returns tags that should be added or removed.
@@ -481,10 +449,10 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 		removeMap[pointer.StringValue(t.Key)] = struct{}{}
 	}
 	for k, v := range addMap {
-		addTags = append(addTags, &svcsdk.Tag{Key: pointer.String(k), Value: pointer.String(v)})
+		addTags = append(addTags, &svcsdk.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
 	}
 	for k := range removeMap {
-		remove = append(remove, pointer.String(k))
+		remove = append(remove, pointer.ToOrNilIfZeroValue(k))
 	}
 	return
 }

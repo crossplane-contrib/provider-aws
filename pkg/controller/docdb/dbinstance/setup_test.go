@@ -31,6 +31,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/docdb/v1alpha1"
@@ -90,13 +91,13 @@ func withExternalName(value string) docDBModifier {
 
 func withDBIdentifier(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Status.AtProvider.DBInstanceIdentifier = pointer.String(value)
+		o.Status.AtProvider.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDBInstanceArn(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Status.AtProvider.DBInstanceARN = pointer.String(value)
+		o.Status.AtProvider.DBInstanceARN = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -108,7 +109,7 @@ func withEndpoint(value *svcapitypes.Endpoint) docDBModifier {
 
 func withStatus(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Status.AtProvider.DBInstanceStatus = pointer.String(value)
+		o.Status.AtProvider.DBInstanceStatus = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -120,43 +121,43 @@ func withConditions(value ...xpv1.Condition) docDBModifier {
 
 func withAvailabilityZone(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Spec.ForProvider.AvailabilityZone = pointer.String(value)
+		o.Spec.ForProvider.AvailabilityZone = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withAutoMinorVersionUpgrade(value bool) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Spec.ForProvider.AutoMinorVersionUpgrade = pointer.Bool(value, pointer.FieldRequired)
+		o.Spec.ForProvider.AutoMinorVersionUpgrade = ptr.To(value)
 	}
 }
 
 func withCACertificateIdentifier(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Spec.ForProvider.CACertificateIdentifier = pointer.String(value)
+		o.Spec.ForProvider.CACertificateIdentifier = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withStatusCACertificateIdentifier(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Status.AtProvider.CACertificateIdentifier = pointer.String(value)
+		o.Status.AtProvider.CACertificateIdentifier = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withDBInstanceClass(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Spec.ForProvider.DBInstanceClass = pointer.String(value)
+		o.Spec.ForProvider.DBInstanceClass = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withPreferredMaintenanceWindow(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Spec.ForProvider.PreferredMaintenanceWindow = pointer.String(value)
+		o.Spec.ForProvider.PreferredMaintenanceWindow = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
 func withPromotionTier(value int) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Spec.ForProvider.PromotionTier = pointer.Int64(value)
+		o.Spec.ForProvider.PromotionTier = pointer.ToIntAsInt64(value)
 	}
 }
 
@@ -191,10 +192,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
@@ -215,8 +216,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withConditions(xpv1.Available()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 				),
 				result: managed.ExternalObservation{
@@ -236,7 +237,7 @@ func TestObserve(t *testing.T) {
 						},
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
-						{I: &docdb.ListTagsForResourceInput{ResourceName: pointer.String(testDBInstanceArn)}},
+						{I: &docdb.ListTagsForResourceInput{ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn)}},
 					},
 				},
 			},
@@ -247,11 +248,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								AvailabilityZone:     pointer.String(testAvailabilityZone),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								AvailabilityZone:     pointer.ToOrNilIfZeroValue(testAvailabilityZone),
 							},
 						}}, nil
 					},
@@ -273,8 +274,8 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Available()),
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withAvailabilityZone(testOtherAvailabilityZone),
 				),
@@ -297,7 +298,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -310,11 +311,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:        pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
-								DBInstanceArn:           pointer.String(testDBInstanceArn),
-								Endpoint:                &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								AutoMinorVersionUpgrade: pointer.Bool(true),
+								DBInstanceStatus:        pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:           pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								AutoMinorVersionUpgrade: pointer.ToOrNilIfZeroValue(true),
 							},
 						}}, nil
 					},
@@ -336,8 +337,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withConditions(xpv1.Available()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withAutoMinorVersionUpgrade(false),
 				),
@@ -366,11 +367,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:        pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
-								DBInstanceArn:           pointer.String(testDBInstanceArn),
-								Endpoint:                &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								CACertificateIdentifier: pointer.String(testCACertificateIdentifier),
+								DBInstanceStatus:        pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:           pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								CACertificateIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
 							},
 						}}, nil
 					},
@@ -392,8 +393,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withConditions(xpv1.Available()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withCACertificateIdentifier(testOtherCACertificateIdentifier),
 					withStatusCACertificateIdentifier(testCACertificateIdentifier),
@@ -423,11 +424,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								DBInstanceClass:      pointer.String(testDBInstanceClass),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								DBInstanceClass:      pointer.ToOrNilIfZeroValue(testDBInstanceClass),
 							},
 						}}, nil
 					},
@@ -449,8 +450,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withConditions(xpv1.Available()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withDBInstanceClass(testOtherDBInstanceClass),
 				),
@@ -479,11 +480,11 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:           pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier:       pointer.String(testDBIdentifier),
-								DBInstanceArn:              pointer.String(testDBInstanceArn),
-								Endpoint:                   &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
+								DBInstanceStatus:           pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier:       pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:              pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:                   &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 							},
 						}}, nil
 					},
@@ -505,8 +506,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withConditions(xpv1.Available()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
 				),
@@ -535,10 +536,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								PromotionTier:        pointer.Int64(testPromotionTier),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								PromotionTier:        pointer.ToIntAsInt64(testPromotionTier),
 							},
 						}}, nil
 					},
@@ -559,8 +560,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withConditions(xpv1.Available()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPromotionTier(testOtherPromotionTier),
 				),
@@ -589,23 +590,23 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{TagList: []*docdb.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 						}}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)}),
 				),
 			},
 			want: want{
@@ -616,10 +617,10 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withConditions(xpv1.Available()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)}),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -639,7 +640,7 @@ func TestObserve(t *testing.T) {
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
-							I: &docdb.ListTagsForResourceInput{ResourceName: pointer.String(testDBInstanceArn)},
+							I: &docdb.ListTagsForResourceInput{ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn)},
 						},
 					},
 				},
@@ -651,23 +652,23 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateAvailable),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{TagList: []*docdb.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 						}}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 			},
 			want: want{
@@ -678,10 +679,10 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),
 					withConditions(xpv1.Available()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -702,7 +703,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -715,9 +716,9 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}}, nil
 					},
@@ -756,7 +757,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -769,10 +770,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								AvailabilityZone:     pointer.String(testAvailabilityZone),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								AvailabilityZone:     pointer.ToOrNilIfZeroValue(testAvailabilityZone),
 							},
 						}}, nil
 					},
@@ -793,8 +794,8 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Unavailable()),
 					withStatus(svcapitypes.DocDBInstanceStateFailed),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withAvailabilityZone(testOtherAvailabilityZone),
 				),
@@ -828,10 +829,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:        pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
-								Endpoint:                &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								AutoMinorVersionUpgrade: pointer.Bool(true),
+								DBInstanceStatus:        pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								AutoMinorVersionUpgrade: pointer.ToOrNilIfZeroValue(true),
 							},
 						}}, nil
 					},
@@ -852,8 +853,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateFailed),
 					withConditions(xpv1.Unavailable()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withAutoMinorVersionUpgrade(false),
 				),
@@ -882,10 +883,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:        pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
-								Endpoint:                &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								CACertificateIdentifier: pointer.String(testCACertificateIdentifier),
+								DBInstanceStatus:        pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								CACertificateIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
 							},
 						}}, nil
 					},
@@ -906,8 +907,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateFailed),
 					withConditions(xpv1.Unavailable()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withCACertificateIdentifier(testOtherCACertificateIdentifier),
 					withStatusCACertificateIdentifier(testCACertificateIdentifier),
@@ -937,10 +938,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								DBInstanceClass:      pointer.String(testDBInstanceClass),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								DBInstanceClass:      pointer.ToOrNilIfZeroValue(testDBInstanceClass),
 							},
 						}}, nil
 					},
@@ -961,8 +962,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateFailed),
 					withConditions(xpv1.Unavailable()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withDBInstanceClass(testOtherDBInstanceClass),
 				),
@@ -991,10 +992,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:           pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier:       pointer.String(testDBIdentifier),
-								Endpoint:                   &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
+								DBInstanceStatus:           pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier:       pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                   &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 							},
 						}}, nil
 					},
@@ -1015,8 +1016,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateFailed),
 					withConditions(xpv1.Unavailable()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
 				),
@@ -1045,10 +1046,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								PromotionTier:        pointer.Int64(testPromotionTier),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								PromotionTier:        pointer.ToIntAsInt64(testPromotionTier),
 							},
 						}}, nil
 					},
@@ -1069,8 +1070,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateFailed),
 					withConditions(xpv1.Unavailable()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPromotionTier(testOtherPromotionTier),
 				),
@@ -1099,23 +1100,23 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{TagList: []*docdb.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 						}}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)}),
 				),
 			},
 			want: want{
@@ -1126,10 +1127,10 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateFailed),
 					withConditions(xpv1.Unavailable()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)}),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -1150,7 +1151,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -1163,23 +1164,23 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateFailed),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateFailed),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{TagList: []*docdb.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 						}}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 			},
 			want: want{
@@ -1190,10 +1191,10 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateFailed),
 					withConditions(xpv1.Unavailable()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -1214,7 +1215,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -1227,9 +1228,9 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}}, nil
 					},
@@ -1268,7 +1269,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -1281,10 +1282,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								AvailabilityZone:     pointer.String(testAvailabilityZone),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								AvailabilityZone:     pointer.ToOrNilIfZeroValue(testAvailabilityZone),
 							},
 						}}, nil
 					},
@@ -1305,8 +1306,8 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Deleting()),
 					withStatus(svcapitypes.DocDBInstanceStateDeleting),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withAvailabilityZone(testOtherAvailabilityZone),
 				),
@@ -1340,10 +1341,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:        pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
-								Endpoint:                &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								AutoMinorVersionUpgrade: pointer.Bool(true),
+								DBInstanceStatus:        pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								AutoMinorVersionUpgrade: pointer.ToOrNilIfZeroValue(true),
 							},
 						}}, nil
 					},
@@ -1364,8 +1365,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateDeleting),
 					withConditions(xpv1.Deleting()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withAutoMinorVersionUpgrade(false),
 				),
@@ -1394,10 +1395,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:        pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
-								Endpoint:                &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								CACertificateIdentifier: pointer.String(testCACertificateIdentifier),
+								DBInstanceStatus:        pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								CACertificateIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
 							},
 						}}, nil
 					},
@@ -1418,8 +1419,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateDeleting),
 					withConditions(xpv1.Deleting()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withCACertificateIdentifier(testOtherCACertificateIdentifier),
 					withStatusCACertificateIdentifier(testCACertificateIdentifier),
@@ -1449,10 +1450,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								DBInstanceClass:      pointer.String(testDBInstanceClass),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								DBInstanceClass:      pointer.ToOrNilIfZeroValue(testDBInstanceClass),
 							},
 						}}, nil
 					},
@@ -1473,8 +1474,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateDeleting),
 					withConditions(xpv1.Deleting()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withDBInstanceClass(testOtherDBInstanceClass),
 				),
@@ -1503,10 +1504,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:           pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier:       pointer.String(testDBIdentifier),
-								Endpoint:                   &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
+								DBInstanceStatus:           pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier:       pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                   &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 							},
 						}}, nil
 					},
@@ -1527,8 +1528,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateDeleting),
 					withConditions(xpv1.Deleting()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
 				),
@@ -1557,10 +1558,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								PromotionTier:        pointer.Int64(testPromotionTier),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								PromotionTier:        pointer.ToIntAsInt64(testPromotionTier),
 							},
 						}}, nil
 					},
@@ -1581,8 +1582,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateDeleting),
 					withConditions(xpv1.Deleting()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPromotionTier(testOtherPromotionTier),
 				),
@@ -1611,23 +1612,23 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{TagList: []*docdb.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 						}}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)}),
 				),
 			},
 			want: want{
@@ -1638,10 +1639,10 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateDeleting),
 					withConditions(xpv1.Deleting()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)}),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -1662,7 +1663,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -1675,23 +1676,23 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateDeleting),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateDeleting),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{TagList: []*docdb.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 						}}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 			},
 			want: want{
@@ -1702,10 +1703,10 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateDeleting),
 					withConditions(xpv1.Deleting()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -1726,7 +1727,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -1739,9 +1740,9 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}}, nil
 					},
@@ -1780,7 +1781,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -1793,10 +1794,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								AvailabilityZone:     pointer.String(testAvailabilityZone),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								AvailabilityZone:     pointer.ToOrNilIfZeroValue(testAvailabilityZone),
 							},
 						}}, nil
 					},
@@ -1817,8 +1818,8 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Creating()),
 					withStatus(svcapitypes.DocDBInstanceStateCreating),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withAvailabilityZone(testOtherAvailabilityZone),
 				),
@@ -1852,10 +1853,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:        pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
-								Endpoint:                &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								AutoMinorVersionUpgrade: pointer.Bool(true),
+								DBInstanceStatus:        pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								AutoMinorVersionUpgrade: pointer.ToOrNilIfZeroValue(true),
 							},
 						}}, nil
 					},
@@ -1876,8 +1877,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateCreating),
 					withConditions(xpv1.Creating()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withAutoMinorVersionUpgrade(false),
 				),
@@ -1906,10 +1907,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:        pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
-								Endpoint:                &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								CACertificateIdentifier: pointer.String(testCACertificateIdentifier),
+								DBInstanceStatus:        pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								CACertificateIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
 							},
 						}}, nil
 					},
@@ -1930,8 +1931,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateCreating),
 					withConditions(xpv1.Creating()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withCACertificateIdentifier(testOtherCACertificateIdentifier),
 					withStatusCACertificateIdentifier(testCACertificateIdentifier),
@@ -1961,10 +1962,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								DBInstanceClass:      pointer.String(testDBInstanceClass),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								DBInstanceClass:      pointer.ToOrNilIfZeroValue(testDBInstanceClass),
 							},
 						}}, nil
 					},
@@ -1985,8 +1986,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateCreating),
 					withConditions(xpv1.Creating()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withDBInstanceClass(testOtherDBInstanceClass),
 				),
@@ -2015,10 +2016,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:           pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier:       pointer.String(testDBIdentifier),
-								Endpoint:                   &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
+								DBInstanceStatus:           pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier:       pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:                   &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
 							},
 						}}, nil
 					},
@@ -2039,8 +2040,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateCreating),
 					withConditions(xpv1.Creating()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
 				),
@@ -2069,10 +2070,10 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
-								PromotionTier:        pointer.Int64(testPromotionTier),
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
+								PromotionTier:        pointer.ToIntAsInt64(testPromotionTier),
 							},
 						}}, nil
 					},
@@ -2093,8 +2094,8 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateCreating),
 					withConditions(xpv1.Creating()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPromotionTier(testOtherPromotionTier),
 				),
@@ -2123,23 +2124,23 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{TagList: []*docdb.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 						}}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)}),
 				),
 			},
 			want: want{
@@ -2150,10 +2151,10 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateCreating),
 					withConditions(xpv1.Creating()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)}),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -2173,7 +2174,7 @@ func TestObserve(t *testing.T) {
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
-							I: &docdb.ListTagsForResourceInput{ResourceName: pointer.String(testDBInstanceArn)},
+							I: &docdb.ListTagsForResourceInput{ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn)},
 						},
 					},
 				},
@@ -2185,23 +2186,23 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBInstancesWithContext: func(c context.Context, ddi *docdb.DescribeDBInstancesInput, o []request.Option) (*docdb.DescribeDBInstancesOutput, error) {
 						return &docdb.DescribeDBInstancesOutput{DBInstances: []*docdb.DBInstance{
 							{
-								DBInstanceStatus:     pointer.String(svcapitypes.DocDBInstanceStateCreating),
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
-								Endpoint:             &docdb.Endpoint{Address: pointer.String(testAddress), Port: pointer.Int64(testPort)},
+								DBInstanceStatus:     pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateCreating),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								Endpoint:             &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 							},
 						}}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{TagList: []*docdb.Tag{
-							{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+							{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 						}}, nil
 					},
 				},
 				cr: instance(
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 			},
 			want: want{
@@ -2212,10 +2213,10 @@ func TestObserve(t *testing.T) {
 					withStatus(svcapitypes.DocDBInstanceStateCreating),
 					withConditions(xpv1.Creating()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address: pointer.String(testAddress),
-						Port:    pointer.Int64(testPort),
+						Address: pointer.ToOrNilIfZeroValue(testAddress),
+						Port:    pointer.ToIntAsInt64(testPort),
 					}),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -2236,7 +2237,7 @@ func TestObserve(t *testing.T) {
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -2349,17 +2350,17 @@ func TestCreate(t *testing.T) {
 					MockCreateDBInstanceWithContext: func(c context.Context, cdi *docdb.CreateDBInstanceInput, opts []request.Option) (*docdb.CreateDBInstanceOutput, error) {
 						return &docdb.CreateDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								AutoMinorVersionUpgrade: pointer.Bool(true),
+								AutoMinorVersionUpgrade: pointer.ToOrNilIfZeroValue(true),
 								AvailabilityZone:        &testAvailabilityZone,
 								DBInstanceClass:         &testDBInstanceClass,
-								DBInstanceIdentifier:    pointer.String(testDBIdentifier),
+								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
 								Endpoint: &docdb.Endpoint{
-									Address:      pointer.String(testAddress),
-									HostedZoneId: pointer.String(testHostedZone),
-									Port:         pointer.Int64(testPort),
+									Address:      pointer.ToOrNilIfZeroValue(testAddress),
+									HostedZoneId: pointer.ToOrNilIfZeroValue(testHostedZone),
+									Port:         pointer.ToIntAsInt64(testPort),
 								},
 								PreferredMaintenanceWindow: &testPreferredMaintenanceWindow,
-								PromotionTier:              pointer.Int64(testPromotionTier),
+								PromotionTier:              pointer.ToIntAsInt64(testPromotionTier),
 							},
 						}, nil
 					},
@@ -2386,9 +2387,9 @@ func TestCreate(t *testing.T) {
 					withPromotionTier(testPromotionTier),
 					withConditions(xpv1.Creating()),
 					withEndpoint(&svcapitypes.Endpoint{
-						Address:      pointer.String(testAddress),
-						HostedZoneID: pointer.String(testHostedZone),
-						Port:         pointer.Int64(testPort),
+						Address:      pointer.ToOrNilIfZeroValue(testAddress),
+						HostedZoneID: pointer.ToOrNilIfZeroValue(testHostedZone),
+						Port:         pointer.ToIntAsInt64(testPort),
 					}),
 				),
 				result: managed.ExternalCreation{
@@ -2399,12 +2400,12 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBInstanceInput{
-								DBInstanceIdentifier:       pointer.String(testDBIdentifier),
-								AutoMinorVersionUpgrade:    pointer.Bool(true),
-								AvailabilityZone:           pointer.String(testAvailabilityZone),
-								DBInstanceClass:            pointer.String(testDBInstanceClass),
-								PreferredMaintenanceWindow: pointer.String(testPreferredMaintenanceWindow),
-								PromotionTier:              pointer.Int64(testPromotionTier),
+								DBInstanceIdentifier:       pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								AutoMinorVersionUpgrade:    pointer.ToOrNilIfZeroValue(true),
+								AvailabilityZone:           pointer.ToOrNilIfZeroValue(testAvailabilityZone),
+								DBInstanceClass:            pointer.ToOrNilIfZeroValue(testDBInstanceClass),
+								PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+								PromotionTier:              pointer.ToIntAsInt64(testPromotionTier),
 							},
 						},
 					},
@@ -2436,7 +2437,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
@@ -2484,7 +2485,7 @@ func TestDelete(t *testing.T) {
 					MockDeleteDBInstanceWithContext: func(c context.Context, ddi *docdb.DeleteDBInstanceInput, o []request.Option) (*docdb.DeleteDBInstanceOutput, error) {
 						return &docdb.DeleteDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						}, nil
 					},
@@ -2505,7 +2506,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
@@ -2536,7 +2537,7 @@ func TestDelete(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.DeleteDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
@@ -2582,8 +2583,8 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBInstanceWithContext: func(c context.Context, mdi *docdb.ModifyDBInstanceInput, o []request.Option) (*docdb.ModifyDBInstanceOutput, error) {
 						return &docdb.ModifyDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}, nil
 					},
@@ -2609,14 +2610,14 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -2629,15 +2630,15 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBInstanceWithContext: func(c context.Context, mdi *docdb.ModifyDBInstanceInput, o []request.Option) (*docdb.ModifyDBInstanceOutput, error) {
 						return &docdb.ModifyDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{
 							TagList: []*docdb.Tag{
-								{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+								{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 							},
 						}, nil
 					},
@@ -2646,7 +2647,7 @@ func TestUpdate(t *testing.T) {
 					withDBIdentifier(testDBIdentifier),
 					withExternalName(testDBIdentifier),
 					withDBInstanceArn(testDBInstanceArn),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 			},
 			want: want{
@@ -2654,7 +2655,7 @@ func TestUpdate(t *testing.T) {
 					withDBIdentifier(testDBIdentifier),
 					withExternalName(testDBIdentifier),
 					withDBInstanceArn(testDBInstanceArn),
-					withTags(&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)}),
+					withTags(&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)}),
 				),
 				result: managed.ExternalUpdate{},
 				docdb: fake.MockDocDBClientCall{
@@ -2662,14 +2663,14 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
@@ -2682,15 +2683,15 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBInstanceWithContext: func(c context.Context, mdi *docdb.ModifyDBInstanceInput, o []request.Option) (*docdb.ModifyDBInstanceOutput, error) {
 						return &docdb.ModifyDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{
 							TagList: []*docdb.Tag{
-								{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+								{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 							},
 						}, nil
 					},
@@ -2703,8 +2704,8 @@ func TestUpdate(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBInstanceArn(testDBInstanceArn),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 				),
 			},
@@ -2714,8 +2715,8 @@ func TestUpdate(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBInstanceArn(testDBInstanceArn),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 				),
 				result: managed.ExternalUpdate{},
@@ -2724,23 +2725,23 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
 					AddTagsToResource: []*fake.CallAddTagsToResource{
 						{
 							I: &docdb.AddTagsToResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 							},
 						},
@@ -2754,15 +2755,15 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBInstanceWithContext: func(c context.Context, mdi *docdb.ModifyDBInstanceInput, o []request.Option) (*docdb.ModifyDBInstanceOutput, error) {
 						return &docdb.ModifyDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{
 							TagList: []*docdb.Tag{
-								{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+								{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 							},
 						}, nil
 					},
@@ -2788,22 +2789,22 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
 					RemoveTagsFromResource: []*fake.CallRemoveTagsFromResource{
 						{
 							I: &docdb.RemoveTagsFromResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
-								TagKeys:      []*string{pointer.String(testTagKey)},
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								TagKeys:      []*string{pointer.ToOrNilIfZeroValue(testTagKey)},
 							},
 						},
 					},
@@ -2816,15 +2817,15 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBInstanceWithContext: func(c context.Context, mdi *docdb.ModifyDBInstanceInput, o []request.Option) (*docdb.ModifyDBInstanceOutput, error) {
 						return &docdb.ModifyDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{
 							TagList: []*docdb.Tag{
-								{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+								{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 							},
 						}, nil
 					},
@@ -2840,7 +2841,7 @@ func TestUpdate(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBInstanceArn(testDBInstanceArn),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 				),
 			},
@@ -2850,7 +2851,7 @@ func TestUpdate(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBInstanceArn(testDBInstanceArn),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 				),
 				result: managed.ExternalUpdate{},
@@ -2859,31 +2860,31 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
 					RemoveTagsFromResource: []*fake.CallRemoveTagsFromResource{
 						{
 							I: &docdb.RemoveTagsFromResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
-								TagKeys:      []*string{pointer.String(testTagKey)},
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								TagKeys:      []*string{pointer.ToOrNilIfZeroValue(testTagKey)},
 							},
 						},
 					},
 					AddTagsToResource: []*fake.CallAddTagsToResource{
 						{
 							I: &docdb.AddTagsToResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 							},
 						},
@@ -2897,15 +2898,15 @@ func TestUpdate(t *testing.T) {
 					MockModifyDBInstanceWithContext: func(c context.Context, mdi *docdb.ModifyDBInstanceInput, o []request.Option) (*docdb.ModifyDBInstanceOutput, error) {
 						return &docdb.ModifyDBInstanceOutput{
 							DBInstance: &docdb.DBInstance{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
-								DBInstanceArn:        pointer.String(testDBInstanceArn),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
+								DBInstanceArn:        pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						}, nil
 					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{
 							TagList: []*docdb.Tag{
-								{Key: pointer.String(testTagKey), Value: pointer.String(testTagValue)},
+								{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
 							},
 						}, nil
 					},
@@ -2922,7 +2923,7 @@ func TestUpdate(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBInstanceArn(testDBInstanceArn),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 				),
 			},
@@ -2932,7 +2933,7 @@ func TestUpdate(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBInstanceArn(testDBInstanceArn),
 					withTags(
-						&svcapitypes.Tag{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 					),
 				),
 				result: managed.ExternalUpdate{},
@@ -2941,31 +2942,31 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 							},
 						},
 					},
 					RemoveTagsFromResource: []*fake.CallRemoveTagsFromResource{
 						{
 							I: &docdb.RemoveTagsFromResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
-								TagKeys:      []*string{pointer.String(testTagKey)},
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
+								TagKeys:      []*string{pointer.ToOrNilIfZeroValue(testTagKey)},
 							},
 						},
 					},
 					AddTagsToResource: []*fake.CallAddTagsToResource{
 						{
 							I: &docdb.AddTagsToResourceInput{
-								ResourceName: pointer.String(testDBInstanceArn),
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 								Tags: []*docdb.Tag{
-									{Key: pointer.String(testOtherTagKey), Value: pointer.String(testOtherTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
 								},
 							},
 						},
@@ -2996,7 +2997,7 @@ func TestUpdate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.ModifyDBInstanceInput{
-								DBInstanceIdentifier: pointer.String(testDBIdentifier),
+								DBInstanceIdentifier: pointer.ToOrNilIfZeroValue(testDBIdentifier),
 							},
 						},
 					},

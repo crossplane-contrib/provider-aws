@@ -21,6 +21,7 @@ import (
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupKey adds a controller that reconciles Key.
@@ -47,6 +48,7 @@ func SetupKey(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithInitializers(),
@@ -72,7 +74,7 @@ func SetupKey(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Key, obj *svcsdk.DescribeKeyInput) error {
-	obj.KeyId = pointer.String(meta.GetExternalName(cr))
+	obj.KeyId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -119,7 +121,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 	if cr.Spec.ForProvider.Description != nil {
 		if _, err := u.client.UpdateKeyDescriptionWithContext(ctx, &svcsdk.UpdateKeyDescriptionInput{
-			KeyId:       pointer.String(meta.GetExternalName(cr)),
+			KeyId:       pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			Description: cr.Spec.ForProvider.Description,
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
@@ -128,8 +130,8 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 	// Policy
 	if _, err := u.client.PutKeyPolicyWithContext(ctx, &svcsdk.PutKeyPolicyInput{
-		KeyId:      pointer.String(meta.GetExternalName(cr)),
-		PolicyName: pointer.String("default"),
+		KeyId:      pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+		PolicyName: pointer.ToOrNilIfZeroValue("default"),
 		Policy:     cr.Spec.ForProvider.Policy,
 	}); err != nil {
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
@@ -138,14 +140,14 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	if pointer.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) {
 		// EnableKeyRotation
 		if _, err := u.client.EnableKeyRotationWithContext(ctx, &svcsdk.EnableKeyRotationInput{
-			KeyId: pointer.String(meta.GetExternalName(cr)),
+			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
 	} else {
 		// DisableKeyRotation
 		if _, err := u.client.DisableKeyRotationWithContext(ctx, &svcsdk.DisableKeyRotationInput{
-			KeyId: pointer.String(meta.GetExternalName(cr)),
+			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
@@ -166,7 +168,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.Key) error {
 	tagsOutput, err := u.client.ListResourceTagsWithContext(ctx, &svcsdk.ListResourceTagsInput{
-		KeyId: pointer.String(meta.GetExternalName(cr)),
+		KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return errorutils.Wrap(err, errUpdate)
@@ -176,7 +178,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.Key) error {
 
 	if len(addTags) != 0 {
 		if _, err := u.client.TagResourceWithContext(ctx, &svcsdk.TagResourceInput{
-			KeyId: pointer.String(meta.GetExternalName(cr)),
+			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			Tags:  addTags,
 		}); err != nil {
 			return errorutils.Wrap(err, "cannot tag Key")
@@ -184,7 +186,7 @@ func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.Key) error {
 	}
 	if len(removeTags) != 0 {
 		if _, err := u.client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{
-			KeyId:   pointer.String(meta.GetExternalName(cr)),
+			KeyId:   pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			TagKeys: removeTags,
 		}); err != nil {
 			return errorutils.Wrap(err, "cannot untag Key")
@@ -204,13 +206,13 @@ func (u *updater) enableDisableKey(ctx context.Context, cr *svcapitypes.Key) err
 
 	if pointer.BoolValue(cr.Spec.ForProvider.Enabled) {
 		if _, err := u.client.EnableKeyWithContext(ctx, &svcsdk.EnableKeyInput{
-			KeyId: pointer.String(meta.GetExternalName(cr)),
+			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return errorutils.Wrap(err, "cannot enable Key")
 		}
 	} else {
 		if _, err := u.client.DisableKeyWithContext(ctx, &svcsdk.DisableKeyInput{
-			KeyId: pointer.String(meta.GetExternalName(cr)),
+			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return errorutils.Wrap(err, "cannot disable Key")
 		}
@@ -235,7 +237,7 @@ func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
 	}
 
 	req := &svcsdk.ScheduleKeyDeletionInput{
-		KeyId: pointer.String(meta.GetExternalName(cr)),
+		KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}
 
 	if cr.Spec.ForProvider.PendingWindowInDays != nil {
@@ -256,17 +258,17 @@ func (o *observer) lateInitialize(in *svcapitypes.KeyParameters, obj *svcsdk.Des
 	if in.Policy == nil {
 		resPolicy, err := o.client.GetKeyPolicy(&svcsdk.GetKeyPolicyInput{
 			KeyId:      obj.KeyMetadata.KeyId,
-			PolicyName: pointer.String("default"),
+			PolicyName: pointer.ToOrNilIfZeroValue("default"),
 		})
 
 		if err != nil {
 			return errorutils.Wrap(err, "cannot get key policy")
 		}
 
-		in.Policy = pointer.LateInitializeStringPtr(in.Policy, resPolicy.Policy)
+		in.Policy = pointer.LateInitialize(in.Policy, resPolicy.Policy)
 	}
 
-	in.Enabled = pointer.LateInitializeBoolPtr(in.Enabled, obj.KeyMetadata.Enabled)
+	in.Enabled = pointer.LateInitialize(in.Enabled, obj.KeyMetadata.Enabled)
 
 	if len(in.Tags) == 0 {
 		resTags, err := o.client.ListResourceTags(&svcsdk.ListResourceTagsInput{
@@ -305,8 +307,8 @@ func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsd
 
 	// KeyPolicy
 	resPolicy, err := o.client.GetKeyPolicy(&svcsdk.GetKeyPolicyInput{
-		KeyId:      pointer.String(meta.GetExternalName(cr)),
-		PolicyName: pointer.String("default"),
+		KeyId:      pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+		PolicyName: pointer.ToOrNilIfZeroValue("default"),
 	})
 	if err != nil {
 		return false, "", errorutils.Wrap(err, "cannot get key policy")
@@ -325,7 +327,7 @@ func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsd
 
 	// EnableKeyRotation
 	resRotation, err := o.client.GetKeyRotationStatus(&svcsdk.GetKeyRotationStatusInput{
-		KeyId: pointer.String(meta.GetExternalName(cr)),
+		KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return false, "", errorutils.Wrap(err, "cannot get key rotation status")
@@ -336,7 +338,7 @@ func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsd
 
 	// Tags
 	resTags, err := o.client.ListResourceTags(&svcsdk.ListResourceTagsInput{
-		KeyId: pointer.String(meta.GetExternalName(cr)),
+		KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return false, "", errorutils.Wrap(err, "cannot list tags")
@@ -360,10 +362,10 @@ func diffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk
 		removeMap[pointer.StringValue(t.TagKey)] = struct{}{}
 	}
 	for k, v := range addMap {
-		addTags = append(addTags, &svcsdk.Tag{TagKey: pointer.String(k), TagValue: pointer.String(v)})
+		addTags = append(addTags, &svcsdk.Tag{TagKey: pointer.ToOrNilIfZeroValue(k), TagValue: pointer.ToOrNilIfZeroValue(v)})
 	}
 	for k := range removeMap {
-		remove = append(remove, pointer.String(k))
+		remove = append(remove, pointer.ToOrNilIfZeroValue(k))
 	}
 	return
 }

@@ -25,7 +25,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
@@ -37,6 +36,7 @@ import (
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/sesv2/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -65,9 +65,10 @@ func SetupEmailIdentity(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.EmailIdentity{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.EmailIdentityGroupVersionKind),
+			managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -79,10 +80,6 @@ type hooks struct {
 }
 
 func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.EmailIdentity, resp *svcsdk.GetEmailIdentityOutput) (bool, string, error) { //nolint:gocyclo
-	if meta.WasDeleted(cr) {
-		return true, "", nil // There is no need to check for updates when we want to delete.
-	}
-
 	if pointer.StringValue(cr.Spec.ForProvider.ConfigurationSetName) != pointer.StringValue(resp.ConfigurationSetName) {
 		return false, "", nil
 	}
@@ -144,7 +141,7 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.EmailIdentity, ob
 			if err != nil {
 				return errors.Wrap(err, "private key retrival failed")
 			}
-			obj.DkimSigningAttributes.DomainSigningPrivateKey = pointer.String(base64.StdEncoding.EncodeToString([]byte(pk)))
+			obj.DkimSigningAttributes.DomainSigningPrivateKey = pointer.ToOrNilIfZeroValue(base64.StdEncoding.EncodeToString([]byte(pk)))
 		}
 	}
 	return nil
@@ -202,10 +199,10 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 		dkimSigningAttributesInput := &svcsdk.PutEmailIdentityDkimSigningAttributesInput{
 			EmailIdentity: cr.Spec.ForProvider.EmailIdentity,
 			SigningAttributes: &svcsdk.DkimSigningAttributes{
-				DomainSigningPrivateKey: pointer.String(base64.StdEncoding.EncodeToString([]byte(pk))),
+				DomainSigningPrivateKey: pointer.ToOrNilIfZeroValue(base64.StdEncoding.EncodeToString([]byte(pk))),
 				DomainSigningSelector:   cr.Spec.ForProvider.DkimSigningAttributes.DomainSigningSelector,
 			},
-			SigningAttributesOrigin: pointer.String(dkimSigningAttributeExternal),
+			SigningAttributesOrigin: pointer.ToOrNilIfZeroValue(dkimSigningAttributeExternal),
 		}
 		if _, err := e.client.PutEmailIdentityDkimSigningAttributesWithContext(ctx, dkimSigningAttributesInput); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, "update failed for EmailIdentityDkimSigningAttributes")
@@ -215,7 +212,7 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 	if cr.Spec.ForProvider.DkimSigningAttributes != nil && cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength != nil {
 		dkimSigningAttributesInput := &svcsdk.PutEmailIdentityDkimSigningAttributesInput{
 			EmailIdentity:           cr.Spec.ForProvider.EmailIdentity,
-			SigningAttributesOrigin: pointer.String(dkimSigningAttributeEasyDKIM),
+			SigningAttributesOrigin: pointer.ToOrNilIfZeroValue(dkimSigningAttributeEasyDKIM),
 			SigningAttributes: &svcsdk.DkimSigningAttributes{
 				NextSigningKeyLength: cr.Spec.ForProvider.DkimSigningAttributes.NextSigningKeyLength,
 			},
@@ -227,19 +224,6 @@ func (e *hooks) update(ctx context.Context, mg resource.Managed) (managed.Extern
 
 	// All notifications customization should be added through Configuration sets setup
 	return managed.ExternalUpdate{}, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.EmailIdentity)
-	if !ok {
-		return errors.New(errNotEmailIdentity)
-	}
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
 
 func (e *hooks) getPrivateKeyFromRef(ctx context.Context, in *xpv1.SecretKeySelector) (newPrivateKey string, err error) {

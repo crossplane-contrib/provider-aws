@@ -456,10 +456,10 @@ func TestUseProviderConfigResolveEndpoint(t *testing.T) {
 				region:  "us-east-1",
 				service: "iam",
 				endpointConfig: &v1beta1.EndpointConfig{
-					HostnameImmutable: pointer.Bool(true),
+					HostnameImmutable: pointer.ToOrNilIfZeroValue(true),
 					URL: v1beta1.URLConfig{
 						Type:   "Static",
-						Static: pointer.String("http://localstack:4566"),
+						Static: pointer.ToOrNilIfZeroValue("http://localstack:4566"),
 					},
 				},
 			},
@@ -555,7 +555,7 @@ func TestUsePodServiceAccountAssumeRole(t *testing.T) {
 	providerConfig := v1beta1.ProviderConfig{
 		Spec: v1beta1.ProviderConfigSpec{
 			AssumeRole: &v1beta1.AssumeRoleOptions{
-				RoleARN: pointer.String("arn:aws:iam::123456789:role/crossplane-role"),
+				RoleARN: pointer.ToOrNilIfZeroValue("arn:aws:iam::123456789:role/crossplane-role"),
 			},
 			Credentials: v1beta1.ProviderCredentials{Source: xpv1.CredentialsSourceInjectedIdentity},
 		},

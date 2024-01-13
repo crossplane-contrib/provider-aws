@@ -111,7 +111,7 @@ func IsErrorInvalidRequest(err error) bool {
 // GenerateCreateClusterInput from ClusterParameters.
 func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.CreateClusterInput {
 	c := &eks.CreateClusterInput{
-		Name:    pointer.String(name),
+		Name:    pointer.ToOrNilIfZeroValue(name),
 		RoleArn: &p.RoleArn,
 		Version: p.Version,
 	}
@@ -125,7 +125,7 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 			IpFamily: ekstypes.IpFamily(p.KubernetesNetworkConfig.IPFamily),
 		}
 		if p.KubernetesNetworkConfig.ServiceIpv4Cidr != "" {
-			c.KubernetesNetworkConfig.ServiceIpv4Cidr = pointer.String(p.KubernetesNetworkConfig.ServiceIpv4Cidr)
+			c.KubernetesNetworkConfig.ServiceIpv4Cidr = pointer.ToOrNilIfZeroValue(p.KubernetesNetworkConfig.ServiceIpv4Cidr)
 		}
 	}
 
@@ -165,7 +165,7 @@ func GenerateEncryptionConfig(parameters *v1beta1.ClusterParameters) []ekstypes.
 		for i, conf := range parameters.EncryptionConfig {
 			encryptionConfig[i] = ekstypes.EncryptionConfig{
 				Provider: &ekstypes.Provider{
-					KeyArn: pointer.String(conf.Provider.KeyArn),
+					KeyArn: pointer.ToOrNilIfZeroValue(conf.Provider.KeyArn),
 				},
 				Resources: conf.Resources,
 			}
@@ -195,7 +195,7 @@ func CreatePatch(in *ekstypes.Cluster, target *v1beta1.ClusterParameters) (*v1be
 // GenerateUpdateClusterConfigInputForLogging from ClusterParameters.
 func GenerateUpdateClusterConfigInputForLogging(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
 	u := &eks.UpdateClusterConfigInput{
-		Name: pointer.String(name),
+		Name: pointer.ToOrNilIfZeroValue(name),
 	}
 
 	u.Logging = &ekstypes.Logging{
@@ -217,7 +217,7 @@ func GenerateUpdateClusterConfigInputForLogging(name string, p *v1beta1.ClusterP
 // GenerateUpdateClusterConfigInputForVPC from ClusterParameters.
 func GenerateUpdateClusterConfigInputForVPC(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
 	u := &eks.UpdateClusterConfigInput{
-		Name: pointer.String(name),
+		Name: pointer.ToOrNilIfZeroValue(name),
 	}
 
 	// NOTE(muvaf): SecurityGroupIds and SubnetIds cannot be updated. They are
@@ -326,8 +326,8 @@ func LateInitialize(in *v1beta1.ClusterParameters, cluster *ekstypes.Cluster) { 
 		}
 	}
 	if cluster.ResourcesVpcConfig != nil {
-		in.ResourcesVpcConfig.EndpointPrivateAccess = pointer.LateInitializeBoolPtr(in.ResourcesVpcConfig.EndpointPrivateAccess, &cluster.ResourcesVpcConfig.EndpointPrivateAccess)
-		in.ResourcesVpcConfig.EndpointPublicAccess = pointer.LateInitializeBoolPtr(in.ResourcesVpcConfig.EndpointPublicAccess, &cluster.ResourcesVpcConfig.EndpointPublicAccess)
+		in.ResourcesVpcConfig.EndpointPrivateAccess = pointer.LateInitialize(in.ResourcesVpcConfig.EndpointPrivateAccess, &cluster.ResourcesVpcConfig.EndpointPrivateAccess)
+		in.ResourcesVpcConfig.EndpointPublicAccess = pointer.LateInitialize(in.ResourcesVpcConfig.EndpointPublicAccess, &cluster.ResourcesVpcConfig.EndpointPublicAccess)
 		if len(in.ResourcesVpcConfig.PublicAccessCidrs) == 0 && len(cluster.ResourcesVpcConfig.PublicAccessCidrs) > 0 {
 			in.ResourcesVpcConfig.PublicAccessCidrs = cluster.ResourcesVpcConfig.PublicAccessCidrs
 		}
@@ -339,8 +339,15 @@ func LateInitialize(in *v1beta1.ClusterParameters, cluster *ekstypes.Cluster) { 
 			in.ResourcesVpcConfig.SubnetIDs = cluster.ResourcesVpcConfig.SubnetIds
 		}
 	}
-	in.RoleArn = pointer.LateInitializeString(in.RoleArn, cluster.RoleArn)
-	in.Version = pointer.LateInitializeStringPtr(in.Version, cluster.Version)
+	if in.KubernetesNetworkConfig == nil && cluster.KubernetesNetworkConfig != nil {
+		in.KubernetesNetworkConfig = &v1beta1.KubernetesNetworkConfigRequest{
+			ServiceIpv4Cidr: pointer.StringValue(cluster.KubernetesNetworkConfig.ServiceIpv4Cidr),
+			IPFamily:        v1beta1.IPFamily(cluster.KubernetesNetworkConfig.IpFamily),
+		}
+	}
+
+	in.RoleArn = pointer.LateInitializeValueFromPtr(in.RoleArn, cluster.RoleArn)
+	in.Version = pointer.LateInitialize(in.Version, cluster.Version)
 	// NOTE(hasheddan): we always will set the default Crossplane tags in
 	// practice during initialization in the controller, but we check if no tags
 	// exist for consistency with expected late initialization behavior.

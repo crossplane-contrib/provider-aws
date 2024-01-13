@@ -30,6 +30,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupGroup adds a controller that reconciles Group.
@@ -54,6 +55,7 @@ func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -78,13 +80,13 @@ func SetupGroup(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.GetGroupInput) error {
-	obj.GroupName = pointer.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.DeleteGroupInput) (bool, error) {
-	obj.GroupName = pointer.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	return false, nil
 }
@@ -102,14 +104,14 @@ func postObserve(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.GetGroupO
 func preCreate(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.CreateGroupInput) error {
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	obj.RoleArn = cr.Spec.ForProvider.RoleARN
-	obj.GroupName = pointer.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.Group, obj *svcsdk.UpdateGroupInput) error {
 	obj.UserPoolId = cr.Spec.ForProvider.UserPoolID
 	obj.RoleArn = cr.Spec.ForProvider.RoleARN
-	obj.GroupName = pointer.String(meta.GetExternalName(cr))
+	obj.GroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 

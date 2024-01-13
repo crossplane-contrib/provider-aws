@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -59,11 +60,10 @@ func SetupJobQueue(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(
-			managed.NewDefaultProviderConfig(mgr.GetClient()),
-			managed.NewNameAsExternalName(mgr.GetClient())),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -90,7 +90,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.DescribeJobQueuesInput) error {
-	obj.JobQueues = []*string{pointer.String(meta.GetExternalName(cr))} // we only want to observe our JQ
+	obj.JobQueues = []*string{pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))} // we only want to observe our JQ
 	return nil
 }
 
@@ -118,13 +118,13 @@ func postObserve(_ context.Context, cr *svcapitypes.JobQueue, resp *svcsdk.Descr
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.UpdateJobQueueInput) error {
-	obj.JobQueue = pointer.String(meta.GetExternalName(cr))
+	obj.JobQueue = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.State = cr.Spec.ForProvider.DesiredState
 
 	for i := range cr.Spec.ForProvider.ComputeEnvironmentOrder {
 		if awsarn.IsARN(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment) {
 			obj.ComputeEnvironmentOrder = append(obj.ComputeEnvironmentOrder, &svcsdk.ComputeEnvironmentOrder{
-				ComputeEnvironment: pointer.String(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment),
+				ComputeEnvironment: pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment),
 				Order:              &cr.Spec.ForProvider.ComputeEnvironmentOrder[i].Order,
 			})
 		} else {
@@ -144,13 +144,13 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.JobQueue, obj *s
 }
 
 func (e *hooks) preCreate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.CreateJobQueueInput) error {
-	obj.JobQueueName = pointer.String(cr.Name)
+	obj.JobQueueName = pointer.ToOrNilIfZeroValue(cr.Name)
 	obj.State = cr.Spec.ForProvider.DesiredState
 
 	for i := range cr.Spec.ForProvider.ComputeEnvironmentOrder {
 		if awsarn.IsARN(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment) {
 			obj.ComputeEnvironmentOrder = append(obj.ComputeEnvironmentOrder, &svcsdk.ComputeEnvironmentOrder{
-				ComputeEnvironment: pointer.String(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment),
+				ComputeEnvironment: pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.ComputeEnvironmentOrder[i].ComputeEnvironment),
 				Order:              &cr.Spec.ForProvider.ComputeEnvironmentOrder[i].Order,
 			})
 		} else {
@@ -161,7 +161,7 @@ func (e *hooks) preCreate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcs
 }
 
 func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.DeleteJobQueueInput) (bool, error) {
-	obj.JobQueue = pointer.String(meta.GetExternalName(cr))
+	obj.JobQueue = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	// Skip Deletion if JQ is updating or already deleting
 	if pointer.StringValue(cr.Status.AtProvider.Status) == svcsdk.JQStatusUpdating ||
@@ -175,8 +175,8 @@ func (e *hooks) preDelete(ctx context.Context, cr *svcapitypes.JobQueue, obj *sv
 	}
 	// Update the JQ to set the state to DISABLED
 	_, err := e.client.UpdateJobQueueWithContext(ctx, &svcsdk.UpdateJobQueueInput{
-		JobQueue: pointer.String(meta.GetExternalName(cr)),
-		State:    pointer.String(svcsdk.JQStateDisabled)})
+		JobQueue: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+		State:    pointer.ToOrNilIfZeroValue(svcsdk.JQStateDisabled)})
 	return true, errorutils.Wrap(err, errUpdate)
 }
 
@@ -213,7 +213,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.JobQueue, obj *svcsdk.Describ
 
 func lateInitialize(spec *svcapitypes.JobQueueParameters, resp *svcsdk.DescribeJobQueuesOutput) error {
 	jq := resp.JobQueues[0]
-	spec.DesiredState = pointer.LateInitializeStringPtr(spec.DesiredState, jq.State)
+	spec.DesiredState = pointer.LateInitialize(spec.DesiredState, jq.State)
 
 	return nil
 }

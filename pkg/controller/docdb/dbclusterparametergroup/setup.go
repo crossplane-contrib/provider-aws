@@ -38,6 +38,7 @@ import (
 	svcutils "github.com/crossplane-contrib/provider-aws/pkg/controller/docdb/utils"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -59,9 +60,10 @@ func SetupDBClusterParameterGroup(mgr ctrl.Manager, o controller.Options) error 
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -103,7 +105,7 @@ type hooks struct {
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DescribeDBClusterParameterGroupsInput) error {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -179,7 +181,7 @@ func lateInitializeParameters(in []*svcapitypes.CustomParameter, from []*svcsdk.
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.ModifyDBClusterParameterGroupInput) error {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.Parameters = generateSdkParameters(cr.Spec.ForProvider.Parameters)
 	return nil
 }
@@ -193,13 +195,13 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.DBClusterParameter
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.CreateDBClusterParameterGroupInput) error {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	// CreateDBClusterParameterGroup does not create the parameters themselves. Parameters are added during update.
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.DBClusterParameterGroup, obj *svcsdk.DeleteDBClusterParameterGroupInput) (bool, error) {
-	obj.DBClusterParameterGroupName = pointer.String(meta.GetExternalName(cr))
+	obj.DBClusterParameterGroupName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
@@ -258,18 +260,4 @@ func generateAPIParameter(p *svcsdk.Parameter, o *svcapitypes.CustomParameter) *
 	o.ParameterValue = p.ParameterValue
 
 	return o
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.DBClusterParameterGroup)
-	if !ok {
-		return errors.New(errNotDBClusterParameterGroup)
-	}
-
-	cr.Spec.ForProvider.Tags = svcutils.AddExternalTags(mg, cr.Spec.ForProvider.Tags)
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

@@ -30,6 +30,7 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/sesv2/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupEmailTemplate adds a controller that reconciles SES EmailTemplate.
@@ -53,6 +54,7 @@ func SetupEmailTemplate(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.EmailTemplate{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.EmailTemplateGroupVersionKind),
+			managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -60,10 +62,6 @@ func SetupEmailTemplate(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.GetEmailTemplateOutput) (bool, string, error) {
-	if meta.WasDeleted(cr) {
-		return true, "", nil // There is no need to check for updates when we want to delete.
-	}
-
 	if cr.Spec.ForProvider.TemplateContent != nil && resp.TemplateContent != nil {
 		if pointer.StringValue(cr.Spec.ForProvider.TemplateContent.HTML) != pointer.StringValue(resp.TemplateContent.Html) {
 			return false, "", nil
@@ -79,7 +77,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.G
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.GetEmailTemplateInput) error {
-	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -94,16 +92,16 @@ func postObserve(_ context.Context, cr *svcapitypes.EmailTemplate, resp *svcsdk.
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.CreateEmailTemplateInput) error {
-	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.UpdateEmailTemplateInput) error {
-	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.EmailTemplate, obj *svcsdk.DeleteEmailTemplateInput) (bool, error) {
-	obj.TemplateName = pointer.String(meta.GetExternalName(cr))
+	obj.TemplateName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }

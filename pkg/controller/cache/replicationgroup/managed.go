@@ -44,6 +44,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // Error strings.
@@ -75,8 +76,9 @@ func SetupReplicationGroup(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -316,34 +318,6 @@ func (e *external) updateTags(ctx context.Context, tags []v1beta1.Tag, arn *stri
 	return nil
 }
 
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1beta1.ReplicationGroup)
-	if !ok {
-		return errors.New(errNotReplicationGroup)
-	}
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
-	}
-	for k, v := range resource.GetExternalTags(mg) {
-		tagMap[k] = v
-	}
-	cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
-	i := 0
-	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
-		i++
-	}
-	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
-	})
-	return errors.Wrap(t.kube.Update(ctx, cr), errUpdateReplicationGroupCR)
-}
-
 func getCacheClusterList(ctx context.Context, client awselasticache.DescribeCacheClustersAPIClient, idList []string) ([]awselasticachetypes.CacheCluster, error) {
 	if len(idList) < 1 {
 		return nil, nil
@@ -370,11 +344,11 @@ func (e *external) updateReplicationGroupNumCacheClusters(ctx context.Context, r
 	case newReplicaCount > 5:
 		return errors.New(errReplicationGroupCacheClusterMaximum)
 	case desiredClusterSize > existingClusterSize:
-		input := elasticache.NewIncreaseReplicaCountInput(replicaGroup, pointer.Int32(newReplicaCount))
+		input := elasticache.NewIncreaseReplicaCountInput(replicaGroup, pointer.ToIntAsInt32(newReplicaCount))
 		_, err := e.client.IncreaseReplicaCount(ctx, input)
 		return err
 	case desiredClusterSize < existingClusterSize:
-		input := elasticache.NewDecreaseReplicaCountInput(replicaGroup, pointer.Int32(newReplicaCount))
+		input := elasticache.NewDecreaseReplicaCountInput(replicaGroup, pointer.ToIntAsInt32(newReplicaCount))
 		_, err := e.client.DecreaseReplicaCount(ctx, input)
 		return err
 	default:

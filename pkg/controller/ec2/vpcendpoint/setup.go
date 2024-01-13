@@ -2,7 +2,6 @@ package vpcendpoint
 
 import (
 	"context"
-	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -25,6 +24,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
@@ -38,10 +38,11 @@ func SetupVPCEndpoint(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
-		managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
 	}
@@ -81,7 +82,7 @@ type custom struct {
 
 func preCreate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.CreateVpcEndpointInput) error {
 	obj.VpcId = cr.Spec.ForProvider.VPCID
-	obj.ClientToken = pointer.String(string(cr.UID))
+	obj.ClientToken = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	// Clear SGs, RTs, and Subnets if they're empty
 	if len(cr.Spec.ForProvider.SecurityGroupIDs) == 0 {
 		obj.SecurityGroupIds = nil
@@ -186,7 +187,7 @@ sgCompare:
 
 // preUpdate adds the mutable fields into the update request input
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.ModifyVpcEndpointInput) error {
-	obj.VpcEndpointId = pointer.String(meta.GetExternalName(cr))
+	obj.VpcEndpointId = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	// Add fields to upstream AWS
 	obj.SetAddSecurityGroupIds(cr.Spec.ForProvider.SecurityGroupIDs)
@@ -355,53 +356,4 @@ compare:
 	}
 
 	return true
-}
-
-const (
-	errKubeUpdateFailed = "cannot update Address custom resource"
-)
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd cpresource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.VPCEndpoint)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	var vpcEndpointTags svcapitypes.TagSpecification
-	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if tagSpecification == nil {
-			continue
-		}
-		if aws.StringValue(tagSpecification.ResourceType) == "vpc-endpoint" {
-			vpcEndpointTags = *tagSpecification
-		}
-	}
-
-	var tagMap map[string]string
-	if cr.Spec.ForProvider.Tags != nil {
-		tagMap = cr.Spec.ForProvider.Tags
-	} else {
-		tagMap = map[string]string{}
-	}
-
-	tagMap["Name"] = cr.Name
-	for k, v := range cpresource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	vpcEndpointTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	vpcEndpointTags.ResourceType = aws.String("vpc-endpoint")
-	i := 0
-	for k, v := range tagMap {
-		vpcEndpointTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
-		i++
-	}
-	sort.Slice(vpcEndpointTags.Tags, func(i, j int) bool {
-		return aws.StringValue(vpcEndpointTags.Tags[i].Key) < aws.StringValue(vpcEndpointTags.Tags[j].Key)
-	})
-
-	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&vpcEndpointTags}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

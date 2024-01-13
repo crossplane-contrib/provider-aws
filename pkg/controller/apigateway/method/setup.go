@@ -19,6 +19,7 @@ import (
 	apigwclient "github.com/crossplane-contrib/provider-aws/pkg/clients/apigateway"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupMethod adds a controller that reconciles Method.
@@ -39,6 +40,7 @@ func SetupMethod(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
@@ -139,10 +141,10 @@ func (c *custom) lateInitialize(cr *svcapitypes.MethodParameters, cur *svcsdk.Me
 		}
 		cr.ResourceID = resourceID
 	}
-	cr.APIKeyRequired = pointer.LateInitializeBoolPtr(cr.APIKeyRequired, cur.ApiKeyRequired)
-	cr.AuthorizationScopes = pointer.LateInitializeStringPtrSlice(cr.AuthorizationScopes, cur.AuthorizationScopes)
-	cr.AuthorizationType = pointer.LateInitializeStringPtr(cr.AuthorizationType, cur.AuthorizationType)
-	cr.OperationName = pointer.LateInitializeStringPtr(cr.OperationName, cur.OperationName)
+	cr.APIKeyRequired = pointer.LateInitialize(cr.APIKeyRequired, cur.ApiKeyRequired)
+	cr.AuthorizationScopes = pointer.LateInitializeSlice(cr.AuthorizationScopes, cur.AuthorizationScopes)
+	cr.AuthorizationType = pointer.LateInitialize(cr.AuthorizationType, cur.AuthorizationType)
+	cr.OperationName = pointer.LateInitialize(cr.OperationName, cur.OperationName)
 
 	if cr.RequestModels == nil && cur.RequestModels != nil {
 		cr.RequestModels = cur.RequestModels

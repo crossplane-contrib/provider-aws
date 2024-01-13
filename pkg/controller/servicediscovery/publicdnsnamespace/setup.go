@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupPublicDNSNamespace adds a controller that reconciles PublicDNSNamespaces.
@@ -60,6 +61,7 @@ func SetupPublicDNSNamespace(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
@@ -89,7 +91,7 @@ type hooks struct {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, obj *svcsdk.CreatePublicDnsNamespaceInput) error {
-	obj.CreatorRequestId = pointer.String(string(cr.UID))
+	obj.CreatorRequestId = pointer.ToOrNilIfZeroValue(string(cr.UID))
 	return nil
 }
 
@@ -99,8 +101,8 @@ func postCreate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, resp *svc
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, obj *svcsdk.UpdatePublicDnsNamespaceInput) error {
-	obj.UpdaterRequestId = pointer.String(string(cr.UID))
-	obj.Id = pointer.String(meta.GetExternalName(cr))
+	obj.UpdaterRequestId = pointer.ToOrNilIfZeroValue(string(cr.UID))
+	obj.Id = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
 	// Description and TTL are required
 	obj.Namespace = &svcsdk.PublicDnsNamespaceChange{

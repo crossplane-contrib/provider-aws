@@ -39,6 +39,7 @@ import (
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // Error strings.
@@ -60,6 +61,7 @@ func SetupCacheSubnetGroup(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
@@ -112,7 +114,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	resp, err := e.client.DescribeCacheSubnetGroups(ctx, &awscache.DescribeCacheSubnetGroupsInput{
-		CacheSubnetGroupName: pointer.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil || resp.CacheSubnetGroups == nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(resource.Ignore(elasticache.IsSubnetGroupNotFound, err), errDescribeSubnetGroup)
@@ -141,8 +143,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr.Status.SetConditions(xpv1.Creating())
 
 	_, err := e.client.CreateCacheSubnetGroup(ctx, &awscache.CreateCacheSubnetGroupInput{
-		CacheSubnetGroupDescription: pointer.String(cr.Spec.ForProvider.Description),
-		CacheSubnetGroupName:        pointer.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupDescription: pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.Description),
+		CacheSubnetGroupName:        pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	})
 	if err != nil {
@@ -159,8 +161,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	_, err := e.client.ModifyCacheSubnetGroup(ctx, &awscache.ModifyCacheSubnetGroupInput{
-		CacheSubnetGroupDescription: pointer.String(cr.Spec.ForProvider.Description),
-		CacheSubnetGroupName:        pointer.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupDescription: pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.Description),
+		CacheSubnetGroupName:        pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	})
 
@@ -176,7 +178,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeleteCacheSubnetGroup(ctx, &awscache.DeleteCacheSubnetGroupInput{
-		CacheSubnetGroupName: pointer.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 
 	return errorutils.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteSubnetGroup)

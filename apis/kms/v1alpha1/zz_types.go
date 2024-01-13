@@ -48,10 +48,54 @@ type CustomKeyStoresListEntry struct {
 }
 
 // +kubebuilder:skipversion
+type GrantConstraints struct {
+	EncryptionContextEquals map[string]*string `json:"encryptionContextEquals,omitempty"`
+
+	EncryptionContextSubset map[string]*string `json:"encryptionContextSubset,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type GrantListEntry struct {
+	// Use this structure to allow cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
+	// in the grant only when the operation request includes the specified encryption
+	// context (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context).
+	//
+	// KMS applies the grant constraints only to cryptographic operations that support
+	// an encryption context, that is, all cryptographic operations with a symmetric
+	// KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks).
+	// Grant constraints are not applied to operations that do not support an encryption
+	// context, such as cryptographic operations with asymmetric KMS keys and management
+	// operations, such as DescribeKey or RetireGrant.
+	//
+	// In a cryptographic operation, the encryption context in the decryption operation
+	// must be an exact, case-sensitive match for the keys and values in the encryption
+	// context of the encryption operation. Only the order of the pairs can vary.
+	//
+	// However, in a grant constraint, the key in each key-value pair is not case
+	// sensitive, but the value is case sensitive.
+	//
+	// To avoid confusion, do not use multiple encryption context pairs that differ
+	// only by case. To require a fully case-sensitive encryption context, use the
+	// kms:EncryptionContext: and kms:EncryptionContextKeys conditions in an IAM
+	// or key policy. For details, see kms:EncryptionContext: (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-context)
+	// in the Key Management Service Developer Guide .
+	Constraints *GrantConstraints `json:"constraints,omitempty"`
+
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 
+	GrantID *string `json:"grantID,omitempty"`
+
+	GranteePrincipal *string `json:"granteePrincipal,omitempty"`
+
+	IssuingAccount *string `json:"issuingAccount,omitempty"`
+
 	KeyID *string `json:"keyID,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Operations []*string `json:"operations,omitempty"`
+
+	RetiringPrincipal *string `json:"retiringPrincipal,omitempty"`
 }
 
 // +kubebuilder:skipversion

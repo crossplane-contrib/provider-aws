@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
@@ -66,6 +67,7 @@ func SetupLogGroup(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(),
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -94,7 +96,7 @@ type updater struct {
 }
 
 func filterList(cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsOutput) *svcsdk.DescribeLogGroupsOutput {
-	logGroupIdentifier := pointer.String(meta.GetExternalName(cr))
+	logGroupIdentifier := pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	resp := &svcsdk.DescribeLogGroupsOutput{}
 	for _, LogGroups := range obj.LogGroups {
 		if pointer.StringValue(LogGroups.LogGroupName) == pointer.StringValue(logGroupIdentifier) {
@@ -156,7 +158,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	}
 
 	obj, err := u.client.DescribeLogGroupsWithContext(ctx, &svcsdk.DescribeLogGroupsInput{
-		LogGroupNamePrefix: pointer.String(meta.GetExternalName(cr)),
+		LogGroupNamePrefix: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreate)
@@ -193,7 +195,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	var zero int64 = 0
 	if cr.Spec.ForProvider.RetentionInDays == nil || pointer.Int64Value(cr.Spec.ForProvider.RetentionInDays) == pointer.Int64Value(&zero) {
 		if _, err := u.client.DeleteRetentionPolicy(&svcsdk.DeleteRetentionPolicyInput{
-			LogGroupName: pointer.String(meta.GetExternalName(cr)),
+			LogGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
@@ -202,7 +204,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	if cr.Spec.ForProvider.RetentionInDays != nil &&
 		pointer.Int64Value(cr.Spec.ForProvider.RetentionInDays) != pointer.Int64Value(obj.LogGroups[0].RetentionInDays) {
 		if _, err := u.client.PutRetentionPolicy(&svcsdk.PutRetentionPolicyInput{
-			LogGroupName:    pointer.String(meta.GetExternalName(cr)),
+			LogGroupName:    pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			RetentionInDays: cr.Spec.ForProvider.RetentionInDays,
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)

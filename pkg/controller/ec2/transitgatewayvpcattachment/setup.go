@@ -2,7 +2,6 @@ package transitgatewayvpcattachment
 
 import (
 	"context"
-	"sort"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
@@ -22,10 +21,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-)
-
-const (
-	errKubeUpdateFailed = "cannot update TransitGatewayAttachment"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupTransitGatewayVPCAttachment adds a controller that reconciles TransitGatewayVPCAttachment.
@@ -47,9 +43,10 @@ func SetupTransitGatewayVPCAttachment(mgr ctrl.Manager, o controller.Options) er
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
-		managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		managed.WithConnectionPublishers(cps...),
 	}
@@ -138,43 +135,4 @@ func postCreate(ctx context.Context, cr *svcapitypes.TransitGatewayVPCAttachment
 	// set transitgatewayvpcattachment id as external name annotation on k8s object after creation
 	meta.SetExternalName(cr, aws.StringValue(obj.TransitGatewayVpcAttachment.TransitGatewayAttachmentId))
 	return cre, nil
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.TransitGatewayVPCAttachment)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	var transitGatewayAttachmentTags svcapitypes.TagSpecification
-	for _, tagSpecification := range cr.Spec.ForProvider.TagSpecifications {
-		if aws.StringValue(tagSpecification.ResourceType) == "transit-gateway-attachment" {
-			transitGatewayAttachmentTags = *tagSpecification
-		}
-	}
-
-	tagMap := map[string]string{}
-	tagMap["Name"] = cr.Name
-	for _, t := range transitGatewayAttachmentTags.Tags {
-		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	transitGatewayAttachmentTags.Tags = make([]*svcapitypes.Tag, len(tagMap))
-	transitGatewayAttachmentTags.ResourceType = aws.String("transit-gateway-attachment")
-	i := 0
-	for k, v := range tagMap {
-		transitGatewayAttachmentTags.Tags[i] = &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)}
-		i++
-	}
-	sort.Slice(transitGatewayAttachmentTags.Tags, func(i, j int) bool {
-		return aws.StringValue(transitGatewayAttachmentTags.Tags[i].Key) < aws.StringValue(transitGatewayAttachmentTags.Tags[j].Key)
-	})
-
-	cr.Spec.ForProvider.TagSpecifications = []*svcapitypes.TagSpecification{&transitGatewayAttachmentTags}
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

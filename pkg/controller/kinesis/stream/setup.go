@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupStream adds a controller that reconciles Stream.
@@ -57,11 +58,10 @@ func SetupStream(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-		managed.WithInitializers(
-			managed.NewDefaultProviderConfig(mgr.GetClient()),
-			managed.NewNameAsExternalName(mgr.GetClient())),
+		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -86,12 +86,12 @@ func SetupStream(mgr ctrl.Manager, o controller.Options) error {
 
 func preDelete(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.DeleteStreamInput) (bool, error) {
 	obj.EnforceConsumerDeletion = cr.Spec.ForProvider.EnforceConsumerDeletion
-	obj.StreamName = pointer.String(meta.GetExternalName(cr))
+	obj.StreamName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.DescribeStreamInput) error {
-	obj.StreamName = pointer.String(meta.GetExternalName(cr))
+	obj.StreamName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -120,7 +120,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.Describe
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.CreateStreamInput) error {
-	obj.StreamName = pointer.String(meta.GetExternalName(cr))
+	obj.StreamName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -128,7 +128,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Stream, obj *svcsdk.CreateStr
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 type updater struct {
@@ -192,7 +192,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 	// we need information from stream for decisions
 	obj, err := u.client.DescribeStreamWithContext(ctx, &svcsdk.DescribeStreamInput{
-		StreamName: pointer.String(meta.GetExternalName(cr)),
+		StreamName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errCreate)
@@ -207,7 +207,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		pointer.StringValue(obj.StreamDescription.StreamStatus) == svcsdk.StreamStatusActive {
 		scalingType := svcsdk.ScalingTypeUniformScaling
 		if _, err := u.client.UpdateShardCountWithContext(ctx, &svcsdk.UpdateShardCountInput{
-			StreamName:       pointer.String(meta.GetExternalName(cr)),
+			StreamName:       pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			TargetShardCount: cr.Spec.ForProvider.ShardCount,
 			ScalingType:      &scalingType,
 		}); err != nil {
@@ -220,7 +220,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	if pointer.Int64Value(cr.Spec.ForProvider.RetentionPeriodHours) > pointer.Int64Value(obj.StreamDescription.RetentionPeriodHours) &&
 		pointer.StringValue(obj.StreamDescription.StreamStatus) == svcsdk.StreamStatusActive {
 		if _, err := u.client.IncreaseStreamRetentionPeriodWithContext(ctx, &svcsdk.IncreaseStreamRetentionPeriodInput{
-			StreamName:           pointer.String(meta.GetExternalName(cr)),
+			StreamName:           pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			RetentionPeriodHours: cr.Spec.ForProvider.RetentionPeriodHours,
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
@@ -232,7 +232,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	if pointer.Int64Value(cr.Spec.ForProvider.RetentionPeriodHours) < pointer.Int64Value(obj.StreamDescription.RetentionPeriodHours) &&
 		pointer.StringValue(obj.StreamDescription.StreamStatus) == svcsdk.StreamStatusActive {
 		if _, err := u.client.DecreaseStreamRetentionPeriodWithContext(ctx, &svcsdk.DecreaseStreamRetentionPeriodInput{
-			StreamName:           pointer.String(meta.GetExternalName(cr)),
+			StreamName:           pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			RetentionPeriodHours: cr.Spec.ForProvider.RetentionPeriodHours,
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
@@ -248,7 +248,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		if _, err := u.client.StartStreamEncryptionWithContext(ctx, &svcsdk.StartStreamEncryptionInput{
 			EncryptionType: &kmsType,
 			KeyId:          cr.Spec.ForProvider.KMSKeyARN,
-			StreamName:     pointer.String(meta.GetExternalName(cr)),
+			StreamName:     pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
@@ -270,7 +270,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 		if _, err := u.client.StopStreamEncryptionWithContext(ctx, &svcsdk.StopStreamEncryptionInput{
 			EncryptionType: obj.StreamDescription.EncryptionType,
 			KeyId:          obj.StreamDescription.KeyId,
-			StreamName:     pointer.String(meta.GetExternalName(cr)),
+			StreamName:     pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
@@ -290,7 +290,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 		if _, err := u.client.EnableEnhancedMonitoringWithContext(ctx, &svcsdk.EnableEnhancedMonitoringInput{
 			ShardLevelMetrics: cr.Spec.ForProvider.EnhancedMetrics[0].ShardLevelMetrics,
-			StreamName:        pointer.String(meta.GetExternalName(cr)),
+			StreamName:        pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
@@ -303,7 +303,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 
 		if _, err := u.client.DisableEnhancedMonitoringWithContext(ctx, &svcsdk.DisableEnhancedMonitoringInput{
 			ShardLevelMetrics: obj.StreamDescription.EnhancedMonitoring[0].ShardLevelMetrics,
-			StreamName:        pointer.String(meta.GetExternalName(cr)),
+			StreamName:        pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 		}
@@ -321,7 +321,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	if len(addTags) != 0 &&
 		pointer.StringValue(obj.StreamDescription.StreamStatus) == svcsdk.StreamStatusActive {
 		if _, err := u.client.AddTagsToStreamWithContext(ctx, &svcsdk.AddTagsToStreamInput{
-			StreamName: pointer.String(meta.GetExternalName(cr)),
+			StreamName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			Tags:       addTags,
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
@@ -333,7 +333,7 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 	if len(removeTags) != 0 &&
 		pointer.StringValue(obj.StreamDescription.StreamStatus) == svcsdk.StreamStatusActive {
 		if _, err := u.client.RemoveTagsFromStreamWithContext(ctx, &svcsdk.RemoveTagsFromStreamInput{
-			StreamName: pointer.String(meta.GetExternalName(cr)),
+			StreamName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 			TagKeys:    removeTags,
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
@@ -379,7 +379,7 @@ func (u *updater) ActiveShards(cr *svcapitypes.Stream) (int64, error) {
 	var count int64
 
 	shards, err := u.client.ListShards(&svcsdk.ListShardsInput{
-		StreamName: pointer.String(meta.GetExternalName(cr)),
+		StreamName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return count, err
@@ -398,7 +398,7 @@ func (u *updater) ActiveShards(cr *svcapitypes.Stream) (int64, error) {
 func (u *updater) ListTags(cr *svcapitypes.Stream) (*svcsdk.ListTagsForStreamOutput, error) {
 
 	tags, err := u.client.ListTagsForStream(&svcsdk.ListTagsForStreamInput{
-		StreamName: pointer.String(meta.GetExternalName(cr)),
+		StreamName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 	if err != nil {
 		return nil, err

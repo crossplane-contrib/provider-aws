@@ -31,6 +31,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 // SetupConfiguration adds a controller that reconciles Configuration.
@@ -53,6 +54,7 @@ func SetupConfiguration(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -77,7 +79,7 @@ func SetupConfiguration(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.CreateConfigurationInput) error {
-	obj.Name = pointer.String(meta.GetExternalName(cr))
+	obj.Name = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	serverProperties := strings.Join(cr.Spec.ForProvider.Properties, "\n")
 	obj.ServerProperties = []byte(serverProperties)
 	return nil
@@ -88,11 +90,11 @@ func postCreate(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.Cr
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, pointer.StringValue(obj.Arn))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DescribeConfigurationInput) error {
-	obj.Arn = pointer.String(meta.GetExternalName(cr))
+	obj.Arn = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -112,7 +114,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.D
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DeleteConfigurationInput) (bool, error) {
-	obj.Arn = pointer.String(meta.GetExternalName(cr))
+	obj.Arn = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	return false, nil
 }
 

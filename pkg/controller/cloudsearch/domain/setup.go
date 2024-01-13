@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 const (
@@ -58,6 +59,7 @@ func SetupDomain(mgr ctrl.Manager, o controller.Options) error {
 	}
 
 	reconcilerOpts := []managed.ReconcilerOption{
+		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
 		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -106,19 +108,19 @@ func (h *hooks) lateInitialize(forProvider *svcapitypes.DomainParameters, _ *svc
 
 	current := resp.ScalingParameters.Options
 
-	spec.DesiredReplicationCount = pointer.LateInitializeInt64Ptr(spec.DesiredReplicationCount, current.DesiredReplicationCount)
-	spec.DesiredInstanceType = pointer.LateInitializeStringPtr(spec.DesiredInstanceType, current.DesiredInstanceType)
-	spec.DesiredPartitionCount = pointer.LateInitializeInt64Ptr(spec.DesiredPartitionCount, current.DesiredPartitionCount)
+	spec.DesiredReplicationCount = pointer.LateInitialize(spec.DesiredReplicationCount, current.DesiredReplicationCount)
+	spec.DesiredInstanceType = pointer.LateInitialize(spec.DesiredInstanceType, current.DesiredInstanceType)
+	spec.DesiredPartitionCount = pointer.LateInitialize(spec.DesiredPartitionCount, current.DesiredPartitionCount)
 
 	respAccessPolicies, err := h.client.DescribeServiceAccessPolicies(&svcsdk.DescribeServiceAccessPoliciesInput{
 		DomainName: forProvider.DomainName,
-		Deployed:   pointer.Bool(false),
+		Deployed:   pointer.ToOrNilIfZeroValue(false),
 	})
 	if err != nil {
 		return errors.Wrap(err, errDescribeServiceAccessPolicies)
 	}
 
-	spec.AccessPolicies = pointer.LateInitializeStringPtr(spec.AccessPolicies, respAccessPolicies.AccessPolicies.Options)
+	spec.AccessPolicies = pointer.LateInitialize(spec.AccessPolicies, respAccessPolicies.AccessPolicies.Options)
 
 	return nil
 }
@@ -147,7 +149,7 @@ func (h *hooks) isUpToDateScalingParameters(ctx context.Context, cr *svcapitypes
 func (h *hooks) isUpToDateAccessPolicies(ctx context.Context, cr *svcapitypes.Domain, domainName *string) (bool, error) {
 	in := svcsdk.DescribeServiceAccessPoliciesInput{
 		DomainName: domainName,
-		Deployed:   pointer.Bool(false), // include pending policies as well
+		Deployed:   pointer.ToOrNilIfZeroValue(false), // include pending policies as well
 	}
 
 	resp, err := h.client.DescribeServiceAccessPoliciesWithContext(ctx, &in)

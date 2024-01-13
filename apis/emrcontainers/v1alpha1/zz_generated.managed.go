@@ -40,14 +40,6 @@ func (mg *JobRun) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this JobRun.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *JobRun) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this JobRun.
 func (mg *JobRun) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -76,14 +68,6 @@ func (mg *JobRun) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this JobRun.
 func (mg *JobRun) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this JobRun.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *JobRun) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this JobRun.
@@ -116,14 +100,6 @@ func (mg *VirtualCluster) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-/*
-GetProviderReference of this VirtualCluster.
-Deprecated: Use GetProviderConfigReference.
-*/
-func (mg *VirtualCluster) GetProviderReference() *xpv1.Reference {
-	return mg.Spec.ProviderReference
-}
-
 // GetPublishConnectionDetailsTo of this VirtualCluster.
 func (mg *VirtualCluster) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
 	return mg.Spec.PublishConnectionDetailsTo
@@ -152,14 +128,6 @@ func (mg *VirtualCluster) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this VirtualCluster.
 func (mg *VirtualCluster) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
-}
-
-/*
-SetProviderReference of this VirtualCluster.
-Deprecated: Use SetProviderConfigReference.
-*/
-func (mg *VirtualCluster) SetProviderReference(r *xpv1.Reference) {
-	mg.Spec.ProviderReference = r
 }
 
 // SetPublishConnectionDetailsTo of this VirtualCluster.
