@@ -139,6 +139,10 @@ func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.LogGroup, obj *s
 		return false, "", nil
 	}
 
+	if pointer.StringValue(cr.Spec.ForProvider.KMSKeyID) != pointer.StringValue(obj.LogGroups[0].KmsKeyId) {
+		return false, "", nil //TODO: test
+	}
+
 	trimmedArn := trimArnSuffix(*obj.LogGroups[0].Arn)
 	tags, err := u.client.ListTagsForResource(&svcsdk.ListTagsForResourceInput{
 		ResourceArn: &trimmedArn,
@@ -208,6 +212,24 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 			RetentionInDays: cr.Spec.ForProvider.RetentionInDays,
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
+		}
+	}
+
+	if pointer.StringValue(cr.Spec.ForProvider.KMSKeyID) != pointer.StringValue(obj.LogGroups[0].KmsKeyId) {
+		if obj.LogGroups[0].KmsKeyId != nil {
+			if _, err := u.client.DisassociateKmsKeyWithContext(ctx, &svcsdk.DisassociateKmsKeyInput{
+				LogGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+			}); err != nil {
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
+			}
+		}
+		if cr.Spec.ForProvider.KMSKeyID != nil {
+			if _, err := u.client.AssociateKmsKeyWithContext(ctx, &svcsdk.AssociateKmsKeyInput{
+				LogGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+				KmsKeyId:     cr.Spec.ForProvider.KMSKeyID,
+			}); err != nil {
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
+			}
 		}
 	}
 
