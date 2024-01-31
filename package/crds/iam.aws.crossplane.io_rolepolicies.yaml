@@ -72,6 +72,7 @@ spec:
                   document:
                     description: The JSON policy document that is the content for
                       the policy.
+                    type: object
                     x-kubernetes-preserve-unknown-fields: true
                   roleName:
                     description: RoleName presents the name of the IAM role.
