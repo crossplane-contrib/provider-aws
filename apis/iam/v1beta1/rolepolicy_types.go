@@ -26,6 +26,7 @@ import (
 type RolePolicyParameters struct {
 
 	// The JSON policy document that is the content for the policy.
+	// +kubebuilder:validation:Type=object
 	Document extv1.JSON `json:"document"`
 
 	// RoleName presents the name of the IAM role.
