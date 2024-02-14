@@ -275,17 +275,19 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
 	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch, &rsp.DBInstances[0])
-	var conn managed.ConnectionDetails
+	conn := managed.ConnectionDetails{}
 
 	pwd, changed, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
 	if changed {
-		conn = managed.ConnectionDetails{
-			xpv1.ResourceCredentialsSecretPasswordKey: []byte(pwd),
-		}
+		conn[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pwd)
 		modify.MasterUserPassword = aws.String(pwd)
+	}
+
+	if cr.Spec.ForProvider.MasterUsername != nil {
+		conn[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.ToString(cr.Spec.ForProvider.MasterUsername))
 	}
 
 	if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {

@@ -738,6 +738,9 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withTags(map[string]string{"foo": "bar"})),
+				result: managed.ExternalUpdate{
+					ConnectionDetails: managed.ConnectionDetails{},
+				},
 			},
 		},
 		"AutoscaleExcludeStorage": {
@@ -765,6 +768,9 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withMaxAllocatedStorage(100), withAllocatedStorage(20)),
+				result: managed.ExternalUpdate{
+					ConnectionDetails: managed.ConnectionDetails{},
+				},
 			},
 		},
 		"AWSManagedBackupRetentionTargetIgnore": {
@@ -796,6 +802,9 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withBackupRetentionPeriod(0), withStatusBackupRetentionPeriod(7), withPreferredBackupWindow("x")),
+				result: managed.ExternalUpdate{
+					ConnectionDetails: managed.ConnectionDetails{},
+				},
 			},
 		},
 		"AlreadyModifying": {
@@ -804,6 +813,35 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateModifying)),
+				result: managed.ExternalUpdate{
+					ConnectionDetails: nil,
+				},
+			},
+		},
+		"AddMasterUsernameToConnectionDetails": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(ctx context.Context, input *awsrds.ModifyDBInstanceInput, opts []func(*awsrds.Options)) (*awsrds.ModifyDBInstanceOutput, error) {
+						return &awsrds.ModifyDBInstanceOutput{}, nil
+					},
+					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
+						return &awsrds.DescribeDBInstancesOutput{
+							DBInstances: []awsrdstypes.DBInstance{{}},
+						}, nil
+					},
+					MockAddTags: func(ctx context.Context, input *awsrds.AddTagsToResourceInput, opts []func(*awsrds.Options)) (*awsrds.AddTagsToResourceOutput, error) {
+						return &awsrds.AddTagsToResourceOutput{}, nil
+					},
+				},
+				cr: instance(withMasterUsername(&masterUsername)),
+			},
+			want: want{
+				cr: instance(withMasterUsername(&masterUsername)),
+				result: managed.ExternalUpdate{
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretUserKey: []byte(masterUsername),
+					},
+				},
 			},
 		},
 		"FailedDescribe": {
