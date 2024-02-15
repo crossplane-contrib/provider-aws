@@ -795,6 +795,7 @@ spec:
                 required:
                 - description
                 - groupName
+                - region
                 type: object
               managementPolicies:
                 default:
