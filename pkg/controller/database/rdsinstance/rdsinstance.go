@@ -161,11 +161,16 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 
+	if meta.WasDeleted(cr) { // There is no need to run isUpToDate if the resource is deleted
+		return managed.ExternalObservation{
+			ResourceExists: true,
+		}, nil
+	}
+
 	var upToDate bool
 	var diff string
 
 	upToDate, diff, e.cache.AddTags, e.cache.RemoveTags, err = rds.IsUpToDate(ctx, e.kube, cr, instance)
-
 	if err != nil {
 		return managed.ExternalObservation{}, errorutils.Wrap(err, errUpToDateFailed)
 	}
