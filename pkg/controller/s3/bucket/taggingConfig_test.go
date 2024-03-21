@@ -60,6 +60,10 @@ var (
 		Key:   aws.String("abc"),
 		Value: aws.String("abc"),
 	}
+	awsSystemTag1 = types.Tag{
+		Key:   aws.String("aws:tag1"),
+		Value: aws.String("1"),
+	}
 	awsTags                   = []types.Tag{awsTag, awsTag1, awsTag2}
 	_       SubresourceClient = &TaggingConfigurationClient{}
 )
@@ -130,6 +134,34 @@ func TestTaggingObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsDeletion,
+				err:    nil,
+			},
+		},
+		"DeleteNoNeededIgnoreSystemTags": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(nil)),
+				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
+						return &s3.GetBucketTaggingOutput{TagSet: []types.Tag{awsSystemTag1}}, nil
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
+				err:    nil,
+			},
+		},
+		"NoUpdateIgnoreSystemTags": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
+				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
+						return &s3.GetBucketTaggingOutput{TagSet: []types.Tag{awsTag2, awsTag, awsTag1, awsSystemTag1}}, nil
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
 				err:    nil,
 			},
 		},
@@ -225,6 +257,9 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 					MockPutBucketTagging: func(ctx context.Context, input *s3.PutBucketTaggingInput, opts []func(*s3.Options)) (*s3.PutBucketTaggingOutput, error) {
 						return nil, errBoom
 					},
+					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
+						return &s3.GetBucketTaggingOutput{TagSet: nil}, nil
+					},
 				}),
 			},
 			want: want{
@@ -238,6 +273,9 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 					MockPutBucketTagging: func(ctx context.Context, input *s3.PutBucketTaggingInput, opts []func(*s3.Options)) (*s3.PutBucketTaggingOutput, error) {
 						return &s3.PutBucketTaggingOutput{}, nil
 					},
+					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
+						return &s3.GetBucketTaggingOutput{TagSet: nil}, nil
+					},
 				}),
 			},
 			want: want{
@@ -250,6 +288,9 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockPutBucketTagging: func(ctx context.Context, input *s3.PutBucketTaggingInput, opts []func(*s3.Options)) (*s3.PutBucketTaggingOutput, error) {
 						return &s3.PutBucketTaggingOutput{}, nil
+					},
+					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
+						return &s3.GetBucketTaggingOutput{TagSet: nil}, nil
 					},
 				}),
 			},
