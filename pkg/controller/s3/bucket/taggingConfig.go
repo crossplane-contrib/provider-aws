@@ -95,12 +95,12 @@ func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 
 // CreateOrUpdate sends a request to have resource created on AWS
 func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
-	if bucket.Spec.ForProvider.BucketTagging == nil {
-		return nil
-	}
 	external, err := in.CacheBucketTaggingOutput(ctx, pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)))
-	if err != nil {
+	if err != nil && !s3.TaggingNotFound(err) {
 		return err
+	}
+	if bucket.Spec.ForProvider.BucketTagging == nil && external == nil {
+		return nil
 	}
 	input := GeneratePutBucketTagging(meta.GetExternalName(bucket), addExistingSystemTags(bucket.Spec.ForProvider.BucketTagging, external))
 	_, err = in.client.PutBucketTagging(ctx, input)
@@ -173,9 +173,12 @@ func GeneratePutBucketTagging(name string, config *v1beta1.Tagging) *awss3.PutBu
 
 // addExistingSystemTags returns `*v1beta1.Tagging` which contains tags from desired state and system tags from observed resource if these tags exist
 // AWS API provides only put/delete/get operations for tags, so there is only one way to change - override the whole tag set,
-// It is impossible in case if observed bucket already has systemd tags(they are not settable), in this case combining tags from desired tagSet
+// It is impossible in case if observed bucket already has system tags(they are not settable), in this case combining tags from desired tagSet
 // with system tags from observed bucket is equal to ignoring of them
 func addExistingSystemTags(desiredTags *v1beta1.Tagging, observedTags *awss3.GetBucketTaggingOutput) *v1beta1.Tagging {
+	if observedTags == nil {
+		return desiredTags
+	}
 	var systemTags []v1beta1.Tag
 	tagSet := desiredTags.DeepCopy()
 	for _, t := range observedTags.TagSet {
