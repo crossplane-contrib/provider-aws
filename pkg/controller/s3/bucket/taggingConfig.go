@@ -18,6 +18,7 @@ package bucket
 
 import (
 	"context"
+	"strings"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -26,6 +27,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -39,9 +41,14 @@ const (
 	taggingDeleteFailed = "cannot delete Bucket tagging set"
 )
 
+type cache struct {
+	getBucketTaggingOutput *awss3.GetBucketTaggingOutput
+}
+
 // TaggingConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type TaggingConfigurationClient struct {
 	client s3.BucketClient
+	cache  cache
 }
 
 // NewTaggingConfigurationClient creates the client for CORS Configuration
@@ -49,17 +56,31 @@ func NewTaggingConfigurationClient(client s3.BucketClient) *TaggingConfiguration
 	return &TaggingConfigurationClient{client: client}
 }
 
+// CacheBucketTaggingOutput returns cached *awss3.GetBucketTaggingOutput` if it exists, otherwise adds
+// `TaggingConfigurationClient.GetBucketTagging` output to cache and then returns it
+func (in *TaggingConfigurationClient) CacheBucketTaggingOutput(ctx context.Context, bucketName *string) (*awss3.GetBucketTaggingOutput, error) {
+	if in.cache.getBucketTaggingOutput == nil {
+		external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: bucketName})
+		if err != nil {
+			return external, err
+		}
+		in.cache.getBucketTaggingOutput = external
+		return external, nil
+	}
+	return in.cache.getBucketTaggingOutput, nil
+}
+
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
-	config := bucket.Spec.ForProvider.BucketTagging
+	config := bucket.Spec.ForProvider.BucketTagging.DeepCopy()
+	external, err := in.CacheBucketTaggingOutput(ctx, pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)))
 	if err != nil {
 		if s3.TaggingNotFound(err) && config == nil {
 			return Updated, nil
 		}
 		return NeedsUpdate, errorutils.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
-
+	config = addExistingSystemTags(config, external)
 	switch {
 	case config == nil && len(external.TagSet) == 0:
 		return Updated, nil
@@ -77,8 +98,12 @@ func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	if bucket.Spec.ForProvider.BucketTagging == nil {
 		return nil
 	}
-	input := GeneratePutBucketTagging(meta.GetExternalName(bucket), bucket.Spec.ForProvider.BucketTagging)
-	_, err := in.client.PutBucketTagging(ctx, input)
+	external, err := in.CacheBucketTaggingOutput(ctx, pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)))
+	if err != nil {
+		return err
+	}
+	input := GeneratePutBucketTagging(meta.GetExternalName(bucket), addExistingSystemTags(bucket.Spec.ForProvider.BucketTagging, external))
+	_, err = in.client.PutBucketTagging(ctx, input)
 	return errorutils.Wrap(err, taggingPutFailed)
 }
 
@@ -95,7 +120,7 @@ func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *TaggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
+	external, err := in.CacheBucketTaggingOutput(ctx, pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket)))
 	if err != nil {
 		return errorutils.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
@@ -144,4 +169,26 @@ func GeneratePutBucketTagging(name string, config *v1beta1.Tagging) *awss3.PutBu
 		Bucket:  pointer.ToOrNilIfZeroValue(name),
 		Tagging: GenerateTagging(config),
 	}
+}
+
+// addExistingSystemTags returns `*v1beta1.Tagging` which contains tags from desired state and system tags from observed resource if these tags exist
+// AWS API provides only put/delete/get operations for tags, so there is only one way to change - override the whole tag set,
+// It is impossible in case if observed bucket already has systemd tags(they are not settable), in this case combining tags from desired tagSet
+// with system tags from observed bucket is equal to ignoring of them
+func addExistingSystemTags(desiredTags *v1beta1.Tagging, observedTags *awss3.GetBucketTaggingOutput) *v1beta1.Tagging {
+	var systemTags []v1beta1.Tag
+	tagSet := desiredTags.DeepCopy()
+	for _, t := range observedTags.TagSet {
+		key := pointer.StringValue(t.Key)
+		if strings.HasPrefix(key, "aws:") {
+			systemTags = append(systemTags, v1beta1.Tag{Key: ptr.Deref(t.Key, ""), Value: ptr.Deref(t.Value, "")})
+		}
+	}
+	if systemTags != nil {
+		if tagSet == nil {
+			tagSet = &v1beta1.Tagging{TagSet: make([]v1beta1.Tag, 0)}
+		}
+		tagSet.TagSet = append(tagSet.TagSet, systemTags...)
+	}
+	return tagSet
 }
