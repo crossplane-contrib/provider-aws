@@ -82,7 +82,11 @@ func postObserve(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.Descri
 
 	switch aws.StringValue(resp.Services[0].Status) {
 	case "ACTIVE":
-		cr.SetConditions(xpv1.Available())
+		if resp.Services[0].DesiredCount != resp.Services[0].RunningCount {
+			cr.SetConditions(xpv1.Creating())
+		} else {
+			cr.SetConditions(xpv1.Available())
+		}
 	case "DRAINING":
 		cr.SetConditions(xpv1.Deleting())
 	case "INACTIVE":
