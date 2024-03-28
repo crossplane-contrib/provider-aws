@@ -80,6 +80,11 @@ func postObserve(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.Descri
 		return obs, err
 	}
 
+	if resp.Services[0].DesiredCount != resp.Services[0].RunningCount {
+		obs.ResourceUpToDate = false
+		return obs, nil
+	}
+
 	switch aws.StringValue(resp.Services[0].Status) {
 	case "ACTIVE":
 		cr.SetConditions(xpv1.Available())
