@@ -33,6 +33,9 @@ import (
 const (
 	// InstanceNotFound is the code that is returned by ec2 when the given InstanceID is not valid
 	InstanceNotFound = "InvalidInstanceID.NotFound"
+
+	// Instance type associated with EC2 instance tags
+	instanceResourceType = "instance"
 )
 
 // InstanceClient is the external client used for Instance Custom Resource
@@ -819,7 +822,7 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		RamdiskId:                         p.RAMDiskID,
 		SecurityGroupIds:                  p.SecurityGroupIDs,
 		SubnetId:                          p.SubnetID,
-		TagSpecifications:                 GenerateEC2TagSpecifications(p.TagSpecifications),
+		TagSpecifications:                 GenerateEC2TagSpecifications(p.Tags),
 		UserData:                          p.UserData,
 	}
 }
@@ -852,25 +855,21 @@ func GenerateTags(tags []types.Tag) []manualv1alpha1.Tag {
 
 // GenerateEC2TagSpecifications takes a slice of TagSpecifications and converts it to a
 // slice of ec2.TagSpecification
-func GenerateEC2TagSpecifications(tagSpecs []manualv1alpha1.TagSpecification) []types.TagSpecification {
-	if tagSpecs != nil {
-		res := make([]types.TagSpecification, len(tagSpecs))
-		for i, ts := range tagSpecs {
-			res[i] = types.TagSpecification{
-				ResourceType: types.ResourceType(*ts.ResourceType),
-			}
-
-			tags := make([]types.Tag, len(ts.Tags))
-			for i, t := range ts.Tags {
-				tags[i] = types.Tag{
-					Key:   aws.String(t.Key),
-					Value: aws.String(t.Value),
-				}
-			}
-
-			res[i].Tags = tags
+func GenerateEC2TagSpecifications(tags []manualv1alpha1.Tag) []types.TagSpecification {
+	if len(tags) > 0 {
+		tagSpec := types.TagSpecification{
+			ResourceType: types.ResourceType(instanceResourceType),
+			Tags:         make([]types.Tag, len(tags)),
 		}
-		return res
+
+		for i, t := range tags {
+			tagSpec.Tags[i] = types.Tag{
+				Key:   aws.String(t.Key),
+				Value: aws.String(t.Value),
+			}
+		}
+
+		return []types.TagSpecification{tagSpec}
 	}
 	return nil
 }

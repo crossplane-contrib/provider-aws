@@ -702,15 +702,10 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 					groupID,
 				},
 				SubnetID: aws.String(subnetID),
-				TagSpecifications: []manualv1alpha1.TagSpecification{
+				Tags: []manualv1alpha1.Tag{
 					{
-						ResourceType: aws.String(tagResourceType),
-						Tags: []manualv1alpha1.Tag{
-							{
-								Key:   tagsKey,
-								Value: tagsVal,
-							},
-						},
+						Key:   tagsKey,
+						Value: tagsVal,
 					},
 				},
 				UserData: aws.String(userData),

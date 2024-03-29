@@ -246,9 +246,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	result, err := e.client.RunInstances(ctx,
-		ec2.GenerateEC2RunInstancesInput(mgd.GetName(), &cr.Spec.ForProvider),
-	)
+	input := ec2.GenerateEC2RunInstancesInput(mgd.GetName(), &cr.Spec.ForProvider)
+
+	result, err := e.client.RunInstances(ctx, input)
 	if err != nil {
 		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
