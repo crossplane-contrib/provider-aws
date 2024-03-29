@@ -1399,6 +1399,8 @@ spec:
                     - coreCount
                     - threadsPerCore
                     type: object
+                  disableAPITermination:
+                    type: boolean
                   ebs:
                     type: string
                   ebsOptimized:
@@ -1490,6 +1492,8 @@ spec:
                   imageId:
                     type: string
                   instanceId:
+                    type: string
+                  instanceInitiatedShutdownBehavior:
                     type: string
                   instanceLifecyle:
                     type: string
@@ -1886,6 +1890,8 @@ spec:
                       - value
                       type: object
                     type: array
+                  userData:
+                    type: string
                   virualizationType:
                     type: string
                   vpcId:
