@@ -17,7 +17,6 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/acm"
@@ -76,69 +75,69 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sns"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/sqs"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/transfer"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
-	return setup.SetupControllers(
-		mgr, o,
-		acm.Setup,
-		acmpca.Setup,
-		apigateway.Setup,
-		apigatewayv2.Setup,
-		athena.Setup,
-		autoscaling.Setup,
-		batch.Setup,
-		cache.Setup,
-		cloudfront.Setup,
-		cloudsearch.Setup,
-		cloudwatchlogs.Setup,
-		cognitoidentity.Setup,
-		cognitoidentityprovider.Setup,
-		config.Setup,
-		database.Setup,
-		dax.Setup,
-		docdb.Setup,
-		dynamodb.Setup,
-		ec2.Setup,
-		ecr.Setup,
-		ecs.Setup,
-		efs.Setup,
-		eks.Setup,
-		elasticache.Setup,
-		elasticloadbalancing.Setup,
-		elbv2.Setup,
-		emrcontainers.Setup,
-		firehose.Setup,
-		glue.Setup,
-		globalaccelerator.Setup,
-		iam.Setup,
-		iot.Setup,
-		kafka.Setup,
-		kinesis.Setup,
-		kms.Setup,
-		lambda.Setup,
-		mq.Setup,
-		mwaa.Setup,
-		neptune.Setup,
-		opensearchservice.Setup,
-		prometheusservice.Setup,
-		ram.Setup,
-		rds.Setup,
-		redshift.Setup,
-		route53.Setup,
-		route53resolver.Setup,
-		s3.Setup,
-		s3control.Setup,
-		secretsmanager.Setup,
-		servicecatalog.Setup,
-		servicediscovery.Setup,
-		sesv2.Setup,
-		sfn.Setup,
-		sns.Setup,
-		sqs.Setup,
-		transfer.Setup,
-	)
+	b := setup.NewBatch(mgr, o, "")
+	b.AddUnscoped(acm.Setup)
+	b.AddUnscoped(acmpca.Setup)
+	b.AddUnscoped(apigateway.Setup)
+	b.AddUnscoped(apigatewayv2.Setup)
+	b.AddUnscoped(athena.Setup)
+	b.AddUnscoped(autoscaling.Setup)
+	b.AddUnscoped(batch.Setup)
+	b.AddUnscoped(cache.Setup)
+	b.AddUnscoped(cloudfront.Setup)
+	b.AddUnscoped(cloudsearch.Setup)
+	b.AddUnscoped(cloudwatchlogs.Setup)
+	b.AddUnscoped(cognitoidentity.Setup)
+	b.AddUnscoped(cognitoidentityprovider.Setup)
+	b.AddUnscoped(config.Setup)
+	b.AddUnscoped(database.Setup)
+	b.AddUnscoped(dax.Setup)
+	b.AddUnscoped(docdb.Setup)
+	b.AddUnscoped(dynamodb.Setup)
+	b.AddProxy(ec2.Setup)
+	b.AddUnscoped(ecr.Setup)
+	b.AddUnscoped(ecs.Setup)
+	b.AddUnscoped(efs.Setup)
+	b.AddUnscoped(eks.Setup)
+	b.AddUnscoped(elasticache.Setup)
+	b.AddUnscoped(elasticloadbalancing.Setup)
+	b.AddUnscoped(elbv2.Setup)
+	b.AddUnscoped(emrcontainers.Setup)
+	b.AddUnscoped(firehose.Setup)
+	b.AddUnscoped(glue.Setup)
+	b.AddUnscoped(globalaccelerator.Setup)
+	b.AddUnscoped(iam.Setup)
+	b.AddUnscoped(iot.Setup)
+	b.AddUnscoped(kafka.Setup)
+	b.AddUnscoped(kinesis.Setup)
+	b.AddUnscoped(kms.Setup)
+	b.AddUnscoped(lambda.Setup)
+	b.AddUnscoped(mq.Setup)
+	b.AddUnscoped(mwaa.Setup)
+	b.AddUnscoped(neptune.Setup)
+	b.AddUnscoped(opensearchservice.Setup)
+	b.AddUnscoped(prometheusservice.Setup)
+	b.AddUnscoped(ram.Setup)
+	b.AddUnscoped(rds.Setup)
+	b.AddUnscoped(redshift.Setup)
+	b.AddProxy(route53.Setup)
+	b.AddUnscoped(route53resolver.Setup)
+	b.AddUnscoped(s3.Setup)
+	b.AddUnscoped(s3control.Setup)
+	b.AddUnscoped(secretsmanager.Setup)
+	b.AddUnscoped(servicecatalog.Setup)
+	b.AddUnscoped(servicediscovery.Setup)
+	b.AddUnscoped(sesv2.Setup)
+	b.AddUnscoped(sfn.Setup)
+	b.AddUnscoped(sns.Setup)
+	b.AddUnscoped(sqs.Setup)
+	b.AddUnscoped(transfer.Setup)
+	return b.Run()
 }

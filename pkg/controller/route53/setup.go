@@ -17,19 +17,18 @@ limitations under the License.
 package route53
 
 import (
-	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/route53/resourcerecordset"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
 
 // Setup route53 controllers.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
-	return setup.SetupControllers(
-		mgr, o,
-		hostedzone.SetupHostedZone,
-		resourcerecordset.SetupResourceRecordSet,
-	)
+	batch := setup.NewBatch(mgr, o, "route53")
+	batch.Add("hostedzone", hostedzone.SetupHostedZone)
+	batch.Add("resourcerecordset", resourcerecordset.SetupResourceRecordSet)
+	return batch.Run()
 }

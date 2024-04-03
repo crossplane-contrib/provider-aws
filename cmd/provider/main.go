@@ -20,6 +20,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -41,8 +42,13 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	utilscontroller "github.com/crossplane-contrib/provider-aws/pkg/utils/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/metrics"
 )
+
+// Env prefix for options to configure controllers.
+// Example usage: `PROVIDER_AWS_ec2.instance.pollInterval=10m`.
+const OPTION_ENV_PREFIX = "PROVIDER_AWS_"
 
 func main() {
 	var (
@@ -126,8 +132,11 @@ func main() {
 		log.Info("Alpha feature enabled", "flag", features.EnableAlphaManagementPolicies)
 	}
 
+	optionsWithOverrides := utilscontroller.NewOptions(o)
+	kingpin.FatalIfError(optionsWithOverrides.AddOverrides(optionsOverridesFromEnv()), "Cannot add overrides")
+
 	kingpin.FatalIfError(metrics.SetupMetrics(), "Cannot setup AWS metrics hook")
-	kingpin.FatalIfError(controller.Setup(mgr, o), "Cannot setup AWS controllers")
+	kingpin.FatalIfError(controller.Setup(mgr, optionsWithOverrides), "Cannot setup AWS controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
 
 }
@@ -137,4 +146,19 @@ func UseISO8601() zap.Opts {
 	return func(o *zap.Options) {
 		o.TimeEncoder = zapcore.ISO8601TimeEncoder
 	}
+}
+
+// Collects all env variables with the prefix OPTION_ENV_PREFIX and returns them as a map
+// with the prefix removed.
+func optionsOverridesFromEnv() map[string]string {
+	result := make(map[string]string)
+	for _, str := range os.Environ() {
+		if rest, ok := strings.CutPrefix(str, OPTION_ENV_PREFIX); ok {
+			parts := strings.SplitN(rest, "=", 2)
+			if len(parts) == 2 {
+				result[parts[0]] = parts[1]
+			}
+		}
+	}
+	return result
 }
