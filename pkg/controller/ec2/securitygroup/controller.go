@@ -189,6 +189,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		GroupName:   aws.String(cr.Spec.ForProvider.GroupName),
 		VpcId:       cr.Spec.ForProvider.VPCID,
 		Description: aws.String(cr.Spec.ForProvider.Description),
+		TagSpecifications: []awsec2types.TagSpecification{
+			{
+				ResourceType: awsec2types.ResourceTypeSecurityGroup,
+				Tags:         ec2.GenerateEC2TagsV1Beta1(cr.Spec.ForProvider.Tags),
+			},
+		},
 	})
 	if err != nil {
 		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
