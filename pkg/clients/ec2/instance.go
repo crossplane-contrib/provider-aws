@@ -79,12 +79,44 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance types.I
 	if pointer.StringValue(spec.UserData) != attributeValue(attributes.UserData) {
 		return false
 	}
+
+	// Tags
+	existingTags := map[string]string{}
+	for _, t := range instance.Tags {
+		existingTags[*t.Key] = *t.Value
+	}
+	for _, t := range spec.Tags {
+		// A tag is missing from the instance or the value does match the expected value.
+		value, ok := existingTags[t.Key]
+		if !ok {
+			return false
+		}
+		if value != t.Value {
+			return false
+		}
+	}
+
 	return CompareGroupIDs(spec.SecurityGroupIDs, instance.SecurityGroups)
 }
 
 // GenerateInstanceObservation is used to produce manualv1alpha1.InstanceObservation from
 // a []ec2.Instance.
-func GenerateInstanceObservation(i types.Instance) manualv1alpha1.InstanceObservation {
+func GenerateInstanceObservation(i types.Instance, attributes *ec2.DescribeInstanceAttributeOutput) manualv1alpha1.InstanceObservation {
+	var disableAPITermination *bool = nil
+	if attributes.DisableApiTermination != nil {
+		disableAPITermination = attributes.DisableApiTermination.Value
+	}
+
+	var instanceInitiatedShutdownBehavior *string = nil
+	if attributes.InstanceInitiatedShutdownBehavior != nil {
+		instanceInitiatedShutdownBehavior = attributes.InstanceInitiatedShutdownBehavior.Value
+	}
+
+	var userData *string = nil
+	if attributes.UserData != nil {
+		userData = attributes.UserData.Value
+	}
+
 	return manualv1alpha1.InstanceObservation{
 		AmiLaunchIndex:                          i.AmiLaunchIndex,
 		Architecture:                            string(i.Architecture),
@@ -93,6 +125,7 @@ func GenerateInstanceObservation(i types.Instance) manualv1alpha1.InstanceObserv
 		CapacityReservationSpecification:        GenerateCapacityReservationSpecResponse(i.CapacityReservationSpecification),
 		ClientToken:                             i.ClientToken,
 		CPUOptons:                               GenerateCPUOptionsRequest(i.CpuOptions),
+		DisableAPITermination:                   disableAPITermination,
 		EBSOptimized:                            i.EbsOptimized,
 		ElasticGPUAssociations:                  GenerateElasticGPUAssociation(i.ElasticGpuAssociations),
 		ElasticInferenceAcceleratorAssociations: GenerateElasticInferenceAcceleratorAssociation(i.ElasticInferenceAcceleratorAssociations),
@@ -102,6 +135,7 @@ func GenerateInstanceObservation(i types.Instance) manualv1alpha1.InstanceObserv
 		IAMInstanceProfile:                      GenerateIAMInstanceProfile(i.IamInstanceProfile),
 		ImageID:                                 i.ImageId,
 		InstanceID:                              i.InstanceId,
+		InstanceInitiatedShutdownBehavior:       instanceInitiatedShutdownBehavior,
 		InstanceLifecycle:                       string(i.InstanceLifecycle),
 		InstanceType:                            string(i.InstanceType),
 		KernelID:                                i.KernelId,
@@ -130,6 +164,7 @@ func GenerateInstanceObservation(i types.Instance) manualv1alpha1.InstanceObserv
 		StateTransitionReason:                   i.StateTransitionReason,
 		SubnetID:                                i.SubnetId,
 		Tags:                                    GenerateTags(i.Tags),
+		UserData:                                userData,
 		VirtualizationType:                      string(i.VirtualizationType),
 		VPCID:                                   i.VpcId,
 	}

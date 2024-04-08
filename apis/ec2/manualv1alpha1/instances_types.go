@@ -312,6 +312,8 @@ type InstanceObservation struct {
 	// +optional
 	CPUOptons *CPUOptionsRequest `json:"cpuOptions,omitempty"`
 	// +optional
+	DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
+	// +optional
 	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
 	// +optional
 	ElasticGPUAssociations []ElasticGPUAssociation `json:"elasticGpuAssociation,omitempty"`
@@ -329,6 +331,8 @@ type InstanceObservation struct {
 	ImageID *string `json:"imageId,omitempty"`
 	// +optional
 	InstanceID *string `json:"instanceId,omitempty"`
+	// +optional
+	InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"`
 	// +optional
 	InstanceLifecycle string `json:"instanceLifecyle"`
 	// Supported instance family when set instanceInterruptionBehavior to hibernate
@@ -382,8 +386,10 @@ type InstanceObservation struct {
 	// +optional
 	SubnetID *string `json:"subnetId,omitempty"`
 	// +optional
-	Tags               []Tag  `json:"tags,omitempty"`
-	VirtualizationType string `json:"virualizationType"`
+	Tags []Tag `json:"tags,omitempty"`
+	// +optional
+	UserData           *string `json:"userData,omitempty"`
+	VirtualizationType string  `json:"virualizationType"`
 	// +optional
 	VPCID *string `json:"vpcId,omitempty"`
 }

@@ -884,6 +884,11 @@ func (in *InstanceObservation) DeepCopyInto(out *InstanceObservation) {
 		*out = new(CPUOptionsRequest)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.DisableAPITermination != nil {
+		in, out := &in.DisableAPITermination, &out.DisableAPITermination
+		*out = new(bool)
+		**out = **in
+	}
 	if in.EBSOptimized != nil {
 		in, out := &in.EBSOptimized, &out.EBSOptimized
 		*out = new(bool)
@@ -925,6 +930,11 @@ func (in *InstanceObservation) DeepCopyInto(out *InstanceObservation) {
 	}
 	if in.InstanceID != nil {
 		in, out := &in.InstanceID, &out.InstanceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.InstanceInitiatedShutdownBehavior != nil {
+		in, out := &in.InstanceInitiatedShutdownBehavior, &out.InstanceInitiatedShutdownBehavior
 		*out = new(string)
 		**out = **in
 	}
@@ -1047,6 +1057,11 @@ func (in *InstanceObservation) DeepCopyInto(out *InstanceObservation) {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]Tag, len(*in))
 		copy(*out, *in)
+	}
+	if in.UserData != nil {
+		in, out := &in.UserData, &out.UserData
+		*out = new(string)
+		**out = **in
 	}
 	if in.VPCID != nil {
 		in, out := &in.VPCID, &out.VPCID
