@@ -159,11 +159,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	for _, input := range []types.InstanceAttributeName{
 		types.InstanceAttributeNameDisableApiTermination,
-		types.InstanceAttributeNameEbsOptimized,
 		types.InstanceAttributeNameInstanceInitiatedShutdownBehavior,
-		types.InstanceAttributeNameInstanceType,
-		types.InstanceAttributeNameKernel,
-		types.InstanceAttributeNameRamdisk,
 		types.InstanceAttributeNameUserData,
 	} {
 		r, err := e.client.DescribeInstanceAttribute(ctx, &awsec2.DescribeInstanceAttributeInput{
@@ -179,24 +175,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			o.DisableApiTermination = r.DisableApiTermination
 		}
 
-		if r.EbsOptimized != nil {
-			o.EbsOptimized = r.EbsOptimized
-		}
-
 		if r.InstanceInitiatedShutdownBehavior != nil {
 			o.InstanceInitiatedShutdownBehavior = r.InstanceInitiatedShutdownBehavior
-		}
-
-		if r.InstanceType != nil {
-			o.InstanceType = r.InstanceType
-		}
-
-		if r.KernelId != nil {
-			o.KernelId = r.KernelId
-		}
-
-		if r.RamdiskId != nil {
-			o.RamdiskId = r.RamdiskId
 		}
 
 		if r.UserData != nil {

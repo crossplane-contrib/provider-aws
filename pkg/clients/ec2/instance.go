@@ -225,8 +225,8 @@ func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *typ
 		in.InstanceInitiatedShutdownBehavior = pointer.LateInitializeValueFromPtr(in.InstanceInitiatedShutdownBehavior, attributes.InstanceInitiatedShutdownBehavior.Value)
 	}
 
-	if attributes.InstanceType != nil {
-		in.InstanceType = pointer.LateInitializeValueFromPtr(in.InstanceType, attributes.InstanceType.Value)
+	if in.InstanceType == "" {
+		in.InstanceType = string(instance.InstanceType)
 	}
 
 	if attributes.UserData != nil {
