@@ -69,6 +69,7 @@ var (
 	port                               = 123
 	port32                             = int32(port)
 	resourceID                         = "resource"
+	restoreFromSource                  = "PointInTime"
 	retention                          = 2
 	retention32                        = int32(retention)
 	status                             = "testStatus"
@@ -275,6 +276,28 @@ func TestIsUpToDate(t *testing.T) {
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName: &dbName,
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		"IgnoresRestoreFrom": {
+			args: args{
+				db: rdstypes.DBInstance{
+					DBName: &dbName,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+							RestoreFrom: &v1beta1.RestoreBackupConfiguration{
+								PointInTime: &v1beta1.PointInTimeRestoreBackupConfiguration{
+									SourceDBInstanceIdentifier: &resourceID,
+									UseLatestRestorableTime:    true,
+								},
+								Source: &restoreFromSource,
+							},
 						},
 					},
 				},
