@@ -21,12 +21,12 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-// SetupControllerFn is a delegate to initialize a controller.
-type SetupControllerFn func(ctrl.Manager, controller.Options) error //nolint:golint
+// SetupControllerFnXp is a delegate to initialize a controller with crossplane Options.
+type SetupControllerFnXp func(ctrl.Manager, controller.Options) error //nolint:golint
 
 // SetupControllers is a shortcut to call a list of SetupControllerFns with mgr
 // and o.
-func SetupControllers(mgr ctrl.Manager, o controller.Options, setups ...SetupControllerFn) error { //nolint:golint
+func SetupControllers(mgr ctrl.Manager, o controller.Options, setups ...SetupControllerFnXp) error { //nolint:golint
 	for _, setup := range setups {
 		if err := setup(mgr, o); err != nil {
 			return err
