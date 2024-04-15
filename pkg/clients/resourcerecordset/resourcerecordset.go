@@ -175,6 +175,8 @@ func LateInitialize(in *v1alpha1.ResourceRecordSetParameters, rrSet *route53type
 	rrType := string(rrSet.Type)
 	in.Type = pointer.LateInitializeValueFromPtr(in.Type, &rrType)
 	in.TTL = pointer.LateInitialize(in.TTL, rrSet.TTL)
+	in.MultiValueAnswer = pointer.LateInitialize(in.MultiValueAnswer, rrSet.MultiValueAnswer)
+	in.SetIdentifier = pointer.LateInitialize(in.SetIdentifier, rrSet.SetIdentifier)
 	if len(in.ResourceRecords) == 0 && len(rrSet.ResourceRecords) != 0 {
 		in.ResourceRecords = make([]v1alpha1.ResourceRecord, len(rrSet.ResourceRecords))
 		for i, val := range rrSet.ResourceRecords {
