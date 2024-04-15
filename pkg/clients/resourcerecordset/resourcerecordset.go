@@ -71,9 +71,11 @@ func NewClient(cfg aws.Config) Client {
 // GetResourceRecordSet returns recordSet if present or err
 func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.ResourceRecordSetParameters, c Client) (*route53types.ResourceRecordSet, error) {
 	res, err := c.ListResourceRecordSets(ctx, &route53.ListResourceRecordSetsInput{
-		HostedZoneId:    params.ZoneID,
-		StartRecordName: &name,
-		StartRecordType: route53types.RRType(params.Type),
+		HostedZoneId:          params.ZoneID,
+		StartRecordName:       &name,
+		StartRecordType:       route53types.RRType(params.Type),
+		StartRecordIdentifier: params.SetIdentifier,
+		MaxItems:              aws.Int32(1),
 	})
 	if err != nil {
 		return nil, err
