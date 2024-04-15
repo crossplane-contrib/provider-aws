@@ -59,19 +59,43 @@ func TestCreatePatch(t *testing.T) {
 				patch: &v1alpha1.ResourceRecordSetParameters{},
 			},
 		},
+		"SameFieldsWithMultiValueAnswer": {
+			args: args{
+				rrSet: route53types.ResourceRecordSet{
+					Name:             &resourceRecordSetName,
+					TTL:              &ttl,
+					MultiValueAnswer: aws.Bool(true),
+					SetIdentifier:    aws.String("id"),
+				},
+				p: v1alpha1.ResourceRecordSetParameters{
+					TTL:              &ttl,
+					MultiValueAnswer: aws.Bool(true),
+					SetIdentifier:    aws.String("id"),
+				},
+			},
+			want: want{
+				patch: &v1alpha1.ResourceRecordSetParameters{},
+			},
+		},
 		"DifferentFields": {
 			args: args{
 				rrSet: route53types.ResourceRecordSet{
-					Name: &resourceRecordSetName,
-					TTL:  &ttl,
+					Name:             &resourceRecordSetName,
+					TTL:              &ttl,
+					MultiValueAnswer: aws.Bool(true),
+					SetIdentifier:    aws.String("id"),
 				},
 				p: v1alpha1.ResourceRecordSetParameters{
-					TTL: &ttl2,
+					TTL:              &ttl2,
+					MultiValueAnswer: aws.Bool(false),
+					SetIdentifier:    aws.String("id2"),
 				},
 			},
 			want: want{
 				patch: &v1alpha1.ResourceRecordSetParameters{
-					TTL: &ttl2,
+					TTL:              &ttl2,
+					MultiValueAnswer: aws.Bool(false),
+					SetIdentifier:    aws.String("id2"),
 				},
 			},
 		},
