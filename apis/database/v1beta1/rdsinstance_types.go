@@ -491,13 +491,18 @@ type RDSInstanceParameters struct {
 
 	// IOPS is the amount of Provisioned IOPS (input/output operations per second) to be
 	// initially allocated for the DB instance. For information about valid IOPS
-	// values, see see Amazon RDS Provisioned IOPS Storage to Improve Performance
+	// values, see Amazon RDS Provisioned IOPS Storage to Improve Performance
 	// (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
 	// in the Amazon RDS User Guide.
 	// Constraints: Must be a multiple between 1 and 50 of the storage amount for
 	// the DB instance. Must also be an integer multiple of 1000. For example, if
 	// the size of your DB instance is 500 GiB, then your IOPS value can be 2000,
 	// 3000, 4000, or 5000.
+	//
+	// For valid IOPS values on DB instances with storage type "gp3",
+	// see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage.
+	//
+	// Note: controller considers 0 and null as equivalent
 	// +optional
 	IOPS *int `json:"iops,omitempty"`
 
@@ -712,6 +717,16 @@ type RDSInstanceParameters struct {
 	// +immutable
 	// +optional
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	// The storage throughput value for the DB instance.
+	//
+	// This setting applies only to the gp3 storage type.
+	//
+	// This setting doesn't apply to Amazon Aurora or RDS Custom DB instances.
+	//
+	// Note: controller considers 0 and null as equivalent
+	// +optional
+	StorageThroughput *int `json:"storageThroughput,omitempty"`
 
 	// StorageType specifies the storage type to be associated with the DB instance.
 	// Valid values: standard | gp2 | io1
@@ -1088,6 +1103,10 @@ type PendingModifiedValues struct {
 	// ProcessorFeatures is the number of CPU cores and the number of threads per core for the DB instance
 	// class of the DB instance.
 	ProcessorFeatures []ProcessorFeature `json:"processorFeatures,omitempty"`
+
+	// StorageThroughput indicates the new storage throughput value for the DB instance
+	// that will be applied or is currently being applied.
+	StorageThroughput int `json:"storageThroughput,omitempty"`
 
 	// StorageType specifies the storage type to be associated with the DB instance.
 	StorageType string `json:"storageType,omitempty"`

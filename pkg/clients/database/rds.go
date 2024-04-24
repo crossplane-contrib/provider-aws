@@ -100,7 +100,6 @@ func GenerateCreateRDSInstanceInput(name, password string, p *v1beta1.RDSInstanc
 		EnablePerformanceInsights:          p.EnablePerformanceInsights,
 		Engine:                             aws.String(p.Engine),
 		EngineVersion:                      p.EngineVersion,
-		Iops:                               pointer.ToIntAsInt32Ptr(p.IOPS),
 		KmsKeyId:                           p.KMSKeyID,
 		LicenseModel:                       p.LicenseModel,
 		MasterUserPassword:                 pointer.ToOrNilIfZeroValue(password),
@@ -139,6 +138,13 @@ func GenerateCreateRDSInstanceInput(name, password string, p *v1beta1.RDSInstanc
 				Value: aws.String(val.Value),
 			}
 		}
+	}
+	// for storageType gp3 below engine specific allocatedStorage threshold, do not send iops and storageThroughput
+	// to avoid errors like "You can't specify IOPS or storage throughput for engine postgres and a storage size less than 400."
+	// This allows users to set iops/storageThroughput to the default values themselves.
+	if !IsStorageTypeGP3BelowAllocatedStorageThreshold(p) {
+		c.Iops = pointer.ToIntAsInt32Ptr(p.IOPS)
+		c.StorageThroughput = pointer.ToIntAsInt32Ptr(p.StorageThroughput)
 	}
 	return c
 }
@@ -185,6 +191,7 @@ func GenerateRestoreRDSInstanceFromS3Input(name, password string, p *v1beta1.RDS
 		SourceEngine:                       p.RestoreFrom.S3.SourceEngine,
 		SourceEngineVersion:                p.RestoreFrom.S3.SourceEngineVersion,
 		StorageEncrypted:                   p.StorageEncrypted,
+		StorageThroughput:                  pointer.ToIntAsInt32Ptr(p.StorageThroughput),
 		StorageType:                        p.StorageType,
 		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
 	}
@@ -234,6 +241,7 @@ func GenerateRestoreRDSInstanceFromSnapshotInput(name string, p *v1beta1.RDSInst
 		OptionGroupName:                 p.OptionGroupName,
 		Port:                            pointer.ToIntAsInt32Ptr(p.Port),
 		PubliclyAccessible:              p.PubliclyAccessible,
+		StorageThroughput:               pointer.ToIntAsInt32Ptr(p.StorageThroughput),
 		StorageType:                     p.StorageType,
 		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
 	}
@@ -287,6 +295,7 @@ func GenerateRestoreRDSInstanceToPointInTimeInput(name string, p *v1beta1.RDSIns
 		OptionGroupName:                 p.OptionGroupName,
 		Port:                            pointer.ToIntAsInt32Ptr(p.Port),
 		PubliclyAccessible:              p.PubliclyAccessible,
+		StorageThroughput:               pointer.ToIntAsInt32Ptr(p.StorageThroughput),
 		StorageType:                     p.StorageType,
 		VpcSecurityGroupIds:             p.VPCSecurityGroupIDs,
 
@@ -321,7 +330,7 @@ func GenerateRestoreRDSInstanceToPointInTimeInput(name string, p *v1beta1.RDSIns
 // CreatePatch creates a *v1beta1.RDSInstanceParameters that has only the changed
 // values between the target *v1beta1.RDSInstanceParameters and the current
 // *rds.DBInstance
-func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (*v1beta1.RDSInstanceParameters, error) {
+func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (*v1beta1.RDSInstanceParameters, error) { //nolint:gocyclo
 	target := spec.DeepCopy()
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, in)
@@ -359,6 +368,14 @@ func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (
 		if target.PreferredBackupWindow != nil {
 			currentParams.PreferredBackupWindow = target.PreferredBackupWindow
 		}
+	}
+
+	// Depending on whether the instance was created as gp2 or modified from another type (e.g. gp3) to gp2,
+	// AWS provides different responses for IOPS/StorageThroughput (either 0 or nil).
+	// Therefore, we consider both 0 and nil to be equivalent.
+	if aws.ToInt(target.IOPS) == aws.ToInt(currentParams.IOPS) {
+		currentParams.IOPS = target.IOPS
+		currentParams.StorageThroughput = target.StorageThroughput
 	}
 
 	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
@@ -412,6 +429,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 		PreferredMaintenanceWindow:         p.PreferredMaintenanceWindow,
 		PromotionTier:                      pointer.ToIntAsInt32Ptr(p.PromotionTier),
 		PubliclyAccessible:                 p.PubliclyAccessible,
+		StorageThroughput:                  pointer.ToIntAsInt32Ptr(p.StorageThroughput),
 		StorageType:                        p.StorageType,
 		UseDefaultProcessorFeatures:        p.UseDefaultProcessorFeatures,
 		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
@@ -539,6 +557,7 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 			LicenseModel:            aws.ToString(db.PendingModifiedValues.LicenseModel),
 			MultiAZ:                 aws.ToBool(db.PendingModifiedValues.MultiAZ),
 			Port:                    int(aws.ToInt32(db.PendingModifiedValues.Port)),
+			StorageThroughput:       int(aws.ToInt32(db.PendingModifiedValues.StorageThroughput)),
 			StorageType:             aws.ToString(db.PendingModifiedValues.StorageType),
 		}
 		if db.PendingModifiedValues.PendingCloudwatchLogsExports != nil {
@@ -616,6 +635,7 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	in.PromotionTier = pointer.LateInitializeIntFrom32Ptr(in.PromotionTier, db.PromotionTier)
 	in.PubliclyAccessible = pointer.LateInitialize(in.PubliclyAccessible, ptr.To(db.PubliclyAccessible))
 	in.StorageEncrypted = pointer.LateInitialize(in.StorageEncrypted, ptr.To(db.StorageEncrypted))
+	in.StorageThroughput = pointer.LateInitializeIntFrom32Ptr(in.StorageThroughput, db.StorageThroughput)
 	in.StorageType = pointer.LateInitialize(in.StorageType, db.StorageType)
 	in.Timezone = pointer.LateInitialize(in.Timezone, db.Timezone)
 
@@ -927,4 +947,21 @@ func DiffTags(spec []v1beta1.Tag, current []rdstypes.Tag) (addTags []rdstypes.Ta
 	}
 
 	return addTags, removeTags
+}
+
+// IsStorageTypeGP3BelowAllocatedStorageThreshold returns true if storageType is gp3 and allocatedStorage is below engine specific threshold
+// See also https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage.
+func IsStorageTypeGP3BelowAllocatedStorageThreshold(p *v1beta1.RDSInstanceParameters) bool {
+	if pointer.StringValue(p.StorageType) != "gp3" {
+		return false
+	}
+
+	switch allocatedStorage, engine := aws.ToInt(p.AllocatedStorage), p.Engine; engine {
+	case "mariadb", "mysql", "postgres":
+		return allocatedStorage < 400
+	case "oracle-ee", "oracle-ee-cdb", "oracle-se2", "oracle-se2-cdb":
+		return allocatedStorage < 200
+	}
+
+	return false
 }

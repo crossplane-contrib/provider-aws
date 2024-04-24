@@ -492,15 +492,17 @@ spec:
                       deleting a Read Replica.'
                     type: string
                   iops:
-                    description: 'IOPS is the amount of Provisioned IOPS (input/output
+                    description: "IOPS is the amount of Provisioned IOPS (input/output
                       operations per second) to be initially allocated for the DB
-                      instance. For information about valid IOPS values, see see Amazon
+                      instance. For information about valid IOPS values, see Amazon
                       RDS Provisioned IOPS Storage to Improve Performance (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
                       in the Amazon RDS User Guide. Constraints: Must be a multiple
                       between 1 and 50 of the storage amount for the DB instance.
                       Must also be an integer multiple of 1000. For example, if the
                       size of your DB instance is 500 GiB, then your IOPS value can
-                      be 2000, 3000, 4000, or 5000.'
+                      be 2000, 3000, 4000, or 5000. \n For valid IOPS values on DB
+                      instances with storage type \"gp3\", see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage.
+                      \n Note: controller considers 0 and null as equivalent"
                     type: integer
                   kmsKeyId:
                     description: KMSKeyID for an encrypted DB instance. The KMS key
@@ -1062,6 +1064,12 @@ spec:
                       DB instances is managed by the DB cluster. For more information,
                       see CreateDBCluster. Default: false'
                     type: boolean
+                  storageThroughput:
+                    description: "The storage throughput value for the DB instance.
+                      \n This setting applies only to the gp3 storage type. \n This
+                      setting doesn't apply to Amazon Aurora or RDS Custom DB instances.
+                      \n Note: controller considers 0 and null as equivalent"
+                    type: integer
                   storageType:
                     description: 'StorageType specifies the storage type to be associated
                       with the DB instance. Valid values: standard | gp2 | io1 If
@@ -1664,6 +1672,11 @@ spec:
                           - value
                           type: object
                         type: array
+                      storageThroughput:
+                        description: StorageThroughput indicates the new storage throughput
+                          value for the DB instance that will be applied or is currently
+                          being applied.
+                        type: integer
                       storageType:
                         description: StorageType specifies the storage type to be
                           associated with the DB instance.

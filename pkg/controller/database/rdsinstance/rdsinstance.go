@@ -289,6 +289,13 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Spec.ForProvider.MasterUsername != nil {
 		conn[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.ToString(cr.Spec.ForProvider.MasterUsername))
 	}
+	// for storageType gp3 below engine specific allocatedStorage threshold, do not send iops and storageThroughput
+	// to avoid errors like "You can't specify IOPS or storage throughput for engine postgres and a storage size less than 400."
+	// This allows users to set iops/storageThroughput to the default values themselves.
+	if rds.IsStorageTypeGP3BelowAllocatedStorageThreshold(&cr.Spec.ForProvider) {
+		modify.Iops = nil
+		modify.StorageThroughput = nil
+	}
 
 	if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyFailed)

@@ -773,6 +773,11 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.StorageThroughput != nil {
+		in, out := &in.StorageThroughput, &out.StorageThroughput
+		*out = new(int)
+		**out = **in
+	}
 	if in.StorageType != nil {
 		in, out := &in.StorageType, &out.StorageType
 		*out = new(string)

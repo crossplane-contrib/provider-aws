@@ -202,6 +202,14 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		return errors.Wrap(err, dbinstance.ErrCachePassword)
 	}
 
+	// for storageType gp3 below engine specific allocatedStorage threshold, do not send iops and storageThroughput
+	// to avoid errors like "You can't specify IOPS or storage throughput for engine postgres and a storage size less than 400."
+	// This allows users to set iops/storageThroughput to the default values themselves.
+	if isStorageTypeGP3BelowAllocatedStorageThreshold(cr) {
+		obj.Iops = nil
+		obj.StorageThroughput = nil
+	}
+
 	return nil
 }
 
@@ -251,6 +259,14 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		}
 	} else {
 		obj.VpcSecurityGroupIds = nil
+	}
+
+	// for storageType gp3 below engine specific allocatedStorage threshold, do not send iops and storageThroughput
+	// to avoid errors like "You can't specify IOPS or storage throughput for engine postgres and a storage size less than 400."
+	// This allows users to set iops/storageThroughput to the default values themselves.
+	if isStorageTypeGP3BelowAllocatedStorageThreshold(cr) {
+		obj.Iops = nil
+		obj.StorageThroughput = nil
 	}
 
 	return nil
@@ -714,4 +730,21 @@ func handleKmsKey(inKey *string, dbKey *string) *string {
 		return &keyID
 	}
 	return dbKey
+}
+
+// isStorageTypeGP3BelowAllocatedStorageThreshold returns true if storageType is gp3 and allocatedStorage is below engine specific threshold
+// See also https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage.
+func isStorageTypeGP3BelowAllocatedStorageThreshold(cr *svcapitypes.DBInstance) bool {
+	if pointer.StringValue(cr.Spec.ForProvider.StorageType) != "gp3" {
+		return false
+	}
+
+	switch allocatedStorage, engine := pointer.Int64Value(cr.Spec.ForProvider.AllocatedStorage), pointer.StringValue(cr.Spec.ForProvider.Engine); engine {
+	case "mariadb", "mysql", "postgres":
+		return allocatedStorage < 400
+	case "oracle-ee", "oracle-ee-cdb", "oracle-se2", "oracle-se2-cdb":
+		return allocatedStorage < 200
+	}
+
+	return false
 }
