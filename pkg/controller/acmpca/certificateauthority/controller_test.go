@@ -79,7 +79,7 @@ func withCertificateAuthorityArn() certificateAuthorityModifier {
 
 func withCertificateAuthorityType() certificateAuthorityModifier {
 	return func(r *v1beta1.CertificateAuthority) {
-		r.Spec.ForProvider.Type = awsacmpcatypes.CertificateAuthorityTypeRoot
+		r.Spec.ForProvider.Type = string(awsacmpcatypes.CertificateAuthorityTypeRoot)
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}

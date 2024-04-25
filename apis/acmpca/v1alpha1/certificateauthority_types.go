@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,7 +28,7 @@ type CertificateAuthorityParameters struct {
 
 	// Type of the certificate authority
 	// +kubebuilder:validation:Enum=ROOT;SUBORDINATE
-	Type types.CertificateAuthorityType `json:"type"`
+	Type string `json:"type"`
 
 	// RevocationConfiguration to associate with the certificateAuthority.
 	// +optional
@@ -87,11 +86,11 @@ type CertificateAuthorityConfiguration struct {
 
 	// Type of the public key algorithm
 	// +kubebuilder:validation:Enum=RSA_2048;EC_secp384r1;EC_prime256v1;RSA_4096
-	KeyAlgorithm types.KeyAlgorithm `json:"keyAlgorithm"`
+	KeyAlgorithm string `json:"keyAlgorithm"`
 
 	// Algorithm that private CA uses to sign certificate requests
 	// +kubebuilder:validation:Enum=SHA512WITHECDSA;SHA256WITHECDSA;SHA384WITHECDSA;SHA512WITHRSA;SHA256WITHRSA;SHA384WITHRSA
-	SigningAlgorithm types.SigningAlgorithm `json:"signingAlgorithm"`
+	SigningAlgorithm string `json:"signingAlgorithm"`
 
 	// Subject is information of Certificate Authority
 	Subject Subject `json:"subject"`

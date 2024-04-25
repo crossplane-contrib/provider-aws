@@ -56,10 +56,10 @@ func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 	}{
 		"Filled_Input": {
 			in: &v1beta1.CertificateAuthorityParameters{
-				Type: types.CertificateAuthorityTypeRoot,
+				Type: string(types.CertificateAuthorityTypeRoot),
 				CertificateAuthorityConfiguration: v1beta1.CertificateAuthorityConfiguration{
-					SigningAlgorithm: types.SigningAlgorithmSha256withecdsa,
-					KeyAlgorithm:     types.KeyAlgorithmRsa2048,
+					SigningAlgorithm: string(types.SigningAlgorithmSha256withecdsa),
+					KeyAlgorithm:     string(types.KeyAlgorithmRsa2048),
 					Subject: v1beta1.Subject{
 						CommonName:                 commonName,
 						Country:                    country,
@@ -129,8 +129,8 @@ func TestGenerateCertificateAuthorityConfiguration(t *testing.T) {
 	}{
 		"Filled_Input": {
 			in: v1beta1.CertificateAuthorityConfiguration{
-				SigningAlgorithm: types.SigningAlgorithmSha256withecdsa,
-				KeyAlgorithm:     types.KeyAlgorithmRsa2048,
+				SigningAlgorithm: string(types.SigningAlgorithmSha256withecdsa),
+				KeyAlgorithm:     string(types.KeyAlgorithmRsa2048),
 				Subject: v1beta1.Subject{
 					CommonName:                 commonName,
 					Country:                    country,
@@ -227,7 +227,7 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 		"AllFilledNoDiff": {
 			args: args{
 				spec: &v1beta1.CertificateAuthorityParameters{
-					Type: types.CertificateAuthorityTypeRoot,
+					Type: string(types.CertificateAuthorityTypeRoot),
 				},
 				in: &types.CertificateAuthority{
 					Type:   types.CertificateAuthorityTypeRoot,
@@ -245,7 +245,7 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 				},
 			},
 			want: &v1beta1.CertificateAuthorityParameters{
-				Type:   types.CertificateAuthorityTypeRoot,
+				Type:   string(types.CertificateAuthorityTypeRoot),
 				Status: &status,
 				CertificateAuthorityConfiguration: v1beta1.CertificateAuthorityConfiguration{
 					Subject: v1beta1.Subject{
