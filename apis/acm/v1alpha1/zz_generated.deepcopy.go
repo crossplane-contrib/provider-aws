@@ -21,7 +21,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/acm/types"
 	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -136,7 +135,7 @@ func (in *CertificateParameters) DeepCopyInto(out *CertificateParameters) {
 	}
 	if in.CertificateTransparencyLoggingPreference != nil {
 		in, out := &in.CertificateTransparencyLoggingPreference, &out.CertificateTransparencyLoggingPreference
-		*out = new(types.CertificateTransparencyLoggingPreference)
+		*out = new(string)
 		**out = **in
 	}
 	if in.SubjectAlternativeNames != nil {
@@ -157,7 +156,7 @@ func (in *CertificateParameters) DeepCopyInto(out *CertificateParameters) {
 	}
 	if in.ValidationMethod != nil {
 		in, out := &in.ValidationMethod, &out.ValidationMethod
-		*out = new(types.ValidationMethod)
+		*out = new(string)
 		**out = **in
 	}
 	if in.RenewCertificate != nil {

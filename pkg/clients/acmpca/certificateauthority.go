@@ -48,7 +48,7 @@ func NewClient(conf *aws.Config) Client {
 // GenerateCreateCertificateAuthorityInput from certificateAuthorityParameters
 func GenerateCreateCertificateAuthorityInput(p *v1beta1.CertificateAuthorityParameters) *acmpca.CreateCertificateAuthorityInput {
 	m := &acmpca.CreateCertificateAuthorityInput{
-		CertificateAuthorityType:          p.Type,
+		CertificateAuthorityType:          types.CertificateAuthorityType(p.Type),
 		CertificateAuthorityConfiguration: GenerateCertificateAuthorityConfiguration(p.CertificateAuthorityConfiguration),
 		RevocationConfiguration:           GenerateRevocationConfiguration(p.RevocationConfiguration),
 	}
@@ -84,8 +84,8 @@ func GenerateCertificateAuthorityConfiguration(p v1beta1.CertificateAuthorityCon
 			Surname:                    p.Subject.Surname,
 			Title:                      p.Subject.Title,
 		},
-		SigningAlgorithm: p.SigningAlgorithm,
-		KeyAlgorithm:     p.KeyAlgorithm,
+		SigningAlgorithm: types.SigningAlgorithm(p.SigningAlgorithm),
+		KeyAlgorithm:     types.KeyAlgorithm(p.KeyAlgorithm),
 	}
 	return m
 
@@ -116,8 +116,8 @@ func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParamete
 		return
 	}
 
-	if string(in.Type) == "" && string(certificateAuthority.Type) != "" {
-		in.Type = certificateAuthority.Type
+	if in.Type == "" && string(certificateAuthority.Type) != "" {
+		in.Type = string(certificateAuthority.Type)
 	}
 
 	// NOTE(muvaf): Only ACTIVE and DISABLED statuses can be assigned by the user
