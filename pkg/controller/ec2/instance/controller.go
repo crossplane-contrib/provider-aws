@@ -18,8 +18,6 @@ package instance
 
 import (
 	"context"
-	"sync"
-	"sync/atomic"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -33,6 +31,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -181,20 +180,18 @@ func (e *external) describeInstance(ctx context.Context, instanceId string) (
 	awsec2.DescribeInstanceAttributeOutput,
 	error,
 ) {
-	wg := sync.WaitGroup{}
+	eg := errgroup.Group{}
 
 	var describeOutput *awsec2.DescribeInstancesOutput
 	var describeError error
-	wg.Add(1)
-	go func() {
+	eg.Go(func() error {
 		describeOutput, describeError = e.client.DescribeInstances(ctx, &awsec2.DescribeInstancesInput{
 			InstanceIds: []string{instanceId},
 		})
-		wg.Done()
-	}()
+		return nil
+	})
 
 	attrs := awsec2.DescribeInstanceAttributeOutput{}
-	attrsErr := atomic.Pointer[error]{}
 	descAttr := func(attr types.InstanceAttributeName) (*awsec2.DescribeInstanceAttributeOutput, error) {
 		return e.client.DescribeInstanceAttribute(ctx, &awsec2.DescribeInstanceAttributeInput{
 			InstanceId: &instanceId,
@@ -202,37 +199,34 @@ func (e *external) describeInstance(ctx context.Context, instanceId string) (
 		})
 	}
 
-	wg.Add(1)
-	go func() {
-		if r, err := descAttr(types.InstanceAttributeNameDisableApiTermination); err != nil {
-			attrsErr.Store(&err)
+	eg.Go(func() error {
+		if res, err := descAttr(types.InstanceAttributeNameDisableApiTermination); err != nil {
+			return errorutils.Wrap(err, "fetching DisableApiTermination")
 		} else {
-			attrs.DisableApiTermination = r.DisableApiTermination
+			attrs.DisableApiTermination = res.DisableApiTermination
+			return nil
 		}
-		wg.Done()
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
-		if r, err := descAttr(types.InstanceAttributeNameInstanceInitiatedShutdownBehavior); err != nil {
-			attrsErr.Store(&err)
+	eg.Go(func() error {
+		if res, err := descAttr(types.InstanceAttributeNameInstanceInitiatedShutdownBehavior); err != nil {
+			return errorutils.Wrap(err, "fetching InstanceInitiatedShutdownBehavior")
 		} else {
-			attrs.InstanceInitiatedShutdownBehavior = r.InstanceInitiatedShutdownBehavior
+			attrs.InstanceInitiatedShutdownBehavior = res.InstanceInitiatedShutdownBehavior
+			return nil
 		}
-		wg.Done()
-	}()
+	})
 
-	wg.Add(1)
-	go func() {
-		if r, err := descAttr(types.InstanceAttributeNameUserData); err != nil {
-			attrsErr.Store(&err)
+	eg.Go(func() error {
+		if res, err := descAttr(types.InstanceAttributeNameUserData); err != nil {
+			return errorutils.Wrap(err, "fetching UserData")
 		} else {
-			attrs.UserData = r.UserData
+			attrs.UserData = res.UserData
+			return nil
 		}
-		wg.Done()
-	}()
+	})
 
-	wg.Wait()
+	attrsErr := eg.Wait()
 
 	if describeError != nil {
 		return nil, attrs,
@@ -250,8 +244,8 @@ func (e *external) describeInstance(ctx context.Context, instanceId string) (
 		return nil, attrs, errors.New(errMultipleItems)
 	}
 
-	if err := attrsErr.Load(); err != nil {
-		return nil, attrs, errorutils.Wrap(*err, errDescribe)
+	if attrsErr != nil {
+		return nil, attrs, errorutils.Wrap(attrsErr, errDescribe)
 	}
 	return &describeOutput.Reservations[0].Instances[0], attrs, nil
 }
