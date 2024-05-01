@@ -62,6 +62,9 @@ func (in *TaggingConfigurationClient) CacheBucketTaggingOutput(ctx context.Conte
 	if in.cache.getBucketTaggingOutput == nil {
 		external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: bucketName})
 		if err != nil {
+			if s3.TaggingNotFound(err) {
+				return &awss3.GetBucketTaggingOutput{TagSet: nil}, nil
+			}
 			return external, err
 		}
 		in.cache.getBucketTaggingOutput = external
