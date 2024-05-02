@@ -166,6 +166,9 @@ func TestObserve(t *testing.T) {
 							}},
 						}, nil
 					},
+					MockDescribeInstanceAttribute: func(ctx context.Context, input *awsec2.DescribeInstanceAttributeInput, opts []func(*awsec2.Options)) (*awsec2.DescribeInstanceAttributeOutput, error) {
+						return &awsec2.DescribeInstanceAttributeOutput{}, nil
+					},
 				},
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
 					InstanceType: string(types.InstanceTypeM1Small),
@@ -186,6 +189,9 @@ func TestObserve(t *testing.T) {
 				instance: &fake.MockInstanceClient{
 					MockDescribeInstances: func(ctx context.Context, input *awsec2.DescribeInstancesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeInstancesOutput, error) {
 						return &awsec2.DescribeInstancesOutput{}, errBoom
+					},
+					MockDescribeInstanceAttribute: func(ctx context.Context, input *awsec2.DescribeInstanceAttributeInput, opts []func(*awsec2.Options)) (*awsec2.DescribeInstanceAttributeOutput, error) {
+						return &awsec2.DescribeInstanceAttributeOutput{}, nil
 					},
 				},
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{

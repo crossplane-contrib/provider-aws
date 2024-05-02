@@ -31,6 +31,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -129,61 +130,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeInstances(ctx,
-		&awsec2.DescribeInstancesInput{
-			InstanceIds: []string{meta.GetExternalName(cr)},
-		})
-
-	// deleted instances that have not yet been cleaned up from the cluster return a
-	// 200 OK with a nil response.Reservations slice
-	if err == nil && len(response.Reservations) == 0 {
-		return managed.ExternalObservation{}, nil
+	instancePtr, o, err := e.describeInstance(ctx, meta.GetExternalName(cr))
+	if err != nil || instancePtr == nil {
+		return managed.ExternalObservation{}, err
 	}
-
-	if err != nil {
-		return managed.ExternalObservation{},
-			errorutils.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
-	}
-
-	// in a successful response, there should be one and only one object
-	if len(response.Reservations[0].Instances) != 1 {
-		return managed.ExternalObservation{}, errors.New(errMultipleItems)
-	}
-
-	observed := response.Reservations[0].Instances[0]
+	observed := *instancePtr
 
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
-
-	o := awsec2.DescribeInstanceAttributeOutput{}
-
-	for _, input := range []types.InstanceAttributeName{
-		types.InstanceAttributeNameDisableApiTermination,
-		types.InstanceAttributeNameInstanceInitiatedShutdownBehavior,
-		types.InstanceAttributeNameUserData,
-	} {
-		r, err := e.client.DescribeInstanceAttribute(ctx, &awsec2.DescribeInstanceAttributeInput{
-			InstanceId: aws.String(meta.GetExternalName(cr)),
-			Attribute:  input,
-		})
-
-		if err != nil {
-			return managed.ExternalObservation{}, errorutils.Wrap(err, errDescribe)
-		}
-
-		if r.DisableApiTermination != nil {
-			o.DisableApiTermination = r.DisableApiTermination
-		}
-
-		if r.InstanceInitiatedShutdownBehavior != nil {
-			o.InstanceInitiatedShutdownBehavior = r.InstanceInitiatedShutdownBehavior
-		}
-
-		if r.UserData != nil {
-			o.UserData = r.UserData
-		}
-	}
-
 	ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
 
 	if !cmp.Equal(current, &cr.Spec.ForProvider) {
@@ -219,6 +173,81 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		ResourceUpToDate:        ec2.IsInstanceUpToDate(cr.Spec.ForProvider, observed, o),
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
+}
+
+func (e *external) describeInstance(ctx context.Context, instanceId string) (
+	*types.Instance,
+	awsec2.DescribeInstanceAttributeOutput,
+	error,
+) {
+	eg := errgroup.Group{}
+
+	var describeOutput *awsec2.DescribeInstancesOutput
+	var describeError error
+	eg.Go(func() error {
+		describeOutput, describeError = e.client.DescribeInstances(ctx, &awsec2.DescribeInstancesInput{
+			InstanceIds: []string{instanceId},
+		})
+		return nil
+	})
+
+	attrs := awsec2.DescribeInstanceAttributeOutput{}
+	descAttr := func(attr types.InstanceAttributeName) (*awsec2.DescribeInstanceAttributeOutput, error) {
+		return e.client.DescribeInstanceAttribute(ctx, &awsec2.DescribeInstanceAttributeInput{
+			InstanceId: &instanceId,
+			Attribute:  attr,
+		})
+	}
+
+	eg.Go(func() error {
+		if res, err := descAttr(types.InstanceAttributeNameDisableApiTermination); err != nil {
+			return errorutils.Wrap(err, "fetching DisableApiTermination")
+		} else {
+			attrs.DisableApiTermination = res.DisableApiTermination
+			return nil
+		}
+	})
+
+	eg.Go(func() error {
+		if res, err := descAttr(types.InstanceAttributeNameInstanceInitiatedShutdownBehavior); err != nil {
+			return errorutils.Wrap(err, "fetching InstanceInitiatedShutdownBehavior")
+		} else {
+			attrs.InstanceInitiatedShutdownBehavior = res.InstanceInitiatedShutdownBehavior
+			return nil
+		}
+	})
+
+	eg.Go(func() error {
+		if res, err := descAttr(types.InstanceAttributeNameUserData); err != nil {
+			return errorutils.Wrap(err, "fetching UserData")
+		} else {
+			attrs.UserData = res.UserData
+			return nil
+		}
+	})
+
+	attrsErr := eg.Wait()
+
+	if describeError != nil {
+		return nil, attrs,
+			errorutils.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, describeError), errDescribe)
+	}
+
+	// deleted instances that have not yet been cleaned up from the cluster return a
+	// 200 OK with a nil response.Reservations slice
+	if len(describeOutput.Reservations) == 0 {
+		return nil, attrs, nil
+	}
+
+	// in a successful response, there should be one and only one object
+	if len(describeOutput.Reservations[0].Instances) != 1 {
+		return nil, attrs, errors.New(errMultipleItems)
+	}
+
+	if attrsErr != nil {
+		return nil, attrs, errorutils.Wrap(attrsErr, errDescribe)
+	}
+	return &describeOutput.Reservations[0].Instances[0], attrs, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
