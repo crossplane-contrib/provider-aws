@@ -298,6 +298,22 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 				err: nil,
 			},
 		},
+		"SuccessfulCreateNoExistingTags": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithTaggingConfig(generateTaggingConfig())),
+				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
+					MockPutBucketTagging: func(ctx context.Context, input *s3.PutBucketTaggingInput, opts []func(*s3.Options)) (*s3.PutBucketTaggingOutput, error) {
+						return &s3.PutBucketTaggingOutput{}, nil
+					},
+					MockGetBucketTagging: func(ctx context.Context, input *s3.GetBucketTaggingInput, opts []func(*s3.Options)) (*s3.GetBucketTaggingOutput, error) {
+						return nil, &smithy.GenericAPIError{Code: clientss3.TaggingNotFoundErrCode}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+			},
+		},
 	}
 
 	for name, tc := range cases {
