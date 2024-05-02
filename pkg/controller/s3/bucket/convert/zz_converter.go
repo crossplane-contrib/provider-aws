@@ -6,6 +6,16 @@ import types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 type ConverterImpl struct{}
 
+func (c *ConverterImpl) DeepCopyAWSLambdaFunctionConfiguration(source []types.LambdaFunctionConfiguration) []types.LambdaFunctionConfiguration {
+	var typesLambdaFunctionConfigurationList []types.LambdaFunctionConfiguration
+	if source != nil {
+		typesLambdaFunctionConfigurationList = make([]types.LambdaFunctionConfiguration, len(source))
+		for i := 0; i < len(source); i++ {
+			typesLambdaFunctionConfigurationList[i] = c.typesLambdaFunctionConfigurationToTypesLambdaFunctionConfiguration(source[i])
+		}
+	}
+	return typesLambdaFunctionConfigurationList
+}
 func (c *ConverterImpl) DeepCopyAWSQueueConfiguration(source []types.QueueConfiguration) []types.QueueConfiguration {
 	var typesQueueConfigurationList []types.QueueConfiguration
 	if source != nil {
@@ -15,6 +25,16 @@ func (c *ConverterImpl) DeepCopyAWSQueueConfiguration(source []types.QueueConfig
 		}
 	}
 	return typesQueueConfigurationList
+}
+func (c *ConverterImpl) DeepCopyAWSTopicConfiguration(source []types.TopicConfiguration) []types.TopicConfiguration {
+	var typesTopicConfigurationList []types.TopicConfiguration
+	if source != nil {
+		typesTopicConfigurationList = make([]types.TopicConfiguration, len(source))
+		for i := 0; i < len(source); i++ {
+			typesTopicConfigurationList[i] = c.typesTopicConfigurationToTypesTopicConfiguration(source[i])
+		}
+	}
+	return typesTopicConfigurationList
 }
 func (c *ConverterImpl) pTypesNotificationConfigurationFilterToPTypesNotificationConfigurationFilter(source *types.NotificationConfigurationFilter) *types.NotificationConfigurationFilter {
 	var pTypesNotificationConfigurationFilter *types.NotificationConfigurationFilter
@@ -52,6 +72,31 @@ func (c *ConverterImpl) typesFilterRuleToTypesFilterRule(source types.FilterRule
 	typesFilterRule.Value = pString
 	return typesFilterRule
 }
+func (c *ConverterImpl) typesLambdaFunctionConfigurationToTypesLambdaFunctionConfiguration(source types.LambdaFunctionConfiguration) types.LambdaFunctionConfiguration {
+	var typesLambdaFunctionConfiguration types.LambdaFunctionConfiguration
+	var typesEventList []types.Event
+	if source.Events != nil {
+		typesEventList = make([]types.Event, len(source.Events))
+		for i := 0; i < len(source.Events); i++ {
+			typesEventList[i] = types.Event(source.Events[i])
+		}
+	}
+	typesLambdaFunctionConfiguration.Events = typesEventList
+	var pString *string
+	if source.LambdaFunctionArn != nil {
+		xstring := *source.LambdaFunctionArn
+		pString = &xstring
+	}
+	typesLambdaFunctionConfiguration.LambdaFunctionArn = pString
+	typesLambdaFunctionConfiguration.Filter = c.pTypesNotificationConfigurationFilterToPTypesNotificationConfigurationFilter(source.Filter)
+	var pString2 *string
+	if source.Id != nil {
+		xstring2 := *source.Id
+		pString2 = &xstring2
+	}
+	typesLambdaFunctionConfiguration.Id = pString2
+	return typesLambdaFunctionConfiguration
+}
 func (c *ConverterImpl) typesQueueConfigurationToTypesQueueConfiguration(source types.QueueConfiguration) types.QueueConfiguration {
 	var typesQueueConfiguration types.QueueConfiguration
 	var typesEventList []types.Event
@@ -76,4 +121,29 @@ func (c *ConverterImpl) typesQueueConfigurationToTypesQueueConfiguration(source 
 	}
 	typesQueueConfiguration.Id = pString2
 	return typesQueueConfiguration
+}
+func (c *ConverterImpl) typesTopicConfigurationToTypesTopicConfiguration(source types.TopicConfiguration) types.TopicConfiguration {
+	var typesTopicConfiguration types.TopicConfiguration
+	var typesEventList []types.Event
+	if source.Events != nil {
+		typesEventList = make([]types.Event, len(source.Events))
+		for i := 0; i < len(source.Events); i++ {
+			typesEventList[i] = types.Event(source.Events[i])
+		}
+	}
+	typesTopicConfiguration.Events = typesEventList
+	var pString *string
+	if source.TopicArn != nil {
+		xstring := *source.TopicArn
+		pString = &xstring
+	}
+	typesTopicConfiguration.TopicArn = pString
+	typesTopicConfiguration.Filter = c.pTypesNotificationConfigurationFilterToPTypesNotificationConfigurationFilter(source.Filter)
+	var pString2 *string
+	if source.Id != nil {
+		xstring2 := *source.Id
+		pString2 = &xstring2
+	}
+	typesTopicConfiguration.Id = pString2
+	return typesTopicConfiguration
 }

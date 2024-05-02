@@ -23,5 +23,7 @@ import (
 // goverter:converter
 // goverter:ignoreUnexported
 type Converter interface {
+	DeepCopyAWSLambdaFunctionConfiguration([]types.LambdaFunctionConfiguration) []types.LambdaFunctionConfiguration
 	DeepCopyAWSQueueConfiguration([]types.QueueConfiguration) []types.QueueConfiguration
+	DeepCopyAWSTopicConfiguration([]types.TopicConfiguration) []types.TopicConfiguration
 }
