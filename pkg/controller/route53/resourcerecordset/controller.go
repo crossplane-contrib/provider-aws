@@ -23,7 +23,6 @@ import (
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
-	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -32,12 +31,14 @@ import (
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 
 	route53v1alpha1 "github.com/crossplane-contrib/provider-aws/apis/route53/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/resourcerecordset"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/controller"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
@@ -72,6 +73,10 @@ func SetupResourceRecordSet(mgr ctrl.Manager, o controller.Options) error {
 		managed.WithConnectionPublishers(cps...),
 	}
 
+	if o.PollIntervalJitter != 0 {
+		reconcilerOpts = append(reconcilerOpts, managed.WithPollJitterHook(o.PollIntervalJitter))
+	}
+
 	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
 		reconcilerOpts = append(reconcilerOpts, managed.WithManagementPolicies())
 	}
@@ -80,12 +85,17 @@ func SetupResourceRecordSet(mgr ctrl.Manager, o controller.Options) error {
 		resource.ManagedKind(route53v1alpha1.ResourceRecordSetGroupVersionKind),
 		reconcilerOpts...)
 
-	return ctrl.NewControllerManagedBy(mgr).
+	bldr := ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o.ForControllerRuntime()).
 		WithEventFilter(resource.DesiredStateChanged()).
-		For(&route53v1alpha1.ResourceRecordSet{}).
-		Complete(r)
+		For(&route53v1alpha1.ResourceRecordSet{})
+
+	if o.Monitor != nil {
+		bldr = bldr.WatchesRawSource(eventsFromMonitor(mgr, o.Monitor), &handler.EnqueueRequestForObject{})
+	}
+
+	return bldr.Complete(r)
 }
 
 type connector struct {

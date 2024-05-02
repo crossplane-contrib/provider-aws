@@ -17,7 +17,6 @@ limitations under the License.
 package ec2
 
 import (
-	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/address"
@@ -42,34 +41,34 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/vpcendpoint"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/vpcendpointserviceconfiguration"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
 
 // Setup ec2 controllers.
-func Setup(mgr ctrl.Manager, o controller.Options) error {
-	return setup.SetupControllers(
-		mgr, o,
-		address.SetupAddress,
-		flowlog.SetupFlowLog,
-		instance.SetupInstance,
-		internetgateway.SetupInternetGateway,
-		launchtemplate.SetupLaunchTemplate,
-		launchtemplateversion.SetupLaunchTemplateVersion,
-		natgateway.SetupNatGateway,
-		route.SetupRoute,
-		routetable.SetupRouteTable,
-		securitygroup.SetupSecurityGroup,
-		securitygrouprule.SetupSecurityGroupRule,
-		subnet.SetupSubnet,
-		transitgateway.SetupTransitGateway,
-		transitgatewayroute.SetupTransitGatewayRoute,
-		transitgatewayroutetable.SetupTransitGatewayRouteTable,
-		transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment,
-		volume.SetupVolume,
-		vpc.SetupVPC,
-		vpccidrblock.SetupVPCCIDRBlock,
-		vpcendpoint.SetupVPCEndpoint,
-		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
-		vpcpeeringconnection.SetupVPCPeeringConnection,
-	)
+func Setup(mgr ctrl.Manager, o controller.OptionsSet) error {
+	batch := setup.NewBatch(mgr, o, "ec2")
+	batch.AddXp("address", address.SetupAddress)
+	batch.AddXp("flowlog", flowlog.SetupFlowLog)
+	batch.Add("instance", instance.SetupInstance)
+	batch.AddXp("internetgateway", internetgateway.SetupInternetGateway)
+	batch.AddXp("launchtemplate", launchtemplate.SetupLaunchTemplate)
+	batch.AddXp("launchtemplateversion", launchtemplateversion.SetupLaunchTemplateVersion)
+	batch.AddXp("natgateway", natgateway.SetupNatGateway)
+	batch.AddXp("route", route.SetupRoute)
+	batch.AddXp("routetable", routetable.SetupRouteTable)
+	batch.AddXp("securitygroup", securitygroup.SetupSecurityGroup)
+	batch.AddXp("securitygrouprule", securitygrouprule.SetupSecurityGroupRule)
+	batch.AddXp("subnet", subnet.SetupSubnet)
+	batch.AddXp("transitgateway", transitgateway.SetupTransitGateway)
+	batch.AddXp("transitgatewayroute", transitgatewayroute.SetupTransitGatewayRoute)
+	batch.AddXp("transitgatewayroutetable", transitgatewayroutetable.SetupTransitGatewayRouteTable)
+	batch.AddXp("transitgatewayvpcattachment", transitgatewayvpcattachment.SetupTransitGatewayVPCAttachment)
+	batch.AddXp("volume", volume.SetupVolume)
+	batch.AddXp("vpc", vpc.SetupVPC)
+	batch.AddXp("vpccidrblock", vpccidrblock.SetupVPCCIDRBlock)
+	batch.AddXp("vpcendpoint", vpcendpoint.SetupVPCEndpoint)
+	batch.AddXp("vpcendpointserviceconfiguration", vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration)
+	batch.AddXp("vpcpeeringconnection", vpcpeeringconnection.SetupVPCPeeringConnection)
+	return batch.Run()
 }

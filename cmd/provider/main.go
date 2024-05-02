@@ -20,8 +20,11 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	xpcontroller "github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/feature"
@@ -41,8 +44,14 @@ import (
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	sqsmonitor "github.com/crossplane-contrib/provider-aws/pkg/monitor/sqs"
+	utilscontroller "github.com/crossplane-contrib/provider-aws/pkg/utils/controller"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/metrics"
 )
+
+// Env prefix for options to configure controllers.
+// Example usage: `PROVIDER_AWS_ec2.instance.pollInterval=10m`.
+const OPTION_ENV_PREFIX = "PROVIDER_AWS_"
 
 func main() {
 	var (
@@ -52,6 +61,7 @@ func main() {
 		pollInterval     = app.Flag("poll", "Poll interval controls how often an individual resource should be checked for drift.").Default("1m").Duration()
 		leaderElection   = app.Flag("leader-election", "Use leader election for the conroller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
 		maxReconcileRate = app.Flag("max-reconcile-rate", "The global maximum rate per second at which resources may checked for drift from the desired state.").Default("10").Int()
+		eventsSqsUrl     = app.Flag("events-sqs-url", "SQS queue with AWS events").Default("").String()
 
 		namespace                  = app.Flag("namespace", "Namespace used to set as default scope in default secret store config.").Default("crossplane-system").Envar("POD_NAMESPACE").String()
 		enableExternalSecretStores = app.Flag("enable-external-secret-stores", "Enable support for ExternalSecretStores.").Default("false").Envar("ENABLE_EXTERNAL_SECRET_STORES").Bool()
@@ -94,13 +104,13 @@ func main() {
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add AWS APIs to scheme")
 
-	o := xpcontroller.Options{
+	o := utilscontroller.Options{Options: xpcontroller.Options{
 		Logger:                  log,
 		MaxConcurrentReconciles: *maxReconcileRate,
 		PollInterval:            *pollInterval,
 		GlobalRateLimiter:       ratelimiter.NewGlobal(*maxReconcileRate),
 		Features:                &feature.Flags{},
-	}
+	}}
 
 	if *enableExternalSecretStores {
 		o.Features.Enable(features.EnableAlphaExternalSecretStores)
@@ -126,10 +136,23 @@ func main() {
 		log.Info("Alpha feature enabled", "flag", features.EnableAlphaManagementPolicies)
 	}
 
-	kingpin.FatalIfError(metrics.SetupMetrics(), "Cannot setup AWS metrics hook")
-	kingpin.FatalIfError(controller.Setup(mgr, o), "Cannot setup AWS controllers")
-	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
+	if *eventsSqsUrl != "" {
+		o.Monitor = newSqsMonitor(*eventsSqsUrl, log)
+	}
 
+	optionsWithOverrides := utilscontroller.NewOptionsSet(o)
+	kingpin.FatalIfError(optionsWithOverrides.AddOverrides(optionsOverridesFromEnv()), "Cannot add overrides")
+
+	ctx := ctrl.SetupSignalHandler()
+
+	kingpin.FatalIfError(metrics.SetupMetrics(), "Cannot setup AWS metrics hook")
+	kingpin.FatalIfError(controller.Setup(mgr, optionsWithOverrides), "Cannot setup AWS controllers")
+	// Must be added after controllers so that received messages are processed by the controllers
+	if o.Monitor != nil {
+		kingpin.FatalIfError(mgr.Add(o.Monitor), "Cannot add monitor to manager")
+		kingpin.FatalIfError(o.Monitor.Prepare(ctx), "Monitor.Prepare() failed")
+	}
+	kingpin.FatalIfError(mgr.Start(ctx), "Cannot start controller manager")
 }
 
 // UseISO8601 sets the logger to use ISO8601 timestamp format
@@ -137,4 +160,32 @@ func UseISO8601() zap.Opts {
 	return func(o *zap.Options) {
 		o.TimeEncoder = zapcore.ISO8601TimeEncoder
 	}
+}
+
+// Collects all env variables with the prefix OPTION_ENV_PREFIX and returns them as a map
+// with the prefix removed.
+func optionsOverridesFromEnv() map[string]string {
+	result := make(map[string]string)
+	for _, str := range os.Environ() {
+		if rest, ok := strings.CutPrefix(str, OPTION_ENV_PREFIX); ok {
+			parts := strings.SplitN(rest, "=", 2)
+			if len(parts) == 2 {
+				result[parts[0]] = parts[1]
+			}
+		}
+	}
+	return result
+}
+
+func newSqsMonitor(url string, logger logging.Logger) *sqsmonitor.Monitor {
+	awsCfg, err := config.LoadDefaultConfig(context.Background())
+	kingpin.FatalIfError(err, "Cannot load AWS config")
+	return sqsmonitor.NewMonitor(
+		awsCfg,
+		sqs.ReceiveMessageInput{
+			QueueUrl:        &url,
+			WaitTimeSeconds: 20,
+		},
+		logger,
+	)
 }
