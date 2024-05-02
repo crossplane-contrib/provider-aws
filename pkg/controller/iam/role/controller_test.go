@@ -18,6 +18,7 @@ package role
 
 import (
 	"context"
+	"net/url"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -36,7 +37,6 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/fake"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
 )
 
 var (
@@ -82,11 +82,7 @@ func withArn(s string) roleModifier {
 
 func withPolicy() roleModifier {
 	return func(r *v1beta1.Role) {
-		p, err := legacypolicy.CompactAndEscapeJSON(policy)
-		if err != nil {
-			return
-		}
-		r.Spec.ForProvider.AssumeRolePolicyDocument = p
+		r.Spec.ForProvider.AssumeRolePolicyDocument = url.QueryEscape(policy)
 	}
 }
 

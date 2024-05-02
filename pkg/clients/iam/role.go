@@ -12,19 +12,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam/convert"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-	legacypolicy "github.com/crossplane-contrib/provider-aws/pkg/utils/policy/old"
-)
-
-const (
-	errCheckUpToDate      = "unable to determine if external resource is up to date"
-	errPolicyJSONEscape   = "malformed AssumeRolePolicyDocument JSON"
-	errPolicyJSONUnescape = "malformed AssumeRolePolicyDocument escaping"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
 // RoleClient is the external client used for Role Custom Resource
@@ -89,14 +83,18 @@ func GenerateRoleObservation(role iamtypes.Role) v1beta1.RoleExternalStatus {
 
 // GenerateRole assigns the in RoleParamters to role.
 func GenerateRole(in v1beta1.RoleParameters, role *iamtypes.Role) error {
-	if in.AssumeRolePolicyDocument != "" {
-		s, err := legacypolicy.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
-		if err != nil {
-			return errors.Wrap(err, errPolicyJSONEscape)
+	// iamtypes.Role has url-encoded policy document, while RoleParameters has plain.
+	// Assign policy from `in` only if it is different from the one in `role`.
+	if escapedPolicyDoc := role.AssumeRolePolicyDocument; escapedPolicyDoc != nil {
+		policyDoc, err := url.QueryUnescape(*escapedPolicyDoc)
+		if err != nil || !policy.ArePolicyDocumentsEqual(policyDoc, in.AssumeRolePolicyDocument) {
+			role.AssumeRolePolicyDocument = nil
 		}
-
-		role.AssumeRolePolicyDocument = &s
 	}
+	if role.AssumeRolePolicyDocument == nil && in.AssumeRolePolicyDocument != "" {
+		role.AssumeRolePolicyDocument = ptr.To(url.QueryEscape(in.AssumeRolePolicyDocument))
+	}
+
 	role.Description = in.Description
 	role.MaxSessionDuration = in.MaxSessionDuration
 	role.Path = in.Path
@@ -158,24 +156,6 @@ func CreatePatch(in *iamtypes.Role, target *v1beta1.RoleParameters) (*v1beta1.Ro
 	return patch, nil
 }
 
-func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
-	if a == nil || b == nil {
-		return a == b, nil
-	}
-
-	jsonA, err := url.QueryUnescape(*a)
-	if err != nil {
-		return false, errors.Wrap(err, errPolicyJSONUnescape)
-	}
-
-	jsonB, err := url.QueryUnescape(*b)
-	if err != nil {
-		return false, errors.Wrap(err, errPolicyJSONUnescape)
-	}
-
-	return legacypolicy.IsPolicyUpToDate(&jsonA, &jsonB), nil
-}
-
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
 func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, string, error) {
 	desired := (&convert.ConverterImpl{}).DeepCopyAWSRole(&observed)
@@ -183,28 +163,15 @@ func IsRoleUpToDate(in v1beta1.RoleParameters, observed iamtypes.Role) (bool, st
 		return false, "", err
 	}
 
-	policyUpToDate, err := isAssumeRolePolicyUpToDate(desired.AssumeRolePolicyDocument, observed.AssumeRolePolicyDocument)
-	if err != nil {
-		return false, "", err
-	}
-
 	diff := cmp.Diff(desired, &observed,
 		cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}),
-		cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument", "CreateDate", "PermissionsBoundary.PermissionsBoundaryType", "RoleLastUsed"),
+		cmpopts.IgnoreFields(observed, "CreateDate", "PermissionsBoundary.PermissionsBoundaryType", "RoleLastUsed"),
 		cmpopts.IgnoreTypes(document.NoSerde{}), cmpopts.SortSlices(lessTag))
-	if diff == "" && policyUpToDate {
+	if diff == "" {
 		return true, diff, nil
 	}
 
 	diff = "Found observed difference in IAM role\n" + diff
-
-	// Add extra logging for AssumeRolePolicyDocument because cmp.Diff doesn't show the full difference
-	if !policyUpToDate {
-		diff += "\ndesired assume role policy: "
-		diff += *desired.AssumeRolePolicyDocument
-		diff += "\nobserved assume role policy: "
-		diff += *observed.AssumeRolePolicyDocument
-	}
 	return false, diff, nil
 }
 
