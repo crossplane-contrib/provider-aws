@@ -1,0 +1,27 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Service": [
+        "sqs.amazonaws.com",
+        "eks.amazonaws.com"
+      ],
+      "AWS": [
+        "arn:aws:iam::123456789012:aaa",
+        "arn:aws:iam::123456789012:bbb"
+      ]
+    },
+    "NotPrincipal": {
+      "Service": [
+        "ec2.amazonaws.com",
+        "s3.amazonaws.com"
+      ],
+      "AWS": [
+        "arn:aws:iam::123456789012:ccc",
+        "arn:aws:iam::123456789012:ddd"
+      ]
+    },
+    "Action": ["sts:AssumeRole"]
+  }]
+}

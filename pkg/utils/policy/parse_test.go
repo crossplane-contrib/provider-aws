@@ -39,13 +39,13 @@ func TestParsePolicy(t *testing.T) {
 						{
 							SID: ptr.To("AllowPutObjectS3ServerAccessLogsPolicy"),
 							Principal: &Principal{
-								Service: StringOrArray{
+								Service: NewStringOrSet(
 									"logging.s3.amazonaws.com",
-								},
+								),
 								Federated: ptr.To("cognito-identity.amazonaws.com"),
-								AWSPrincipals: StringOrArray{
+								AWSPrincipals: NewStringOrSet(
 									"123456789012",
-								},
+								),
 							},
 							Effect: "Allow",
 							Action: StringOrArray{
@@ -78,15 +78,15 @@ func TestParsePolicy(t *testing.T) {
 						{
 							SID: ptr.To("AllowPutObjectS3ServerAccessLogsPolicy"),
 							Principal: &Principal{
-								Service: StringOrArray{
+								Service: NewStringOrSet(
 									"logging.s3.amazonaws.com",
 									"s3.amazonaws.com",
-								},
+								),
 								Federated: ptr.To("cognito-identity.amazonaws.com"),
-								AWSPrincipals: StringOrArray{
+								AWSPrincipals: NewStringOrSet(
 									"123456789012",
 									"452356421222",
-								},
+								),
 							},
 							Effect: "Allow",
 							Action: StringOrArray{

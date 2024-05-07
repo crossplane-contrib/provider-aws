@@ -82,16 +82,16 @@ func convertResourcePolicyPrincipal(p *common.ResourcePrincipal) *Principal {
 	res := Principal{
 		AllowAnon: p.AllowAnon,
 		Federated: p.Federated,
-		Service:   p.Service,
+		Service:   NewStringOrSet(p.Service...),
 	}
 	for _, pr := range p.AWSPrincipals {
 		switch {
 		case pr.AWSAccountID != nil:
-			res.AWSPrincipals = append(res.AWSPrincipals, *pr.AWSAccountID)
+			res.AWSPrincipals = res.AWSPrincipals.Add(*pr.AWSAccountID)
 		case pr.IAMRoleARN != nil:
-			res.AWSPrincipals = append(res.AWSPrincipals, *pr.IAMRoleARN)
+			res.AWSPrincipals = res.AWSPrincipals.Add(*pr.IAMRoleARN)
 		case pr.UserARN != nil:
-			res.AWSPrincipals = append(res.AWSPrincipals, *pr.UserARN)
+			res.AWSPrincipals = res.AWSPrincipals.Add(*pr.UserARN)
 		}
 	}
 	return &res

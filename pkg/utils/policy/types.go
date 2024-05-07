@@ -2,6 +2,7 @@ package policy
 
 import (
 	"encoding/json"
+	"sort"
 	"strconv"
 )
 
@@ -98,7 +99,7 @@ type Principal struct {
 	// This list contains the all of the AWS IAM users which are affected
 	// by the policy statement.
 	// +optional
-	AWSPrincipals StringOrArray `json:"AWS,omitempty"`
+	AWSPrincipals StringOrSet `json:"AWS,omitempty"`
 
 	// This string contains the identifier for any federated web identity
 	// provider.
@@ -107,7 +108,7 @@ type Principal struct {
 
 	// Service define the services which can have access to this bucket
 	// +optional
-	Service StringOrArray `json:"Service,omitempty"`
+	Service StringOrSet `json:"Service,omitempty"`
 }
 
 type unmarshalPrinciple Principal
@@ -206,4 +207,54 @@ func (s *StringOrArray) UnmarshalJSON(data []byte) error {
 	}
 	*s = list
 	return nil
+}
+
+// StringOrSet is a string array that supports parsing from a single string
+// as a single entry array. Order of elements is not respected when comparing
+// two StringOrSet objects.
+type StringOrSet map[string]struct{}
+
+func NewStringOrSet(values ...string) StringOrSet {
+	set := make(StringOrSet, len(values))
+	for _, s := range values {
+		set[s] = struct{}{}
+	}
+	return set
+}
+
+// Add adds a value to the set.
+func (s StringOrSet) Add(value string) StringOrSet {
+	if s == nil {
+		s = make(StringOrSet, 1)
+	}
+	s[value] = struct{}{}
+	return s
+}
+
+// UnmarshalJSON unmarshals data into s.
+func (s *StringOrSet) UnmarshalJSON(data []byte) error {
+	var single string
+	if err := json.Unmarshal(data, &single); err == nil {
+		*s = NewStringOrSet(single)
+		return nil
+	}
+	list := []string{}
+	if err := json.Unmarshal(data, &list); err != nil {
+		return err
+	}
+	*s = NewStringOrSet(list...)
+	return nil
+}
+
+// MarshalJSON marshals StringOrSet as an array.
+func (s *StringOrSet) MarshalJSON() ([]byte, error) {
+	var array []string
+	if s != nil && *s != nil {
+		array = make([]string, 0, len(*s))
+		for k := range *s {
+			array = append(array, k)
+		}
+		sort.Strings(array)
+	}
+	return json.Marshal(array)
 }

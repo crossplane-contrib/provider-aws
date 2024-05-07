@@ -2,6 +2,8 @@ package iam
 
 import (
 	"net/url"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -65,10 +67,6 @@ var (
 	permissionBoundary = "arn:aws:iam::111111111111:policy/permission-boundary"
 	createDate         = time.Now()
 	region             = "us-east-1"
-	// There are flaky failures when \s+ is used in line matchers to match diff lines.
-	// Instead, this regex collapses all whitespaces into a single space,
-	// and line matchers use single space.
-	// compactSpaceRegex = regexp.MustCompile(`\s+`)
 )
 
 func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
@@ -262,8 +260,9 @@ func TestIsRoleUpToDate(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		args args
-		want bool
+		args     args
+		want     bool
+		wantDiff []*regexp.Regexp
 	}{
 		"SameFields": {
 			args: args{
@@ -366,6 +365,11 @@ func TestIsRoleUpToDate(t *testing.T) {
 				},
 			},
 			want: false,
+			wantDiff: []*regexp.Regexp{
+				regexp.MustCompile("Found observed difference in IAM role"),
+				regexp.MustCompile(`- AssumeRolePolicyDocument: &"(%\w\w)+Statement`),
+				regexp.MustCompile(`\+ AssumeRolePolicyDocument: &"(%\w\w)+Version`),
+			},
 		},
 		"DifferentFields": {
 			args: args{
@@ -391,6 +395,11 @@ func TestIsRoleUpToDate(t *testing.T) {
 				},
 			},
 			want: false,
+			wantDiff: []*regexp.Regexp{
+				regexp.MustCompile("Found observed difference in IAM role"),
+				regexp.MustCompile(`- Path: &"/"`),
+				regexp.MustCompile(`\+ Path: &"//"`),
+			},
 		},
 	}
 
@@ -401,7 +410,21 @@ func TestIsRoleUpToDate(t *testing.T) {
 				t.Errorf("r: unexpected error: %v", err)
 			}
 			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", testDiff)
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if tc.wantDiff == nil {
+				if diff := cmp.Diff("", testDiff); diff != "" {
+					t.Errorf("r: -want, +got:\n%s", diff)
+				}
+			} else {
+				// cmp randomly uses either regular or non-breaking spaces.
+				// Replace them all with regular spaces.
+				compactDiff := strings.Join(strings.Fields(testDiff), " ")
+				for _, wantDiff := range tc.wantDiff {
+					if !wantDiff.MatchString(compactDiff) {
+						t.Errorf("expected:\n%s\nto match:\n%s", testDiff, wantDiff.String())
+					}
+				}
 			}
 		})
 	}
