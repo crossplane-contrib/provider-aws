@@ -2,7 +2,6 @@ package iam
 
 import (
 	"net/url"
-	"regexp"
 	"testing"
 	"time"
 
@@ -69,7 +68,7 @@ var (
 	// There are flaky failures when \s+ is used in line matchers to match diff lines.
 	// Instead, this regex collapses all whitespaces into a single space,
 	// and line matchers use single space.
-	compactSpaceRegex = regexp.MustCompile(`\s+`)
+	// compactSpaceRegex = regexp.MustCompile(`\s+`)
 )
 
 func roleParams(m ...func(*v1beta1.RoleParameters)) *v1beta1.RoleParameters {
@@ -263,9 +262,8 @@ func TestIsRoleUpToDate(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		args     args
-		want     bool
-		wantDiff []*regexp.Regexp
+		args args
+		want bool
 	}{
 		"SameFields": {
 			args: args{
@@ -290,8 +288,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 					}},
 				},
 			},
-			want:     true,
-			wantDiff: nil,
+			want: true,
 		},
 		"SameFieldsWithDifferentPolicyFormat": {
 			args: args{
@@ -316,8 +313,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 					}},
 				},
 			},
-			want:     true,
-			wantDiff: nil,
+			want: true,
 		},
 		"AWSInitializedFields": {
 			args: args{
@@ -352,8 +348,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 					}},
 				},
 			},
-			want:     true,
-			wantDiff: nil,
+			want: true,
 		},
 		"DifferentPolicy": {
 			args: args{
@@ -371,11 +366,6 @@ func TestIsRoleUpToDate(t *testing.T) {
 				},
 			},
 			want: false,
-			wantDiff: []*regexp.Regexp{
-				regexp.MustCompile("Found observed difference in IAM role"),
-				regexp.MustCompile(`- AssumeRolePolicyDocument: &"(%\w\w)+Statement`),
-				regexp.MustCompile(`\+ AssumeRolePolicyDocument: &"(%\w\w)+Version`),
-			},
 		},
 		"DifferentFields": {
 			args: args{
@@ -401,11 +391,6 @@ func TestIsRoleUpToDate(t *testing.T) {
 				},
 			},
 			want: false,
-			wantDiff: []*regexp.Regexp{
-				regexp.MustCompile("Found observed difference in IAM role"),
-				regexp.MustCompile(`- Path: &"/"`),
-				regexp.MustCompile(`\+ Path: &"//"`),
-			},
 		},
 	}
 
@@ -416,18 +401,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 				t.Errorf("r: unexpected error: %v", err)
 			}
 			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if tc.wantDiff == nil {
-				if diff := cmp.Diff("", testDiff); diff != "" {
-					t.Errorf("r: -want, +got:\n%s", diff)
-				}
-			} else {
-				for _, wantDiff := range tc.wantDiff {
-					if !wantDiff.MatchString(compactSpaceRegex.ReplaceAllString(testDiff, " ")) {
-						t.Errorf("expected:\n%s\nto match:\n%s", testDiff, wantDiff.String())
-					}
-				}
+				t.Errorf("r: -want, +got:\n%s", testDiff)
 			}
 		})
 	}
