@@ -1255,6 +1255,90 @@ spec:
               atProvider:
                 description: ClusterObservation defines the observed state of Cluster
                 properties:
+                  brokerNodeGroupInfo:
+                    description: Information about the brokers.
+                    properties:
+                      brokerAZDistribution:
+                        description: The distribution of broker nodes across Availability
+                          Zones. By default, broker nodes are distributed among the
+                          Availability Zones of your Region. Currently, the only supported
+                          value is DEFAULT. You can either specify this value explicitly
+                          or leave it out.
+                        type: string
+                      clientSubnets:
+                        items:
+                          type: string
+                        type: array
+                      connectivityInfo:
+                        description: Information about the broker access configuration.
+                        properties:
+                          publicAccess:
+                            description: Broker public access control.
+                            properties:
+                              type_:
+                                type: string
+                            type: object
+                          vpcConnectivity:
+                            description: Broker VPC connectivity access control.
+                            properties:
+                              clientAuthentication:
+                                properties:
+                                  sasl:
+                                    properties:
+                                      iam:
+                                        properties:
+                                          enabled:
+                                            type: boolean
+                                        type: object
+                                      scram:
+                                        properties:
+                                          enabled:
+                                            type: boolean
+                                        type: object
+                                    type: object
+                                  tls:
+                                    properties:
+                                      enabled:
+                                        type: boolean
+                                    type: object
+                                type: object
+                            type: object
+                        type: object
+                      instanceType:
+                        type: string
+                      securityGroups:
+                        items:
+                          type: string
+                        type: array
+                      storageInfo:
+                        description: Contains information about storage volumes attached
+                          to MSK broker nodes.
+                        properties:
+                          ebsStorageInfo:
+                            description: Contains information about the EBS storage
+                              volumes attached to Apache Kafka broker nodes.
+                            properties:
+                              provisionedThroughput:
+                                description: Contains information about provisioned
+                                  throughput for EBS storage volumes attached to kafka
+                                  broker nodes.
+                                properties:
+                                  enabled:
+                                    type: boolean
+                                  volumeThroughput:
+                                    format: int64
+                                    type: integer
+                                type: object
+                              volumeSize:
+                                format: int64
+                                type: integer
+                            type: object
+                        type: object
+                      zoneIDs:
+                        items:
+                          type: string
+                        type: array
+                    type: object
                   clusterARN:
                     description: The Amazon Resource Name (ARN) of the cluster.
                     type: string

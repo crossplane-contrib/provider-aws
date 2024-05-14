@@ -64,6 +64,8 @@ type ClusterSpec struct {
 
 // ClusterObservation defines the observed state of Cluster
 type ClusterObservation struct {
+	// Information about the brokers.
+	BrokerNodeGroupInfo *BrokerNodeGroupInfo `json:"brokerNodeGroupInfo,omitempty"`
 	// The Amazon Resource Name (ARN) of the cluster.
 	ClusterARN *string `json:"clusterARN,omitempty"`
 	// Cluster policy version.
