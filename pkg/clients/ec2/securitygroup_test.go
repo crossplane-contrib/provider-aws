@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 )
@@ -126,14 +127,37 @@ func TestIsSGUpToDate(t *testing.T) {
 }
 
 func TestGenerateSGObservation(t *testing.T) {
+	type args struct {
+		sg    ec2types.SecurityGroup
+		rules []ec2types.SecurityGroupRule
+	}
+
 	cases := map[string]struct {
-		in  ec2types.SecurityGroup
+		in  args
 		out v1beta1.SecurityGroupObservation
 	}{
 		"AllFilled": {
-			in: ec2types.SecurityGroup{
-				OwnerId: aws.String(sgOwner),
-				GroupId: aws.String(sgID),
+			in: args{
+				sg: ec2types.SecurityGroup{
+					OwnerId: aws.String(sgOwner),
+					GroupId: aws.String(sgID),
+				},
+				rules: []ec2types.SecurityGroupRule{
+					{
+						CidrIpv4:    ptr.To("10.0.0.16/32"),
+						Description: ptr.To("egress rule"),
+						GroupId:     ptr.To("abcd"),
+						IpProtocol:  ptr.To("tcp"),
+						IsEgress:    ptr.To(true),
+					},
+					{
+						CidrIpv4:    ptr.To("10.0.100.16/16"),
+						Description: ptr.To("ingress rule"),
+						GroupId:     ptr.To("efgh"),
+						IpProtocol:  ptr.To("tcp"),
+						IsEgress:    ptr.To(false),
+					},
+				},
 			},
 			out: v1beta1.SecurityGroupObservation{
 				OwnerID:         sgOwner,
@@ -141,18 +165,22 @@ func TestGenerateSGObservation(t *testing.T) {
 			},
 		},
 		"NoIpCount": {
-			in: ec2types.SecurityGroup{
-				OwnerId: aws.String(sgOwner),
+			in: args{
+				sg: ec2types.SecurityGroup{
+					OwnerId: aws.String(sgOwner),
+				},
 			},
 			out: v1beta1.SecurityGroupObservation{
-				OwnerID: sgOwner,
+				OwnerID:      sgOwner,
+				IngressRules: []v1beta1.SecurityGroupRuleObservation{},
+				EgressRules:  []v1beta1.SecurityGroupRuleObservation{},
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			r := GenerateSGObservation(tc.in)
+			r := GenerateSGObservation(tc.in.sg, tc.in.rules)
 			if diff := cmp.Diff(r, tc.out); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}

@@ -134,6 +134,11 @@ func TestObserve(t *testing.T) {
 							SecurityGroups: []awsec2types.SecurityGroup{{}},
 						}, nil
 					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
+						}, nil
+					},
 				},
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
@@ -141,8 +146,14 @@ func TestObserve(t *testing.T) {
 					withExternalName(sgID)),
 			},
 			want: want{
-				cr: sg(withExternalName(sgID),
-					withConditions(xpv1.Available())),
+				cr: sg(
+					withExternalName(sgID),
+					withStatus(v1beta1.SecurityGroupObservation{
+						IngressRules: []v1beta1.SecurityGroupRuleObservation{},
+						EgressRules:  []v1beta1.SecurityGroupRuleObservation{},
+					}),
+					withConditions(xpv1.Available()),
+				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -160,12 +171,19 @@ func TestObserve(t *testing.T) {
 							SecurityGroups: []awsec2types.SecurityGroup{{GroupId: aws.String(sgID)}},
 						}, nil
 					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
+						}, nil
+					},
 				},
 				cr: sg(withExternalName("")),
 			},
 			want: want{
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
+					IngressRules:    []v1beta1.SecurityGroupRuleObservation{},
+					EgressRules:     []v1beta1.SecurityGroupRuleObservation{},
 				}),
 					withExternalName(sgID),
 					withConditions(xpv1.Available())),
@@ -184,6 +202,11 @@ func TestObserve(t *testing.T) {
 					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
 						return &awsec2.DescribeSecurityGroupsOutput{
 							SecurityGroups: []awsec2types.SecurityGroup{},
+						}, nil
+					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
 						}, nil
 					},
 				},
@@ -205,6 +228,11 @@ func TestObserve(t *testing.T) {
 					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
 						return nil, errBoom
 					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
+						}, nil
+					},
 				},
 				cr: sg(),
 			},
@@ -222,6 +250,11 @@ func TestObserve(t *testing.T) {
 					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
 						return &awsec2.DescribeSecurityGroupsOutput{
 							SecurityGroups: []awsec2types.SecurityGroup{{}, {}},
+						}, nil
+					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
 						}, nil
 					},
 				},
@@ -243,6 +276,11 @@ func TestObserve(t *testing.T) {
 				sg: &fake.MockSecurityGroupClient{
 					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
 						return nil, errBoom
+					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
+						}, nil
 					},
 				},
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
