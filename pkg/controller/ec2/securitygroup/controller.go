@@ -156,7 +156,10 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	securityGroupRulesResponse, err := e.sg.DescribeSecurityGroupRules(ctx, &awsec2.DescribeSecurityGroupRulesInput{
 		Filters: []awsec2types.Filter{
-			awsec2types.Filter{Name: aws.String("group-id"), Values: []string{meta.GetExternalName(cr)}},
+			{
+				Name:   aws.String("group-id"),
+				Values: []string{meta.GetExternalName(cr)},
+			},
 		},
 	})
 	if err != nil {

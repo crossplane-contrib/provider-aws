@@ -162,6 +162,18 @@ func TestGenerateSGObservation(t *testing.T) {
 			out: v1beta1.SecurityGroupObservation{
 				OwnerID:         sgOwner,
 				SecurityGroupID: sgID,
+				EgressRules: []v1beta1.SecurityGroupRuleObservation{
+					{
+						CidrIpv4:   ptr.To("10.0.0.16/32"),
+						IpProtocol: ptr.To("tcp"),
+					},
+				},
+				IngressRules: []v1beta1.SecurityGroupRuleObservation{
+					{
+						CidrIpv4:   ptr.To("10.0.100.16/16"),
+						IpProtocol: ptr.To("tcp"),
+					},
+				},
 			},
 		},
 		"NoIpCount": {
