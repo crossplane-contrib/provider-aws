@@ -19,6 +19,15 @@ var (
 
 	//go:embed testdata/Issue1892_b_min.json
 	policyIssue1892bMin string
+
+	//go:embed testdata/PrincipalsOrder_a.json
+	policyPrincipalsOrderA string
+
+	//go:embed testdata/PrincipalsOrder_b.json
+	policyPrincipalsOrderB string
+
+	//go:embed testdata/PrincipalsOrder_c.json
+	policyPrincipalsOrderC string
 )
 
 func TestCompareRawPolicies(t *testing.T) {
@@ -49,6 +58,24 @@ func TestCompareRawPolicies(t *testing.T) {
 			},
 			want: want{
 				equals: true,
+			},
+		},
+		"PrincipalsOrder Equal": {
+			args: args{
+				policyA: policyPrincipalsOrderA,
+				policyB: policyPrincipalsOrderB,
+			},
+			want: want{
+				equals: true,
+			},
+		},
+		"PrincipalsOrder NotEqual": {
+			args: args{
+				policyA: policyPrincipalsOrderA,
+				policyB: policyPrincipalsOrderC,
+			},
+			want: want{
+				equals: false,
 			},
 		},
 	}
