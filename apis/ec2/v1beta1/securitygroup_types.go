@@ -248,6 +248,31 @@ type SecurityGroupObservation struct {
 
 	// SecurityGroupID is the ID of the SecurityGroup.
 	SecurityGroupID string `json:"securityGroupID"`
+
+	// IngressRules of the observed SecurityGroup.
+	IngressRules []SecurityGroupRuleObservation `json:"ingressRules,omitempty"`
+
+	// EgressRules of the observed SecurityGroup.
+	EgressRules []SecurityGroupRuleObservation `json:"egressRules,omitempty"`
+}
+
+type SecurityGroupRuleObservation struct {
+	// ID of the security group rule.
+	ID *string `json:"id,omitempty"`
+
+	// CidrIpv4 range.
+	CidrIpv4 *string `json:"cidrIpv4,omitempty"`
+
+	// CidrIpv6 range.
+	CidrIpv6 *string `json:"cidrIpv6,omitempty"`
+
+	// The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
+	// (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)). Use
+	// -1 to specify all protocols.
+	IpProtocol *string `json:"ipProtocol,omitempty"`
+
+	// Description of this rule.
+	Description *string `json:"description,omitempty"`
 }
 
 // A SecurityGroupStatus represents the observed state of a SecurityGroup.

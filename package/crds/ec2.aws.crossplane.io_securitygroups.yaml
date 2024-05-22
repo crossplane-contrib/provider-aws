@@ -965,6 +965,52 @@ spec:
                 description: SecurityGroupObservation keeps the state for the external
                   resource
                 properties:
+                  egressRules:
+                    description: EgressRules of the observed SecurityGroup.
+                    items:
+                      properties:
+                        cidrIpv4:
+                          description: CidrIpv4 range.
+                          type: string
+                        cidrIpv6:
+                          description: CidrIpv6 range.
+                          type: string
+                        description:
+                          description: Description of this rule.
+                          type: string
+                        id:
+                          description: ID of the security group rule.
+                          type: string
+                        ipProtocol:
+                          description: The IP protocol name (tcp, udp, icmp, icmpv6)
+                            or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
+                            Use -1 to specify all protocols.
+                          type: string
+                      type: object
+                    type: array
+                  ingressRules:
+                    description: IngressRules of the observed SecurityGroup.
+                    items:
+                      properties:
+                        cidrIpv4:
+                          description: CidrIpv4 range.
+                          type: string
+                        cidrIpv6:
+                          description: CidrIpv6 range.
+                          type: string
+                        description:
+                          description: Description of this rule.
+                          type: string
+                        id:
+                          description: ID of the security group rule.
+                          type: string
+                        ipProtocol:
+                          description: The IP protocol name (tcp, udp, icmp, icmpv6)
+                            or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
+                            Use -1 to specify all protocols.
+                          type: string
+                      type: object
+                    type: array
                   ownerId:
                     description: The AWS account ID of the owner of the security group.
                     type: string

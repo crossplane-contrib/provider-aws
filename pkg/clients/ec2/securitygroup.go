@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
@@ -26,6 +27,7 @@ type SecurityGroupClient interface {
 	CreateSecurityGroup(ctx context.Context, input *ec2.CreateSecurityGroupInput, opts ...func(*ec2.Options)) (*ec2.CreateSecurityGroupOutput, error)
 	DeleteSecurityGroup(ctx context.Context, input *ec2.DeleteSecurityGroupInput, opts ...func(*ec2.Options)) (*ec2.DeleteSecurityGroupOutput, error)
 	DescribeSecurityGroups(ctx context.Context, input *ec2.DescribeSecurityGroupsInput, opts ...func(*ec2.Options)) (*ec2.DescribeSecurityGroupsOutput, error)
+	DescribeSecurityGroupRules(ctx context.Context, input *ec2.DescribeSecurityGroupRulesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeSecurityGroupRulesOutput, error)
 	AuthorizeSecurityGroupIngress(ctx context.Context, input *ec2.AuthorizeSecurityGroupIngressInput, opts ...func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupIngressOutput, error)
 	AuthorizeSecurityGroupEgress(ctx context.Context, input *ec2.AuthorizeSecurityGroupEgressInput, opts ...func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupEgressOutput, error)
 	RevokeSecurityGroupIngress(ctx context.Context, input *ec2.RevokeSecurityGroupIngressInput, opts ...func(*ec2.Options)) (*ec2.RevokeSecurityGroupIngressOutput, error)
@@ -98,10 +100,29 @@ func GenerateEC2Permissions(objectPerms []v1beta1.IPPermission) []ec2types.IpPer
 
 // GenerateSGObservation is used to produce v1beta1.SecurityGroupExternalStatus from
 // ec2types.SecurityGroup.
-func GenerateSGObservation(sg ec2types.SecurityGroup) v1beta1.SecurityGroupObservation {
+func GenerateSGObservation(sg ec2types.SecurityGroup, rules []ec2types.SecurityGroupRule) v1beta1.SecurityGroupObservation {
+	ingressRules := []v1beta1.SecurityGroupRuleObservation{}
+	egressRules := []v1beta1.SecurityGroupRuleObservation{}
+
+	for _, r := range rules {
+		observedRule := v1beta1.SecurityGroupRuleObservation{
+			ID:         r.SecurityGroupRuleId,
+			CidrIpv4:   r.CidrIpv4,
+			CidrIpv6:   r.CidrIpv6,
+			IpProtocol: r.IpProtocol,
+		}
+		if ptr.Deref(r.IsEgress, false) {
+			egressRules = append(egressRules, observedRule)
+		} else {
+			ingressRules = append(ingressRules, observedRule)
+		}
+	}
+
 	return v1beta1.SecurityGroupObservation{
 		OwnerID:         pointer.StringValue(sg.OwnerId),
 		SecurityGroupID: pointer.StringValue(sg.GroupId),
+		IngressRules:    ingressRules,
+		EgressRules:     egressRules,
 	}
 }
 
