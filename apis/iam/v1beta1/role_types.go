@@ -21,6 +21,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	// Set this annotation to update Status.AtProvider.LastUsedAt.
+	// Note that this may trigger frequent updates and reconciliation of
+	// dependent resources.
+	TRACK_LAST_USED_AT = "roles.iam.crossplane.io/track-last-used-at"
+)
+
 // Tag represents user-provided metadata that can be associated
 // with a IAM role. For more information about tagging,
 // see Tagging IAM Identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
@@ -134,6 +141,8 @@ type RoleExternalStatus struct {
 	// where data is tracked
 	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period)
 	// in the IAM User Guide.
+	//
+	// This field is not updated by default (see TRACK_LAST_USED_AT).
 	RoleLastUsed *RoleLastUsed `json:"roleLastUsed,omitempty"`
 }
 

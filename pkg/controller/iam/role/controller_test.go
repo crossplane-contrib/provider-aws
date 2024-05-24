@@ -31,6 +31,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/iam/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/iam"
@@ -120,6 +121,9 @@ func TestObserve(t *testing.T) {
 						return &awsiam.GetRoleOutput{
 							Role: &awsiamtypes.Role{
 								Arn: pointer.ToOrNilIfZeroValue(arn),
+								RoleLastUsed: &awsiamtypes.RoleLastUsed{
+									Region: ptr.To("test-region"),
+								},
 							},
 						}, nil
 					},
@@ -131,6 +135,48 @@ func TestObserve(t *testing.T) {
 					withRoleName(&roleName),
 					withArn(arn),
 					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+					ConnectionDetails: map[string][]byte{
+						"arn": []byte(arn),
+					},
+				},
+			},
+		},
+		"VaildInputWithTrackLastUsedAt": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
+						return &awsiam.GetRoleOutput{
+							Role: &awsiamtypes.Role{
+								Arn: pointer.ToOrNilIfZeroValue(arn),
+								RoleLastUsed: &awsiamtypes.RoleLastUsed{
+									Region: ptr.To("test-region"),
+								},
+							},
+						}, nil
+					},
+				},
+				cr: role(
+					withRoleName(&roleName),
+					func(r *v1beta1.Role) {
+						r.Annotations = map[string]string{v1beta1.TRACK_LAST_USED_AT: "true"}
+					},
+				),
+			},
+			want: want{
+				cr: role(
+					withRoleName(&roleName),
+					withArn(arn),
+					withConditions(xpv1.Available()),
+					func(r *v1beta1.Role) {
+						r.Annotations = map[string]string{v1beta1.TRACK_LAST_USED_AT: "true"}
+						r.Status.AtProvider.RoleLastUsed = &v1beta1.RoleLastUsed{
+							Region: ptr.To("test-region"),
+						}
+					},
+				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
