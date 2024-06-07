@@ -269,6 +269,16 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		obj.StorageThroughput = nil
 	}
 
+	input := GenerateDescribeDBInstancesInput(cr)
+
+	out, err := e.client.DescribeDBInstancesWithContext(ctx, input)
+	if err != nil {
+		return errors.Wrap(err, dbinstance.ErrDescribe)
+	}
+	if !isEngineVersionUpToDate(cr, out) && cr.Spec.ForProvider.EngineVersion != nil {
+		obj.EngineVersion = cr.Spec.ForProvider.EngineVersion // add EngineVersion if changed and no downgrade
+	}
+
 	return nil
 }
 
