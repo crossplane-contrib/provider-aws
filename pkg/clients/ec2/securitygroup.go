@@ -106,10 +106,23 @@ func GenerateSGObservation(sg ec2types.SecurityGroup, rules []ec2types.SecurityG
 
 	for _, r := range rules {
 		observedRule := v1beta1.SecurityGroupRuleObservation{
-			ID:         r.SecurityGroupRuleId,
-			CidrIpv4:   r.CidrIpv4,
-			CidrIpv6:   r.CidrIpv6,
-			IpProtocol: r.IpProtocol,
+			ID:           r.SecurityGroupRuleId,
+			CidrIpv4:     r.CidrIpv4,
+			CidrIpv6:     r.CidrIpv6,
+			IpProtocol:   r.IpProtocol,
+			Description:  r.Description,
+			FromPort:     r.FromPort,
+			ToPort:       r.ToPort,
+			PrefixListId: r.PrefixListId,
+		}
+		if r.ReferencedGroupInfo != nil {
+			observedRule.ReferencedGroupInfo = &v1beta1.ReferencedSecurityGroup{
+				GroupId:                r.ReferencedGroupInfo.GroupId,
+				PeeringStatus:          r.ReferencedGroupInfo.PeeringStatus,
+				UserId:                 r.ReferencedGroupInfo.UserId,
+				VpcId:                  r.ReferencedGroupInfo.VpcId,
+				VpcPeeringConnectionId: r.ReferencedGroupInfo.VpcPeeringConnectionId,
+			}
 		}
 		if ptr.Deref(r.IsEgress, false) {
 			egressRules = append(egressRules, observedRule)

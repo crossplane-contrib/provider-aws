@@ -978,6 +978,13 @@ spec:
                         description:
                           description: Description of this rule.
                           type: string
+                        fromPort:
+                          description: The start of port range for the TCP and UDP
+                            protocols, or an ICMP/ICMPv6 type. A value of -1 indicates
+                            all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6
+                            types, you must specify all codes.
+                          format: int32
+                          type: integer
                         id:
                           description: ID of the security group rule.
                           type: string
@@ -986,6 +993,37 @@ spec:
                             or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
                             Use -1 to specify all protocols.
                           type: string
+                        prefixListId:
+                          description: The ID of the prefix list.
+                          type: string
+                        referencedGroupInfo:
+                          description: Describes the security group that is referenced
+                            in the rule.
+                          properties:
+                            groupId:
+                              description: The ID of the security group.
+                              type: string
+                            peeringStatus:
+                              description: The status of a VPC peering connection,
+                                if applicable.
+                              type: string
+                            userId:
+                              description: The Amazon Web Services account ID.
+                              type: string
+                            vpcId:
+                              description: The ID of the VPC.
+                              type: string
+                            vpcPeeringConnectionId:
+                              description: The ID of the VPC peering connection.
+                              type: string
+                          type: object
+                        toPort:
+                          description: The end of port range for the TCP and UDP protocols,
+                            or an ICMP/ICMPv6 code. A value of -1 indicates all ICMP/ICMPv6
+                            codes. If you specify all ICMP/ICMPv6 types, you must
+                            specify all codes.
+                          format: int32
+                          type: integer
                       type: object
                     type: array
                   ingressRules:
@@ -1001,6 +1039,13 @@ spec:
                         description:
                           description: Description of this rule.
                           type: string
+                        fromPort:
+                          description: The start of port range for the TCP and UDP
+                            protocols, or an ICMP/ICMPv6 type. A value of -1 indicates
+                            all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6
+                            types, you must specify all codes.
+                          format: int32
+                          type: integer
                         id:
                           description: ID of the security group rule.
                           type: string
@@ -1009,6 +1054,37 @@ spec:
                             or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
                             Use -1 to specify all protocols.
                           type: string
+                        prefixListId:
+                          description: The ID of the prefix list.
+                          type: string
+                        referencedGroupInfo:
+                          description: Describes the security group that is referenced
+                            in the rule.
+                          properties:
+                            groupId:
+                              description: The ID of the security group.
+                              type: string
+                            peeringStatus:
+                              description: The status of a VPC peering connection,
+                                if applicable.
+                              type: string
+                            userId:
+                              description: The Amazon Web Services account ID.
+                              type: string
+                            vpcId:
+                              description: The ID of the VPC.
+                              type: string
+                            vpcPeeringConnectionId:
+                              description: The ID of the VPC peering connection.
+                              type: string
+                          type: object
+                        toPort:
+                          description: The end of port range for the TCP and UDP protocols,
+                            or an ICMP/ICMPv6 code. A value of -1 indicates all ICMP/ICMPv6
+                            codes. If you specify all ICMP/ICMPv6 types, you must
+                            specify all codes.
+                          format: int32
+                          type: integer
                       type: object
                     type: array
                   ownerId:

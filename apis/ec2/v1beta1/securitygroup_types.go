@@ -273,6 +273,41 @@ type SecurityGroupRuleObservation struct {
 
 	// Description of this rule.
 	Description *string `json:"description,omitempty"`
+
+	// The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 type. A
+	// value of -1 indicates all ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6
+	// types, you must specify all codes.
+	FromPort *int32 `json:"fromPort,omitempty"`
+
+	// The ID of the prefix list.
+	PrefixListId *string `json:"prefixListId,omitempty"`
+
+	// Describes the security group that is referenced in the rule.
+	ReferencedGroupInfo *ReferencedSecurityGroup `json:"referencedGroupInfo,omitempty"`
+
+	// The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 code. A
+	// value of -1 indicates all ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6
+	// types, you must specify all codes.
+	ToPort *int32 `json:"toPort,omitempty"`
+}
+
+// A ReferencedSecurityGroup describes the security group that is referenced in the security group rule.
+type ReferencedSecurityGroup struct {
+
+	// The ID of the security group.
+	GroupId *string `json:"groupId,omitempty"`
+
+	// The status of a VPC peering connection, if applicable.
+	PeeringStatus *string `json:"peeringStatus,omitempty"`
+
+	// The Amazon Web Services account ID.
+	UserId *string `json:"userId,omitempty"`
+
+	// The ID of the VPC.
+	VpcId *string `json:"vpcId,omitempty"`
+
+	// The ID of the VPC peering connection.
+	VpcPeeringConnectionId *string `json:"vpcPeeringConnectionId,omitempty"`
 }
 
 // A SecurityGroupStatus represents the observed state of a SecurityGroup.
