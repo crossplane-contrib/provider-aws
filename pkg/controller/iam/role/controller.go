@@ -140,6 +140,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = iam.GenerateRoleObservation(*observed.Role)
+	if _, ok := cr.Annotations[v1beta1.TRACK_LAST_USED_AT]; !ok {
+		cr.Status.AtProvider.RoleLastUsed = nil
+	}
 
 	upToDate, diff, err := iam.IsRoleUpToDate(cr.Spec.ForProvider, role)
 	if err != nil {
