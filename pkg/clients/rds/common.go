@@ -46,6 +46,7 @@ const (
 	ErrNoPasswordUpToDate                                    = "cannot determine password up to date status"
 	ErrGetCachedPassword                                     = "cannot get cached password"
 	ErrRetrievePasswordForUpdate                             = "cannot retrieve password for update"
+	ErrDescribe                                              = "cannot describe dbinstance"
 )
 
 const (
