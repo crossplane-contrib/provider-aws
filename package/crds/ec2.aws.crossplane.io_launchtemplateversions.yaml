@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: launchtemplateversions.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
@@ -38,14 +38,19 @@ spec:
           API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -54,13 +59,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -108,14 +114,13 @@ spec:
                           type: object
                         type: array
                       capacityReservationSpecification:
-                        description: Describes an instance's Capacity Reservation
-                          targeting option. You can specify only one option at a time.
-                          Use the CapacityReservationPreference parameter to configure
-                          the instance to run in On-Demand capacity or to run in any
-                          open Capacity Reservation that has matching attributes (instance
-                          type, platform, Availability Zone). Use the CapacityReservationTarget
-                          parameter to explicitly target a specific Capacity Reservation
-                          or a Capacity Reservation group.
+                        description: |-
+                          Describes an instance's Capacity Reservation targeting option. You can specify
+                          only one option at a time. Use the CapacityReservationPreference parameter
+                          to configure the instance to run in On-Demand capacity or to run in any open
+                          Capacity Reservation that has matching attributes (instance type, platform,
+                          Availability Zone). Use the CapacityReservationTarget parameter to explicitly
+                          target a specific Capacity Reservation or a Capacity Reservation group.
                         properties:
                           capacityReservationPreference:
                             type: string
@@ -130,8 +135,9 @@ spec:
                             type: object
                         type: object
                       cpuOptions:
-                        description: The CPU options for the instance. Both the core
-                          count and threads per core must be specified in the request.
+                        description: |-
+                          The CPU options for the instance. Both the core count and threads per core
+                          must be specified in the request.
                         properties:
                           amdSevSnp:
                             type: string
@@ -172,18 +178,18 @@ spec:
                           type: object
                         type: array
                       enclaveOptions:
-                        description: Indicates whether the instance is enabled for
-                          Amazon Web Services Nitro Enclaves. For more information,
-                          see What is Amazon Web Services Nitro Enclaves? (https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html)
+                        description: |-
+                          Indicates whether the instance is enabled for Amazon Web Services Nitro Enclaves.
+                          For more information, see What is Amazon Web Services Nitro Enclaves? (https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html)
                           in the Amazon Web Services Nitro Enclaves User Guide.
                         properties:
                           enabled:
                             type: boolean
                         type: object
                       hibernationOptions:
-                        description: Indicates whether the instance is configured
-                          for hibernation. This parameter is valid only if the instance
-                          meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html).
+                        description: |-
+                          Indicates whether the instance is configured for hibernation. This parameter
+                          is valid only if the instance meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/hibernating-prerequisites.html).
                         properties:
                           configured:
                             type: boolean
@@ -223,41 +229,55 @@ spec:
                             type: object
                         type: object
                       instanceRequirements:
-                        description: "The attributes for the instance types. When
-                          you specify instance attributes, Amazon EC2 will identify
-                          instance types with these attributes. \n You must specify
-                          VCpuCount and MemoryMiB. All other attributes are optional.
+                        description: |-
+                          The attributes for the instance types. When you specify instance attributes,
+                          Amazon EC2 will identify instance types with these attributes.
+
+
+                          You must specify VCpuCount and MemoryMiB. All other attributes are optional.
                           Any unspecified optional attribute is set to its default.
-                          \n When you specify multiple attributes, you get instance
-                          types that satisfy all of the specified attributes. If you
-                          specify multiple values for an attribute, you get instance
-                          types that satisfy any of the specified values. \n To limit
-                          the list of instance types from which Amazon EC2 can identify
-                          matching instance types, you can use one of the following
-                          parameters, but not both in the same request: \n * AllowedInstanceTypes
-                          - The instance types to include in the list. All other instance
-                          types are ignored, even if they match your specified attributes.
-                          \n * ExcludedInstanceTypes - The instance types to exclude
-                          from the list, even if they match your specified attributes.
-                          \n If you specify InstanceRequirements, you can't specify
-                          InstanceType. \n Attribute-based instance type selection
-                          is only supported when using Auto Scaling groups, EC2 Fleet,
-                          and Spot Fleet to launch instances. If you plan to use the
-                          launch template in the launch instance wizard (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-instance-wizard.html),
+
+
+                          When you specify multiple attributes, you get instance types that satisfy
+                          all of the specified attributes. If you specify multiple values for an attribute,
+                          you get instance types that satisfy any of the specified values.
+
+
+                          To limit the list of instance types from which Amazon EC2 can identify matching
+                          instance types, you can use one of the following parameters, but not both
+                          in the same request:
+
+
+                             * AllowedInstanceTypes - The instance types to include in the list. All
+                             other instance types are ignored, even if they match your specified attributes.
+
+
+                             * ExcludedInstanceTypes - The instance types to exclude from the list,
+                             even if they match your specified attributes.
+
+
+                          If you specify InstanceRequirements, you can't specify InstanceType.
+
+
+                          Attribute-based instance type selection is only supported when using Auto
+                          Scaling groups, EC2 Fleet, and Spot Fleet to launch instances. If you plan
+                          to use the launch template in the launch instance wizard (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-instance-wizard.html),
                           or with the RunInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html)
                           API or AWS::EC2::Instance (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-instance.html)
-                          Amazon Web Services CloudFormation resource, you can't specify
-                          InstanceRequirements. \n For more information, see Attribute-based
-                          instance type selection for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
+                          Amazon Web Services CloudFormation resource, you can't specify InstanceRequirements.
+
+
+                          For more information, see Attribute-based instance type selection for EC2
+                          Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
                           Attribute-based instance type selection for Spot Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
                           and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
-                          in the Amazon EC2 User Guide."
+                          in the Amazon EC2 User Guide.
                         properties:
                           acceleratorCount:
-                            description: The minimum and maximum number of accelerators
-                              (GPUs, FPGAs, or Amazon Web Services Inferentia chips)
-                              on an instance. To exclude accelerator-enabled instance
-                              types, set Max to 0.
+                            description: |-
+                              The minimum and maximum number of accelerators (GPUs, FPGAs, or Amazon Web
+                              Services Inferentia chips) on an instance. To exclude accelerator-enabled
+                              instance types, set Max to 0.
                             properties:
                               max:
                                 format: int64
@@ -296,9 +316,9 @@ spec:
                           bareMetal:
                             type: string
                           baselineEBSBandwidthMbps:
-                            description: The minimum and maximum baseline bandwidth
-                              to Amazon EBS, in Mbps. For more information, see Amazon
-                              EBS–optimized instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html)
+                            description: |-
+                              The minimum and maximum baseline bandwidth to Amazon EBS, in Mbps. For more
+                              information, see Amazon EBS–optimized instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html)
                               in the Amazon EC2 User Guide.
                             properties:
                               max:
@@ -349,15 +369,17 @@ spec:
                                 type: integer
                             type: object
                           networkBandwidthGbps:
-                            description: "The minimum and maximum amount of network
-                              bandwidth, in gigabits per second (Gbps). \n Setting
-                              the minimum bandwidth does not guarantee that your instance
-                              will achieve the minimum bandwidth. Amazon EC2 will
-                              identify instance types that support the specified minimum
-                              bandwidth, but the actual bandwidth of your instance
-                              might go below the specified minimum at times. For more
-                              information, see Available instance bandwidth (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth)
-                              in the Amazon EC2 User Guide."
+                            description: |-
+                              The minimum and maximum amount of network bandwidth, in gigabits per second
+                              (Gbps).
+
+
+                              Setting the minimum bandwidth does not guarantee that your instance will
+                              achieve the minimum bandwidth. Amazon EC2 will identify instance types that
+                              support the specified minimum bandwidth, but the actual bandwidth of your
+                              instance might go below the specified minimum at times. For more information,
+                              see Available instance bandwidth (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth)
+                              in the Amazon EC2 User Guide.
                             properties:
                               max:
                                 type: number
@@ -423,8 +445,9 @@ spec:
                             type: string
                         type: object
                       metadataOptions:
-                        description: The metadata options for the instance. For more
-                          information, see Instance metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+                        description: |-
+                          The metadata options for the instance. For more information, see Instance
+                          metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
                           in the Amazon Elastic Compute Cloud User Guide.
                         properties:
                           httpEndpoint:
@@ -587,8 +610,9 @@ spec:
                       parameter in the request.
                     type: string
                   launchTemplateIdRef:
-                    description: LaunchTemplateIDRef is a reference to an API used
-                      to set the LaunchTemplateID.
+                    description: |-
+                      LaunchTemplateIDRef is a reference to an API used to set
+                      the LaunchTemplateID.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -598,21 +622,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -622,12 +646,14 @@ spec:
                     - name
                     type: object
                   launchTemplateIdSelector:
-                    description: LaunchTemplateIDSelector selects references to API
-                      used to set the LaunchTemplateID.
+                    description: |-
+                      LaunchTemplateIDSelector selects references to API used
+                      to set the LaunchTemplateID.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -640,21 +666,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -666,8 +692,9 @@ spec:
                       this parameter in the request.
                     type: string
                   launchTemplateNameRef:
-                    description: LaunchTemplateNameRef is a reference to an API used
-                      to set the LaunchTemplateName.
+                    description: |-
+                      LaunchTemplateNameRef is a reference to an API used to set
+                      the LaunchTemplateName.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -677,21 +704,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -701,12 +728,14 @@ spec:
                     - name
                     type: object
                   launchTemplateNameSelector:
-                    description: LaunchTemplateNameSelector selects references to
-                      API used to set the LaunchTemplateName.
+                    description: |-
+                      LaunchTemplateNameSelector selects references to API used
+                      to set the LaunchTemplateName.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -719,21 +748,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -745,19 +774,21 @@ spec:
                       will be created.
                     type: string
                   resolveAlias:
-                    description: "If true, and if a Systems Manager parameter is specified
-                      for ImageId, the AMI ID is displayed in the response for imageID.
-                      For more information, see Use a Systems Manager parameter instead
-                      of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
-                      in the Amazon Elastic Compute Cloud User Guide. \n Default:
-                      false"
+                    description: |-
+                      If true, and if a Systems Manager parameter is specified for ImageId, the
+                      AMI ID is displayed in the response for imageID. For more information, see
+                      Use a Systems Manager parameter instead of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
+                      in the Amazon Elastic Compute Cloud User Guide.
+
+
+                      Default: false
                     type: boolean
                   sourceVersion:
-                    description: The version number of the launch template version
-                      on which to base the new version. The new version inherits the
-                      same launch parameters as the source version, except for parameters
-                      that you specify in LaunchTemplateData. Snapshots applied to
-                      the block device mapping are ignored when creating a new version
+                    description: |-
+                      The version number of the launch template version on which to base the new
+                      version. The new version inherits the same launch parameters as the source
+                      version, except for parameters that you specify in LaunchTemplateData. Snapshots
+                      applied to the block device mapping are ignored when creating a new version
                       unless they are explicitly included.
                     type: string
                   versionDescription:
@@ -770,19 +801,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -795,9 +828,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -807,21 +841,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -831,17 +865,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -851,21 +887,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -880,21 +916,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -905,14 +942,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -1090,42 +1128,53 @@ spec:
                                 type: object
                             type: object
                           instanceRequirements:
-                            description: "The attributes for the instance types. When
-                              you specify instance attributes, Amazon EC2 will identify
-                              instance types with these attributes. \n You must specify
-                              VCpuCount and MemoryMiB. All other attributes are optional.
+                            description: |-
+                              The attributes for the instance types. When you specify instance attributes,
+                              Amazon EC2 will identify instance types with these attributes.
+
+
+                              You must specify VCpuCount and MemoryMiB. All other attributes are optional.
                               Any unspecified optional attribute is set to its default.
-                              \n When you specify multiple attributes, you get instance
-                              types that satisfy all of the specified attributes.
-                              If you specify multiple values for an attribute, you
-                              get instance types that satisfy any of the specified
-                              values. \n To limit the list of instance types from
-                              which Amazon EC2 can identify matching instance types,
-                              you can use one of the following parameters, but not
-                              both in the same request: \n * AllowedInstanceTypes
-                              - The instance types to include in the list. All other
-                              instance types are ignored, even if they match your
-                              specified attributes. \n * ExcludedInstanceTypes - The
-                              instance types to exclude from the list, even if they
-                              match your specified attributes. \n If you specify InstanceRequirements,
-                              you can't specify InstanceType. \n Attribute-based instance
-                              type selection is only supported when using Auto Scaling
-                              groups, EC2 Fleet, and Spot Fleet to launch instances.
-                              If you plan to use the launch template in the launch
-                              instance wizard (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-instance-wizard.html)
+
+
+                              When you specify multiple attributes, you get instance types that satisfy
+                              all of the specified attributes. If you specify multiple values for an attribute,
+                              you get instance types that satisfy any of the specified values.
+
+
+                              To limit the list of instance types from which Amazon EC2 can identify matching
+                              instance types, you can use one of the following parameters, but not both
+                              in the same request:
+
+
+                                 * AllowedInstanceTypes - The instance types to include in the list. All
+                                 other instance types are ignored, even if they match your specified attributes.
+
+
+                                 * ExcludedInstanceTypes - The instance types to exclude from the list,
+                                 even if they match your specified attributes.
+
+
+                              If you specify InstanceRequirements, you can't specify InstanceType.
+
+
+                              Attribute-based instance type selection is only supported when using Auto
+                              Scaling groups, EC2 Fleet, and Spot Fleet to launch instances. If you plan
+                              to use the launch template in the launch instance wizard (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-instance-wizard.html)
                               or with the RunInstances API (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
-                              you can't specify InstanceRequirements. \n For more
-                              information, see Attribute-based instance type selection
-                              for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
-                              Attribute-based instance type selection for Spot Fleet
-                              (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
+                              you can't specify InstanceRequirements.
+
+
+                              For more information, see Attribute-based instance type selection for EC2
+                              Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
+                              Attribute-based instance type selection for Spot Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
                               and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
-                              in the Amazon EC2 User Guide."
+                              in the Amazon EC2 User Guide.
                             properties:
                               acceleratorCount:
-                                description: The minimum and maximum number of accelerators
-                                  (GPUs, FPGAs, or Amazon Web Services Inferentia
-                                  chips) on an instance.
+                                description: |-
+                                  The minimum and maximum number of accelerators (GPUs, FPGAs, or Amazon Web
+                                  Services Inferentia chips) on an instance.
                                 properties:
                                   max:
                                     format: int64
@@ -1164,9 +1213,9 @@ spec:
                               bareMetal:
                                 type: string
                               baselineEBSBandwidthMbps:
-                                description: The minimum and maximum baseline bandwidth
-                                  to Amazon EBS, in Mbps. For more information, see
-                                  Amazon EBS–optimized instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html)
+                                description: |-
+                                  The minimum and maximum baseline bandwidth to Amazon EBS, in Mbps. For more
+                                  information, see Amazon EBS–optimized instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html)
                                   in the Amazon EC2 User Guide.
                                 properties:
                                   max:
@@ -1217,16 +1266,17 @@ spec:
                                     type: integer
                                 type: object
                               networkBandwidthGbps:
-                                description: "The minimum and maximum amount of network
-                                  bandwidth, in gigabits per second (Gbps). \n Setting
-                                  the minimum bandwidth does not guarantee that your
-                                  instance will achieve the minimum bandwidth. Amazon
-                                  EC2 will identify instance types that support the
-                                  specified minimum bandwidth, but the actual bandwidth
-                                  of your instance might go below the specified minimum
-                                  at times. For more information, see Available instance
-                                  bandwidth (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth)
-                                  in the Amazon EC2 User Guide."
+                                description: |-
+                                  The minimum and maximum amount of network bandwidth, in gigabits per second
+                                  (Gbps).
+
+
+                                  Setting the minimum bandwidth does not guarantee that your instance will
+                                  achieve the minimum bandwidth. Amazon EC2 will identify instance types that
+                                  support the specified minimum bandwidth, but the actual bandwidth of your
+                                  instance might go below the specified minimum at times. For more information,
+                                  see Available instance bandwidth (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth)
+                                  in the Amazon EC2 User Guide.
                                 properties:
                                   max:
                                     type: number
@@ -1292,9 +1342,9 @@ spec:
                                 type: string
                             type: object
                           metadataOptions:
-                            description: The metadata options for the instance. For
-                              more information, see Instance metadata and user data
-                              (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
+                            description: |-
+                              The metadata options for the instance. For more information, see Instance
+                              metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
                               in the Amazon Elastic Compute Cloud User Guide.
                             properties:
                               httpEndpoint:
@@ -1467,10 +1517,10 @@ spec:
                         type: integer
                     type: object
                   warning:
-                    description: If the new version of the launch template contains
-                      parameters or parameter combinations that are not valid, an
-                      error code and an error message are returned for each issue
-                      that's found.
+                    description: |-
+                      If the new version of the launch template contains parameters or parameter
+                      combinations that are not valid, an error code and an error message are returned
+                      for each issue that's found.
                     properties:
                       errors:
                         items:
@@ -1489,14 +1539,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -1506,8 +1565,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -1519,6 +1579,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

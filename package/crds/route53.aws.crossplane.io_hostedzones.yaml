@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: hostedzones.route53.aws.crossplane.io
 spec:
   group: route53.aws.crossplane.io
@@ -41,14 +41,19 @@ spec:
           Hosted HostedZone.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -58,13 +63,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -74,9 +80,10 @@ spec:
                   Route53 Hosted HostedZone.
                 properties:
                   config:
-                    description: Config includes the Comment and PrivateZone elements.
-                      If you omitted the Config and Comment elements from the request,
-                      the Config and Comment elements don't appear in the response.
+                    description: |-
+                      Config includes the Comment and PrivateZone elements. If you
+                      omitted the Config and Comment elements from the request, the Config
+                      and Comment elements don't appear in the response.
                     properties:
                       comment:
                         description: Comment that you want to include about the hosted
@@ -88,23 +95,24 @@ spec:
                         type: boolean
                     type: object
                   delegationSetId:
-                    description: DelegationSetId let you associate a reusable delegation
-                      set with this hosted zone. It has to be the ID that Amazon Route
-                      53 assigned to the reusable delegation set when you created
-                      it. For more information about reusable delegation sets, see
+                    description: |-
+                      DelegationSetId let you associate a reusable delegation set with this hosted zone.
+                      It has to be the ID that Amazon Route 53 assigned to the reusable delegation set when
+                      you created it. For more information about reusable delegation sets, see
                       CreateReusableDelegationSet (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateReusableDelegationSet.html).
                     type: string
                   name:
-                    description: "The name of the domain. Specify a fully qualified
-                      domain name, for example, www.example.com. The trailing dot
-                      is optional; Amazon Route 53 assumes that the domain name is
-                      fully qualified. This means that Route 53 treats www.example.com
-                      (without a trailing dot) and www.example.com. (with a trailing
-                      dot) as identical. \n If you're creating a public hosted zone,
-                      this is the name you have registered with your DNS registrar.
-                      If your domain name is registered with a registrar other than
-                      Route 53, change the name servers for your domain to the set
-                      of NameServers that CreateHostedHostedZone returns in DelegationSet."
+                    description: |-
+                      The name of the domain. Specify a fully qualified domain name, for example,
+                      www.example.com. The trailing dot is optional; Amazon Route 53 assumes that
+                      the domain name is fully qualified. This means that Route 53 treats www.example.com
+                      (without a trailing dot) and www.example.com. (with a trailing dot) as identical.
+
+
+                      If you're creating a public hosted zone, this is the name you have registered
+                      with your DNS registrar. If your domain name is registered with a registrar
+                      other than Route 53, change the name servers for your domain to the set of
+                      NameServers that CreateHostedHostedZone returns in DelegationSet.
                     type: string
                   tags:
                     additionalProperties:
@@ -112,13 +120,15 @@ spec:
                     description: Tags for this hosted zone.
                     type: object
                   vpc:
-                    description: "(Private hosted zones only) A complex type that
-                      contains information about the Amazon VPC that you're associating
-                      with this hosted zone. \n You can specify only one Amazon VPC
-                      when you create a private hosted zone. To associate additional
-                      Amazon VPCs with the hosted zone, use AssociateVPCWithHostedZone
+                    description: |-
+                      (Private hosted zones only) A complex type that contains information about
+                      the Amazon VPC that you're associating with this hosted zone.
+
+
+                      You can specify only one Amazon VPC when you create a private hosted zone.
+                      To associate additional Amazon VPCs with the hosted zone, use AssociateVPCWithHostedZone
                       (https://docs.aws.amazon.com/Route53/latest/APIReference/API_AssociateVPCWithHostedZone.html)
-                      after you create a hosted zone."
+                      after you create a hosted zone.
                     properties:
                       vpcId:
                         description: (Private hosted zones only) The ID of an Amazon
@@ -136,21 +146,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -163,9 +173,9 @@ spec:
                         description: VPCIDSelector selects a reference to a VPC.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -178,21 +188,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -210,19 +220,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -235,9 +247,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -247,21 +260,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -271,17 +284,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -291,21 +306,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -320,21 +335,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -345,14 +361,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -379,8 +396,9 @@ spec:
                       hosted zone.
                     properties:
                       callerReference:
-                        description: The value that you specified for CallerReference
-                          when you created the reusable delegation set.
+                        description: |-
+                          The value that you specified for CallerReference when you created the reusable
+                          delegation set.
                         type: string
                       id:
                         description: The ID that Amazon Route 53 assigns to a reusable
@@ -398,14 +416,15 @@ spec:
                       hosted zone.
                     properties:
                       callerReference:
-                        description: CallerReference is an unique string that identifies
-                          the request and that allows failed HostedZone create requests
-                          to be retried without the risk of executing the operation
-                          twice.
+                        description: |-
+                          CallerReference is an unique string that identifies the request and that
+                          allows failed HostedZone create requests to be retried without the risk of
+                          executing the operation twice.
                         type: string
                       id:
-                        description: ID that Amazon Route 53 assigned to the hosted
-                          zone when you created it.
+                        description: |-
+                          ID that Amazon Route 53 assigned to the hosted zone when you created
+                          it.
                         type: string
                       linkedService:
                         description: LinkedService is the service that created the
@@ -426,11 +445,13 @@ spec:
                         type: integer
                     type: object
                   vpcs:
-                    description: A complex type that contains information about the
-                      VPCs that are associated with the specified hosted zone.
+                    description: |-
+                      A complex type that contains information about the VPCs that are associated
+                      with the specified hosted zone.
                     items:
-                      description: VPCObservation is used to represent the VPC object
-                        in the HostedZone response object.
+                      description: |-
+                        VPCObservation is used to represent the VPC object in the HostedZone response
+                        object.
                       properties:
                         vpcId:
                           description: VPCID is the ID of the VPC.
@@ -447,14 +468,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -464,8 +494,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -477,6 +508,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

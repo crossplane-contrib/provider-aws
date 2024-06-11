@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: listeners.elbv2.aws.crossplane.io
 spec:
   group: elbv2.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: Listener is the Schema for the Listeners API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,19 +74,36 @@ spec:
                 description: ListenerParameters defines the desired state of Listener
                 properties:
                   alpnPolicy:
-                    description: "[TLS listeners] The name of the Application-Layer
-                      Protocol Negotiation (ALPN) policy. You can specify one policy
-                      name. The following are the possible values: \n * HTTP1Only
-                      \n * HTTP2Only \n * HTTP2Optional \n * HTTP2Preferred \n * None
-                      \n For more information, see ALPN policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#alpn-policies)
-                      in the Network Load Balancers Guide."
+                    description: |-
+                      [TLS listeners] The name of the Application-Layer Protocol Negotiation (ALPN)
+                      policy. You can specify one policy name. The following are the possible values:
+
+
+                         * HTTP1Only
+
+
+                         * HTTP2Only
+
+
+                         * HTTP2Optional
+
+
+                         * HTTP2Preferred
+
+
+                         * None
+
+
+                      For more information, see ALPN policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#alpn-policies)
+                      in the Network Load Balancers Guide.
                     items:
                       type: string
                     type: array
                   certificates:
-                    description: '[HTTPS and TLS listeners] The default certificate
+                    description: |-
+                      [HTTPS and TLS listeners] The default certificate
                       for the listener. You must provide exactly one certificate.
-                      Set CertificateArn to the certificate ARN but do not set IsDefault.'
+                      Set CertificateArn to the certificate ARN but do not set IsDefault.
                     items:
                       description: CustomCertificate includes custom fields about
                         certificates.
@@ -100,22 +123,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -129,9 +151,9 @@ spec:
                             CertificateArn
                           properties:
                             matchControllerRef:
-                              description: MatchControllerRef ensures an object with
-                                the same controller reference as the selecting object
-                                is selected.
+                              description: |-
+                                MatchControllerRef ensures an object with the same controller reference
+                                as the selecting object is selected.
                               type: boolean
                             matchLabels:
                               additionalProperties:
@@ -144,22 +166,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -173,17 +194,20 @@ spec:
                   defaultActions:
                     description: The actions for the default rule.
                     items:
-                      description: "CustomAction includes custom fields for an action.
-                        \n Each rule must include exactly one of the following types
-                        of actions: forward, fixed-response, or redirect, and it must
-                        be the last action to be performed."
+                      description: |-
+                        CustomAction includes custom fields for an action.
+
+
+                        Each rule must include exactly one of the following types of actions: forward,
+                        fixed-response, or redirect, and it must be the last action to be performed.
                       properties:
                         actionType:
                           description: The type of action.
                           type: string
                         authenticateCognitoConfig:
-                          description: Request parameters to use when integrating
-                            with Amazon Cognito to authenticate users.
+                          description: |-
+                            Request parameters to use when integrating with Amazon Cognito to authenticate
+                            users.
                           properties:
                             authenticationRequestExtraParams:
                               additionalProperties:
@@ -206,9 +230,9 @@ spec:
                               type: string
                           type: object
                         authenticateOidcConfig:
-                          description: Request parameters when using an identity provider
-                            (IdP) that is compliant with OpenID Connect (OIDC) to
-                            authenticate users.
+                          description: |-
+                            Request parameters when using an identity provider (IdP) that is compliant
+                            with OpenID Connect (OIDC) to authenticate users.
                           properties:
                             authenticationRequestExtraParams:
                               additionalProperties:
@@ -263,12 +287,13 @@ spec:
                                   type: boolean
                               type: object
                             targetGroups:
-                              description: One or more target groups. For Network
-                                Load Balancers, you can specify a single target group.
+                              description: |-
+                                One or more target groups. For Network Load Balancers, you can specify a
+                                single target group.
                               items:
-                                description: CustomTargetGroupTuple includes custom
-                                  fields about target groups. Only used with ForwardActionConfig
-                                  to route to multiple target groups.
+                                description: |-
+                                  CustomTargetGroupTuple includes custom fields about target groups.
+                                  Only used with ForwardActionConfig to route to multiple target groups.
                                 properties:
                                   targetGroupARN:
                                     type: string
@@ -284,25 +309,21 @@ spec:
                                         properties:
                                           resolution:
                                             default: Required
-                                            description: Resolution specifies whether
-                                              resolution of this reference is required.
-                                              The default is 'Required', which means
-                                              the reconcile will fail if the reference
-                                              cannot be resolved. 'Optional' means
-                                              this reference will be a no-op if it
-                                              cannot be resolved.
+                                            description: |-
+                                              Resolution specifies whether resolution of this reference is required.
+                                              The default is 'Required', which means the reconcile will fail if the
+                                              reference cannot be resolved. 'Optional' means this reference will be
+                                              a no-op if it cannot be resolved.
                                             enum:
                                             - Required
                                             - Optional
                                             type: string
                                           resolve:
-                                            description: Resolve specifies when this
-                                              reference should be resolved. The default
-                                              is 'IfNotPresent', which will attempt
-                                              to resolve the reference only when the
-                                              corresponding field is not present.
-                                              Use 'Always' to resolve the reference
-                                              on every reconcile.
+                                            description: |-
+                                              Resolve specifies when this reference should be resolved. The default
+                                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                                              the corresponding field is not present. Use 'Always' to resolve the
+                                              reference on every reconcile.
                                             enum:
                                             - Always
                                             - IfNotPresent
@@ -316,8 +337,8 @@ spec:
                                       for TargetGroupARN
                                     properties:
                                       matchControllerRef:
-                                        description: MatchControllerRef ensures an
-                                          object with the same controller reference
+                                        description: |-
+                                          MatchControllerRef ensures an object with the same controller reference
                                           as the selecting object is selected.
                                         type: boolean
                                       matchLabels:
@@ -331,25 +352,21 @@ spec:
                                         properties:
                                           resolution:
                                             default: Required
-                                            description: Resolution specifies whether
-                                              resolution of this reference is required.
-                                              The default is 'Required', which means
-                                              the reconcile will fail if the reference
-                                              cannot be resolved. 'Optional' means
-                                              this reference will be a no-op if it
-                                              cannot be resolved.
+                                            description: |-
+                                              Resolution specifies whether resolution of this reference is required.
+                                              The default is 'Required', which means the reconcile will fail if the
+                                              reference cannot be resolved. 'Optional' means this reference will be
+                                              a no-op if it cannot be resolved.
                                             enum:
                                             - Required
                                             - Optional
                                             type: string
                                           resolve:
-                                            description: Resolve specifies when this
-                                              reference should be resolved. The default
-                                              is 'IfNotPresent', which will attempt
-                                              to resolve the reference only when the
-                                              corresponding field is not present.
-                                              Use 'Always' to resolve the reference
-                                              on every reconcile.
+                                            description: |-
+                                              Resolve specifies when this reference should be resolved. The default
+                                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                                              the corresponding field is not present. Use 'Always' to resolve the
+                                              reference on every reconcile.
                                             enum:
                                             - Always
                                             - IfNotPresent
@@ -363,23 +380,42 @@ spec:
                               type: array
                           type: object
                         order:
-                          description: The order for the action. This value is required
-                            for rules with multiple actions. The action with the lowest
-                            value for order is performed first.
+                          description: |-
+                            The order for the action. This value is required for rules with multiple
+                            actions. The action with the lowest value for order is performed first.
                           format: int64
                           type: integer
                         redirectConfig:
-                          description: "Information about a redirect action. \n A
-                            URI consists of the following components: protocol://hostname:port/path?query.
-                            You must modify at least one of the following components
-                            to avoid a redirect loop: protocol, hostname, port, or
-                            path. Any components that you do not modify retain their
-                            original values. \n You can reuse URI components using
-                            the following reserved keywords: \n * #{protocol} \n *
-                            #{host} \n * #{port} \n * #{path} (the leading \"/\" is
-                            removed) \n * #{query} \n For example, you can change
-                            the path to \"/new/#{path}\", the hostname to \"example.#{host}\",
-                            or the query to \"#{query}&value=xyz\"."
+                          description: |-
+                            Information about a redirect action.
+
+
+                            A URI consists of the following components: protocol://hostname:port/path?query.
+                            You must modify at least one of the following components to avoid a redirect
+                            loop: protocol, hostname, port, or path. Any components that you do not modify
+                            retain their original values.
+
+
+                            You can reuse URI components using the following reserved keywords:
+
+
+                               * #{protocol}
+
+
+                               * #{host}
+
+
+                               * #{port}
+
+
+                               * #{path} (the leading "/" is removed)
+
+
+                               * #{query}
+
+
+                            For example, you can change the path to "/new/#{path}", the hostname to "example.#{host}",
+                            or the query to "#{query}&value=xyz".
                           properties:
                             host:
                               type: string
@@ -395,10 +431,10 @@ spec:
                               type: string
                           type: object
                         targetGroupArn:
-                          description: The Amazon Resource Name (ARN) of the target
-                            group. Specify only when actionType is forward and you
-                            want to route to a single target group. To route to one
-                            or more target groups, use ForwardConfig instead.
+                          description: |-
+                            The Amazon Resource Name (ARN) of the target group. Specify only when
+                            actionType is forward and you want to route to a single target group.
+                            To route to one or more target groups, use ForwardConfig instead.
                           type: string
                         targetGroupArnRef:
                           description: Reference to TargetGroupARN used to set TargetGroupARN
@@ -411,22 +447,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -440,9 +475,9 @@ spec:
                             TargetGroupARNs
                           properties:
                             matchControllerRef:
-                              description: MatchControllerRef ensures an object with
-                                the same controller reference as the selecting object
-                                is selected.
+                              description: |-
+                                MatchControllerRef ensures an object with the same controller reference
+                                as the selecting object is selected.
                               type: boolean
                             matchLabels:
                               additionalProperties:
@@ -455,22 +490,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -495,21 +529,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -522,8 +556,9 @@ spec:
                     description: Selector for references to LoadBalancer for LoadBalancerARN
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -536,21 +571,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -558,28 +593,31 @@ spec:
                         type: object
                     type: object
                   port:
-                    description: The port on which the load balancer is listening.
-                      You cannot specify a port for a Gateway Load Balancer.
+                    description: |-
+                      The port on which the load balancer is listening. You cannot specify a port
+                      for a Gateway Load Balancer.
                     format: int64
                     type: integer
                   protocol:
-                    description: The protocol for connections from clients to the
-                      load balancer. For Application Load Balancers, the supported
-                      protocols are HTTP and HTTPS. For Network Load Balancers, the
-                      supported protocols are TCP, TLS, UDP, and TCP_UDP. You can’t
-                      specify the UDP or TCP_UDP protocol if dual-stack mode is enabled.
-                      You cannot specify a protocol for a Gateway Load Balancer.
+                    description: |-
+                      The protocol for connections from clients to the load balancer. For Application
+                      Load Balancers, the supported protocols are HTTP and HTTPS. For Network Load
+                      Balancers, the supported protocols are TCP, TLS, UDP, and TCP_UDP. You can’t
+                      specify the UDP or TCP_UDP protocol if dual-stack mode is enabled. You cannot
+                      specify a protocol for a Gateway Load Balancer.
                     type: string
                   region:
                     description: Region is which region the Listener will be created.
                     type: string
                   sslPolicy:
-                    description: "[HTTPS and TLS listeners] The security policy that
-                      defines which protocols and ciphers are supported. \n For more
-                      information, see Security policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
-                      in the Application Load Balancers Guide and Security policies
-                      (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies)
-                      in the Network Load Balancers Guide."
+                    description: |-
+                      [HTTPS and TLS listeners] The security policy that defines which protocols
+                      and ciphers are supported.
+
+
+                      For more information, see Security policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
+                      in the Application Load Balancers Guide and Security policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies)
+                      in the Network Load Balancers Guide.
                     type: string
                   tags:
                     description: The tags to assign to the listener.
@@ -598,19 +636,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -623,9 +663,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -635,21 +676,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -659,17 +700,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -679,21 +722,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -708,21 +751,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -733,14 +777,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -777,8 +822,9 @@ spec:
                     items:
                       properties:
                         authenticateCognitoConfig:
-                          description: Request parameters to use when integrating
-                            with Amazon Cognito to authenticate users.
+                          description: |-
+                            Request parameters to use when integrating with Amazon Cognito to authenticate
+                            users.
                           properties:
                             authenticationRequestExtraParams:
                               additionalProperties:
@@ -801,9 +847,9 @@ spec:
                               type: string
                           type: object
                         authenticateOIDCConfig:
-                          description: Request parameters when using an identity provider
-                            (IdP) that is compliant with OpenID Connect (OIDC) to
-                            authenticate users.
+                          description: |-
+                            Request parameters when using an identity provider (IdP) that is compliant
+                            with OpenID Connect (OIDC) to authenticate users.
                           properties:
                             authenticationRequestExtraParams:
                               additionalProperties:
@@ -872,17 +918,36 @@ spec:
                           format: int64
                           type: integer
                         redirectConfig:
-                          description: "Information about a redirect action. \n A
-                            URI consists of the following components: protocol://hostname:port/path?query.
-                            You must modify at least one of the following components
-                            to avoid a redirect loop: protocol, hostname, port, or
-                            path. Any components that you do not modify retain their
-                            original values. \n You can reuse URI components using
-                            the following reserved keywords: \n * #{protocol} \n *
-                            #{host} \n * #{port} \n * #{path} (the leading \"/\" is
-                            removed) \n * #{query} \n For example, you can change
-                            the path to \"/new/#{path}\", the hostname to \"example.#{host}\",
-                            or the query to \"#{query}&value=xyz\"."
+                          description: |-
+                            Information about a redirect action.
+
+
+                            A URI consists of the following components: protocol://hostname:port/path?query.
+                            You must modify at least one of the following components to avoid a redirect
+                            loop: protocol, hostname, port, or path. Any components that you do not modify
+                            retain their original values.
+
+
+                            You can reuse URI components using the following reserved keywords:
+
+
+                               * #{protocol}
+
+
+                               * #{host}
+
+
+                               * #{port}
+
+
+                               * #{path} (the leading "/" is removed)
+
+
+                               * #{query}
+
+
+                            For example, you can change the path to "/new/#{path}", the hostname to "example.#{host}",
+                            or the query to "#{query}&value=xyz".
                           properties:
                             host:
                               type: string
@@ -916,14 +981,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -933,8 +1007,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -946,6 +1021,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: dbinstances.docdb.aws.crossplane.io
 spec:
   group: docdb.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: DBInstance is the Schema for the DBInstances API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,33 +74,46 @@ spec:
                 description: DBInstanceParameters defines the desired state of DBInstance
                 properties:
                   applyImmediately:
-                    description: "Specifies whether the modifications in this request
-                      and any pending modifications are asynchronously applied as
-                      soon as possible, regardless of the PreferredMaintenanceWindow
-                      setting for the instance. \n If this parameter is set to false,
-                      changes to the instance are applied during the next maintenance
-                      window. Some parameter changes can cause an outage and are applied
-                      on the next reboot. \n Default: false"
+                    description: |-
+                      Specifies whether the modifications in this request and any pending modifications
+                      are asynchronously applied as soon as possible, regardless of the PreferredMaintenanceWindow
+                      setting for the instance.
+
+
+                      If this parameter is set to false, changes to the instance are applied during
+                      the next maintenance window. Some parameter changes can cause an outage and
+                      are applied on the next reboot.
+
+
+                      Default: false
                     type: boolean
                   autoMinorVersionUpgrade:
-                    description: "This parameter does not apply to Amazon DocumentDB.
-                      Amazon DocumentDB does not perform minor version upgrades regardless
-                      of the value set. \n Default: false"
+                    description: |-
+                      This parameter does not apply to Amazon DocumentDB. Amazon DocumentDB does
+                      not perform minor version upgrades regardless of the value set.
+
+
+                      Default: false
                     type: boolean
                   availabilityZone:
-                    description: "The Amazon EC2 Availability Zone that the instance
-                      is created in. \n Default: A random, system-chosen Availability
-                      Zone in the endpoint's Amazon Web Services Region. \n Example:
-                      us-east-1d"
+                    description: |-
+                      The Amazon EC2 Availability Zone that the instance is created in.
+
+
+                      Default: A random, system-chosen Availability Zone in the endpoint's Amazon
+                      Web Services Region.
+
+
+                      Example: us-east-1d
                     type: string
                   caCertificateIdentifier:
                     description: The identifier of the CA certificate for this DB
                       instance.
                     type: string
                   copyTagsToSnapshot:
-                    description: A value that indicates whether to copy tags from
-                      the DB instance to snapshots of the DB instance. By default,
-                      tags are not copied.
+                    description: |-
+                      A value that indicates whether to copy tags from the DB instance to snapshots
+                      of the DB instance. By default, tags are not copied.
                     type: boolean
                   dbClusterIdentifier:
                     description: The identifier of the cluster this instance will
@@ -111,21 +130,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -138,8 +157,9 @@ spec:
                     description: A Selector selects an object.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -152,21 +172,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -178,45 +198,70 @@ spec:
                       for example, db.r5.large.
                     type: string
                   enablePerformanceInsights:
-                    description: A value that indicates whether to enable Performance
-                      Insights for the DB Instance. For more information, see Using
-                      Amazon Performance Insights (https://docs.aws.amazon.com/documentdb/latest/developerguide/performance-insights.html).
+                    description: |-
+                      A value that indicates whether to enable Performance Insights for the DB
+                      Instance. For more information, see Using Amazon Performance Insights (https://docs.aws.amazon.com/documentdb/latest/developerguide/performance-insights.html).
                     type: boolean
                   engine:
-                    description: "The name of the database engine to be used for this
-                      instance. \n Valid value: docdb"
+                    description: |-
+                      The name of the database engine to be used for this instance.
+
+
+                      Valid value: docdb
                     type: string
                   performanceInsightsKMSKeyID:
-                    description: "The KMS key identifier for encryption of Performance
-                      Insights data. \n The KMS key identifier is the key ARN, key
-                      ID, alias ARN, or alias name for the KMS key. \n If you do not
-                      specify a value for PerformanceInsightsKMSKeyId, then Amazon
-                      DocumentDB uses your default KMS key. There is a default KMS
-                      key for your Amazon Web Services account. Your Amazon Web Services
-                      account has a different default KMS key for each Amazon Web
-                      Services region."
+                    description: |-
+                      The KMS key identifier for encryption of Performance Insights data.
+
+
+                      The KMS key identifier is the key ARN, key ID, alias ARN, or alias name for
+                      the KMS key.
+
+
+                      If you do not specify a value for PerformanceInsightsKMSKeyId, then Amazon
+                      DocumentDB uses your default KMS key. There is a default KMS key for your
+                      Amazon Web Services account. Your Amazon Web Services account has a different
+                      default KMS key for each Amazon Web Services region.
                     type: string
                   preferredMaintenanceWindow:
-                    description: "The time range each week during which system maintenance
-                      can occur, in Universal Coordinated Time (UTC). \n Format: ddd:hh24:mi-ddd:hh24:mi
-                      \n The default is a 30-minute window selected at random from
-                      an 8-hour block of time for each Amazon Web Services Region,
-                      occurring on a random day of the week. \n Valid days: Mon, Tue,
-                      Wed, Thu, Fri, Sat, Sun \n Constraints: Minimum 30-minute window."
+                    description: |-
+                      The time range each week during which system maintenance can occur, in Universal
+                      Coordinated Time (UTC).
+
+
+                      Format: ddd:hh24:mi-ddd:hh24:mi
+
+
+                      The default is a 30-minute window selected at random from an 8-hour block
+                      of time for each Amazon Web Services Region, occurring on a random day of
+                      the week.
+
+
+                      Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+
+
+                      Constraints: Minimum 30-minute window.
                     type: string
                   promotionTier:
-                    description: "A value that specifies the order in which an Amazon
-                      DocumentDB replica is promoted to the primary instance after
-                      a failure of the existing primary instance. \n Default: 1 \n
-                      Valid values: 0-15"
+                    description: |-
+                      A value that specifies the order in which an Amazon DocumentDB replica is
+                      promoted to the primary instance after a failure of the existing primary
+                      instance.
+
+
+                      Default: 1
+
+
+                      Valid values: 0-15
                     format: int64
                     type: integer
                   region:
                     description: Region is which region the DBInstance will be created.
                     type: string
                   tags:
-                    description: The tags to be assigned to the instance. You can
-                      assign up to 10 tags to an instance.
+                    description: |-
+                      The tags to be assigned to the instance. You can assign up to 10 tags to
+                      an instance.
                     items:
                       properties:
                         key:
@@ -233,19 +278,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -258,9 +305,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -270,21 +318,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -294,17 +342,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -314,21 +364,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -343,21 +393,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -368,14 +419,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -406,23 +458,25 @@ spec:
                       instance.
                     type: string
                   dbClusterIdentifier:
-                    description: Contains the name of the cluster that the instance
-                      is a member of if the instance is a member of a cluster.
+                    description: |-
+                      Contains the name of the cluster that the instance is a member of if the
+                      instance is a member of a cluster.
                     type: string
                   dbInstanceARN:
                     description: The Amazon Resource Name (ARN) for the instance.
                     type: string
                   dbInstanceIdentifier:
-                    description: Contains a user-provided database identifier. This
-                      identifier is the unique key that identifies an instance.
+                    description: |-
+                      Contains a user-provided database identifier. This identifier is the unique
+                      key that identifies an instance.
                     type: string
                   dbInstanceStatus:
                     description: Specifies the current state of this database.
                     type: string
                   dbSubnetGroup:
-                    description: Specifies information on the subnet group that is
-                      associated with the instance, including the name, description,
-                      and subnets in the subnet group.
+                    description: |-
+                      Specifies information on the subnet group that is associated with the instance,
+                      including the name, description, and subnets in the subnet group.
                     properties:
                       dbSubnetGroupARN:
                         type: string
@@ -451,13 +505,15 @@ spec:
                         type: string
                     type: object
                   dbiResourceID:
-                    description: The Amazon Web Services Region-unique, immutable
-                      identifier for the instance. This identifier is found in CloudTrail
-                      log entries whenever the KMS key for the instance is accessed.
+                    description: |-
+                      The Amazon Web Services Region-unique, immutable identifier for the instance.
+                      This identifier is found in CloudTrail log entries whenever the KMS key for
+                      the instance is accessed.
                     type: string
                   enabledCloudwatchLogsExports:
-                    description: A list of log types that this instance is configured
-                      to export to CloudWatch Logs.
+                    description: |-
+                      A list of log types that this instance is configured to export to CloudWatch
+                      Logs.
                     items:
                       type: string
                     type: array
@@ -485,14 +541,15 @@ spec:
                       for the encrypted instance.
                     type: string
                   latestRestorableTime:
-                    description: Specifies the latest time to which a database can
-                      be restored with point-in-time restore.
+                    description: |-
+                      Specifies the latest time to which a database can be restored with point-in-time
+                      restore.
                     format: date-time
                     type: string
                   pendingModifiedValues:
-                    description: Specifies that changes to the instance are pending.
-                      This element is included only when changes are pending. Specific
-                      changes are identified by subelements.
+                    description: |-
+                      Specifies that changes to the instance are pending. This element is included
+                      only when changes are pending. Specific changes are identified by subelements.
                     properties:
                       allocatedStorage:
                         format: int64
@@ -520,9 +577,9 @@ spec:
                       multiAZ:
                         type: boolean
                       pendingCloudwatchLogsExports:
-                        description: A list of the log types whose configuration is
-                          still pending. These log types are in the process of being
-                          activated or deactivated.
+                        description: |-
+                          A list of the log types whose configuration is still pending. These log types
+                          are in the process of being activated or deactivated.
                         properties:
                           logTypesToDisable:
                             items:
@@ -540,18 +597,19 @@ spec:
                         type: string
                     type: object
                   preferredBackupWindow:
-                    description: Specifies the daily time range during which automated
-                      backups are created if automated backups are enabled, as determined
-                      by the BackupRetentionPeriod.
+                    description: |-
+                      Specifies the daily time range during which automated backups are created
+                      if automated backups are enabled, as determined by the BackupRetentionPeriod.
                     type: string
                   publiclyAccessible:
-                    description: Not supported. Amazon DocumentDB does not currently
-                      support public endpoints. The value of PubliclyAccessible is
-                      always false.
+                    description: |-
+                      Not supported. Amazon DocumentDB does not currently support public endpoints.
+                      The value of PubliclyAccessible is always false.
                     type: boolean
                   statusInfos:
-                    description: The status of a read replica. If the instance is
-                      not a read replica, this is blank.
+                    description: |-
+                      The status of a read replica. If the instance is not a read replica, this
+                      is blank.
                     items:
                       properties:
                         message:
@@ -568,8 +626,9 @@ spec:
                     description: Specifies whether or not the instance is encrypted.
                     type: boolean
                   vpcSecurityGroups:
-                    description: Provides a list of VPC security group elements that
-                      the instance belongs to.
+                    description: |-
+                      Provides a list of VPC security group elements that the instance belongs
+                      to.
                     items:
                       properties:
                         status:
@@ -585,14 +644,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -602,8 +670,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -615,6 +684,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

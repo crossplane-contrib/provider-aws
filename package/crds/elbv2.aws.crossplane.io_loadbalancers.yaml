@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: loadbalancers.elbv2.aws.crossplane.io
 spec:
   group: elbv2.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: LoadBalancer is the Schema for the LoadBalancers API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,39 +74,49 @@ spec:
                 description: LoadBalancerParameters defines the desired state of LoadBalancer
                 properties:
                   customerOwnedIPv4Pool:
-                    description: '[Application Load Balancers on Outposts] The ID
-                      of the customer-owned address pool (CoIP pool).'
+                    description: |-
+                      [Application Load Balancers on Outposts] The ID of the customer-owned address
+                      pool (CoIP pool).
                     type: string
                   ipAddressType:
-                    description: The type of IP addresses used by the subnets for
-                      your load balancer. The possible values are ipv4 (for IPv4 addresses)
-                      and dualstack (for IPv4 and IPv6 addresses).
+                    description: |-
+                      The type of IP addresses used by the subnets for your load balancer. The
+                      possible values are ipv4 (for IPv4 addresses) and dualstack (for IPv4 and
+                      IPv6 addresses).
                     type: string
                   loadBalancerType:
                     description: The type of load balancer. The default is application.
                     type: string
                   name:
-                    description: "The name of the load balancer. \n This name must
-                      be unique per region per account, can have a maximum of 32 characters,
-                      must contain only alphanumeric characters or hyphens, must not
-                      begin or end with a hyphen, and must not begin with \"internal-\"."
+                    description: |-
+                      The name of the load balancer.
+
+
+                      This name must be unique per region per account, can have a maximum of 32
+                      characters, must contain only alphanumeric characters or hyphens, must not
+                      begin or end with a hyphen, and must not begin with "internal-".
                     type: string
                   region:
                     description: Region is which region the LoadBalancer will be created.
                     type: string
                   scheme:
-                    description: "The nodes of an Internet-facing load balancer have
-                      public IP addresses. The DNS name of an Internet-facing load
-                      balancer is publicly resolvable to the public IP addresses of
-                      the nodes. Therefore, Internet-facing load balancers can route
-                      requests from clients over the internet. \n The nodes of an
-                      internal load balancer have only private IP addresses. The DNS
-                      name of an internal load balancer is publicly resolvable to
-                      the private IP addresses of the nodes. Therefore, internal load
-                      balancers can route requests only from clients with access to
-                      the VPC for the load balancer. \n The default is an Internet-facing
-                      load balancer. \n You cannot specify a scheme for a Gateway
-                      Load Balancer."
+                    description: |-
+                      The nodes of an Internet-facing load balancer have public IP addresses. The
+                      DNS name of an Internet-facing load balancer is publicly resolvable to the
+                      public IP addresses of the nodes. Therefore, Internet-facing load balancers
+                      can route requests from clients over the internet.
+
+
+                      The nodes of an internal load balancer have only private IP addresses. The
+                      DNS name of an internal load balancer is publicly resolvable to the private
+                      IP addresses of the nodes. Therefore, internal load balancers can route requests
+                      only from clients with access to the VPC for the load balancer.
+
+
+                      The default is an Internet-facing load balancer.
+
+
+                      You cannot specify a scheme for a Gateway Load Balancer.
                     type: string
                   securityGroupRefs:
                     description: Reference to Security Groups for SecurityGroups field
@@ -115,21 +131,21 @@ spec:
                           properties:
                             resolution:
                               default: Required
-                              description: Resolution specifies whether resolution
-                                of this reference is required. The default is 'Required',
-                                which means the reconcile will fail if the reference
-                                cannot be resolved. 'Optional' means this reference
-                                will be a no-op if it cannot be resolved.
+                              description: |-
+                                Resolution specifies whether resolution of this reference is required.
+                                The default is 'Required', which means the reconcile will fail if the
+                                reference cannot be resolved. 'Optional' means this reference will be
+                                a no-op if it cannot be resolved.
                               enum:
                               - Required
                               - Optional
                               type: string
                             resolve:
-                              description: Resolve specifies when this reference should
-                                be resolved. The default is 'IfNotPresent', which
-                                will attempt to resolve the reference only when the
-                                corresponding field is not present. Use 'Always' to
-                                resolve the reference on every reconcile.
+                              description: |-
+                                Resolve specifies when this reference should be resolved. The default
+                                is 'IfNotPresent', which will attempt to resolve the reference only when
+                                the corresponding field is not present. Use 'Always' to resolve the
+                                reference on every reconcile.
                               enum:
                               - Always
                               - IfNotPresent
@@ -143,8 +159,9 @@ spec:
                     description: Selector for references to SecurityGroups
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -157,21 +174,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -179,29 +196,39 @@ spec:
                         type: object
                     type: object
                   securityGroups:
-                    description: '[Application Load Balancers and Network Load Balancers]
-                      The IDs of the security groups for the load balancer.'
+                    description: |-
+                      [Application Load Balancers and Network Load Balancers] The IDs of the security
+                      groups for the load balancer.
                     items:
                       type: string
                     type: array
                   subnetMappings:
-                    description: "The IDs of the public subnets. You can specify only
-                      one subnet per Availability Zone. You must specify either subnets
-                      or subnet mappings, but not both. \n [Application Load Balancers]
-                      You must specify subnets from at least two Availability Zones.
-                      You cannot specify Elastic IP addresses for your subnets. \n
-                      [Application Load Balancers on Outposts] You must specify one
-                      Outpost subnet. \n [Application Load Balancers on Local Zones]
-                      You can specify subnets from one or more Local Zones. \n [Network
-                      Load Balancers] You can specify subnets from one or more Availability
-                      Zones. You can specify one Elastic IP address per subnet if
-                      you need static IP addresses for your internet-facing load balancer.
-                      For internal load balancers, you can specify one private IP
-                      address per subnet from the IPv4 range of the subnet. For internet-facing
-                      load balancer, you can specify one IPv6 address per subnet.
-                      \n [Gateway Load Balancers] You can specify subnets from one
-                      or more Availability Zones. You cannot specify Elastic IP addresses
-                      for your subnets."
+                    description: |-
+                      The IDs of the public subnets. You can specify only one subnet per Availability
+                      Zone. You must specify either subnets or subnet mappings, but not both.
+
+
+                      [Application Load Balancers] You must specify subnets from at least two Availability
+                      Zones. You cannot specify Elastic IP addresses for your subnets.
+
+
+                      [Application Load Balancers on Outposts] You must specify one Outpost subnet.
+
+
+                      [Application Load Balancers on Local Zones] You can specify subnets from
+                      one or more Local Zones.
+
+
+                      [Network Load Balancers] You can specify subnets from one or more Availability
+                      Zones. You can specify one Elastic IP address per subnet if you need static
+                      IP addresses for your internet-facing load balancer. For internal load balancers,
+                      you can specify one private IP address per subnet from the IPv4 range of
+                      the subnet. For internet-facing load balancer, you can specify one IPv6 address
+                      per subnet.
+
+
+                      [Gateway Load Balancers] You can specify subnets from one or more Availability
+                      Zones. You cannot specify Elastic IP addresses for your subnets.
                     items:
                       properties:
                         allocationID:
@@ -227,21 +254,21 @@ spec:
                           properties:
                             resolution:
                               default: Required
-                              description: Resolution specifies whether resolution
-                                of this reference is required. The default is 'Required',
-                                which means the reconcile will fail if the reference
-                                cannot be resolved. 'Optional' means this reference
-                                will be a no-op if it cannot be resolved.
+                              description: |-
+                                Resolution specifies whether resolution of this reference is required.
+                                The default is 'Required', which means the reconcile will fail if the
+                                reference cannot be resolved. 'Optional' means this reference will be
+                                a no-op if it cannot be resolved.
                               enum:
                               - Required
                               - Optional
                               type: string
                             resolve:
-                              description: Resolve specifies when this reference should
-                                be resolved. The default is 'IfNotPresent', which
-                                will attempt to resolve the reference only when the
-                                corresponding field is not present. Use 'Always' to
-                                resolve the reference on every reconcile.
+                              description: |-
+                                Resolve specifies when this reference should be resolved. The default
+                                is 'IfNotPresent', which will attempt to resolve the reference only when
+                                the corresponding field is not present. Use 'Always' to resolve the
+                                reference on every reconcile.
                               enum:
                               - Always
                               - IfNotPresent
@@ -255,8 +282,9 @@ spec:
                     description: Selector for references to Subnets
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -269,21 +297,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -291,17 +319,29 @@ spec:
                         type: object
                     type: object
                   subnets:
-                    description: "The IDs of the public subnets. You can specify only
-                      one subnet per Availability Zone. You must specify either subnets
-                      or subnet mappings, but not both. To specify an Elastic IP address,
-                      specify subnet mappings instead of subnets. \n [Application
-                      Load Balancers] You must specify subnets from at least two Availability
-                      Zones. \n [Application Load Balancers on Outposts] You must
-                      specify one Outpost subnet. \n [Application Load Balancers on
-                      Local Zones] You can specify subnets from one or more Local
-                      Zones. \n [Network Load Balancers] You can specify subnets from
-                      one or more Availability Zones. \n [Gateway Load Balancers]
-                      You can specify subnets from one or more Availability Zones."
+                    description: |-
+                      The IDs of the public subnets. You can specify only one subnet per Availability
+                      Zone. You must specify either subnets or subnet mappings, but not both. To
+                      specify an Elastic IP address, specify subnet mappings instead of subnets.
+
+
+                      [Application Load Balancers] You must specify subnets from at least two Availability
+                      Zones.
+
+
+                      [Application Load Balancers on Outposts] You must specify one Outpost subnet.
+
+
+                      [Application Load Balancers on Local Zones] You can specify subnets from
+                      one or more Local Zones.
+
+
+                      [Network Load Balancers] You can specify subnets from one or more Availability
+                      Zones.
+
+
+                      [Gateway Load Balancers] You can specify subnets from one or more Availability
+                      Zones.
                     items:
                       type: string
                     type: array
@@ -322,19 +362,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -347,9 +389,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -359,21 +402,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -383,17 +426,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -403,21 +448,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -432,21 +477,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -457,14 +503,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -523,9 +570,9 @@ spec:
                     description: The public DNS name of the load balancer.
                     type: string
                   enforceSecurityGroupInboundRulesOnPrivateLinkTraffic:
-                    description: Indicates whether to evaluate inbound security group
-                      rules for traffic sent to a Network Load Balancer through Amazon
-                      Web Services PrivateLink.
+                    description: |-
+                      Indicates whether to evaluate inbound security group rules for traffic sent
+                      to a Network Load Balancer through Amazon Web Services PrivateLink.
                     type: string
                   loadBalancerARN:
                     description: The Amazon Resource Name (ARN) of the load balancer.
@@ -554,14 +601,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -571,8 +627,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -584,6 +641,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: volumes.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: Volume is the Schema for the Volumes API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,49 +74,78 @@ spec:
                 description: VolumeParameters defines the desired state of Volume
                 properties:
                   availabilityZone:
-                    description: The ID of the Availability Zone in which to create
-                      the volume. For example, us-east-1a.
+                    description: |-
+                      The ID of the Availability Zone in which to create the volume. For example,
+                      us-east-1a.
                     type: string
                   encrypted:
-                    description: "Indicates whether the volume should be encrypted.
-                      The effect of setting the encryption state to true depends on
-                      the volume origin (new or from a snapshot), starting encryption
-                      state, ownership, and whether encryption by default is enabled.
-                      For more information, see Encryption by default (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default)
-                      in the Amazon Elastic Compute Cloud User Guide. \n Encrypted
-                      Amazon EBS volumes must be attached to instances that support
-                      Amazon EBS encryption. For more information, see Supported instance
-                      types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances)."
+                    description: |-
+                      Indicates whether the volume should be encrypted. The effect of setting the
+                      encryption state to true depends on the volume origin (new or from a snapshot),
+                      starting encryption state, ownership, and whether encryption by default is
+                      enabled. For more information, see Encryption by default (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default)
+                      in the Amazon Elastic Compute Cloud User Guide.
+
+
+                      Encrypted Amazon EBS volumes must be attached to instances that support Amazon
+                      EBS encryption. For more information, see Supported instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances).
                     type: boolean
                   iops:
-                    description: "The number of I/O operations per second (IOPS).
-                      For gp3, io1, and io2 volumes, this represents the number of
-                      IOPS that are provisioned for the volume. For gp2 volumes, this
-                      represents the baseline performance of the volume and the rate
-                      at which the volume accumulates I/O credits for bursting. \n
+                    description: |-
+                      The number of I/O operations per second (IOPS). For gp3, io1, and io2 volumes,
+                      this represents the number of IOPS that are provisioned for the volume. For
+                      gp2 volumes, this represents the baseline performance of the volume and the
+                      rate at which the volume accumulates I/O credits for bursting.
+
+
                       The following are the supported values for each volume type:
-                      \n * gp3: 3,000-16,000 IOPS \n * io1: 100-64,000 IOPS \n * io2:
-                      100-64,000 IOPS \n io1 and io2 volumes support up to 64,000
-                      IOPS only on Instances built on the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
+
+
+                         * gp3: 3,000-16,000 IOPS
+
+
+                         * io1: 100-64,000 IOPS
+
+
+                         * io2: 100-64,000 IOPS
+
+
+                      io1 and io2 volumes support up to 64,000 IOPS only on Instances built on
+                      the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
                       Other instance families support performance up to 32,000 IOPS.
-                      \n This parameter is required for io1 and io2 volumes. The default
-                      for gp3 volumes is 3,000 IOPS. This parameter is not supported
-                      for gp2, st1, sc1, or standard volumes."
+
+
+                      This parameter is required for io1 and io2 volumes. The default for gp3 volumes
+                      is 3,000 IOPS. This parameter is not supported for gp2, st1, sc1, or standard
+                      volumes.
                     format: int64
                     type: integer
                   kmsKeyId:
-                    description: "The identifier of the AWS Key Management Service
-                      (AWS KMS) customer master key (CMK) to use for Amazon EBS encryption.
-                      If this parameter is not specified, your AWS managed CMK for
-                      EBS is used. If KmsKeyId is specified, the encrypted state must
-                      be true. \n You can specify the CMK using any of the following:
-                      \n * Key ID. For example, 1234abcd-12ab-34cd-56ef-1234567890ab.
-                      \n * Key alias. For example, alias/ExampleAlias. \n * Key ARN.
-                      For example, arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab.
-                      \n * Alias ARN. For example, arn:aws:kms:us-east-1:012345678910:alias/ExampleAlias.
-                      \n AWS authenticates the CMK asynchronously. Therefore, if you
-                      specify an ID, alias, or ARN that is not valid, the action can
-                      appear to complete, but eventually fails."
+                    description: |-
+                      The identifier of the AWS Key Management Service (AWS KMS) customer master
+                      key (CMK) to use for Amazon EBS encryption. If this parameter is not specified,
+                      your AWS managed CMK for EBS is used. If KmsKeyId is specified, the encrypted
+                      state must be true.
+
+
+                      You can specify the CMK using any of the following:
+
+
+                         * Key ID. For example, 1234abcd-12ab-34cd-56ef-1234567890ab.
+
+
+                         * Key alias. For example, alias/ExampleAlias.
+
+
+                         * Key ARN. For example, arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab.
+
+
+                         * Alias ARN. For example, arn:aws:kms:us-east-1:012345678910:alias/ExampleAlias.
+
+
+                      AWS authenticates the CMK asynchronously. Therefore, if you specify an ID,
+                      alias, or ARN that is not valid, the action can appear to complete, but eventually
+                      fails.
                     type: string
                   kmsKeyIdRef:
                     description: KMSKeyIDRef is a reference to a KMS Key used to set
@@ -124,21 +159,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -152,8 +187,9 @@ spec:
                       used to set KMSKeyID.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -166,21 +202,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -188,12 +224,12 @@ spec:
                         type: object
                     type: object
                   multiAttachEnabled:
-                    description: Indicates whether to enable Amazon EBS Multi-Attach.
-                      If you enable Multi-Attach, you can attach the volume to up
-                      to 16 Instances built on the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances)
-                      in the same Availability Zone. This parameter is supported with
-                      io1 and io2 volumes only. For more information, see Amazon EBS
-                      Multi-Attach (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volumes-multi.html)
+                    description: |-
+                      Indicates whether to enable Amazon EBS Multi-Attach. If you enable Multi-Attach,
+                      you can attach the volume to up to 16 Instances built on the Nitro System
+                      (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances)
+                      in the same Availability Zone. This parameter is supported with io1 and io2
+                      volumes only. For more information, see Amazon EBS Multi-Attach (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volumes-multi.html)
                       in the Amazon Elastic Compute Cloud User Guide.
                     type: boolean
                   outpostARN:
@@ -203,18 +239,32 @@ spec:
                     description: Region is which region the Volume will be created.
                     type: string
                   size:
-                    description: "The size of the volume, in GiBs. You must specify
-                      either a snapshot ID or a volume size. If you specify a snapshot,
-                      the default is the snapshot size. You can specify a volume size
-                      that is equal to or larger than the snapshot size. \n The following
-                      are the supported volumes sizes for each volume type: \n * gp2
-                      and gp3: 1-16,384 \n * io1 and io2: 4-16,384 \n * st1 and sc1:
-                      125-16,384 \n * standard: 1-1,024"
+                    description: |-
+                      The size of the volume, in GiBs. You must specify either a snapshot ID or
+                      a volume size. If you specify a snapshot, the default is the snapshot size.
+                      You can specify a volume size that is equal to or larger than the snapshot
+                      size.
+
+
+                      The following are the supported volumes sizes for each volume type:
+
+
+                         * gp2 and gp3: 1-16,384
+
+
+                         * io1 and io2: 4-16,384
+
+
+                         * st1 and sc1: 125-16,384
+
+
+                         * standard: 1-1,024
                     format: int64
                     type: integer
                   snapshotID:
-                    description: The snapshot from which to create the volume. You
-                      must specify either a snapshot ID or a volume size.
+                    description: |-
+                      The snapshot from which to create the volume. You must specify either a snapshot
+                      ID or a volume size.
                     type: string
                   tagSpecifications:
                     description: The tags to apply to the volume during creation.
@@ -239,21 +289,45 @@ spec:
                     description: Metadata tagging key value pairs
                     type: object
                   throughput:
-                    description: "The throughput to provision for a volume, with a
-                      maximum of 1,000 MiB/s. \n This parameter is valid only for
-                      gp3 volumes. \n Valid Range: Minimum value of 125. Maximum value
-                      of 1000."
+                    description: |-
+                      The throughput to provision for a volume, with a maximum of 1,000 MiB/s.
+
+
+                      This parameter is valid only for gp3 volumes.
+
+
+                      Valid Range: Minimum value of 125. Maximum value of 1000.
                     format: int64
                     type: integer
                   volumeType:
-                    description: "The volume type. This parameter can be one of the
-                      following values: \n * General Purpose SSD: gp2 | gp3 \n * Provisioned
-                      IOPS SSD: io1 | io2 \n * Throughput Optimized HDD: st1 \n *
-                      Cold HDD: sc1 \n * Magnetic: standard \n Throughput Optimized
-                      HDD (st1) and Cold HDD (sc1) volumes can't be used as boot volumes.
-                      \n For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
-                      in the Amazon Elastic Compute Cloud User Guide. \n Default:
-                      gp2"
+                    description: |-
+                      The volume type. This parameter can be one of the following values:
+
+
+                         * General Purpose SSD: gp2 | gp3
+
+
+                         * Provisioned IOPS SSD: io1 | io2
+
+
+                         * Throughput Optimized HDD: st1
+
+
+                         * Cold HDD: sc1
+
+
+                         * Magnetic: standard
+
+
+                      Throughput Optimized HDD (st1) and Cold HDD (sc1) volumes can't be used as
+                      boot volumes.
+
+
+                      For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
+                      in the Amazon Elastic Compute Cloud User Guide.
+
+
+                      Default: gp2
                     type: string
                 required:
                 - availabilityZone
@@ -262,19 +336,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -287,9 +363,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -299,21 +376,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -323,17 +400,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -343,21 +422,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -372,21 +451,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -397,14 +477,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -453,9 +534,9 @@ spec:
                       snapshot restore.
                     type: boolean
                   kmsKeyID:
-                    description: The Amazon Resource Name (ARN) of the Key Management
-                      Service (KMS) KMS key that was used to protect the volume encryption
-                      key for the volume.
+                    description: |-
+                      The Amazon Resource Name (ARN) of the Key Management Service (KMS) KMS key
+                      that was used to protect the volume encryption key for the volume.
                     type: string
                   sseType:
                     description: Reserved for future use.
@@ -483,14 +564,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -500,8 +590,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -513,6 +604,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

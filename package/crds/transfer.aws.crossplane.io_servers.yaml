@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: servers.transfer.aws.crossplane.io
 spec:
   group: transfer.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: Server is the Schema for the Servers API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,23 +74,46 @@ spec:
                 description: ServerParameters defines the desired state of Server
                 properties:
                   certificate:
-                    description: "The Amazon Resource Name (ARN) of the AWS Certificate
-                      Manager (ACM) certificate. Required when Protocols is set to
-                      FTPS. \n To request a new public certificate, see Request a
-                      public certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html)
-                      in the AWS Certificate Manager User Guide. \n To import an existing
-                      certificate into ACM, see Importing certificates into ACM (https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html)
-                      in the AWS Certificate Manager User Guide. \n To request a private
-                      certificate to use FTPS through private IP addresses, see Request
-                      a private certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-private.html)
-                      in the AWS Certificate Manager User Guide. \n Certificates with
-                      the following cryptographic algorithms and key sizes are supported:
-                      \n * 2048-bit RSA (RSA_2048) \n * 4096-bit RSA (RSA_4096) \n
-                      * Elliptic Prime Curve 256 bit (EC_prime256v1) \n * Elliptic
-                      Prime Curve 384 bit (EC_secp384r1) \n * Elliptic Prime Curve
-                      521 bit (EC_secp521r1) \n The certificate must be a valid SSL/TLS
-                      X.509 version 3 certificate with FQDN or IP address specified
-                      and information about the issuer."
+                    description: |-
+                      The Amazon Resource Name (ARN) of the AWS Certificate Manager (ACM) certificate.
+                      Required when Protocols is set to FTPS.
+
+
+                      To request a new public certificate, see Request a public certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-public.html)
+                      in the AWS Certificate Manager User Guide.
+
+
+                      To import an existing certificate into ACM, see Importing certificates into
+                      ACM (https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html)
+                      in the AWS Certificate Manager User Guide.
+
+
+                      To request a private certificate to use FTPS through private IP addresses,
+                      see Request a private certificate (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request-private.html)
+                      in the AWS Certificate Manager User Guide.
+
+
+                      Certificates with the following cryptographic algorithms and key sizes are
+                      supported:
+
+
+                         * 2048-bit RSA (RSA_2048)
+
+
+                         * 4096-bit RSA (RSA_4096)
+
+
+                         * Elliptic Prime Curve 256 bit (EC_prime256v1)
+
+
+                         * Elliptic Prime Curve 384 bit (EC_secp384r1)
+
+
+                         * Elliptic Prime Curve 521 bit (EC_secp521r1)
+
+
+                      The certificate must be a valid SSL/TLS X.509 version 3 certificate with
+                      FQDN or IP address specified and information about the issuer.
                     type: string
                   certificateRef:
                     description: CertificateRef is a reference to a Certificate.
@@ -97,21 +126,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -124,8 +153,9 @@ spec:
                     description: CertificateSelector selects references to a Certificate.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -138,21 +168,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -160,23 +190,26 @@ spec:
                         type: object
                     type: object
                   domain:
-                    description: "The domain of the storage system that is used for
-                      file transfers. There are two domains available: Amazon Simple
-                      Storage Service (Amazon S3) and Amazon Elastic File System (Amazon
-                      EFS). The default value is S3. \n After the server is created,
-                      the domain cannot be changed."
+                    description: |-
+                      The domain of the storage system that is used for file transfers. There are
+                      two domains available: Amazon Simple Storage Service (Amazon S3) and Amazon
+                      Elastic File System (Amazon EFS). The default value is S3.
+
+
+                      After the server is created, the domain cannot be changed.
                     type: string
                   endpointDetails:
-                    description: The virtual private cloud (VPC) endpoint settings
-                      that are configured for your server. When you host your endpoint
-                      within your VPC, you can make it accessible only to resources
-                      within your VPC, or you can attach Elastic IPs and make it accessible
-                      to clients over the internet. Your VPC's default security groups
-                      are automatically assigned to your endpoint.
+                    description: |-
+                      The virtual private cloud (VPC) endpoint settings that are configured for
+                      your server. When you host your endpoint within your VPC, you can make it
+                      accessible only to resources within your VPC, or you can attach Elastic IPs
+                      and make it accessible to clients over the internet. Your VPC's default security
+                      groups are automatically assigned to your endpoint.
                     properties:
                       addressAllocationIDRefs:
-                        description: AddressAllocationIDRefs is a list of references
-                          to AddressAllocationID used to set the AddressAllocationIDs.
+                        description: |-
+                          AddressAllocationIDRefs is a list of references to AddressAllocationID used to set
+                          the AddressAllocationIDs.
                         items:
                           description: A Reference to a named object.
                           properties:
@@ -188,22 +221,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -214,13 +246,14 @@ spec:
                           type: object
                         type: array
                       addressAllocationIDSelector:
-                        description: AddressAllocationIDSelector selects references
-                          to AddressAllocationID used to set the AddressAllocationIDs.
+                        description: |-
+                          AddressAllocationIDSelector selects references to AddressAllocationID used
+                          to set the AddressAllocationIDs.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -233,21 +266,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -255,16 +288,20 @@ spec:
                             type: object
                         type: object
                       addressAllocationIDs:
-                        description: "A list of address allocation IDs that are required
-                          to attach an Elastic IP address to your server's endpoint.
-                          \n This property can only be set when EndpointType is set
-                          to VPC and it is only valid in the UpdateServer API."
+                        description: |-
+                          A list of address allocation IDs that are required to attach an Elastic IP
+                          address to your server's endpoint.
+
+
+                          This property can only be set when EndpointType is set to VPC and it is only
+                          valid in the UpdateServer API.
                         items:
                           type: string
                         type: array
                       securityGroupIDRefs:
-                        description: SecurityGroupIDRefs is a list of references to
-                          SecurityGroups used to set the SecurityGroupIDs.
+                        description: |-
+                          SecurityGroupIDRefs is a list of references to SecurityGroups used to set
+                          the SecurityGroupIDs.
                         items:
                           description: A Reference to a named object.
                           properties:
@@ -276,22 +313,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -302,13 +338,14 @@ spec:
                           type: object
                         type: array
                       securityGroupIDSelector:
-                        description: SecurityGroupIDsSelector selects references to
-                          SecurityGroupID used to set the SecurityGroupIDs.
+                        description: |-
+                          SecurityGroupIDsSelector selects references to SecurityGroupID used
+                          to set the SecurityGroupIDs.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -321,21 +358,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -343,21 +380,26 @@ spec:
                             type: object
                         type: object
                       securityGroupIDs:
-                        description: "A list of security groups IDs that are available
-                          to attach to your server's endpoint. \n This property can
-                          only be set when EndpointType is set to VPC. \n You can
-                          edit the SecurityGroupIds property in the UpdateServer (https://docs.aws.amazon.com/transfer/latest/userguide/API_UpdateServer.html)
-                          API only if you are changing the EndpointType from PUBLIC
-                          or VPC_ENDPOINT to VPC. To change security groups associated
-                          with your server's VPC endpoint after creation, use the
-                          Amazon EC2 ModifyVpcEndpoint (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyVpcEndpoint.html)
-                          API."
+                        description: |-
+                          A list of security groups IDs that are available to attach to your server's
+                          endpoint.
+
+
+                          This property can only be set when EndpointType is set to VPC.
+
+
+                          You can edit the SecurityGroupIds property in the UpdateServer (https://docs.aws.amazon.com/transfer/latest/userguide/API_UpdateServer.html)
+                          API only if you are changing the EndpointType from PUBLIC or VPC_ENDPOINT
+                          to VPC. To change security groups associated with your server's VPC endpoint
+                          after creation, use the Amazon EC2 ModifyVpcEndpoint (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyVpcEndpoint.html)
+                          API.
                         items:
                           type: string
                         type: array
                       subnetIDRefs:
-                        description: SubnetIDRefs is a list of references to Subnets
-                          used to set the SubnetIDs.
+                        description: |-
+                          SubnetIDRefs is a list of references to Subnets used to set
+                          the SubnetIDs.
                         items:
                           description: A Reference to a named object.
                           properties:
@@ -369,22 +411,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -395,13 +436,14 @@ spec:
                           type: object
                         type: array
                       subnetIDSelector:
-                        description: SubnetIDSelector selects references to Subnets
-                          used to set the SubnetIds.
+                        description: |-
+                          SubnetIDSelector selects references to Subnets used
+                          to set the SubnetIds.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -414,21 +456,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -436,16 +478,24 @@ spec:
                             type: object
                         type: object
                       subnetIDs:
-                        description: "A list of subnet IDs that are required to host
-                          your server endpoint in your VPC. \n This property can only
-                          be set when EndpointType is set to VPC."
+                        description: |-
+                          A list of subnet IDs that are required to host your server endpoint in your
+                          VPC.
+
+
+                          This property can only be set when EndpointType is set to VPC.
                         items:
                           type: string
                         type: array
                       vpcEndpointID:
-                        description: "The ID of the VPC endpoint. \n This property
-                          can only be set when EndpointType is set to VPC_ENDPOINT.
-                          \n For more information, see https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html#deprecate-vpc-endpoint."
+                        description: |-
+                          The ID of the VPC endpoint.
+
+
+                          This property can only be set when EndpointType is set to VPC_ENDPOINT.
+
+
+                          For more information, see https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html#deprecate-vpc-endpoint.
                         type: string
                       vpcEndpointIDRef:
                         description: VPCEndpointIDRef is a reference to a VPCEndpointID.
@@ -458,21 +508,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -486,9 +536,9 @@ spec:
                           VPCEndpointID.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -501,21 +551,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -523,9 +573,11 @@ spec:
                             type: object
                         type: object
                       vpcID:
-                        description: "The VPC ID of the VPC in which a server's endpoint
-                          will be hosted. \n This property can only be set when EndpointType
-                          is set to VPC."
+                        description: |-
+                          The VPC ID of the VPC in which a server's endpoint will be hosted.
+
+
+                          This property can only be set when EndpointType is set to VPC.
                         type: string
                       vpcIDRef:
                         description: VPCIDRef is a reference to a VPCID.
@@ -538,21 +590,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -565,9 +617,9 @@ spec:
                         description: VPCIDSelector selects references to a VPCID.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -580,21 +632,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -603,55 +655,81 @@ spec:
                         type: object
                     type: object
                   endpointType:
-                    description: "The type of endpoint that you want your server to
-                      use. You can choose to make your server's endpoint publicly
-                      accessible (PUBLIC) or host it inside your VPC. With an endpoint
-                      that is hosted in a VPC, you can restrict access to your server
-                      and resources only within your VPC or choose to make it internet
-                      facing by attaching Elastic IP addresses directly to it. \n
-                      After May 19, 2021, you won't be able to create a server using
-                      EndpointType=VPC_ENDPOINT in your Amazon Web Services account
-                      if your account hasn't already done so before May 19, 2021.
-                      If you have already created servers with EndpointType=VPC_ENDPOINT
-                      in your Amazon Web Services account on or before May 19, 2021,
-                      you will not be affected. After this date, use EndpointType=VPC.
-                      \n For more information, see https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html#deprecate-vpc-endpoint.
-                      \n It is recommended that you use VPC as the EndpointType. With
-                      this endpoint type, you have the option to directly associate
-                      up to three Elastic IPv4 addresses (BYO IP included) with your
-                      server's endpoint and use VPC security groups to restrict traffic
-                      by the client's public IP address. This is not possible with
-                      EndpointType set to VPC_ENDPOINT."
+                    description: |-
+                      The type of endpoint that you want your server to use. You can choose to
+                      make your server's endpoint publicly accessible (PUBLIC) or host it inside
+                      your VPC. With an endpoint that is hosted in a VPC, you can restrict access
+                      to your server and resources only within your VPC or choose to make it internet
+                      facing by attaching Elastic IP addresses directly to it.
+
+
+                      After May 19, 2021, you won't be able to create a server using EndpointType=VPC_ENDPOINT
+                      in your Amazon Web Services account if your account hasn't already done so
+                      before May 19, 2021. If you have already created servers with EndpointType=VPC_ENDPOINT
+                      in your Amazon Web Services account on or before May 19, 2021, you will not
+                      be affected. After this date, use EndpointType=VPC.
+
+
+                      For more information, see https://docs.aws.amazon.com/transfer/latest/userguide/create-server-in-vpc.html#deprecate-vpc-endpoint.
+
+
+                      It is recommended that you use VPC as the EndpointType. With this endpoint
+                      type, you have the option to directly associate up to three Elastic IPv4
+                      addresses (BYO IP included) with your server's endpoint and use VPC security
+                      groups to restrict traffic by the client's public IP address. This is not
+                      possible with EndpointType set to VPC_ENDPOINT.
                     type: string
                   hostKey:
-                    description: "The RSA, ECDSA, or ED25519 private key to use for
-                      your SFTP-enabled server. You can add multiple host keys, in
-                      case you want to rotate keys, or have a set of active keys that
-                      use different algorithms. \n Use the following command to generate
-                      an RSA 2048 bit key with no passphrase: \n ssh-keygen -t rsa
-                      -b 2048 -N \"\" -m PEM -f my-new-server-key. \n Use a minimum
-                      value of 2048 for the -b option. You can create a stronger key
-                      by using 3072 or 4096. \n Use the following command to generate
-                      an ECDSA 256 bit key with no passphrase: \n ssh-keygen -t ecdsa
-                      -b 256 -N \"\" -m PEM -f my-new-server-key. \n Valid values
-                      for the -b option for ECDSA are 256, 384, and 521. \n Use the
-                      following command to generate an ED25519 key with no passphrase:
-                      \n ssh-keygen -t ed25519 -N \"\" -f my-new-server-key. \n For
-                      all of these commands, you can replace my-new-server-key with
-                      a string of your choice. \n If you aren't planning to migrate
-                      existing users from an existing SFTP-enabled server to a new
-                      server, don't update the host key. Accidentally changing a server's
-                      host key can be disruptive. \n For more information, see Manage
-                      host keys for your SFTP-enabled server (https://docs.aws.amazon.com/transfer/latest/userguide/edit-server-config.html#configuring-servers-change-host-key)
-                      in the Transfer Family User Guide."
+                    description: |-
+                      The RSA, ECDSA, or ED25519 private key to use for your SFTP-enabled server.
+                      You can add multiple host keys, in case you want to rotate keys, or have
+                      a set of active keys that use different algorithms.
+
+
+                      Use the following command to generate an RSA 2048 bit key with no passphrase:
+
+
+                      ssh-keygen -t rsa -b 2048 -N "" -m PEM -f my-new-server-key.
+
+
+                      Use a minimum value of 2048 for the -b option. You can create a stronger
+                      key by using 3072 or 4096.
+
+
+                      Use the following command to generate an ECDSA 256 bit key with no passphrase:
+
+
+                      ssh-keygen -t ecdsa -b 256 -N "" -m PEM -f my-new-server-key.
+
+
+                      Valid values for the -b option for ECDSA are 256, 384, and 521.
+
+
+                      Use the following command to generate an ED25519 key with no passphrase:
+
+
+                      ssh-keygen -t ed25519 -N "" -f my-new-server-key.
+
+
+                      For all of these commands, you can replace my-new-server-key with a string
+                      of your choice.
+
+
+                      If you aren't planning to migrate existing users from an existing SFTP-enabled
+                      server to a new server, don't update the host key. Accidentally changing
+                      a server's host key can be disruptive.
+
+
+                      For more information, see Manage host keys for your SFTP-enabled server (https://docs.aws.amazon.com/transfer/latest/userguide/edit-server-config.html#configuring-servers-change-host-key)
+                      in the Transfer Family User Guide.
                     type: string
                   identityProviderDetails:
-                    description: Required when IdentityProviderType is set to AWS_DIRECTORY_SERVICE,
-                      Amazon Web Services_LAMBDA or API_GATEWAY. Accepts an array
-                      containing all of the information required to use a directory
-                      in AWS_DIRECTORY_SERVICE or invoke a customer-supplied authentication
-                      API, including the API Gateway URL. Not required when IdentityProviderType
-                      is set to SERVICE_MANAGED.
+                    description: |-
+                      Required when IdentityProviderType is set to AWS_DIRECTORY_SERVICE, Amazon
+                      Web Services_LAMBDA or API_GATEWAY. Accepts an array containing all of the
+                      information required to use a directory in AWS_DIRECTORY_SERVICE or invoke
+                      a customer-supplied authentication API, including the API Gateway URL. Not
+                      required when IdentityProviderType is set to SERVICE_MANAGED.
                     properties:
                       directoryID:
                         type: string
@@ -665,26 +743,33 @@ spec:
                         type: string
                     type: object
                   identityProviderType:
-                    description: "The mode of authentication for a server. The default
-                      value is SERVICE_MANAGED, which allows you to store and access
-                      user credentials within the Transfer Family service. \n Use
-                      AWS_DIRECTORY_SERVICE to provide access to Active Directory
-                      groups in Directory Service for Microsoft Active Directory or
-                      Microsoft Active Directory in your on-premises environment or
-                      in Amazon Web Services using AD Connector. This option also
-                      requires you to provide a Directory ID by using the IdentityProviderDetails
-                      parameter. \n Use the API_GATEWAY value to integrate with an
-                      identity provider of your choosing. The API_GATEWAY setting
-                      requires you to provide an Amazon API Gateway endpoint URL to
-                      call for authentication by using the IdentityProviderDetails
-                      parameter. \n Use the AWS_LAMBDA value to directly use an Lambda
-                      function as your identity provider. If you choose this value,
-                      you must specify the ARN for the Lambda function in the Function
-                      parameter for the IdentityProviderDetails data type."
+                    description: |-
+                      The mode of authentication for a server. The default value is SERVICE_MANAGED,
+                      which allows you to store and access user credentials within the Transfer
+                      Family service.
+
+
+                      Use AWS_DIRECTORY_SERVICE to provide access to Active Directory groups in
+                      Directory Service for Microsoft Active Directory or Microsoft Active Directory
+                      in your on-premises environment or in Amazon Web Services using AD Connector.
+                      This option also requires you to provide a Directory ID by using the IdentityProviderDetails
+                      parameter.
+
+
+                      Use the API_GATEWAY value to integrate with an identity provider of your
+                      choosing. The API_GATEWAY setting requires you to provide an Amazon API Gateway
+                      endpoint URL to call for authentication by using the IdentityProviderDetails
+                      parameter.
+
+
+                      Use the AWS_LAMBDA value to directly use an Lambda function as your identity
+                      provider. If you choose this value, you must specify the ARN for the Lambda
+                      function in the Function parameter for the IdentityProviderDetails data type.
                     type: string
                   loggingRole:
-                    description: Allows the service to write your users' activity
-                      to your Amazon CloudWatch logs for monitoring and auditing purposes.
+                    description: |-
+                      Allows the service to write your users' activity to your Amazon CloudWatch
+                      logs for monitoring and auditing purposes.
                     type: string
                   loggingRoleRef:
                     description: LoggingRoleRef is a reference to a IAM role.
@@ -697,21 +782,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -724,8 +809,9 @@ spec:
                     description: LoggingRoleSelector selects references to a IAM role.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -738,21 +824,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -760,39 +846,52 @@ spec:
                         type: object
                     type: object
                   postAuthenticationLoginBanner:
-                    description: "Specifies a string to display when users connect
-                      to a server. This string is displayed after the user authenticates.
-                      \n The SFTP protocol does not support post-authentication display
-                      banners."
+                    description: |-
+                      Specifies a string to display when users connect to a server. This string
+                      is displayed after the user authenticates.
+
+
+                      The SFTP protocol does not support post-authentication display banners.
                     type: string
                   preAuthenticationLoginBanner:
-                    description: "Specifies a string to display when users connect
-                      to a server. This string is displayed before the user authenticates.
-                      For example, the following banner displays details about using
-                      the system: \n This system is for the use of authorized users
-                      only. Individuals using this computer system without authority,
-                      or in excess of their authority, are subject to having all of
-                      their activities on this system monitored and recorded by system
-                      personnel."
+                    description: |-
+                      Specifies a string to display when users connect to a server. This string
+                      is displayed before the user authenticates. For example, the following banner
+                      displays details about using the system:
+
+
+                      This system is for the use of authorized users only. Individuals using this
+                      computer system without authority, or in excess of their authority, are subject
+                      to having all of their activities on this system monitored and recorded by
+                      system personnel.
                     type: string
                   protocolDetails:
-                    description: "The protocol settings that are configured for your
-                      server. \n * To indicate passive mode (for FTP and FTPS protocols),
-                      use the PassiveIp parameter. Enter a single dotted-quad IPv4
-                      address, such as the external IP address of a firewall, router,
-                      or load balancer. \n * To ignore the error that is generated
-                      when the client attempts to use the SETSTAT command on a file
-                      that you are uploading to an Amazon S3 bucket, use the SetStatOption
-                      parameter. To have the Transfer Family server ignore the SETSTAT
-                      command and upload files without needing to make any changes
-                      to your SFTP client, set the value to ENABLE_NO_OP. If you set
-                      the SetStatOption parameter to ENABLE_NO_OP, Transfer Family
-                      generates a log entry to Amazon CloudWatch Logs, so that you
-                      can determine when the client is making a SETSTAT call. \n *
-                      To determine whether your Transfer Family server resumes recent,
-                      negotiated sessions through a unique session ID, use the TlsSessionResumptionMode
-                      parameter. \n * As2Transports indicates the transport method
-                      for the AS2 messages. Currently, only HTTP is supported."
+                    description: |-
+                      The protocol settings that are configured for your server.
+
+
+                         * To indicate passive mode (for FTP and FTPS protocols), use the PassiveIp
+                         parameter. Enter a single dotted-quad IPv4 address, such as the external
+                         IP address of a firewall, router, or load balancer.
+
+
+                         * To ignore the error that is generated when the client attempts to use
+                         the SETSTAT command on a file that you are uploading to an Amazon S3 bucket,
+                         use the SetStatOption parameter. To have the Transfer Family server ignore
+                         the SETSTAT command and upload files without needing to make any changes
+                         to your SFTP client, set the value to ENABLE_NO_OP. If you set the SetStatOption
+                         parameter to ENABLE_NO_OP, Transfer Family generates a log entry to Amazon
+                         CloudWatch Logs, so that you can determine when the client is making a
+                         SETSTAT call.
+
+
+                         * To determine whether your Transfer Family server resumes recent, negotiated
+                         sessions through a unique session ID, use the TlsSessionResumptionMode
+                         parameter.
+
+
+                         * As2Transports indicates the transport method for the AS2 messages. Currently,
+                         only HTTP is supported.
                     properties:
                       as2Transports:
                         items:
@@ -806,25 +905,46 @@ spec:
                         type: string
                     type: object
                   protocols:
-                    description: "Specifies the file transfer protocol or protocols
-                      over which your file transfer protocol client can connect to
-                      your server's endpoint. The available protocols are: \n * SFTP
-                      (Secure Shell (SSH) File Transfer Protocol): File transfer over
-                      SSH \n * FTPS (File Transfer Protocol Secure): File transfer
-                      with TLS encryption \n * FTP (File Transfer Protocol): Unencrypted
-                      file transfer \n * AS2 (Applicability Statement 2): used for
-                      transporting structured business-to-business data \n * If you
-                      select FTPS, you must choose a certificate stored in Certificate
-                      Manager (ACM) which is used to identify your server when clients
-                      connect to it over FTPS. \n * If Protocol includes either FTP
-                      or FTPS, then the EndpointType must be VPC and the IdentityProviderType
-                      must be either AWS_DIRECTORY_SERVICE, AWS_LAMBDA, or API_GATEWAY.
-                      \n * If Protocol includes FTP, then AddressAllocationIds cannot
-                      be associated. \n * If Protocol is set only to SFTP, the EndpointType
-                      can be set to PUBLIC and the IdentityProviderType can be set
-                      any of the supported identity types: SERVICE_MANAGED, AWS_DIRECTORY_SERVICE,
-                      AWS_LAMBDA, or API_GATEWAY. \n * If Protocol includes AS2, then
-                      the EndpointType must be VPC, and domain must be Amazon S3."
+                    description: |-
+                      Specifies the file transfer protocol or protocols over which your file transfer
+                      protocol client can connect to your server's endpoint. The available protocols
+                      are:
+
+
+                         * SFTP (Secure Shell (SSH) File Transfer Protocol): File transfer over
+                         SSH
+
+
+                         * FTPS (File Transfer Protocol Secure): File transfer with TLS encryption
+
+
+                         * FTP (File Transfer Protocol): Unencrypted file transfer
+
+
+                         * AS2 (Applicability Statement 2): used for transporting structured business-to-business
+                         data
+
+
+                         * If you select FTPS, you must choose a certificate stored in Certificate
+                         Manager (ACM) which is used to identify your server when clients connect
+                         to it over FTPS.
+
+
+                         * If Protocol includes either FTP or FTPS, then the EndpointType must
+                         be VPC and the IdentityProviderType must be either AWS_DIRECTORY_SERVICE,
+                         AWS_LAMBDA, or API_GATEWAY.
+
+
+                         * If Protocol includes FTP, then AddressAllocationIds cannot be associated.
+
+
+                         * If Protocol is set only to SFTP, the EndpointType can be set to PUBLIC
+                         and the IdentityProviderType can be set any of the supported identity
+                         types: SERVICE_MANAGED, AWS_DIRECTORY_SERVICE, AWS_LAMBDA, or API_GATEWAY.
+
+
+                         * If Protocol includes AS2, then the EndpointType must be VPC, and domain
+                         must be Amazon S3.
                     items:
                       type: string
                     type: array
@@ -836,16 +956,26 @@ spec:
                       attached to the server.
                     type: string
                   structuredLogDestinations:
-                    description: "Specifies the log groups to which your server logs
-                      are sent. \n To specify a log group, you must provide the ARN
-                      for an existing log group. In this case, the format of the log
-                      group is as follows: \n arn:aws:logs:region-name:amazon-account-id:log-group:log-group-name:*
-                      \n For example, arn:aws:logs:us-east-1:111122223333:log-group:mytestgroup:*
-                      \n If you have previously specified a log group for a server,
-                      you can clear it, and in effect turn off structured logging,
-                      by providing an empty value for this parameter in an update-server
-                      call. For example: \n update-server --server-id s-1234567890abcdef0
-                      --structured-log-destinations"
+                    description: |-
+                      Specifies the log groups to which your server logs are sent.
+
+
+                      To specify a log group, you must provide the ARN for an existing log group.
+                      In this case, the format of the log group is as follows:
+
+
+                      arn:aws:logs:region-name:amazon-account-id:log-group:log-group-name:*
+
+
+                      For example, arn:aws:logs:us-east-1:111122223333:log-group:mytestgroup:*
+
+
+                      If you have previously specified a log group for a server, you can clear
+                      it, and in effect turn off structured logging, by providing an empty value
+                      for this parameter in an update-server call. For example:
+
+
+                      update-server --server-id s-1234567890abcdef0 --structured-log-destinations
                     items:
                       type: string
                     type: array
@@ -861,13 +991,15 @@ spec:
                       type: object
                     type: array
                   workflowDetails:
-                    description: "Specifies the workflow ID for the workflow to assign
-                      and the execution role that's used for executing the workflow.
-                      \n In addition to a workflow to execute when a file is uploaded
-                      completely, WorkflowDetails can also contain a workflow ID (and
-                      execution role) for a workflow to execute on partial upload.
-                      A partial upload occurs when the server session disconnects
-                      while the file is still being uploaded."
+                    description: |-
+                      Specifies the workflow ID for the workflow to assign and the execution role
+                      that's used for executing the workflow.
+
+
+                      In addition to a workflow to execute when a file is uploaded completely,
+                      WorkflowDetails can also contain a workflow ID (and execution role) for a
+                      workflow to execute on partial upload. A partial upload occurs when the server
+                      session disconnects while the file is still being uploaded.
                     properties:
                       onPartialUpload:
                         items:
@@ -894,19 +1026,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -919,9 +1053,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -931,21 +1066,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -955,17 +1090,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -975,21 +1112,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -1004,21 +1141,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -1029,14 +1167,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -1068,14 +1207,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -1085,8 +1233,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -1098,6 +1247,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

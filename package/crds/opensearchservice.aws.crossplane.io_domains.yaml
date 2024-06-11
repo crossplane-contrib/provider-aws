@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: domains.opensearchservice.aws.crossplane.io
 spec:
   group: opensearchservice.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: Domain is the Schema for the Domains API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,33 +74,44 @@ spec:
                 description: DomainParameters defines the desired state of Domain
                 properties:
                   accessPolicies:
-                    description: Identity and Access Management (IAM) policy document
-                      specifying the access policies for the new domain.
+                    description: |-
+                      Identity and Access Management (IAM) policy document specifying the access
+                      policies for the new domain.
                     type: string
                   advancedOptions:
                     additionalProperties:
                       type: string
-                    description: "Key-value pairs to specify advanced configuration
-                      options. The following key-value pairs are supported: \n * \"rest.action.multi.allow_explicit_index\":
-                      \"true\" | \"false\" - Note the use of a string rather than
-                      a boolean. Specifies whether explicit references to indexes
-                      are allowed inside the body of HTTP requests. If you want to
-                      configure access policies for domain sub-resources, such as
-                      specific indexes and domain APIs, you must disable this property.
-                      Default is true. \n * \"indices.fielddata.cache.size\": \"80\"
-                      - Note the use of a string rather than a boolean. Specifies
-                      the percentage of heap space allocated to field data. Default
-                      is unbounded. \n * \"indices.query.bool.max_clause_count\":
-                      \"1024\" - Note the use of a string rather than a boolean. Specifies
-                      the maximum number of clauses allowed in a Lucene boolean query.
-                      Default is 1,024. Queries with more than the permitted number
-                      of clauses result in a TooManyClauses error. \n * \"override_main_response_version\":
-                      \"true\" | \"false\" - Note the use of a string rather than
-                      a boolean. Specifies whether the domain reports its version
-                      as 7.10 to allow Elasticsearch OSS clients and plugins to continue
-                      working with it. Default is false when creating a domain and
-                      true when upgrading a domain. \n For more information, see Advanced
-                      cluster parameters (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomain-configure-advanced-options)."
+                    description: |-
+                      Key-value pairs to specify advanced configuration options. The following
+                      key-value pairs are supported:
+
+
+                         * "rest.action.multi.allow_explicit_index": "true" | "false" - Note the
+                         use of a string rather than a boolean. Specifies whether explicit references
+                         to indexes are allowed inside the body of HTTP requests. If you want to
+                         configure access policies for domain sub-resources, such as specific indexes
+                         and domain APIs, you must disable this property. Default is true.
+
+
+                         * "indices.fielddata.cache.size": "80" - Note the use of a string rather
+                         than a boolean. Specifies the percentage of heap space allocated to field
+                         data. Default is unbounded.
+
+
+                         * "indices.query.bool.max_clause_count": "1024" - Note the use of a string
+                         rather than a boolean. Specifies the maximum number of clauses allowed
+                         in a Lucene boolean query. Default is 1,024. Queries with more than the
+                         permitted number of clauses result in a TooManyClauses error.
+
+
+                         * "override_main_response_version": "true" | "false" - Note the use of
+                         a string rather than a boolean. Specifies whether the domain reports its
+                         version as 7.10 to allow Elasticsearch OSS clients and plugins to continue
+                         working with it. Default is false when creating a domain and true when
+                         upgrading a domain.
+
+
+                      For more information, see Advanced cluster parameters (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomain-configure-advanced-options).
                     type: object
                   advancedSecurityOptions:
                     description: Options for fine-grained access control.
@@ -109,10 +126,10 @@ spec:
                         description: Credentials for the master user for a domain.
                         properties:
                           masterUserARN:
-                            description: The Amazon Resource Name (ARN) of the domain.
-                              See Identifiers for IAM Entities (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html)
-                              in Using AWS Identity and Access Management for more
-                              information.
+                            description: |-
+                              The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
+                              (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
+                              Identity and Access Management for more information.
                             type: string
                           masterUserName:
                             type: string
@@ -159,9 +176,9 @@ spec:
                             cronExpressionForRecurrence:
                               type: string
                             duration:
-                              description: The duration of a maintenance schedule.
-                                For more information, see Auto-Tune for Amazon OpenSearch
-                                Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
+                              description: |-
+                                The duration of a maintenance schedule. For more information, see Auto-Tune
+                                for Amazon OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
                               properties:
                                 unit:
                                   description: The unit of a maintenance schedule
@@ -185,10 +202,10 @@ spec:
                     description: Container for the cluster configuration of a domain.
                     properties:
                       coldStorageOptions:
-                        description: Container for the parameters required to enable
-                          cold storage for an OpenSearch Service domain. For more
-                          information, see Cold storage for Amazon OpenSearch Service
-                          (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/cold-storage.html).
+                        description: |-
+                          Container for the parameters required to enable cold storage for an OpenSearch
+                          Service domain. For more information, see Cold storage for Amazon OpenSearch
+                          Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/cold-storage.html).
                         properties:
                           enabled:
                             type: boolean
@@ -226,9 +243,9 @@ spec:
                         type: boolean
                     type: object
                   cognitoOptions:
-                    description: Key-value pairs to configure Amazon Cognito authentication.
-                      For more information, see Configuring Amazon Cognito authentication
-                      for OpenSearch Dashboards (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/cognito-auth.html).
+                    description: |-
+                      Key-value pairs to configure Amazon Cognito authentication. For more information,
+                      see Configuring Amazon Cognito authentication for OpenSearch Dashboards (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/cognito-auth.html).
                     properties:
                       enabled:
                         type: boolean
@@ -240,15 +257,17 @@ spec:
                         type: string
                     type: object
                   domainEndpointOptions:
-                    description: Additional options for the domain endpoint, such
-                      as whether to require HTTPS for all traffic.
+                    description: |-
+                      Additional options for the domain endpoint, such as whether to require HTTPS
+                      for all traffic.
                     properties:
                       customEndpoint:
                         type: string
                       customEndpointCertificateARN:
-                        description: The Amazon Resource Name (ARN) of the domain.
-                          See Identifiers for IAM Entities (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html)
-                          in Using AWS Identity and Access Management for more information.
+                        description: |-
+                          The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
+                          (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
+                          Identity and Access Management for more information.
                         type: string
                       customEndpointEnabled:
                         type: boolean
@@ -258,8 +277,9 @@ spec:
                         type: string
                     type: object
                   ebsOptions:
-                    description: Container for the parameters required to enable EBS-based
-                      storage for an OpenSearch Service domain.
+                    description: |-
+                      Container for the parameters required to enable EBS-based storage for an
+                      OpenSearch Service domain.
                     properties:
                       ebsEnabled:
                         type: boolean
@@ -273,8 +293,9 @@ spec:
                         format: int64
                         type: integer
                       volumeType:
-                        description: The type of EBS volume that a domain uses. For
-                          more information, see Configuring EBS-based storage (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/opensearch-createupdatedomains.html#opensearch-createdomain-configure-ebs).
+                        description: |-
+                          The type of EBS volume that a domain uses. For more information, see Configuring
+                          EBS-based storage (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/opensearch-createupdatedomains.html#opensearch-createdomain-configure-ebs).
                         type: string
                     type: object
                   encryptionAtRestOptions:
@@ -296,21 +317,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -324,9 +345,9 @@ spec:
                           Key used to set KMSKeyID.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -339,21 +360,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -362,11 +383,11 @@ spec:
                         type: object
                     type: object
                   engineVersion:
-                    description: String of format Elasticsearch_X.Y or OpenSearch_X.Y
-                      to specify the engine version for the OpenSearch Service domain.
-                      For example, OpenSearch_1.0 or Elasticsearch_7.9. For more information,
-                      see Creating and managing Amazon OpenSearch Service domains
-                      (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
+                    description: |-
+                      String of format Elasticsearch_X.Y or OpenSearch_X.Y to specify the engine
+                      version for the OpenSearch Service domain. For example, OpenSearch_1.0 or
+                      Elasticsearch_7.9. For more information, see Creating and managing Amazon
+                      OpenSearch Service domains (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
                     type: string
                   logPublishingOptions:
                     additionalProperties:
@@ -387,25 +408,30 @@ spec:
                         type: boolean
                     type: object
                   offPeakWindowOptions:
-                    description: Specifies a daily 10-hour time block during which
-                      OpenSearch Service can perform configuration changes on the
-                      domain, including service software updates and Auto-Tune enhancements
-                      that require a blue/green deployment. If no options are specified,
-                      the default start time of 10:00 P.M. local time (for the Region
+                    description: |-
+                      Specifies a daily 10-hour time block during which OpenSearch Service can
+                      perform configuration changes on the domain, including service software updates
+                      and Auto-Tune enhancements that require a blue/green deployment. If no options
+                      are specified, the default start time of 10:00 P.M. local time (for the Region
                       that the domain is created in) is used.
                     properties:
                       enabled:
                         type: boolean
                       offPeakWindow:
-                        description: "A custom 10-hour, low-traffic window during
-                          which OpenSearch Service can perform mandatory configuration
-                          changes on the domain. These actions can include scheduled
-                          service software updates and blue/green Auto-Tune enhancements.
-                          OpenSearch Service will schedule these actions during the
-                          window that you specify. \n If you don't specify a window
-                          start time, it defaults to 10:00 P.M. local time. \n For
-                          more information, see Defining off-peak maintenance windows
-                          for Amazon OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/off-peak.html)."
+                        description: |-
+                          A custom 10-hour, low-traffic window during which OpenSearch Service can
+                          perform mandatory configuration changes on the domain. These actions can
+                          include scheduled service software updates and blue/green Auto-Tune enhancements.
+                          OpenSearch Service will schedule these actions during the window that you
+                          specify.
+
+
+                          If you don't specify a window start time, it defaults to 10:00 P.M. local
+                          time.
+
+
+                          For more information, see Defining off-peak maintenance windows for Amazon
+                          OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/off-peak.html).
                         properties:
                           windowStartTime:
                             description: The desired start time for an off-peak maintenance
@@ -440,25 +466,27 @@ spec:
                     items:
                       properties:
                         key:
-                          description: A string between 1 to 128 characters that specifies
-                            the key for a tag. Tag keys must be unique for the domain
-                            to which they're attached.
+                          description: |-
+                            A string between 1 to 128 characters that specifies the key for a tag. Tag
+                            keys must be unique for the domain to which they're attached.
                           type: string
                         value:
-                          description: A string between 0 to 256 characters that specifies
-                            the value for a tag. Tag values can be null and don't
-                            have to be unique in a tag set.
+                          description: |-
+                            A string between 0 to 256 characters that specifies the value for a tag.
+                            Tag values can be null and don't have to be unique in a tag set.
                           type: string
                       type: object
                     type: array
                   vpcOptions:
-                    description: Options to specify the subnets and security groups
-                      for the VPC endpoint. For more information, see Launching your
-                      Amazon OpenSearch Service domains using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
+                    description: |-
+                      Options to specify the subnets and security groups for the VPC endpoint.
+                      For more information, see Launching your Amazon OpenSearch Service domains
+                      using a VPC (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/vpc.html).
                     properties:
                       securityGroupIdRefs:
-                        description: SecurityGroupIDRefs is a list of references to
-                          SecurityGroups used to set the SecurityGroupIDs.
+                        description: |-
+                          SecurityGroupIDRefs is a list of references to SecurityGroups used to set
+                          the SecurityGroupIDs.
                         items:
                           description: A Reference to a named object.
                           properties:
@@ -470,22 +498,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -496,13 +523,14 @@ spec:
                           type: object
                         type: array
                       securityGroupIdSelector:
-                        description: SecurityGroupIDsSelector selects references to
-                          SecurityGroupID used to set the SecurityGroupIDs.
+                        description: |-
+                          SecurityGroupIDsSelector selects references to SecurityGroupID used
+                          to set the SecurityGroupIDs.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -515,21 +543,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -541,8 +569,9 @@ spec:
                           type: string
                         type: array
                       subnetIdRefs:
-                        description: SubnetIDRefs is a list of references to Subnets
-                          used to set the SubnetIDs.
+                        description: |-
+                          SubnetIDRefs is a list of references to Subnets used to set
+                          the SubnetIDs.
                         items:
                           description: A Reference to a named object.
                           properties:
@@ -554,22 +583,21 @@ spec:
                               properties:
                                 resolution:
                                   default: Required
-                                  description: Resolution specifies whether resolution
-                                    of this reference is required. The default is
-                                    'Required', which means the reconcile will fail
-                                    if the reference cannot be resolved. 'Optional'
-                                    means this reference will be a no-op if it cannot
-                                    be resolved.
+                                  description: |-
+                                    Resolution specifies whether resolution of this reference is required.
+                                    The default is 'Required', which means the reconcile will fail if the
+                                    reference cannot be resolved. 'Optional' means this reference will be
+                                    a no-op if it cannot be resolved.
                                   enum:
                                   - Required
                                   - Optional
                                   type: string
                                 resolve:
-                                  description: Resolve specifies when this reference
-                                    should be resolved. The default is 'IfNotPresent',
-                                    which will attempt to resolve the reference only
-                                    when the corresponding field is not present. Use
-                                    'Always' to resolve the reference on every reconcile.
+                                  description: |-
+                                    Resolve specifies when this reference should be resolved. The default
+                                    is 'IfNotPresent', which will attempt to resolve the reference only when
+                                    the corresponding field is not present. Use 'Always' to resolve the
+                                    reference on every reconcile.
                                   enum:
                                   - Always
                                   - IfNotPresent
@@ -580,13 +608,14 @@ spec:
                           type: object
                         type: array
                       subnetIdSelector:
-                        description: SubnetIDsSelector selects references to Subnets
-                          used to set the SubnetIDs.
+                        description: |-
+                          SubnetIDsSelector selects references to Subnets used
+                          to set the SubnetIDs.
                         properties:
                           matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
+                            description: |-
+                              MatchControllerRef ensures an object with the same controller reference
+                              as the selecting object is selected.
                             type: boolean
                           matchLabels:
                             additionalProperties:
@@ -599,21 +628,21 @@ spec:
                             properties:
                               resolution:
                                 default: Required
-                                description: Resolution specifies whether resolution
-                                  of this reference is required. The default is 'Required',
-                                  which means the reconcile will fail if the reference
-                                  cannot be resolved. 'Optional' means this reference
-                                  will be a no-op if it cannot be resolved.
+                                description: |-
+                                  Resolution specifies whether resolution of this reference is required.
+                                  The default is 'Required', which means the reconcile will fail if the
+                                  reference cannot be resolved. 'Optional' means this reference will be
+                                  a no-op if it cannot be resolved.
                                 enum:
                                 - Required
                                 - Optional
                                 type: string
                               resolve:
-                                description: Resolve specifies when this reference
-                                  should be resolved. The default is 'IfNotPresent',
-                                  which will attempt to resolve the reference only
-                                  when the corresponding field is not present. Use
-                                  'Always' to resolve the reference on every reconcile.
+                                description: |-
+                                  Resolve specifies when this reference should be resolved. The default
+                                  is 'IfNotPresent', which will attempt to resolve the reference only when
+                                  the corresponding field is not present. Use 'Always' to resolve the
+                                  reference on every reconcile.
                                 enum:
                                 - Always
                                 - IfNotPresent
@@ -632,19 +661,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -657,9 +688,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -669,21 +701,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -693,17 +725,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -713,21 +747,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -742,21 +776,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -767,14 +802,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -796,8 +832,9 @@ spec:
                 description: DomainObservation defines the observed state of Domain
                 properties:
                   accessPolicies:
-                    description: Identity and Access Management (IAM) policy document
-                      specifying the access policies for the domain.
+                    description: |-
+                      Identity and Access Management (IAM) policy document specifying the access
+                      policies for the domain.
                     type: string
                   advancedOptions:
                     additionalProperties:
@@ -841,8 +878,9 @@ spec:
                         type: object
                     type: object
                   arn:
-                    description: The Amazon Resource Name (ARN) of the domain. For
-                      more information, see IAM identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
+                    description: |-
+                      The Amazon Resource Name (ARN) of the domain. For more information, see IAM
+                      identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
                       in the AWS Identity and Access Management User Guide.
                     type: string
                   autoTuneOptions:
@@ -851,8 +889,9 @@ spec:
                       errorMessage:
                         type: string
                       state:
-                        description: The Auto-Tune state for the domain. For valid
-                          states see Auto-Tune for Amazon OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
+                        description: |-
+                          The Auto-Tune state for the domain. For valid states see Auto-Tune for Amazon
+                          OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
                         type: string
                       useOffPeakWindow:
                         type: boolean
@@ -870,10 +909,10 @@ spec:
                     description: Container for the cluster configuration of the domain.
                     properties:
                       coldStorageOptions:
-                        description: Container for the parameters required to enable
-                          cold storage for an OpenSearch Service domain. For more
-                          information, see Cold storage for Amazon OpenSearch Service
-                          (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/cold-storage.html).
+                        description: |-
+                          Container for the parameters required to enable cold storage for an OpenSearch
+                          Service domain. For more information, see Cold storage for Amazon OpenSearch
+                          Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/cold-storage.html).
                         properties:
                           enabled:
                             type: boolean
@@ -911,8 +950,9 @@ spec:
                         type: boolean
                     type: object
                   cognitoOptions:
-                    description: Key-value pairs to configure Amazon Cognito authentication
-                      for OpenSearch Dashboards.
+                    description: |-
+                      Key-value pairs to configure Amazon Cognito authentication for OpenSearch
+                      Dashboards.
                     properties:
                       enabled:
                         type: boolean
@@ -924,26 +964,28 @@ spec:
                         type: string
                     type: object
                   created:
-                    description: Creation status of an OpenSearch Service domain.
-                      True if domain creation is complete. False if domain creation
-                      is still in progress.
+                    description: |-
+                      Creation status of an OpenSearch Service domain. True if domain creation
+                      is complete. False if domain creation is still in progress.
                     type: boolean
                   deleted:
-                    description: Deletion status of an OpenSearch Service domain.
-                      True if domain deletion is complete. False if domain deletion
-                      is still in progress. Once deletion is complete, the status
-                      of the domain is no longer returned.
+                    description: |-
+                      Deletion status of an OpenSearch Service domain. True if domain deletion
+                      is complete. False if domain deletion is still in progress. Once deletion
+                      is complete, the status of the domain is no longer returned.
                     type: boolean
                   domainEndpointOptions:
-                    description: Additional options for the domain endpoint, such
-                      as whether to require HTTPS for all traffic.
+                    description: |-
+                      Additional options for the domain endpoint, such as whether to require HTTPS
+                      for all traffic.
                     properties:
                       customEndpoint:
                         type: string
                       customEndpointCertificateARN:
-                        description: The Amazon Resource Name (ARN) of the domain.
-                          See Identifiers for IAM Entities (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html)
-                          in Using AWS Identity and Access Management for more information.
+                        description: |-
+                          The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
+                          (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
+                          Identity and Access Management for more information.
                         type: string
                       customEndpointEnabled:
                         type: boolean
@@ -956,9 +998,9 @@ spec:
                     description: Unique identifier for the domain.
                     type: string
                   domainName:
-                    description: Name of the domain. Domain names are unique across
-                      all domains owned by the same account within an Amazon Web Services
-                      Region.
+                    description: |-
+                      Name of the domain. Domain names are unique across all domains owned by the
+                      same account within an Amazon Web Services Region.
                     type: string
                   encryptionAtRestOptions:
                     description: Encryption at rest settings for the domain.
@@ -969,18 +1011,21 @@ spec:
                         type: string
                     type: object
                   endpoint:
-                    description: Domain-specific endpoint used to submit index, search,
-                      and data upload requests to the domain.
+                    description: |-
+                      Domain-specific endpoint used to submit index, search, and data upload requests
+                      to the domain.
                     type: string
                   endpoints:
                     additionalProperties:
                       type: string
-                    description: 'The key-value pair that exists if the OpenSearch
-                      Service domain uses VPC endpoints.. Example key, value: ''vpc'',''vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com''.'
+                    description: |-
+                      The key-value pair that exists if the OpenSearch Service domain uses VPC
+                      endpoints.. Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
                     type: object
                   engineVersion:
-                    description: Version of OpenSearch or Elasticsearch that the domain
-                      is running, in the format Elasticsearch_X.Y or OpenSearch_X.Y.
+                    description: |-
+                      Version of OpenSearch or Elasticsearch that the domain is running, in the
+                      format Elasticsearch_X.Y or OpenSearch_X.Y.
                     type: string
                   nodeToNodeEncryptionOptions:
                     description: Whether node-to-node encryption is enabled or disabled.
@@ -989,9 +1034,9 @@ spec:
                         type: boolean
                     type: object
                   processing:
-                    description: The status of the domain configuration. True if OpenSearch
-                      Service is processing configuration changes. False if the configuration
-                      is active.
+                    description: |-
+                      The status of the domain configuration. True if OpenSearch Service is processing
+                      configuration changes. False if the configuration is active.
                     type: boolean
                   serviceSoftwareOptions:
                     description: The current status of the domain's service software.
@@ -1015,18 +1060,19 @@ spec:
                         type: string
                     type: object
                   snapshotOptions:
-                    description: DEPRECATED. Container for parameters required to
-                      configure automated snapshots of domain indexes.
+                    description: |-
+                      DEPRECATED. Container for parameters required to configure automated snapshots
+                      of domain indexes.
                     properties:
                       automatedSnapshotStartHour:
                         format: int64
                         type: integer
                     type: object
                   upgradeProcessing:
-                    description: The status of a domain version upgrade to a new version
-                      of OpenSearch or Elasticsearch. True if OpenSearch Service is
-                      in the process of a version upgrade. False if the configuration
-                      is active.
+                    description: |-
+                      The status of a domain version upgrade to a new version of OpenSearch or
+                      Elasticsearch. True if OpenSearch Service is in the process of a version
+                      upgrade. False if the configuration is active.
                     type: boolean
                   vpcOptions:
                     description: The VPC configuration for the domain.
@@ -1053,14 +1099,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -1070,8 +1125,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -1083,6 +1139,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec
