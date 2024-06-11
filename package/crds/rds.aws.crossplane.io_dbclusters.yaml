@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: dbclusters.rds.aws.crossplane.io
 spec:
   group: rds.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: DBCluster is the Schema for the DBClusters API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,110 +74,183 @@ spec:
                 description: DBClusterParameters defines the desired state of DBCluster
                 properties:
                   allocatedStorage:
-                    description: "The amount of storage in gibibytes (GiB) to allocate
-                      to each DB instance in the Multi-AZ DB cluster. \n Valid for
-                      Cluster Type: Multi-AZ DB clusters only \n This setting is required
-                      to create a Multi-AZ DB cluster."
+                    description: |-
+                      The amount of storage in gibibytes (GiB) to allocate to each DB instance
+                      in the Multi-AZ DB cluster.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
+
+
+                      This setting is required to create a Multi-AZ DB cluster.
                     format: int64
                     type: integer
                   allowMajorVersionUpgrade:
-                    description: "Specifies whether major version upgrades are allowed.
-                      \n Valid for Cluster Type: Aurora DB clusters only \n Constraints:
-                      \n * You must allow major version upgrades when specifying a
-                      value for the EngineVersion parameter that is a different major
-                      version than the DB cluster's current version."
+                    description: |-
+                      Specifies whether major version upgrades are allowed.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
+
+
+                      Constraints:
+
+
+                         * You must allow major version upgrades when specifying a value for the
+                         EngineVersion parameter that is a different major version than the DB
+                         cluster's current version.
                     type: boolean
                   applyImmediately:
-                    description: "A value that indicates whether the modifications
-                      in this request and any pending modifications are asynchronously
-                      applied as soon as possible, regardless of the PreferredMaintenanceWindow
-                      setting for the DB cluster. If this parameter is disabled, changes
-                      to the DB cluster are applied during the next maintenance window.
-                      \n The ApplyImmediately parameter only affects the EnableIAMDatabaseAuthentication,
-                      MasterUserPassword values. If the ApplyImmediately parameter
-                      is disabled, then changes to the EnableIAMDatabaseAuthentication,
-                      MasterUserPassword values are applied during the next maintenance
-                      window. All other changes are applied immediately, regardless
-                      of the value of the ApplyImmediately parameter. \n By default,
-                      this parameter is disabled."
+                    description: |-
+                      A value that indicates whether the modifications in this request and any
+                      pending modifications are asynchronously applied as soon as possible, regardless
+                      of the PreferredMaintenanceWindow setting for the DB cluster. If this parameter
+                      is disabled, changes to the DB cluster are applied during the next maintenance
+                      window.
+
+
+                      The ApplyImmediately parameter only affects the EnableIAMDatabaseAuthentication,
+                      MasterUserPassword values. If the ApplyImmediately
+                      parameter is disabled, then changes to the EnableIAMDatabaseAuthentication,
+                      MasterUserPassword values are applied during
+                      the next maintenance window. All other changes are applied immediately, regardless
+                      of the value of the ApplyImmediately parameter.
+
+
+                      By default, this parameter is disabled.
                     type: boolean
                   autoMinorVersionUpgrade:
-                    description: "Specifies whether minor engine upgrades are applied
-                      automatically to the DB cluster during the maintenance window.
-                      By default, minor engine upgrades are applied automatically.
-                      \n Valid for Cluster Type: Multi-AZ DB clusters only"
+                    description: |-
+                      Specifies whether minor engine upgrades are applied automatically to the
+                      DB cluster during the maintenance window. By default, minor engine upgrades
+                      are applied automatically.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
                     type: boolean
                   autogeneratePassword:
-                    description: "AutogeneratePassword indicates whether the controller
-                      should generate a random password for the master user if one
-                      is not provided via MasterUserPasswordSecretRef. \n If a password
-                      is generated, it will be stored as a secret at the location
-                      specified by MasterUserPasswordSecretRef."
+                    description: |-
+                      AutogeneratePassword indicates whether the controller should generate
+                      a random password for the master user if one is not provided via
+                      MasterUserPasswordSecretRef.
+
+
+                      If a password is generated, it will
+                      be stored as a secret at the location specified by MasterUserPasswordSecretRef.
                     type: boolean
                   availabilityZones:
-                    description: "A list of Availability Zones (AZs) where DB instances
-                      in the DB cluster can be created. \n For information on Amazon
-                      Web Services Regions and Availability Zones, see Choosing the
-                      Regions and Availability Zones (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.RegionsAndAvailabilityZones.html)
-                      in the Amazon Aurora User Guide. \n Valid for Cluster Type:
-                      Aurora DB clusters only"
+                    description: |-
+                      A list of Availability Zones (AZs) where DB instances in the DB cluster can
+                      be created.
+
+
+                      For information on Amazon Web Services Regions and Availability Zones, see
+                      Choosing the Regions and Availability Zones (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.RegionsAndAvailabilityZones.html)
+                      in the Amazon Aurora User Guide.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     items:
                       type: string
                     type: array
                   backtrackWindow:
-                    description: "The target backtrack window, in seconds. To disable
-                      backtracking, set this value to 0. \n Valid for Cluster Type:
-                      Aurora MySQL DB clusters only \n Default: 0 \n Constraints:
-                      \n * If specified, this value must be set to a number from 0
-                      to 259,200 (72 hours)."
+                    description: |-
+                      The target backtrack window, in seconds. To disable backtracking, set this
+                      value to 0.
+
+
+                      Valid for Cluster Type: Aurora MySQL DB clusters only
+
+
+                      Default: 0
+
+
+                      Constraints:
+
+
+                         * If specified, this value must be set to a number from 0 to 259,200 (72
+                         hours).
                     format: int64
                     type: integer
                   backupRetentionPeriod:
-                    description: "The number of days for which automated backups are
-                      retained. \n Valid for Cluster Type: Aurora DB clusters and
-                      Multi-AZ DB clusters \n Default: 1 \n Constraints: \n * Must
-                      be a value from 1 to 35."
+                    description: |-
+                      The number of days for which automated backups are retained.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      Default: 1
+
+
+                      Constraints:
+
+
+                         * Must be a value from 1 to 35.
                     format: int64
                     type: integer
                   characterSetName:
-                    description: "The name of the character set (CharacterSet) to
-                      associate the DB cluster with. \n Valid for Cluster Type: Aurora
-                      DB clusters only"
+                    description: |-
+                      The name of the character set (CharacterSet) to associate the DB cluster
+                      with.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: string
                   copyTagsToSnapshot:
-                    description: "Specifies whether to copy all tags from the DB cluster
-                      to snapshots of the DB cluster. The default is not to copy them.
-                      \n Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB
-                      clusters"
+                    description: |-
+                      Specifies whether to copy all tags from the DB cluster to snapshots of the
+                      DB cluster. The default is not to copy them.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
                     type: boolean
                   databaseName:
-                    description: "The name for your database of up to 64 alphanumeric
-                      characters. If you don't provide a name, Amazon RDS doesn't
-                      create a database in the DB cluster you are creating. \n Valid
-                      for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters"
+                    description: |-
+                      The name for your database of up to 64 alphanumeric characters. If you don't
+                      provide a name, Amazon RDS doesn't create a database in the DB cluster you
+                      are creating.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
                     type: string
                   dbClusterInstanceClass:
-                    description: "The compute and memory capacity of each DB instance
-                      in the Multi-AZ DB cluster, for example db.m6gd.xlarge. Not
-                      all DB instance classes are available in all Amazon Web Services
-                      Regions, or for all database engines. \n For the full list of
-                      DB instance classes and availability for your engine, see DB
-                      instance class (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html)
-                      in the Amazon RDS User Guide. \n This setting is required to
-                      create a Multi-AZ DB cluster. \n Valid for Cluster Type: Multi-AZ
-                      DB clusters only"
+                    description: |-
+                      The compute and memory capacity of each DB instance in the Multi-AZ DB cluster,
+                      for example db.m6gd.xlarge. Not all DB instance classes are available in
+                      all Amazon Web Services Regions, or for all database engines.
+
+
+                      For the full list of DB instance classes and availability for your engine,
+                      see DB instance class (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html)
+                      in the Amazon RDS User Guide.
+
+
+                      This setting is required to create a Multi-AZ DB cluster.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
                     type: string
                   dbClusterParameterGroupName:
-                    description: "The name of the DB cluster parameter group to associate
-                      with this DB cluster. If you don't specify a value, then the
-                      default DB cluster parameter group for the specified DB engine
-                      and version is used. \n Valid for Cluster Type: Aurora DB clusters
-                      and Multi-AZ DB clusters \n Constraints: \n * If supplied, must
-                      match the name of an existing DB cluster parameter group."
+                    description: |-
+                      The name of the DB cluster parameter group to associate with this DB cluster.
+                      If you don't specify a value, then the default DB cluster parameter group
+                      for the specified DB engine and version is used.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      Constraints:
+
+
+                         * If supplied, must match the name of an existing DB cluster parameter
+                         group.
                     type: string
                   dbClusterParameterGroupNameRef:
-                    description: DBClusterParameterGroupNameRef is a reference to
-                      a DBClusterParameterGroup used to set DBClusterParameterGroupName.
+                    description: |-
+                      DBClusterParameterGroupNameRef is a reference to a DBClusterParameterGroup used to set
+                      DBClusterParameterGroupName.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -181,21 +260,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -205,12 +284,14 @@ spec:
                     - name
                     type: object
                   dbClusterParameterGroupNameSelector:
-                    description: DBClusterParameterGroupNameSelector selects a reference
-                      to a DBClusterParameterGroup used to set DBClusterParameterGroupName.
+                    description: |-
+                      DBClusterParameterGroupNameSelector selects a reference to a DBClusterParameterGroup used to
+                      set DBClusterParameterGroupName.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -223,21 +304,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -245,15 +326,31 @@ spec:
                         type: object
                     type: object
                   dbSubnetGroupName:
-                    description: "A DB subnet group to associate with this DB cluster.
-                      \n This setting is required to create a Multi-AZ DB cluster.
-                      \n Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB
-                      clusters \n Constraints: \n * Must match the name of an existing
-                      DB subnet group. \n * Must not be default. \n Example: mydbsubnetgroup"
+                    description: |-
+                      A DB subnet group to associate with this DB cluster.
+
+
+                      This setting is required to create a Multi-AZ DB cluster.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      Constraints:
+
+
+                         * Must match the name of an existing DB subnet group.
+
+
+                         * Must not be default.
+
+
+                      Example: mydbsubnetgroup
                     type: string
                   dbSubnetGroupNameRef:
-                    description: DBSubnetGroupNameRef is a reference to a DBSubnetGroup
-                      used to set DBSubnetGroupName.
+                    description: |-
+                      DBSubnetGroupNameRef is a reference to a DBSubnetGroup used to set
+                      DBSubnetGroupName.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -263,21 +360,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -287,12 +384,14 @@ spec:
                     - name
                     type: object
                   dbSubnetGroupNameSelector:
-                    description: DBSubnetGroupNameSelector selects a reference to
-                      a DBSubnetGroup used to set DBSubnetGroupName.
+                    description: |-
+                      DBSubnetGroupNameSelector selects a reference to a DBSubnetGroup used to
+                      set DBSubnetGroupName.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -305,21 +404,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -330,32 +429,44 @@ spec:
                     description: Reserved for future use.
                     type: string
                   deletionProtection:
-                    description: "Specifies whether the DB cluster has deletion protection
-                      enabled. The database can't be deleted when deletion protection
-                      is enabled. By default, deletion protection isn't enabled. \n
-                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters"
+                    description: |-
+                      Specifies whether the DB cluster has deletion protection enabled. The database
+                      can't be deleted when deletion protection is enabled. By default, deletion
+                      protection isn't enabled.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
                     type: boolean
                   destinationRegion:
                     description: DestinationRegion is used for presigning the request
                       to a given region.
                     type: string
                   domain:
-                    description: "The Active Directory directory ID to create the
-                      DB cluster in. \n For Amazon Aurora DB clusters, Amazon RDS
-                      can use Kerberos authentication to authenticate users that connect
-                      to the DB cluster. \n For more information, see Kerberos authentication
-                      (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/kerberos-authentication.html)
-                      in the Amazon Aurora User Guide. \n Valid for Cluster Type:
-                      Aurora DB clusters only"
+                    description: |-
+                      The Active Directory directory ID to create the DB cluster in.
+
+
+                      For Amazon Aurora DB clusters, Amazon RDS can use Kerberos authentication
+                      to authenticate users that connect to the DB cluster.
+
+
+                      For more information, see Kerberos authentication (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/kerberos-authentication.html)
+                      in the Amazon Aurora User Guide.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: string
                   domainIAMRoleName:
-                    description: "The name of the IAM role to use when making API
-                      calls to the Directory Service. \n Valid for Cluster Type: Aurora
-                      DB clusters only"
+                    description: |-
+                      The name of the IAM role to use when making API calls to the Directory Service.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: string
                   domainIAMRoleNameRef:
-                    description: DomainIAMRoleNameRef is a reference to an IAMRole
-                      used to set DomainIAMRoleName.
+                    description: |-
+                      DomainIAMRoleNameRef is a reference to an IAMRole used to set
+                      DomainIAMRoleName.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -365,21 +476,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -389,12 +500,14 @@ spec:
                     - name
                     type: object
                   domainIAMRoleNameSelector:
-                    description: DomainIAMRoleNameSelector selects a reference to
-                      an IAMRole used to set DomainIAMRoleName.
+                    description: |-
+                      DomainIAMRoleNameSelector selects a reference to an IAMRole used to set
+                      DomainIAMRoleName.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -407,21 +520,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -429,161 +542,299 @@ spec:
                         type: object
                     type: object
                   enableCloudwatchLogsExports:
-                    description: "The list of log types that need to be enabled for
-                      exporting to CloudWatch Logs. \n Valid for Cluster Type: Aurora
-                      DB clusters and Multi-AZ DB clusters \n The following values
-                      are valid for each DB engine: \n * Aurora MySQL - audit | error
-                      | general | slowquery \n * Aurora PostgreSQL - postgresql \n
-                      * RDS for MySQL - error | general | slowquery \n * RDS for PostgreSQL
-                      - postgresql | upgrade \n For more information about exporting
-                      CloudWatch Logs for Amazon RDS, see Publishing Database Logs
-                      to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
-                      in the Amazon RDS User Guide. \n For more information about
-                      exporting CloudWatch Logs for Amazon Aurora, see Publishing
-                      Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
-                      in the Amazon Aurora User Guide."
+                    description: |-
+                      The list of log types that need to be enabled for exporting to CloudWatch
+                      Logs.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      The following values are valid for each DB engine:
+
+
+                         * Aurora MySQL - audit | error | general | slowquery
+
+
+                         * Aurora PostgreSQL - postgresql
+
+
+                         * RDS for MySQL - error | general | slowquery
+
+
+                         * RDS for PostgreSQL - postgresql | upgrade
+
+
+                      For more information about exporting CloudWatch Logs for Amazon RDS, see
+                      Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+                      in the Amazon RDS User Guide.
+
+
+                      For more information about exporting CloudWatch Logs for Amazon Aurora, see
+                      Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+                      in the Amazon Aurora User Guide.
                     items:
                       type: string
                     type: array
                   enableGlobalWriteForwarding:
-                    description: "Specifies whether to enable this DB cluster to forward
-                      write operations to the primary cluster of a global cluster
-                      (Aurora global database). By default, write operations are not
-                      allowed on Aurora DB clusters that are secondary clusters in
-                      an Aurora global database. \n You can set this value only on
-                      Aurora DB clusters that are members of an Aurora global database.
-                      With this parameter enabled, a secondary cluster can forward
-                      writes to the current primary cluster, and the resulting changes
-                      are replicated back to this cluster. For the primary DB cluster
-                      of an Aurora global database, this value is used immediately
-                      if the primary is demoted by a global cluster API operation,
-                      but it does nothing until then. \n Valid for Cluster Type: Aurora
-                      DB clusters only"
+                    description: |-
+                      Specifies whether to enable this DB cluster to forward write operations to
+                      the primary cluster of a global cluster (Aurora global database). By default,
+                      write operations are not allowed on Aurora DB clusters that are secondary
+                      clusters in an Aurora global database.
+
+
+                      You can set this value only on Aurora DB clusters that are members of an
+                      Aurora global database. With this parameter enabled, a secondary cluster
+                      can forward writes to the current primary cluster, and the resulting changes
+                      are replicated back to this cluster. For the primary DB cluster of an Aurora
+                      global database, this value is used immediately if the primary is demoted
+                      by a global cluster API operation, but it does nothing until then.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: boolean
                   enableHTTPEndpoint:
-                    description: "Specifies whether to enable the HTTP endpoint for
-                      an Aurora Serverless v1 DB cluster. By default, the HTTP endpoint
-                      is disabled. \n When enabled, the HTTP endpoint provides a connectionless
-                      web service API for running SQL queries on the Aurora Serverless
-                      v1 DB cluster. You can also query your database from inside
-                      the RDS console with the query editor. \n For more information,
-                      see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
-                      in the Amazon Aurora User Guide. \n Valid for Cluster Type:
-                      Aurora DB clusters only"
+                    description: |-
+                      Specifies whether to enable the HTTP endpoint for an Aurora Serverless v1
+                      DB cluster. By default, the HTTP endpoint is disabled.
+
+
+                      When enabled, the HTTP endpoint provides a connectionless web service API
+                      for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
+                      query your database from inside the RDS console with the query editor.
+
+
+                      For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+                      in the Amazon Aurora User Guide.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: boolean
                   enableIAMDatabaseAuthentication:
-                    description: "Specifies whether to enable mapping of Amazon Web
-                      Services Identity and Access Management (IAM) accounts to database
-                      accounts. By default, mapping isn't enabled. \n For more information,
-                      see IAM Database Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAMDBAuth.html)
-                      in the Amazon Aurora User Guide. \n Valid for Cluster Type:
-                      Aurora DB clusters only"
+                    description: |-
+                      Specifies whether to enable mapping of Amazon Web Services Identity and Access
+                      Management (IAM) accounts to database accounts. By default, mapping isn't
+                      enabled.
+
+
+                      For more information, see IAM Database Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAMDBAuth.html)
+                      in the Amazon Aurora User Guide.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: boolean
                   enableLocalWriteForwarding:
-                    description: "Specifies whether read replicas can forward write
-                      operations to the writer DB instance in the DB cluster. By default,
-                      write operations aren't allowed on reader DB instances. \n Valid
-                      for: Aurora DB clusters only"
+                    description: |-
+                      Specifies whether read replicas can forward write operations to the writer
+                      DB instance in the DB cluster. By default, write operations aren't allowed
+                      on reader DB instances.
+
+
+                      Valid for: Aurora DB clusters only
                     type: boolean
                   enablePerformanceInsights:
-                    description: "Specifies whether to turn on Performance Insights
-                      for the DB cluster. \n For more information, see Using Amazon
-                      Performance Insights (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html)
-                      in the Amazon RDS User Guide. \n Valid for Cluster Type: Multi-AZ
-                      DB clusters only"
+                    description: |-
+                      Specifies whether to turn on Performance Insights for the DB cluster.
+
+
+                      For more information, see Using Amazon Performance Insights (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html)
+                      in the Amazon RDS User Guide.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
                     type: boolean
                   engine:
-                    description: "The database engine to use for this DB cluster.
-                      \n Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB
-                      clusters \n Valid Values: aurora-mysql | aurora-postgresql |
-                      mysql | postgres"
+                    description: |-
+                      The database engine to use for this DB cluster.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      Valid Values: aurora-mysql | aurora-postgresql | mysql | postgres
                     type: string
                   engineMode:
-                    description: "The DB engine mode of the DB cluster, either provisioned
-                      or serverless. \n The serverless engine mode only applies for
-                      Aurora Serverless v1 DB clusters. \n For information about limitations
-                      and requirements for Serverless DB clusters, see the following
-                      sections in the Amazon Aurora User Guide: \n * Limitations of
-                      Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations)
-                      \n * Requirements for Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.requirements.html)
-                      \n Valid for Cluster Type: Aurora DB clusters only"
+                    description: |-
+                      The DB engine mode of the DB cluster, either provisioned or serverless.
+
+
+                      The serverless engine mode only applies for Aurora Serverless v1 DB clusters.
+
+
+                      For information about limitations and requirements for Serverless DB clusters,
+                      see the following sections in the Amazon Aurora User Guide:
+
+
+                         * Limitations of Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations)
+
+
+                         * Requirements for Aurora Serverless v2 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.requirements.html)
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: string
                   engineVersion:
-                    description: "The version number of the database engine to use.
-                      \n To list all of the available engine versions for MySQL 5.6-compatible
-                      Aurora, use the following command: \n aws rds describe-db-engine-versions
-                      --engine aurora --query \"DBEngineVersions[].EngineVersion\"
-                      \n To list all of the available engine versions for MySQL 5.7-compatible
-                      and MySQL 8.0-compatible Aurora, use the following command:
-                      \n aws rds describe-db-engine-versions --engine aurora-mysql
-                      --query \"DBEngineVersions[].EngineVersion\" \n To list all
-                      of the available engine versions for Aurora PostgreSQL, use
-                      the following command: \n aws rds describe-db-engine-versions
-                      --engine aurora-postgresql --query \"DBEngineVersions[].EngineVersion\"
-                      \n To list all of the available engine versions for RDS for
-                      MySQL, use the following command: \n aws rds describe-db-engine-versions
-                      --engine mysql --query \"DBEngineVersions[].EngineVersion\"
-                      \n To list all of the available engine versions for RDS for
-                      PostgreSQL, use the following command: \n aws rds describe-db-engine-versions
-                      --engine postgres --query \"DBEngineVersions[].EngineVersion\"
-                      \n Aurora MySQL \n For information, see MySQL on Amazon RDS
-                      Versions (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
-                      in the Amazon Aurora User Guide. \n Aurora PostgreSQL \n For
-                      information, see Amazon Aurora PostgreSQL releases and engine
-                      versions (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.20180305.html)
-                      in the Amazon Aurora User Guide. \n MySQL \n For information,
-                      see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
-                      in the Amazon RDS User Guide. \n PostgreSQL \n For information,
-                      see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
-                      in the Amazon RDS User Guide. \n Note: Downgrades are not allowed
-                      by AWS and attempts to set a lower version will be ignored.
-                      \n Valid for: Aurora DB clusters and Multi-AZ DB clusters"
+                    description: |-
+                      The version number of the database engine to use.
+
+
+                      To list all of the available engine versions for MySQL 5.6-compatible Aurora,
+                      use the following command:
+
+
+                      aws rds describe-db-engine-versions --engine aurora --query "DBEngineVersions[].EngineVersion"
+
+
+                      To list all of the available engine versions for MySQL 5.7-compatible and
+                      MySQL 8.0-compatible Aurora, use the following command:
+
+
+                      aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
+
+
+                      To list all of the available engine versions for Aurora PostgreSQL, use the
+                      following command:
+
+
+                      aws rds describe-db-engine-versions --engine aurora-postgresql --query "DBEngineVersions[].EngineVersion"
+
+
+                      To list all of the available engine versions for RDS for MySQL, use the following
+                      command:
+
+
+                      aws rds describe-db-engine-versions --engine mysql --query "DBEngineVersions[].EngineVersion"
+
+
+                      To list all of the available engine versions for RDS for PostgreSQL, use
+                      the following command:
+
+
+                      aws rds describe-db-engine-versions --engine postgres --query "DBEngineVersions[].EngineVersion"
+
+
+                      Aurora MySQL
+
+
+                      For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+                      in the Amazon Aurora User Guide.
+
+
+                      Aurora PostgreSQL
+
+
+                      For information, see Amazon Aurora PostgreSQL releases and engine versions
+                      (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Updates.20180305.html)
+                      in the Amazon Aurora User Guide.
+
+
+                      MySQL
+
+
+                      For information, see MySQL on Amazon RDS Versions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
+                      in the Amazon RDS User Guide.
+
+
+                      PostgreSQL
+
+
+                      For information, see Amazon RDS for PostgreSQL versions and extensions (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts)
+                      in the Amazon RDS User Guide.
+
+
+                      Note: Downgrades are not allowed by AWS and attempts to set a lower version
+                      will be ignored.
+
+
+                      Valid for: Aurora DB clusters and Multi-AZ DB clusters
                     type: string
                   finalDBSnapshotIdentifier:
-                    description: "The DB cluster snapshot identifier of the new DB
-                      cluster snapshot created when SkipFinalSnapshot is disabled.
-                      \n Specifying this parameter and also skipping the creation
-                      of a final DB cluster snapshot with the SkipFinalShapshot parameter
-                      results in an error. \n Constraints: \n * Must be 1 to 255 letters,
-                      numbers, or hyphens. \n * First character must be a letter \n
-                      * Can't end with a hyphen or contain two consecutive hyphens"
+                    description: |-
+                      The DB cluster snapshot identifier of the new DB cluster snapshot created
+                      when SkipFinalSnapshot is disabled.
+
+
+                      Specifying this parameter and also skipping the creation of a final DB cluster
+                      snapshot with the SkipFinalShapshot parameter results in an error.
+
+
+                      Constraints:
+
+
+                         * Must be 1 to 255 letters, numbers, or hyphens.
+
+
+                         * First character must be a letter
+
+
+                         * Can't end with a hyphen or contain two consecutive hyphens
                     type: string
                   globalClusterIdentifier:
-                    description: "The global cluster ID of an Aurora cluster that
-                      becomes the primary cluster in the new global database cluster.
-                      \n Valid for Cluster Type: Aurora DB clusters only"
+                    description: |-
+                      The global cluster ID of an Aurora cluster that becomes the primary cluster
+                      in the new global database cluster.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: string
                   iops:
-                    description: "The amount of Provisioned IOPS (input/output operations
-                      per second) to be initially allocated for each DB instance in
-                      the Multi-AZ DB cluster. \n For information about valid IOPS
-                      values, see Provisioned IOPS storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
-                      in the Amazon RDS User Guide. \n This setting is required to
-                      create a Multi-AZ DB cluster. \n Valid for Cluster Type: Multi-AZ
-                      DB clusters only \n Constraints: \n * Must be a multiple between
-                      .5 and 50 of the storage amount for the DB cluster."
+                    description: |-
+                      The amount of Provisioned IOPS (input/output operations per second) to be
+                      initially allocated for each DB instance in the Multi-AZ DB cluster.
+
+
+                      For information about valid IOPS values, see Provisioned IOPS storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
+                      in the Amazon RDS User Guide.
+
+
+                      This setting is required to create a Multi-AZ DB cluster.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
+
+
+                      Constraints:
+
+
+                         * Must be a multiple between .5 and 50 of the storage amount for the DB
+                         cluster.
                     format: int64
                     type: integer
                   kmsKeyID:
-                    description: "The Amazon Web Services KMS key identifier for an
-                      encrypted DB cluster. \n The Amazon Web Services KMS key identifier
-                      is the key ARN, key ID, alias ARN, or alias name for the KMS
-                      key. To use a KMS key in a different Amazon Web Services account,
-                      specify the key ARN or alias ARN. \n When a KMS key isn't specified
-                      in KmsKeyId: \n * If ReplicationSourceIdentifier identifies
-                      an encrypted source, then Amazon RDS uses the KMS key used to
-                      encrypt the source. Otherwise, Amazon RDS uses your default
-                      KMS key. \n * If the StorageEncrypted parameter is enabled and
-                      ReplicationSourceIdentifier isn't specified, then Amazon RDS
-                      uses your default KMS key. \n There is a default KMS key for
-                      your Amazon Web Services account. Your Amazon Web Services account
-                      has a different default KMS key for each Amazon Web Services
-                      Region. \n If you create a read replica of an encrypted DB cluster
-                      in another Amazon Web Services Region, make sure to set KmsKeyId
-                      to a KMS key identifier that is valid in the destination Amazon
-                      Web Services Region. This KMS key is used to encrypt the read
-                      replica in that Amazon Web Services Region. \n Valid for Cluster
-                      Type: Aurora DB clusters and Multi-AZ DB clusters"
+                    description: |-
+                      The Amazon Web Services KMS key identifier for an encrypted DB cluster.
+
+
+                      The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+                      ARN, or alias name for the KMS key. To use a KMS key in a different Amazon
+                      Web Services account, specify the key ARN or alias ARN.
+
+
+                      When a KMS key isn't specified in KmsKeyId:
+
+
+                         * If ReplicationSourceIdentifier identifies an encrypted source, then
+                         Amazon RDS uses the KMS key used to encrypt the source. Otherwise, Amazon
+                         RDS uses your default KMS key.
+
+
+                         * If the StorageEncrypted parameter is enabled and ReplicationSourceIdentifier
+                         isn't specified, then Amazon RDS uses your default KMS key.
+
+
+                      There is a default KMS key for your Amazon Web Services account. Your Amazon
+                      Web Services account has a different default KMS key for each Amazon Web
+                      Services Region.
+
+
+                      If you create a read replica of an encrypted DB cluster in another Amazon
+                      Web Services Region, make sure to set KmsKeyId to a KMS key identifier that
+                      is valid in the destination Amazon Web Services Region. This KMS key is used
+                      to encrypt the read replica in that Amazon Web Services Region.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
                     type: string
                   kmsKeyIDRef:
                     description: KMSKeyIDRef is a reference to a KMS Key used to set
@@ -597,21 +848,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -625,8 +876,9 @@ spec:
                       used to set KMSKeyID.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -639,21 +891,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -661,27 +913,42 @@ spec:
                         type: object
                     type: object
                   manageMasterUserPassword:
-                    description: "Specifies whether to manage the master user password
-                      with Amazon Web Services Secrets Manager. \n For more information,
-                      see Password management with Amazon Web Services Secrets Manager
-                      (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html)
-                      in the Amazon RDS User Guide and Password management with Amazon
-                      Web Services Secrets Manager (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html)
-                      in the Amazon Aurora User Guide. \n Valid for Cluster Type:
-                      Aurora DB clusters and Multi-AZ DB clusters \n Constraints:
-                      \n * Can't manage the master user password with Amazon Web Services
-                      Secrets Manager if MasterUserPassword is specified."
+                    description: |-
+                      Specifies whether to manage the master user password with Amazon Web Services
+                      Secrets Manager.
+
+
+                      For more information, see Password management with Amazon Web Services Secrets
+                      Manager (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html)
+                      in the Amazon RDS User Guide and Password management with Amazon Web Services
+                      Secrets Manager (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html)
+                      in the Amazon Aurora User Guide.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      Constraints:
+
+
+                         * Can't manage the master user password with Amazon Web Services Secrets
+                         Manager if MasterUserPassword is specified.
                     type: boolean
                   masterUserPasswordSecretRef:
-                    description: "The password for the master database user. This
-                      password can contain any printable ASCII character except \"/\",
-                      \"\"\", or \"@\". \n This parameter will be required in the
-                      following scenarios: - The first cluster for a global Aurora
-                      cluster - Any cluster as long as it doesn't belong to a global
-                      Aurora cluster \n This parameter is required for creation of
-                      a primary cluster. However, it is not required when attaching
-                      a secondary regional cluster to an existing global cluster.
-                      \n Constraints: Must contain from 8 to 41 characters."
+                    description: |-
+                      The password for the master database user. This password can contain any
+                      printable ASCII character except "/", """, or "@".
+
+
+                      This parameter will be required in the following scenarios:
+                      - The first cluster for a global Aurora cluster
+                      - Any cluster as long as it doesn't belong to a global Aurora cluster
+
+
+                      This parameter is required for creation of a primary cluster. However, it is not required when attaching a secondary regional cluster to an existing global cluster.
+
+
+                      Constraints: Must contain from 8 to 41 characters.
                     properties:
                       key:
                         description: The key to select.
@@ -698,189 +965,346 @@ spec:
                     - namespace
                     type: object
                   masterUserSecretKMSKeyID:
-                    description: "The Amazon Web Services KMS key identifier to encrypt
-                      a secret that is automatically generated and managed in Amazon
-                      Web Services Secrets Manager. \n This setting is valid only
-                      if the master user password is managed by RDS in Amazon Web
-                      Services Secrets Manager for the DB cluster. \n The Amazon Web
-                      Services KMS key identifier is the key ARN, key ID, alias ARN,
-                      or alias name for the KMS key. To use a KMS key in a different
-                      Amazon Web Services account, specify the key ARN or alias ARN.
-                      \n If you don't specify MasterUserSecretKmsKeyId, then the aws/secretsmanager
-                      KMS key is used to encrypt the secret. If the secret is in a
-                      different Amazon Web Services account, then you can't use the
-                      aws/secretsmanager KMS key to encrypt the secret, and you must
-                      use a customer managed KMS key. \n There is a default KMS key
-                      for your Amazon Web Services account. Your Amazon Web Services
-                      account has a different default KMS key for each Amazon Web
-                      Services Region. \n Valid for Cluster Type: Aurora DB clusters
-                      and Multi-AZ DB clusters"
+                    description: |-
+                      The Amazon Web Services KMS key identifier to encrypt a secret that is automatically
+                      generated and managed in Amazon Web Services Secrets Manager.
+
+
+                      This setting is valid only if the master user password is managed by RDS
+                      in Amazon Web Services Secrets Manager for the DB cluster.
+
+
+                      The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+                      ARN, or alias name for the KMS key. To use a KMS key in a different Amazon
+                      Web Services account, specify the key ARN or alias ARN.
+
+
+                      If you don't specify MasterUserSecretKmsKeyId, then the aws/secretsmanager
+                      KMS key is used to encrypt the secret. If the secret is in a different Amazon
+                      Web Services account, then you can't use the aws/secretsmanager KMS key to
+                      encrypt the secret, and you must use a customer managed KMS key.
+
+
+                      There is a default KMS key for your Amazon Web Services account. Your Amazon
+                      Web Services account has a different default KMS key for each Amazon Web
+                      Services Region.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
                     type: string
                   masterUsername:
-                    description: "The name of the master user for the DB cluster.
-                      \n Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB
-                      clusters \n Constraints: \n * Must be 1 to 16 letters or numbers.
-                      \n * First character must be a letter. \n * Can't be a reserved
-                      word for the chosen database engine."
+                    description: |-
+                      The name of the master user for the DB cluster.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      Constraints:
+
+
+                         * Must be 1 to 16 letters or numbers.
+
+
+                         * First character must be a letter.
+
+
+                         * Can't be a reserved word for the chosen database engine.
                     type: string
                   monitoringInterval:
-                    description: "The interval, in seconds, between points when Enhanced
-                      Monitoring metrics are collected for the DB cluster. To turn
-                      off collecting Enhanced Monitoring metrics, specify 0. \n If
-                      MonitoringRoleArn is specified, also set MonitoringInterval
-                      to a value other than 0. \n Valid for Cluster Type: Multi-AZ
-                      DB clusters only \n Valid Values: 0 | 1 | 5 | 10 | 15 | 30 |
-                      60 \n Default: 0"
+                    description: |-
+                      The interval, in seconds, between points when Enhanced Monitoring metrics
+                      are collected for the DB cluster. To turn off collecting Enhanced Monitoring
+                      metrics, specify 0.
+
+
+                      If MonitoringRoleArn is specified, also set MonitoringInterval to a value
+                      other than 0.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
+
+
+                      Valid Values: 0 | 1 | 5 | 10 | 15 | 30 | 60
+
+
+                      Default: 0
                     format: int64
                     type: integer
                   monitoringRoleARN:
-                    description: "The Amazon Resource Name (ARN) for the IAM role
-                      that permits RDS to send Enhanced Monitoring metrics to Amazon
-                      CloudWatch Logs. An example is arn:aws:iam:123456789012:role/emaccess.
-                      For information on creating a monitoring role, see Setting up
-                      and enabling Enhanced Monitoring (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html#USER_Monitoring.OS.Enabling)
-                      in the Amazon RDS User Guide. \n If MonitoringInterval is set
-                      to a value other than 0, supply a MonitoringRoleArn value. \n
-                      Valid for Cluster Type: Multi-AZ DB clusters only"
+                    description: |-
+                      The Amazon Resource Name (ARN) for the IAM role that permits RDS to send
+                      Enhanced Monitoring metrics to Amazon CloudWatch Logs. An example is arn:aws:iam:123456789012:role/emaccess.
+                      For information on creating a monitoring role, see Setting up and enabling
+                      Enhanced Monitoring (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html#USER_Monitoring.OS.Enabling)
+                      in the Amazon RDS User Guide.
+
+
+                      If MonitoringInterval is set to a value other than 0, supply a MonitoringRoleArn
+                      value.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
                     type: string
                   networkType:
-                    description: "The network type of the DB cluster. \n The network
-                      type is determined by the DBSubnetGroup specified for the DB
-                      cluster. A DBSubnetGroup can support only the IPv4 protocol
-                      or the IPv4 and the IPv6 protocols (DUAL). \n For more information,
-                      see Working with a DB instance in a VPC (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html)
-                      in the Amazon Aurora User Guide. \n Valid for Cluster Type:
-                      Aurora DB clusters only \n Valid Values: IPV4 | DUAL"
+                    description: |-
+                      The network type of the DB cluster.
+
+
+                      The network type is determined by the DBSubnetGroup specified for the DB
+                      cluster. A DBSubnetGroup can support only the IPv4 protocol or the IPv4 and
+                      the IPv6 protocols (DUAL).
+
+
+                      For more information, see Working with a DB instance in a VPC (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html)
+                      in the Amazon Aurora User Guide.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
+
+
+                      Valid Values: IPV4 | DUAL
                     type: string
                   optionGroupName:
-                    description: "The option group to associate the DB cluster with.
-                      \n DB clusters are associated with a default option group that
-                      can't be modified."
+                    description: |-
+                      The option group to associate the DB cluster with.
+
+
+                      DB clusters are associated with a default option group that can't be modified.
                     type: string
                   performanceInsightsKMSKeyID:
-                    description: "The Amazon Web Services KMS key identifier for encryption
-                      of Performance Insights data. \n The Amazon Web Services KMS
-                      key identifier is the key ARN, key ID, alias ARN, or alias name
-                      for the KMS key. \n If you don't specify a value for PerformanceInsightsKMSKeyId,
-                      then Amazon RDS uses your default KMS key. There is a default
-                      KMS key for your Amazon Web Services account. Your Amazon Web
-                      Services account has a different default KMS key for each Amazon
-                      Web Services Region. \n Valid for Cluster Type: Multi-AZ DB
-                      clusters only"
+                    description: |-
+                      The Amazon Web Services KMS key identifier for encryption of Performance
+                      Insights data.
+
+
+                      The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+                      ARN, or alias name for the KMS key.
+
+
+                      If you don't specify a value for PerformanceInsightsKMSKeyId, then Amazon
+                      RDS uses your default KMS key. There is a default KMS key for your Amazon
+                      Web Services account. Your Amazon Web Services account has a different default
+                      KMS key for each Amazon Web Services Region.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
                     type: string
                   performanceInsightsRetentionPeriod:
-                    description: "The number of days to retain Performance Insights
-                      data. \n Valid for Cluster Type: Multi-AZ DB clusters only \n
-                      Valid Values: \n * 7 \n * month * 31, where month is a number
-                      of months from 1-23. Examples: 93 (3 months * 31), 341 (11 months
-                      * 31), 589 (19 months * 31) \n * 731 \n Default: 7 days \n If
-                      you specify a retention period that isn't valid, such as 94,
-                      Amazon RDS issues an error."
+                    description: |-
+                      The number of days to retain Performance Insights data.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
+
+
+                      Valid Values:
+
+
+                         * 7
+
+
+                         * month * 31, where month is a number of months from 1-23. Examples: 93
+                         (3 months * 31), 341 (11 months * 31), 589 (19 months * 31)
+
+
+                         * 731
+
+
+                      Default: 7 days
+
+
+                      If you specify a retention period that isn't valid, such as 94, Amazon RDS
+                      issues an error.
                     format: int64
                     type: integer
                   port:
-                    description: "The port number on which the instances in the DB
-                      cluster accept connections. \n Valid for Cluster Type: Aurora
-                      DB clusters and Multi-AZ DB clusters \n Valid Values: 1150-65535
-                      \n Default: \n * RDS for MySQL and Aurora MySQL - 3306 \n *
-                      RDS for PostgreSQL and Aurora PostgreSQL - 5432"
+                    description: |-
+                      The port number on which the instances in the DB cluster accept connections.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      Valid Values: 1150-65535
+
+
+                      Default:
+
+
+                         * RDS for MySQL and Aurora MySQL - 3306
+
+
+                         * RDS for PostgreSQL and Aurora PostgreSQL - 5432
                     format: int64
                     type: integer
                   preSignedURL:
-                    description: "When you are replicating a DB cluster from one Amazon
-                      Web Services GovCloud (US) Region to another, an URL that contains
-                      a Signature Version 4 signed request for the CreateDBCluster
-                      operation to be called in the source Amazon Web Services Region
-                      where the DB cluster is replicated from. Specify PreSignedUrl
-                      only when you are performing cross-Region replication from an
-                      encrypted DB cluster. \n The presigned URL must be a valid request
-                      for the CreateDBCluster API operation that can run in the source
-                      Amazon Web Services Region that contains the encrypted DB cluster
-                      to copy. \n The presigned URL request must contain the following
-                      parameter values: \n * KmsKeyId - The KMS key identifier for
-                      the KMS key to use to encrypt the copy of the DB cluster in
-                      the destination Amazon Web Services Region. This should refer
-                      to the same KMS key for both the CreateDBCluster operation that
-                      is called in the destination Amazon Web Services Region, and
-                      the operation contained in the presigned URL. \n * DestinationRegion
-                      - The name of the Amazon Web Services Region that Aurora read
-                      replica will be created in. \n * ReplicationSourceIdentifier
-                      - The DB cluster identifier for the encrypted DB cluster to
-                      be copied. This identifier must be in the Amazon Resource Name
-                      (ARN) format for the source Amazon Web Services Region. For
-                      example, if you are copying an encrypted DB cluster from the
-                      us-west-2 Amazon Web Services Region, then your ReplicationSourceIdentifier
-                      would look like Example: arn:aws:rds:us-west-2:123456789012:cluster:aurora-cluster1.
-                      \n To learn how to generate a Signature Version 4 signed request,
-                      see Authenticating Requests: Using Query Parameters (Amazon
-                      Web Services Signature Version 4) (https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html)
+                    description: |-
+                      When you are replicating a DB cluster from one Amazon Web Services GovCloud
+                      (US) Region to another, an URL that contains a Signature Version 4 signed
+                      request for the CreateDBCluster operation to be called in the source Amazon
+                      Web Services Region where the DB cluster is replicated from. Specify PreSignedUrl
+                      only when you are performing cross-Region replication from an encrypted DB
+                      cluster.
+
+
+                      The presigned URL must be a valid request for the CreateDBCluster API operation
+                      that can run in the source Amazon Web Services Region that contains the encrypted
+                      DB cluster to copy.
+
+
+                      The presigned URL request must contain the following parameter values:
+
+
+                         * KmsKeyId - The KMS key identifier for the KMS key to use to encrypt
+                         the copy of the DB cluster in the destination Amazon Web Services Region.
+                         This should refer to the same KMS key for both the CreateDBCluster operation
+                         that is called in the destination Amazon Web Services Region, and the
+                         operation contained in the presigned URL.
+
+
+                         * DestinationRegion - The name of the Amazon Web Services Region that
+                         Aurora read replica will be created in.
+
+
+                         * ReplicationSourceIdentifier - The DB cluster identifier for the encrypted
+                         DB cluster to be copied. This identifier must be in the Amazon Resource
+                         Name (ARN) format for the source Amazon Web Services Region. For example,
+                         if you are copying an encrypted DB cluster from the us-west-2 Amazon Web
+                         Services Region, then your ReplicationSourceIdentifier would look like
+                         Example: arn:aws:rds:us-west-2:123456789012:cluster:aurora-cluster1.
+
+
+                      To learn how to generate a Signature Version 4 signed request, see Authenticating
+                      Requests: Using Query Parameters (Amazon Web Services Signature Version 4)
+                      (https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html)
                       and Signature Version 4 Signing Process (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
-                      \n If you are using an Amazon Web Services SDK tool or the CLI,
-                      you can specify SourceRegion (or --source-region for the CLI)
-                      instead of specifying PreSignedUrl manually. Specifying SourceRegion
-                      autogenerates a presigned URL that is a valid request for the
-                      operation that can run in the source Amazon Web Services Region.
-                      \n Valid for Cluster Type: Aurora DB clusters only"
+
+
+                      If you are using an Amazon Web Services SDK tool or the CLI, you can specify
+                      SourceRegion (or --source-region for the CLI) instead of specifying PreSignedUrl
+                      manually. Specifying SourceRegion autogenerates a presigned URL that is a
+                      valid request for the operation that can run in the source Amazon Web Services
+                      Region.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     type: string
                   preferredBackupWindow:
-                    description: "The daily time range during which automated backups
-                      are created if automated backups are enabled using the BackupRetentionPeriod
-                      parameter. \n Valid for Cluster Type: Aurora DB clusters and
-                      Multi-AZ DB clusters \n The default is a 30-minute window selected
-                      at random from an 8-hour block of time for each Amazon Web Services
-                      Region. To view the time blocks available, see Backup window
-                      (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Backups.html#Aurora.Managing.Backups.BackupWindow)
-                      in the Amazon Aurora User Guide. \n Constraints: \n * Must be
-                      in the format hh24:mi-hh24:mi. \n * Must be in Universal Coordinated
-                      Time (UTC). \n * Must not conflict with the preferred maintenance
-                      window. \n * Must be at least 30 minutes."
+                    description: |-
+                      The daily time range during which automated backups are created if automated
+                      backups are enabled using the BackupRetentionPeriod parameter.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      The default is a 30-minute window selected at random from an 8-hour block
+                      of time for each Amazon Web Services Region. To view the time blocks available,
+                      see Backup window (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Backups.html#Aurora.Managing.Backups.BackupWindow)
+                      in the Amazon Aurora User Guide.
+
+
+                      Constraints:
+
+
+                         * Must be in the format hh24:mi-hh24:mi.
+
+
+                         * Must be in Universal Coordinated Time (UTC).
+
+
+                         * Must not conflict with the preferred maintenance window.
+
+
+                         * Must be at least 30 minutes.
                     type: string
                   preferredMaintenanceWindow:
-                    description: "The weekly time range during which system maintenance
-                      can occur. \n Valid for Cluster Type: Aurora DB clusters and
-                      Multi-AZ DB clusters \n The default is a 30-minute window selected
-                      at random from an 8-hour block of time for each Amazon Web Services
-                      Region, occurring on a random day of the week. To see the time
-                      blocks available, see Adjusting the Preferred DB Cluster Maintenance
-                      Window (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow.Aurora)
-                      in the Amazon Aurora User Guide. \n Constraints: \n * Must be
-                      in the format ddd:hh24:mi-ddd:hh24:mi. \n * Days must be one
-                      of Mon | Tue | Wed | Thu | Fri | Sat | Sun. \n * Must be in
-                      Universal Coordinated Time (UTC). \n * Must be at least 30 minutes."
+                    description: |-
+                      The weekly time range during which system maintenance can occur.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      The default is a 30-minute window selected at random from an 8-hour block
+                      of time for each Amazon Web Services Region, occurring on a random day of
+                      the week. To see the time blocks available, see Adjusting the Preferred DB
+                      Cluster Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow.Aurora)
+                      in the Amazon Aurora User Guide.
+
+
+                      Constraints:
+
+
+                         * Must be in the format ddd:hh24:mi-ddd:hh24:mi.
+
+
+                         * Days must be one of Mon | Tue | Wed | Thu | Fri | Sat | Sun.
+
+
+                         * Must be in Universal Coordinated Time (UTC).
+
+
+                         * Must be at least 30 minutes.
                     type: string
                   publiclyAccessible:
-                    description: "Specifies whether the DB cluster is publicly accessible.
-                      \n When the DB cluster is publicly accessible, its Domain Name
-                      System (DNS) endpoint resolves to the private IP address from
-                      within the DB cluster's virtual private cloud (VPC). It resolves
-                      to the public IP address from outside of the DB cluster's VPC.
-                      Access to the DB cluster is ultimately controlled by the security
-                      group it uses. That public access isn't permitted if the security
-                      group assigned to the DB cluster doesn't permit it. \n When
-                      the DB cluster isn't publicly accessible, it is an internal
-                      DB cluster with a DNS name that resolves to a private IP address.
-                      \n Valid for Cluster Type: Multi-AZ DB clusters only \n Default:
-                      The default behavior varies depending on whether DBSubnetGroupName
-                      is specified. \n If DBSubnetGroupName isn't specified, and PubliclyAccessible
-                      isn't specified, the following applies: \n * If the default
-                      VPC in the target Region doesn’t have an internet gateway attached
-                      to it, the DB cluster is private. \n * If the default VPC in
-                      the target Region has an internet gateway attached to it, the
-                      DB cluster is public. \n If DBSubnetGroupName is specified,
-                      and PubliclyAccessible isn't specified, the following applies:
-                      \n * If the subnets are part of a VPC that doesn’t have an internet
-                      gateway attached to it, the DB cluster is private. \n * If the
-                      subnets are part of a VPC that has an internet gateway attached
-                      to it, the DB cluster is public."
+                    description: |-
+                      Specifies whether the DB cluster is publicly accessible.
+
+
+                      When the DB cluster is publicly accessible, its Domain Name System (DNS)
+                      endpoint resolves to the private IP address from within the DB cluster's
+                      virtual private cloud (VPC). It resolves to the public IP address from outside
+                      of the DB cluster's VPC. Access to the DB cluster is ultimately controlled
+                      by the security group it uses. That public access isn't permitted if the
+                      security group assigned to the DB cluster doesn't permit it.
+
+
+                      When the DB cluster isn't publicly accessible, it is an internal DB cluster
+                      with a DNS name that resolves to a private IP address.
+
+
+                      Valid for Cluster Type: Multi-AZ DB clusters only
+
+
+                      Default: The default behavior varies depending on whether DBSubnetGroupName
+                      is specified.
+
+
+                      If DBSubnetGroupName isn't specified, and PubliclyAccessible isn't specified,
+                      the following applies:
+
+
+                         * If the default VPC in the target Region doesn’t have an internet gateway
+                         attached to it, the DB cluster is private.
+
+
+                         * If the default VPC in the target Region has an internet gateway attached
+                         to it, the DB cluster is public.
+
+
+                      If DBSubnetGroupName is specified, and PubliclyAccessible isn't specified,
+                      the following applies:
+
+
+                         * If the subnets are part of a VPC that doesn’t have an internet gateway
+                         attached to it, the DB cluster is private.
+
+
+                         * If the subnets are part of a VPC that has an internet gateway attached
+                         to it, the DB cluster is public.
                     type: boolean
                   region:
                     description: Region is which region the DBCluster will be created.
                     type: string
                   replicationSourceIdentifier:
-                    description: "The Amazon Resource Name (ARN) of the source DB
-                      instance or DB cluster if this DB cluster is created as a read
-                      replica. \n Valid for Cluster Type: Aurora DB clusters and Multi-AZ
-                      DB clusters"
+                    description: |-
+                      The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
+                      this DB cluster is created as a read replica.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
                     type: string
                   restoreFrom:
                     description: RestoreFrom specifies the details of the backup to
@@ -891,47 +1315,58 @@ spec:
                           in time restore.
                         properties:
                           restoreTime:
-                            description: 'RestoreTime is the date and time (UTC) to
-                              restore from. Must be before the latest restorable time
-                              for the DB instance. Can''t be specified if the useLatestRestorableTime
-                              parameter is enabled. Example: 2011-09-07T23:45:00Z'
+                            description: |-
+                              RestoreTime is the date and time (UTC) to restore from.
+                              Must be before the latest restorable time for the DB instance.
+                              Can't be specified if the useLatestRestorableTime parameter is enabled.
+                              Example: 2011-09-07T23:45:00Z
                             format: date-time
                             type: string
                           restoreType:
-                            description: "The type of restore to be performed. You
-                              can specify one of the following values: \n * full-copy
-                              - The new DB cluster is restored as a full copy of the
-                              source DB cluster. \n * copy-on-write - The new DB cluster
-                              is restored as a clone of the source DB cluster. \n
-                              Constraints: You can't specify copy-on-write if the
-                              engine version of the source DB cluster is earlier than
-                              1.11. \n If you don't specify a RestoreType value, then
-                              the new DB cluster is restored as a full copy of the
-                              source DB cluster. \n Valid for: Aurora DB clusters
-                              and Multi-AZ DB clusters"
+                            description: |-
+                              The type of restore to be performed. You can specify one of the following
+                              values:
+
+
+                                 * full-copy - The new DB cluster is restored as a full copy of the source
+                                 DB cluster.
+
+
+                                 * copy-on-write - The new DB cluster is restored as a clone of the source
+                                 DB cluster.
+
+
+                              Constraints: You can't specify copy-on-write if the engine version of the
+                              source DB cluster is earlier than 1.11.
+
+
+                              If you don't specify a RestoreType value, then the new DB cluster is restored
+                              as a full copy of the source DB cluster.
+
+
+                              Valid for: Aurora DB clusters and Multi-AZ DB clusters
                             enum:
                             - full-copy
                             - copy-on-write
                             type: string
                           sourceDBClusterIdentifier:
-                            description: 'SourceDBClusterIdentifier specifies the
-                              identifier of the source DB cluster from which to restore.
-                              Constraints: Must match the identifier of an existing
-                              DB instance.'
+                            description: |-
+                              SourceDBClusterIdentifier specifies the identifier of the source DB cluster from which to restore. Constraints:
+                              Must match the identifier of an existing DB instance.
                             type: string
                           sourceDBInstanceAutomatedBackupsArn:
-                            description: 'SourceDBInstanceAutomatedBackupsArn specifies
-                              the Amazon Resource Name (ARN) of the replicated automated
-                              backups from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE'
+                            description: |-
+                              SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
+                              from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE
                             type: string
                           sourceDbiResourceId:
                             description: SourceDbiResourceID specifies the resource
                               ID of the source DB instance from which to restore.
                             type: string
                           useLatestRestorableTime:
-                            description: UseLatestRestorableTime indicates that the
-                              DB instance is restored from the latest backup Can't
-                              be specified if the restoreTime parameter is provided.
+                            description: |-
+                              UseLatestRestorableTime indicates that the DB instance is restored from the latest backup
+                              Can't be specified if the restoreTime parameter is provided.
                             type: boolean
                         type: object
                       s3:
@@ -952,12 +1387,14 @@ spec:
                               within which the backup to restore is located.
                             type: string
                           sourceEngine:
-                            description: SourceEngine is the engine used to create
-                              the backup. Must be "mysql".
+                            description: |-
+                              SourceEngine is the engine used to create the backup.
+                              Must be "mysql".
                             type: string
                           sourceEngineVersion:
-                            description: 'SourceEngineVersion is the version of the
-                              engine used to create the backup. Example: "5.7.30"'
+                            description: |-
+                              SourceEngineVersion is the version of the engine used to create the backup.
+                              Example: "5.7.30"
                             type: string
                         required:
                         - bucketName
@@ -977,9 +1414,9 @@ spec:
                         - snapshotIdentifier
                         type: object
                       source:
-                        description: Source is the type of the backup to restore when
-                          creating a new  DBCluster or DBInstance. S3, Snapshot and
-                          PointInTime are supported.
+                        description: |-
+                          Source is the type of the backup to restore when creating a new  DBCluster or DBInstance.
+                          S3, Snapshot and PointInTime are supported.
                         enum:
                         - S3
                         - Snapshot
@@ -989,9 +1426,12 @@ spec:
                     - source
                     type: object
                   scalingConfiguration:
-                    description: "For DB clusters in serverless DB engine mode, the
-                      scaling properties of the DB cluster. \n Valid for Cluster Type:
-                      Aurora DB clusters only"
+                    description: |-
+                      For DB clusters in serverless DB engine mode, the scaling properties of the
+                      DB cluster.
+
+
+                      Valid for Cluster Type: Aurora DB clusters only
                     properties:
                       autoPause:
                         type: boolean
@@ -1018,45 +1458,79 @@ spec:
                         type: number
                     type: object
                   skipFinalSnapshot:
-                    description: "A value that indicates whether to skip the creation
-                      of a final DB cluster snapshot before the DB cluster is deleted.
-                      If skip is specified, no DB cluster snapshot is created. If
-                      skip isn't specified, a DB cluster snapshot is created before
-                      the DB cluster is deleted. By default, skip isn't specified,
-                      and the DB cluster snapshot is created. By default, this parameter
-                      is disabled. \n You must specify a FinalDBSnapshotIdentifier
-                      parameter if SkipFinalSnapshot is disabled."
+                    description: |-
+                      A value that indicates whether to skip the creation of a final DB cluster
+                      snapshot before the DB cluster is deleted. If skip is specified, no DB cluster
+                      snapshot is created. If skip isn't specified, a DB cluster snapshot is created
+                      before the DB cluster is deleted. By default, skip isn't specified, and the
+                      DB cluster snapshot is created. By default, this parameter is disabled.
+
+
+                      You must specify a FinalDBSnapshotIdentifier parameter if SkipFinalSnapshot
+                      is disabled.
                     type: boolean
                   sourceRegion:
-                    description: SourceRegion is the source region where the resource
-                      exists. This is not sent over the wire and is only used for
-                      presigning. This value should always have the same region as
-                      the source ARN.
+                    description: |-
+                      SourceRegion is the source region where the resource exists. This is not
+                      sent over the wire and is only used for presigning. This value should always
+                      have the same region as the source ARN.
                     type: string
                   storageEncrypted:
-                    description: "Specifies whether the DB cluster is encrypted. \n
-                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters"
+                    description: |-
+                      Specifies whether the DB cluster is encrypted.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
                     type: boolean
                   storageType:
-                    description: "The storage type to associate with the DB cluster.
-                      \n For information on storage types for Aurora DB clusters,
-                      see Storage configurations for Amazon Aurora DB clusters (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.StorageReliability.html#aurora-storage-type).
-                      For information on storage types for Multi-AZ DB clusters, see
-                      Settings for creating Multi-AZ DB clusters (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/create-multi-az-db-cluster.html#create-multi-az-db-cluster-settings).
-                      \n This setting is required to create a Multi-AZ DB cluster.
-                      \n When specified for a Multi-AZ DB cluster, a value for the
-                      Iops parameter is required. \n Valid for Cluster Type: Aurora
-                      DB clusters and Multi-AZ DB clusters \n Valid Values: \n * Aurora
-                      DB clusters - aurora | aurora-iopt1 \n * Multi-AZ DB clusters
-                      - io1 \n Default: \n * Aurora DB clusters - aurora \n * Multi-AZ
-                      DB clusters - io1 \n When you create an Aurora DB cluster with
-                      the storage type set to aurora-iopt1, the storage type is returned
-                      in the response. The storage type isn't returned when you set
-                      it to aurora."
+                    description: |-
+                      The storage type to associate with the DB cluster.
+
+
+                      For information on storage types for Aurora DB clusters, see Storage configurations
+                      for Amazon Aurora DB clusters (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Overview.StorageReliability.html#aurora-storage-type).
+                      For information on storage types for Multi-AZ DB clusters, see Settings for
+                      creating Multi-AZ DB clusters (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/create-multi-az-db-cluster.html#create-multi-az-db-cluster-settings).
+
+
+                      This setting is required to create a Multi-AZ DB cluster.
+
+
+                      When specified for a Multi-AZ DB cluster, a value for the Iops parameter
+                      is required.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+
+
+                      Valid Values:
+
+
+                         * Aurora DB clusters - aurora | aurora-iopt1
+
+
+                         * Multi-AZ DB clusters - io1
+
+
+                      Default:
+
+
+                         * Aurora DB clusters - aurora
+
+
+                         * Multi-AZ DB clusters - io1
+
+
+                      When you create an Aurora DB cluster with the storage type set to aurora-iopt1,
+                      the storage type is returned in the response. The storage type isn't returned
+                      when you set it to aurora.
                     type: string
                   tags:
-                    description: "Tags to assign to the DB cluster. \n Valid for Cluster
-                      Type: Aurora DB clusters and Multi-AZ DB clusters"
+                    description: |-
+                      Tags to assign to the DB cluster.
+
+
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
                     items:
                       properties:
                         key:
@@ -1066,8 +1540,9 @@ spec:
                       type: object
                     type: array
                   vpcSecurityGroupIDRefs:
-                    description: VPCSecurityGroupIDRefs are references to VPCSecurityGroups
-                      used to set the VPCSecurityGroupIDs.
+                    description: |-
+                      VPCSecurityGroupIDRefs are references to VPCSecurityGroups used to set
+                      the VPCSecurityGroupIDs.
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -1079,21 +1554,21 @@ spec:
                           properties:
                             resolution:
                               default: Required
-                              description: Resolution specifies whether resolution
-                                of this reference is required. The default is 'Required',
-                                which means the reconcile will fail if the reference
-                                cannot be resolved. 'Optional' means this reference
-                                will be a no-op if it cannot be resolved.
+                              description: |-
+                                Resolution specifies whether resolution of this reference is required.
+                                The default is 'Required', which means the reconcile will fail if the
+                                reference cannot be resolved. 'Optional' means this reference will be
+                                a no-op if it cannot be resolved.
                               enum:
                               - Required
                               - Optional
                               type: string
                             resolve:
-                              description: Resolve specifies when this reference should
-                                be resolved. The default is 'IfNotPresent', which
-                                will attempt to resolve the reference only when the
-                                corresponding field is not present. Use 'Always' to
-                                resolve the reference on every reconcile.
+                              description: |-
+                                Resolve specifies when this reference should be resolved. The default
+                                is 'IfNotPresent', which will attempt to resolve the reference only when
+                                the corresponding field is not present. Use 'Always' to resolve the
+                                reference on every reconcile.
                               enum:
                               - Always
                               - IfNotPresent
@@ -1104,12 +1579,14 @@ spec:
                       type: object
                     type: array
                   vpcSecurityGroupIDSelector:
-                    description: VPCSecurityGroupIDSelector selects references to
-                      VPCSecurityGroups used to set the VPCSecurityGroupIDs.
+                    description: |-
+                      VPCSecurityGroupIDSelector selects references to VPCSecurityGroups used
+                      to set the VPCSecurityGroupIDs.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -1122,21 +1599,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -1144,9 +1621,11 @@ spec:
                         type: object
                     type: object
                   vpcSecurityGroupIDs:
-                    description: "A list of VPC security groups that the DB cluster
-                      will belong to. \n Valid for: Aurora DB clusters and Multi-AZ
-                      DB clusters"
+                    description: |-
+                      A list of VPC security groups that the DB cluster will belong to.
+
+
+                      Valid for: Aurora DB clusters and Multi-AZ DB clusters
                     items:
                       type: string
                     type: array
@@ -1157,19 +1636,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -1182,9 +1663,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -1194,21 +1676,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -1218,17 +1700,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -1238,21 +1722,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -1267,21 +1751,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -1292,14 +1777,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -1321,30 +1807,34 @@ spec:
                 description: DBClusterObservation defines the observed state of DBCluster
                 properties:
                   activityStreamKMSKeyID:
-                    description: "The Amazon Web Services KMS key identifier used
-                      for encrypting messages in the database activity stream. \n
-                      The Amazon Web Services KMS key identifier is the key ARN, key
-                      ID, alias ARN, or alias name for the KMS key."
+                    description: |-
+                      The Amazon Web Services KMS key identifier used for encrypting messages in
+                      the database activity stream.
+
+
+                      The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+                      ARN, or alias name for the KMS key.
                     type: string
                   activityStreamKinesisStreamName:
-                    description: The name of the Amazon Kinesis data stream used for
-                      the database activity stream.
+                    description: |-
+                      The name of the Amazon Kinesis data stream used for the database activity
+                      stream.
                     type: string
                   activityStreamMode:
-                    description: The mode of the database activity stream. Database
-                      events such as a change or access generate an activity stream
-                      event. The database session can handle these events either synchronously
-                      or asynchronously.
+                    description: |-
+                      The mode of the database activity stream. Database events such as a change
+                      or access generate an activity stream event. The database session can handle
+                      these events either synchronously or asynchronously.
                     type: string
                   activityStreamStatus:
                     description: The status of the database activity stream.
                     type: string
                   associatedRoles:
-                    description: A list of the Amazon Web Services Identity and Access
-                      Management (IAM) roles that are associated with the DB cluster.
-                      IAM roles that are associated with a DB cluster grant permission
-                      for the DB cluster to access other Amazon Web Services on your
-                      behalf.
+                    description: |-
+                      A list of the Amazon Web Services Identity and Access Management (IAM) roles
+                      that are associated with the DB cluster. IAM roles that are associated with
+                      a DB cluster grant permission for the DB cluster to access other Amazon Web
+                      Services on your behalf.
                     items:
                       properties:
                         featureName:
@@ -1364,11 +1854,14 @@ spec:
                     format: int64
                     type: integer
                   capacity:
-                    description: "The current capacity of an Aurora Serverless v1
-                      DB cluster. The capacity is 0 (zero) when the cluster is paused.
-                      \n For more information about Aurora Serverless v1, see Using
-                      Amazon Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
-                      in the Amazon Aurora User Guide."
+                    description: |-
+                      The current capacity of an Aurora Serverless v1 DB cluster. The capacity
+                      is 0 (zero) when the cluster is paused.
+
+
+                      For more information about Aurora Serverless v1, see Using Amazon Aurora
+                      Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
+                      in the Amazon Aurora User Guide.
                     format: int64
                     type: integer
                   cloneGroupID:
@@ -1381,8 +1874,9 @@ spec:
                     format: date-time
                     type: string
                   crossAccountClone:
-                    description: Indicates whether the DB cluster is a clone of a
-                      DB cluster owned by a different Amazon Web Services account.
+                    description: |-
+                      Indicates whether the DB cluster is a clone of a DB cluster owned by a different
+                      Amazon Web Services account.
                     type: boolean
                   customEndpoints:
                     description: The custom endpoints associated with the DB cluster.
@@ -1393,8 +1887,9 @@ spec:
                     description: The Amazon Resource Name (ARN) for the DB cluster.
                     type: string
                   dbClusterIdentifier:
-                    description: The user-supplied identifier for the DB cluster.
-                      This identifier is the unique key that identifies a DB cluster.
+                    description: |-
+                      The user-supplied identifier for the DB cluster. This identifier is the unique
+                      key that identifies a DB cluster.
                     type: string
                   dbClusterMembers:
                     description: The list of DB instances that make up the DB cluster.
@@ -1427,15 +1922,15 @@ spec:
                       DB cluster.
                     type: string
                   dbClusterResourceID:
-                    description: The Amazon Web Services Region-unique, immutable
-                      identifier for the DB cluster. This identifier is found in Amazon
-                      Web Services CloudTrail log entries whenever the KMS key for
-                      the DB cluster is accessed.
+                    description: |-
+                      The Amazon Web Services Region-unique, immutable identifier for the DB cluster.
+                      This identifier is found in Amazon Web Services CloudTrail log entries whenever
+                      the KMS key for the DB cluster is accessed.
                     type: string
                   dbSubnetGroup:
-                    description: Information about the subnet group associated with
-                      the DB cluster, including the name, description, and subnets
-                      in the subnet group.
+                    description: |-
+                      Information about the subnet group associated with the DB cluster, including
+                      the name, description, and subnets in the subnet group.
                     type: string
                   domainMemberships:
                     description: The Active Directory Domain membership records associated
@@ -1465,16 +1960,20 @@ spec:
                     format: date-time
                     type: string
                   earliestRestorableTime:
-                    description: The earliest time to which a database can be restored
-                      with point-in-time restore.
+                    description: |-
+                      The earliest time to which a database can be restored with point-in-time
+                      restore.
                     format: date-time
                     type: string
                   enabledCloudwatchLogsExports:
-                    description: "A list of log types that this DB cluster is configured
-                      to export to CloudWatch Logs. \n Log types vary by DB engine.
-                      For information about the log types for each DB engine, see
-                      Amazon RDS Database Log Files (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html)
-                      in the Amazon Aurora User Guide."
+                    description: |-
+                      A list of log types that this DB cluster is configured to export to CloudWatch
+                      Logs.
+
+
+                      Log types vary by DB engine. For information about the log types for each
+                      DB engine, see Amazon RDS Database Log Files (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html)
+                      in the Amazon Aurora User Guide.
                     items:
                       type: string
                     type: array
@@ -1486,40 +1985,48 @@ spec:
                     description: The version of the database engine.
                     type: string
                   globalWriteForwardingRequested:
-                    description: Specifies whether write forwarding is enabled for
-                      a secondary cluster in an Aurora global database. Because write
-                      forwarding takes time to enable, check the value of GlobalWriteForwardingStatus
-                      to confirm that the request has completed before using the write
-                      forwarding feature for this cluster.
+                    description: |-
+                      Specifies whether write forwarding is enabled for a secondary cluster in
+                      an Aurora global database. Because write forwarding takes time to enable,
+                      check the value of GlobalWriteForwardingStatus to confirm that the request
+                      has completed before using the write forwarding feature for this cluster.
                     type: boolean
                   globalWriteForwardingStatus:
-                    description: The status of write forwarding for a secondary cluster
-                      in an Aurora global database.
+                    description: |-
+                      The status of write forwarding for a secondary cluster in an Aurora global
+                      database.
                     type: string
                   hostedZoneID:
                     description: The ID that Amazon Route 53 assigns when you create
                       a hosted zone.
                     type: string
                   httpEndpointEnabled:
-                    description: "Indicates whether the HTTP endpoint for an Aurora
-                      Serverless v1 DB cluster is enabled. \n When enabled, the HTTP
-                      endpoint provides a connectionless web service API for running
-                      SQL queries on the Aurora Serverless v1 DB cluster. You can
-                      also query your database from inside the RDS console with the
-                      query editor. \n For more information, see Using the Data API
-                      for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
-                      in the Amazon Aurora User Guide."
+                    description: |-
+                      Indicates whether the HTTP endpoint for an Aurora Serverless v1 DB cluster
+                      is enabled.
+
+
+                      When enabled, the HTTP endpoint provides a connectionless web service API
+                      for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
+                      query your database from inside the RDS console with the query editor.
+
+
+                      For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+                      in the Amazon Aurora User Guide.
                     type: boolean
                   iOOptimizedNextAllowedModificationTime:
-                    description: "The next time you can modify the DB cluster to use
-                      the aurora-iopt1 storage type. \n This setting is only for Aurora
-                      DB clusters."
+                    description: |-
+                      The next time you can modify the DB cluster to use the aurora-iopt1 storage
+                      type.
+
+
+                      This setting is only for Aurora DB clusters.
                     format: date-time
                     type: string
                   iamDatabaseAuthenticationEnabled:
-                    description: Indicates whether the mapping of Amazon Web Services
-                      Identity and Access Management (IAM) accounts to database accounts
-                      is enabled.
+                    description: |-
+                      Indicates whether the mapping of Amazon Web Services Identity and Access
+                      Management (IAM) accounts to database accounts is enabled.
                     type: boolean
                   latestRestorableTime:
                     description: The latest time to which a database can be restored
@@ -1527,18 +2034,21 @@ spec:
                     format: date-time
                     type: string
                   localWriteForwardingStatus:
-                    description: Specifies whether an Aurora DB cluster has in-cluster
-                      write forwarding enabled, not enabled, requested, or is in the
-                      process of enabling it.
+                    description: |-
+                      Specifies whether an Aurora DB cluster has in-cluster write forwarding enabled,
+                      not enabled, requested, or is in the process of enabling it.
                     type: string
                   masterUserSecret:
-                    description: "The secret managed by RDS in Amazon Web Services
-                      Secrets Manager for the master user password. \n For more information,
-                      see Password management with Amazon Web Services Secrets Manager
-                      (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html)
-                      in the Amazon RDS User Guide and Password management with Amazon
-                      Web Services Secrets Manager (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html)
-                      in the Amazon Aurora User Guide."
+                    description: |-
+                      The secret managed by RDS in Amazon Web Services Secrets Manager for the
+                      master user password.
+
+
+                      For more information, see Password management with Amazon Web Services Secrets
+                      Manager (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-secrets-manager.html)
+                      in the Amazon RDS User Guide and Password management with Amazon Web Services
+                      Secrets Manager (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/rds-secrets-manager.html)
+                      in the Amazon Aurora User Guide.
                     properties:
                       kmsKeyID:
                         type: string
@@ -1555,29 +2065,33 @@ spec:
                     description: The progress of the operation as a percentage.
                     type: string
                   performanceInsightsEnabled:
-                    description: "Indicates whether Performance Insights is enabled
-                      for the DB cluster. \n This setting is only for non-Aurora Multi-AZ
-                      DB clusters."
+                    description: |-
+                      Indicates whether Performance Insights is enabled for the DB cluster.
+
+
+                      This setting is only for non-Aurora Multi-AZ DB clusters.
                     type: boolean
                   readReplicaIdentifiers:
-                    description: Contains one or more identifiers of the read replicas
-                      associated with this DB cluster.
+                    description: |-
+                      Contains one or more identifiers of the read replicas associated with this
+                      DB cluster.
                     items:
                       type: string
                     type: array
                   readerEndpoint:
-                    description: "The reader endpoint for the DB cluster. The reader
-                      endpoint for a DB cluster load-balances connections across the
-                      Aurora Replicas that are available in a DB cluster. As clients
-                      request new connections to the reader endpoint, Aurora distributes
-                      the connection requests among the Aurora Replicas in the DB
-                      cluster. This functionality can help balance your read workload
-                      across multiple Aurora Replicas in your DB cluster. \n If a
-                      failover occurs, and the Aurora Replica that you are connected
-                      to is promoted to be the primary instance, your connection is
-                      dropped. To continue sending your read workload to other Aurora
-                      Replicas in the cluster, you can then reconnect to the reader
-                      endpoint."
+                    description: |-
+                      The reader endpoint for the DB cluster. The reader endpoint for a DB cluster
+                      load-balances connections across the Aurora Replicas that are available in
+                      a DB cluster. As clients request new connections to the reader endpoint,
+                      Aurora distributes the connection requests among the Aurora Replicas in the
+                      DB cluster. This functionality can help balance your read workload across
+                      multiple Aurora Replicas in your DB cluster.
+
+
+                      If a failover occurs, and the Aurora Replica that you are connected to is
+                      promoted to be the primary instance, your connection is dropped. To continue
+                      sending your read workload to other Aurora Replicas in the cluster, you can
+                      then reconnect to the reader endpoint.
                     type: string
                   scalingConfigurationInfo:
                     properties:
@@ -1628,14 +2142,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -1645,8 +2168,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -1658,6 +2182,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

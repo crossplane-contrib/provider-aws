@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: autoscalinggroups.autoscaling.aws.crossplane.io
 spec:
   group: autoscaling.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: AutoScalingGroup is the Schema for the AutoScalingGroups API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -69,124 +75,155 @@ spec:
                   of AutoScalingGroup
                 properties:
                   availabilityZones:
-                    description: A list of Availability Zones where instances in the
-                      Auto Scaling group can be created. Used for launching into the
-                      default VPC subnet in each Availability Zone when not using
-                      the VPCZoneIdentifier property, or for attaching a network interface
-                      when an existing network interface ID is specified in a launch
+                    description: |-
+                      A list of Availability Zones where instances in the Auto Scaling group can
+                      be created. Used for launching into the default VPC subnet in each Availability
+                      Zone when not using the VPCZoneIdentifier property, or for attaching a network
+                      interface when an existing network interface ID is specified in a launch
                       template.
                     items:
                       type: string
                     type: array
                   capacityRebalance:
-                    description: Indicates whether Capacity Rebalancing is enabled.
-                      Otherwise, Capacity Rebalancing is disabled. When you turn on
-                      Capacity Rebalancing, Amazon EC2 Auto Scaling attempts to launch
-                      a Spot Instance whenever Amazon EC2 notifies that a Spot Instance
-                      is at an elevated risk of interruption. After launching a new
-                      instance, it then terminates an old instance. For more information,
-                      see Use Capacity Rebalancing to handle Amazon EC2 Spot Interruptions
-                      (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html)
+                    description: |-
+                      Indicates whether Capacity Rebalancing is enabled. Otherwise, Capacity Rebalancing
+                      is disabled. When you turn on Capacity Rebalancing, Amazon EC2 Auto Scaling
+                      attempts to launch a Spot Instance whenever Amazon EC2 notifies that a Spot
+                      Instance is at an elevated risk of interruption. After launching a new instance,
+                      it then terminates an old instance. For more information, see Use Capacity
+                      Rebalancing to handle Amazon EC2 Spot Interruptions (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html)
                       in the in the Amazon EC2 Auto Scaling User Guide.
                     type: boolean
                   context:
                     description: Reserved.
                     type: string
                   defaultCooldown:
-                    description: "Only needed if you use simple scaling policies.
-                      \n The amount of time, in seconds, between one scaling activity
-                      ending and another one starting due to simple scaling policies.
-                      For more information, see Scaling cooldowns for Amazon EC2 Auto
-                      Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html)
-                      in the Amazon EC2 Auto Scaling User Guide. \n Default: 300 seconds"
+                    description: |-
+                      Only needed if you use simple scaling policies.
+
+
+                      The amount of time, in seconds, between one scaling activity ending and another
+                      one starting due to simple scaling policies. For more information, see Scaling
+                      cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html)
+                      in the Amazon EC2 Auto Scaling User Guide.
+
+
+                      Default: 300 seconds
                     format: int64
                     type: integer
                   defaultInstanceWarmup:
-                    description: "The amount of time, in seconds, until a new instance
-                      is considered to have finished initializing and resource consumption
-                      to become stable after it enters the InService state. \n During
-                      an instance refresh, Amazon EC2 Auto Scaling waits for the warm-up
-                      period after it replaces an instance before it moves on to replacing
-                      the next instance. Amazon EC2 Auto Scaling also waits for the
-                      warm-up period before aggregating the metrics for new instances
-                      with existing instances in the Amazon CloudWatch metrics that
-                      are used for scaling, resulting in more reliable usage data.
-                      For more information, see Set the default instance warmup for
-                      an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
-                      in the Amazon EC2 Auto Scaling User Guide. \n To manage various
-                      warm-up settings at the group level, we recommend that you set
-                      the default instance warmup, even if it is set to 0 seconds.
-                      To remove a value that you previously set, include the property
-                      but specify -1 for the value. However, we strongly recommend
-                      keeping the default instance warmup enabled by specifying a
-                      value of 0 or other nominal value. \n Default: None"
+                    description: |-
+                      The amount of time, in seconds, until a new instance is considered to have
+                      finished initializing and resource consumption to become stable after it
+                      enters the InService state.
+
+
+                      During an instance refresh, Amazon EC2 Auto Scaling waits for the warm-up
+                      period after it replaces an instance before it moves on to replacing the
+                      next instance. Amazon EC2 Auto Scaling also waits for the warm-up period
+                      before aggregating the metrics for new instances with existing instances
+                      in the Amazon CloudWatch metrics that are used for scaling, resulting in
+                      more reliable usage data. For more information, see Set the default instance
+                      warmup for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
+                      in the Amazon EC2 Auto Scaling User Guide.
+
+
+                      To manage various warm-up settings at the group level, we recommend that
+                      you set the default instance warmup, even if it is set to 0 seconds. To remove
+                      a value that you previously set, include the property but specify -1 for
+                      the value. However, we strongly recommend keeping the default instance warmup
+                      enabled by specifying a value of 0 or other nominal value.
+
+
+                      Default: None
                     format: int64
                     type: integer
                   desiredCapacity:
-                    description: The desired capacity is the initial capacity of the
-                      Auto Scaling group at the time of its creation and the capacity
-                      it attempts to maintain. It can scale beyond this capacity if
-                      you configure auto scaling. This number must be greater than
-                      or equal to the minimum size of the group and less than or equal
-                      to the maximum size of the group. If you do not specify a desired
-                      capacity, the default is the minimum size of the group.
+                    description: |-
+                      The desired capacity is the initial capacity of the Auto Scaling group at
+                      the time of its creation and the capacity it attempts to maintain. It can
+                      scale beyond this capacity if you configure auto scaling. This number must
+                      be greater than or equal to the minimum size of the group and less than or
+                      equal to the maximum size of the group. If you do not specify a desired capacity,
+                      the default is the minimum size of the group.
                     format: int64
                     type: integer
                   desiredCapacityType:
-                    description: "The unit of measurement for the value specified
-                      for desired capacity. Amazon EC2 Auto Scaling supports DesiredCapacityType
-                      for attribute-based instance type selection only. For more information,
-                      see Creating an Auto Scaling group using attribute-based instance
-                      type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
-                      in the Amazon EC2 Auto Scaling User Guide. \n By default, Amazon
-                      EC2 Auto Scaling specifies units, which translates into number
-                      of instances. \n Valid values: units | vcpu | memory-mib"
+                    description: |-
+                      The unit of measurement for the value specified for desired capacity. Amazon
+                      EC2 Auto Scaling supports DesiredCapacityType for attribute-based instance
+                      type selection only. For more information, see Creating an Auto Scaling group
+                      using attribute-based instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
+                      in the Amazon EC2 Auto Scaling User Guide.
+
+
+                      By default, Amazon EC2 Auto Scaling specifies units, which translates into
+                      number of instances.
+
+
+                      Valid values: units | vcpu | memory-mib
                     type: string
                   healthCheckGracePeriod:
-                    description: "The amount of time, in seconds, that Amazon EC2
-                      Auto Scaling waits before checking the health status of an EC2
-                      instance that has come into service and marking it unhealthy
-                      due to a failed health check. This is useful if your instances
-                      do not immediately pass their health checks after they enter
-                      the InService state. For more information, see Set the health
-                      check grace period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
-                      in the Amazon EC2 Auto Scaling User Guide. \n Default: 0 seconds"
+                    description: |-
+                      The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
+                      checking the health status of an EC2 instance that has come into service
+                      and marking it unhealthy due to a failed health check. This is useful if
+                      your instances do not immediately pass their health checks after they enter
+                      the InService state. For more information, see Set the health check grace
+                      period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
+                      in the Amazon EC2 Auto Scaling User Guide.
+
+
+                      Default: 0 seconds
                     format: int64
                     type: integer
                   healthCheckType:
-                    description: "A comma-separated value string of one or more health
-                      check types. \n The valid values are EC2, ELB, and VPC_LATTICE.
-                      EC2 is the default health check and cannot be disabled. For
-                      more information, see Health checks for Auto Scaling instances
-                      (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
-                      in the Amazon EC2 Auto Scaling User Guide. \n Only specify EC2
-                      if you must clear a value that was previously set."
+                    description: |-
+                      A comma-separated value string of one or more health check types.
+
+
+                      The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
+                      check and cannot be disabled. For more information, see Health checks for
+                      Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+                      in the Amazon EC2 Auto Scaling User Guide.
+
+
+                      Only specify EC2 if you must clear a value that was previously set.
                     type: string
                   instanceID:
-                    description: The ID of the instance used to base the launch configuration
-                      on. If specified, Amazon EC2 Auto Scaling uses the configuration
-                      values from the specified instance to create a new launch configuration.
-                      To get the instance ID, use the Amazon EC2 DescribeInstances
-                      (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
-                      API operation. For more information, see Creating an Auto Scaling
-                      group using an EC2 instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-from-instance.html)
+                    description: |-
+                      The ID of the instance used to base the launch configuration on. If specified,
+                      Amazon EC2 Auto Scaling uses the configuration values from the specified
+                      instance to create a new launch configuration. To get the instance ID, use
+                      the Amazon EC2 DescribeInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
+                      API operation. For more information, see Creating an Auto Scaling group using
+                      an EC2 instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-from-instance.html)
                       in the Amazon EC2 Auto Scaling User Guide.
                     type: string
                   launchConfigurationName:
-                    description: "The name of the launch configuration to use to launch
-                      instances. \n Conditional: You must specify either a launch
-                      template (LaunchTemplate or MixedInstancesPolicy) or a launch
-                      configuration (LaunchConfigurationName or InstanceId)."
+                    description: |-
+                      The name of the launch configuration to use to launch instances.
+
+
+                      Conditional: You must specify either a launch template (LaunchTemplate or
+                      MixedInstancesPolicy) or a launch configuration (LaunchConfigurationName
+                      or InstanceId).
                     type: string
                   launchTemplate:
-                    description: "Information used to specify the launch template
-                      and version to use to launch instances. \n Conditional: You
-                      must specify either a launch template (LaunchTemplate or MixedInstancesPolicy)
-                      or a launch configuration (LaunchConfigurationName or InstanceId).
-                      \n The launch template that is specified must be configured
-                      for use with an Auto Scaling group. For more information, see
-                      Creating a launch template for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-template.html)
-                      in the Amazon EC2 Auto Scaling User Guide."
+                    description: |-
+                      Information used to specify the launch template and version to use to launch
+                      instances.
+
+
+                      Conditional: You must specify either a launch template (LaunchTemplate or
+                      MixedInstancesPolicy) or a launch configuration (LaunchConfigurationName
+                      or InstanceId).
+
+
+                      The launch template that is specified must be configured for use with an
+                      Auto Scaling group. For more information, see Creating a launch template
+                      for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-template.html)
+                      in the Amazon EC2 Auto Scaling User Guide.
                     properties:
                       launchTemplateID:
                         type: string
@@ -196,8 +233,9 @@ spec:
                         type: string
                     type: object
                   lifecycleHookSpecificationList:
-                    description: One or more lifecycle hooks to add to the Auto Scaling
-                      group before instances are launched.
+                    description: |-
+                      One or more lifecycle hooks to add to the Auto Scaling group before instances
+                      are launched.
                     items:
                       properties:
                         defaultResult:
@@ -218,30 +256,32 @@ spec:
                       type: object
                     type: array
                   loadBalancerNames:
-                    description: A list of Classic Load Balancers associated with
-                      this Auto Scaling group. For Application Load Balancers, Network
-                      Load Balancers, and Gateway Load Balancers, specify the TargetGroupARNs
-                      property instead.
+                    description: |-
+                      A list of Classic Load Balancers associated with this Auto Scaling group.
+                      For Application Load Balancers, Network Load Balancers, and Gateway Load
+                      Balancers, specify the TargetGroupARNs property instead.
                     items:
                       type: string
                     type: array
                   maxInstanceLifetime:
-                    description: The maximum amount of time, in seconds, that an instance
-                      can be in service. The default is null. If specified, the value
-                      must be either 0 or a number equal to or greater than 86,400
-                      seconds (1 day). For more information, see Replacing Auto Scaling
-                      instances based on maximum instance lifetime (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html)
+                    description: |-
+                      The maximum amount of time, in seconds, that an instance can be in service.
+                      The default is null. If specified, the value must be either 0 or a number
+                      equal to or greater than 86,400 seconds (1 day). For more information, see
+                      Replacing Auto Scaling instances based on maximum instance lifetime (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html)
                       in the Amazon EC2 Auto Scaling User Guide.
                     format: int64
                     type: integer
                   maxSize:
-                    description: "The maximum size of the group. \n With a mixed instances
-                      policy that uses instance weighting, Amazon EC2 Auto Scaling
-                      may need to go above MaxSize to meet your capacity requirements.
-                      In this event, Amazon EC2 Auto Scaling will never go above MaxSize
-                      by more than your largest instance weight (weights that define
-                      how many units each instance contributes to the desired capacity
-                      of the group)."
+                    description: |-
+                      The maximum size of the group.
+
+
+                      With a mixed instances policy that uses instance weighting, Amazon EC2 Auto
+                      Scaling may need to go above MaxSize to meet your capacity requirements.
+                      In this event, Amazon EC2 Auto Scaling will never go above MaxSize by more
+                      than your largest instance weight (weights that define how many units each
+                      instance contributes to the desired capacity of the group).
                     format: int64
                     type: integer
                   minSize:
@@ -249,16 +289,16 @@ spec:
                     format: int64
                     type: integer
                   mixedInstancesPolicy:
-                    description: The mixed instances policy. For more information,
-                      see Auto Scaling groups with multiple instance types and purchase
-                      options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html)
+                    description: |-
+                      The mixed instances policy. For more information, see Auto Scaling groups
+                      with multiple instance types and purchase options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups.html)
                       in the Amazon EC2 Auto Scaling User Guide.
                     properties:
                       instancesDistribution:
-                        description: Use this structure to specify the distribution
-                          of On-Demand Instances and Spot Instances and the allocation
-                          strategies used to fulfill On-Demand and Spot capacities
-                          for a mixed instances policy.
+                        description: |-
+                          Use this structure to specify the distribution of On-Demand Instances and
+                          Spot Instances and the allocation strategies used to fulfill On-Demand and
+                          Spot capacities for a mixed instances policy.
                         properties:
                           onDemandAllocationStrategy:
                             type: string
@@ -277,13 +317,14 @@ spec:
                             type: string
                         type: object
                       launchTemplate:
-                        description: Use this structure to specify the launch templates
-                          and instance types (overrides) for a mixed instances policy.
+                        description: |-
+                          Use this structure to specify the launch templates and instance types (overrides)
+                          for a mixed instances policy.
                         properties:
                           launchTemplateSpecification:
-                            description: Describes the launch template and the version
-                              of the launch template that Amazon EC2 Auto Scaling
-                              uses to launch Amazon EC2 instances. For more information
+                            description: |-
+                              Describes the launch template and the version of the launch template that
+                              Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
                               about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
                               in the Amazon EC2 Auto Scaling User Guide.
                             properties:
@@ -298,42 +339,46 @@ spec:
                             items:
                               properties:
                                 instanceRequirements:
-                                  description: "The attributes for the instance types
-                                    for a mixed instances policy. Amazon EC2 Auto
-                                    Scaling uses your specified requirements to identify
-                                    instance types. Then, it uses your On-Demand and
-                                    Spot allocation strategies to launch instances
-                                    from these instance types. \n When you specify
-                                    multiple attributes, you get instance types that
-                                    satisfy all of the specified attributes. If you
-                                    specify multiple values for an attribute, you
-                                    get instance types that satisfy any of the specified
-                                    values. \n To limit the list of instance types
-                                    from which Amazon EC2 Auto Scaling can identify
-                                    matching instance types, you can use one of the
-                                    following parameters, but not both in the same
-                                    request: \n * AllowedInstanceTypes - The instance
-                                    types to include in the list. All other instance
-                                    types are ignored, even if they match your specified
-                                    attributes. \n * ExcludedInstanceTypes - The instance
-                                    types to exclude from the list, even if they match
-                                    your specified attributes. \n You must specify
-                                    VCpuCount and MemoryMiB. All other attributes
-                                    are optional. Any unspecified optional attribute
-                                    is set to its default. \n For more information,
-                                    see Creating an Auto Scaling group using attribute-based
+                                  description: |-
+                                    The attributes for the instance types for a mixed instances policy. Amazon
+                                    EC2 Auto Scaling uses your specified requirements to identify instance types.
+                                    Then, it uses your On-Demand and Spot allocation strategies to launch instances
+                                    from these instance types.
+
+
+                                    When you specify multiple attributes, you get instance types that satisfy
+                                    all of the specified attributes. If you specify multiple values for an attribute,
+                                    you get instance types that satisfy any of the specified values.
+
+
+                                    To limit the list of instance types from which Amazon EC2 Auto Scaling can
+                                    identify matching instance types, you can use one of the following parameters,
+                                    but not both in the same request:
+
+
+                                       * AllowedInstanceTypes - The instance types to include in the list. All
+                                       other instance types are ignored, even if they match your specified attributes.
+
+
+                                       * ExcludedInstanceTypes - The instance types to exclude from the list,
+                                       even if they match your specified attributes.
+
+
+                                    You must specify VCpuCount and MemoryMiB. All other attributes are optional.
+                                    Any unspecified optional attribute is set to its default.
+
+
+                                    For more information, see Creating an Auto Scaling group using attribute-based
                                     instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
-                                    in the Amazon EC2 Auto Scaling User Guide. For
-                                    help determining which instance types match your
-                                    attributes before you apply them to your Auto
-                                    Scaling group, see Preview instance types with
-                                    specified attributes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html#ec2fleet-get-instance-types-from-instance-requirements)
-                                    in the Amazon EC2 User Guide for Linux Instances."
+                                    in the Amazon EC2 Auto Scaling User Guide. For help determining which instance
+                                    types match your attributes before you apply them to your Auto Scaling group,
+                                    see Preview instance types with specified attributes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html#ec2fleet-get-instance-types-from-instance-requirements)
+                                    in the Amazon EC2 User Guide for Linux Instances.
                                   properties:
                                     acceleratorCount:
-                                      description: Specifies the minimum and maximum
-                                        for the AcceleratorCount object when you specify
-                                        InstanceRequirements for an Auto Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the AcceleratorCount object when you
+                                        specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           format: int64
@@ -351,10 +396,9 @@ spec:
                                         type: string
                                       type: array
                                     acceleratorTotalMemoryMiB:
-                                      description: Specifies the minimum and maximum
-                                        for the AcceleratorTotalMemoryMiB object when
-                                        you specify InstanceRequirements for an Auto
-                                        Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the AcceleratorTotalMemoryMiB object
+                                        when you specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           format: int64
@@ -374,10 +418,9 @@ spec:
                                     bareMetal:
                                       type: string
                                     baselineEBSBandwidthMbps:
-                                      description: Specifies the minimum and maximum
-                                        for the BaselineEbsBandwidthMbps object when
-                                        you specify InstanceRequirements for an Auto
-                                        Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the BaselineEbsBandwidthMbps object
+                                        when you specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           format: int64
@@ -407,9 +450,9 @@ spec:
                                         type: string
                                       type: array
                                     memoryGiBPerVCPU:
-                                      description: Specifies the minimum and maximum
-                                        for the MemoryGiBPerVCpu object when you specify
-                                        InstanceRequirements for an Auto Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the MemoryGiBPerVCpu object when you
+                                        specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           type: number
@@ -417,8 +460,8 @@ spec:
                                           type: number
                                       type: object
                                     memoryMiB:
-                                      description: Specifies the minimum and maximum
-                                        for the MemoryMiB object when you specify
+                                      description: |-
+                                        Specifies the minimum and maximum for the MemoryMiB object when you specify
                                         InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
@@ -429,18 +472,17 @@ spec:
                                           type: integer
                                       type: object
                                     networkBandwidthGbps:
-                                      description: "Specifies the minimum and maximum
-                                        for the NetworkBandwidthGbps object when you
-                                        specify InstanceRequirements for an Auto Scaling
-                                        group. \n Setting the minimum bandwidth does
-                                        not guarantee that your instance will achieve
-                                        the minimum bandwidth. Amazon EC2 will identify
-                                        instance types that support the specified
-                                        minimum bandwidth, but the actual bandwidth
-                                        of your instance might go below the specified
-                                        minimum at times. For more information, see
-                                        Available instance bandwidth (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth)
-                                        in the Amazon EC2 User Guide for Linux Instances."
+                                      description: |-
+                                        Specifies the minimum and maximum for the NetworkBandwidthGbps object when
+                                        you specify InstanceRequirements for an Auto Scaling group.
+
+
+                                        Setting the minimum bandwidth does not guarantee that your instance will
+                                        achieve the minimum bandwidth. Amazon EC2 will identify instance types that
+                                        support the specified minimum bandwidth, but the actual bandwidth of your
+                                        instance might go below the specified minimum at times. For more information,
+                                        see Available instance bandwidth (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth)
+                                        in the Amazon EC2 User Guide for Linux Instances.
                                       properties:
                                         max:
                                           type: number
@@ -448,10 +490,9 @@ spec:
                                           type: number
                                       type: object
                                     networkInterfaceCount:
-                                      description: Specifies the minimum and maximum
-                                        for the NetworkInterfaceCount object when
-                                        you specify InstanceRequirements for an Auto
-                                        Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the NetworkInterfaceCount object when
+                                        you specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           format: int64
@@ -469,10 +510,9 @@ spec:
                                       format: int64
                                       type: integer
                                     totalLocalStorageGB:
-                                      description: Specifies the minimum and maximum
-                                        for the TotalLocalStorageGB object when you
-                                        specify InstanceRequirements for an Auto Scaling
-                                        group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the TotalLocalStorageGB object when
+                                        you specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           type: number
@@ -480,8 +520,8 @@ spec:
                                           type: number
                                       type: object
                                     vCPUCount:
-                                      description: Specifies the minimum and maximum
-                                        for the VCpuCount object when you specify
+                                      description: |-
+                                        Specifies the minimum and maximum for the VCpuCount object when you specify
                                         InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
@@ -495,11 +535,10 @@ spec:
                                 instanceType:
                                   type: string
                                 launchTemplateSpecification:
-                                  description: Describes the launch template and the
-                                    version of the launch template that Amazon EC2
-                                    Auto Scaling uses to launch Amazon EC2 instances.
-                                    For more information about launch templates, see
-                                    Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+                                  description: |-
+                                    Describes the launch template and the version of the launch template that
+                                    Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
+                                    about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
                                     in the Amazon EC2 Auto Scaling User Guide.
                                   properties:
                                     launchTemplateID:
@@ -516,44 +555,47 @@ spec:
                         type: object
                     type: object
                   newInstancesProtectedFromScaleIn:
-                    description: Indicates whether newly launched instances are protected
-                      from termination by Amazon EC2 Auto Scaling when scaling in.
-                      For more information about preventing instances from terminating
-                      on scale in, see Using instance scale-in protection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
+                    description: |-
+                      Indicates whether newly launched instances are protected from termination
+                      by Amazon EC2 Auto Scaling when scaling in. For more information about preventing
+                      instances from terminating on scale in, see Using instance scale-in protection
+                      (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
                       in the Amazon EC2 Auto Scaling User Guide.
                     type: boolean
                   placementGroup:
-                    description: "The name of the placement group into which to launch
-                      your instances. For more information, see Placement groups (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html)
-                      in the Amazon EC2 User Guide for Linux Instances. \n A cluster
-                      placement group is a logical grouping of instances within a
-                      single Availability Zone. You cannot specify multiple Availability
-                      Zones and a cluster placement group."
+                    description: |-
+                      The name of the placement group into which to launch your instances. For
+                      more information, see Placement groups (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html)
+                      in the Amazon EC2 User Guide for Linux Instances.
+
+
+                      A cluster placement group is a logical grouping of instances within a single
+                      Availability Zone. You cannot specify multiple Availability Zones and a cluster
+                      placement group.
                     type: string
                   region:
                     description: Region is which region the AutoScalingGroup will
                       be created.
                     type: string
                   serviceLinkedRoleARN:
-                    description: The Amazon Resource Name (ARN) of the service-linked
-                      role that the Auto Scaling group uses to call other Amazon Web
-                      Services service on your behalf. By default, Amazon EC2 Auto
-                      Scaling uses a service-linked role named AWSServiceRoleForAutoScaling,
-                      which it creates if it does not exist. For more information,
-                      see Service-linked roles (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-service-linked-role.html)
+                    description: |-
+                      The Amazon Resource Name (ARN) of the service-linked role that the Auto Scaling
+                      group uses to call other Amazon Web Services service on your behalf. By default,
+                      Amazon EC2 Auto Scaling uses a service-linked role named AWSServiceRoleForAutoScaling,
+                      which it creates if it does not exist. For more information, see Service-linked
+                      roles (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-service-linked-role.html)
                       in the Amazon EC2 Auto Scaling User Guide.
                     type: string
                   tags:
-                    description: One or more tags. You can tag your Auto Scaling group
-                      and propagate the tags to the Amazon EC2 instances it launches.
-                      Tags are not propagated to Amazon EBS volumes. To add tags to
-                      Amazon EBS volumes, specify the tags in a launch template but
-                      use caution. If the launch template specifies an instance tag
-                      with a key that is also specified for the Auto Scaling group,
-                      Amazon EC2 Auto Scaling overrides the value of that instance
-                      tag with the value specified by the Auto Scaling group. For
-                      more information, see Tag Auto Scaling groups and instances
-                      (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-tagging.html)
+                    description: |-
+                      One or more tags. You can tag your Auto Scaling group and propagate the tags
+                      to the Amazon EC2 instances it launches. Tags are not propagated to Amazon
+                      EBS volumes. To add tags to Amazon EBS volumes, specify the tags in a launch
+                      template but use caution. If the launch template specifies an instance tag
+                      with a key that is also specified for the Auto Scaling group, Amazon EC2
+                      Auto Scaling overrides the value of that instance tag with the value specified
+                      by the Auto Scaling group. For more information, see Tag Auto Scaling groups
+                      and instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-tagging.html)
                       in the Amazon EC2 Auto Scaling User Guide.
                     items:
                       properties:
@@ -570,35 +612,37 @@ spec:
                       type: object
                     type: array
                   targetGroupARNs:
-                    description: The Amazon Resource Names (ARN) of the Elastic Load
-                      Balancing target groups to associate with the Auto Scaling group.
-                      Instances are registered as targets with the target groups.
-                      The target groups receive incoming traffic and route requests
-                      to one or more registered targets. For more information, see
-                      Use Elastic Load Balancing to distribute traffic across the
-                      instances in your Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
+                    description: |-
+                      The Amazon Resource Names (ARN) of the Elastic Load Balancing target groups
+                      to associate with the Auto Scaling group. Instances are registered as targets
+                      with the target groups. The target groups receive incoming traffic and route
+                      requests to one or more registered targets. For more information, see Use
+                      Elastic Load Balancing to distribute traffic across the instances in your
+                      Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html)
                       in the Amazon EC2 Auto Scaling User Guide.
                     items:
                       type: string
                     type: array
                   terminationPolicies:
-                    description: "A policy or a list of policies that are used to
-                      select the instance to terminate. These policies are executed
-                      in the order that you list them. For more information, see Work
-                      with Amazon EC2 Auto Scaling termination policies (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
-                      in the Amazon EC2 Auto Scaling User Guide. \n Valid values:
-                      Default | AllocationStrategy | ClosestToNextInstanceHour | NewestInstance
-                      | OldestInstance | OldestLaunchConfiguration | OldestLaunchTemplate
-                      | arn:aws:lambda:region:account-id:function:my-function:my-alias"
+                    description: |-
+                      A policy or a list of policies that are used to select the instance to terminate.
+                      These policies are executed in the order that you list them. For more information,
+                      see Work with Amazon EC2 Auto Scaling termination policies (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
+                      in the Amazon EC2 Auto Scaling User Guide.
+
+
+                      Valid values: Default | AllocationStrategy | ClosestToNextInstanceHour |
+                      NewestInstance | OldestInstance | OldestLaunchConfiguration | OldestLaunchTemplate
+                      | arn:aws:lambda:region:account-id:function:my-function:my-alias
                     items:
                       type: string
                     type: array
                   vpcZoneIdentifier:
-                    description: A comma-separated list of subnet IDs for a virtual
-                      private cloud (VPC) where instances in the Auto Scaling group
-                      can be created. If you specify VPCZoneIdentifier with AvailabilityZones,
-                      the subnets that you specify must reside in those Availability
-                      Zones.
+                    description: |-
+                      A comma-separated list of subnet IDs for a virtual private cloud (VPC) where
+                      instances in the Auto Scaling group can be created. If you specify VPCZoneIdentifier
+                      with AvailabilityZones, the subnets that you specify must reside in those
+                      Availability Zones.
                     type: string
                 required:
                 - maxSize
@@ -608,19 +652,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -633,9 +679,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -645,21 +692,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -669,17 +716,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -689,21 +738,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -718,21 +767,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -743,14 +793,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -837,10 +888,10 @@ spec:
                         launchConfigurationName:
                           type: string
                         launchTemplate:
-                          description: Describes the launch template and the version
-                            of the launch template that Amazon EC2 Auto Scaling uses
-                            to launch Amazon EC2 instances. For more information about
-                            launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+                          description: |-
+                            Describes the launch template and the version of the launch template that
+                            Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
+                            about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
                             in the Amazon EC2 Auto Scaling User Guide.
                           properties:
                             launchTemplateID:
@@ -877,9 +928,11 @@ spec:
                       type: string
                     type: array
                   maxInstanceLifetime:
-                    description: "The maximum amount of time, in seconds, that an
-                      instance can be in service. \n Valid Range: Minimum value of
-                      0."
+                    description: |-
+                      The maximum amount of time, in seconds, that an instance can be in service.
+
+
+                      Valid Range: Minimum value of 0.
                     format: int64
                     type: integer
                   maxSize:
@@ -894,10 +947,10 @@ spec:
                     description: The mixed instances policy for the group.
                     properties:
                       instancesDistribution:
-                        description: Use this structure to specify the distribution
-                          of On-Demand Instances and Spot Instances and the allocation
-                          strategies used to fulfill On-Demand and Spot capacities
-                          for a mixed instances policy.
+                        description: |-
+                          Use this structure to specify the distribution of On-Demand Instances and
+                          Spot Instances and the allocation strategies used to fulfill On-Demand and
+                          Spot capacities for a mixed instances policy.
                         properties:
                           onDemandAllocationStrategy:
                             type: string
@@ -916,13 +969,14 @@ spec:
                             type: string
                         type: object
                       launchTemplate:
-                        description: Use this structure to specify the launch templates
-                          and instance types (overrides) for a mixed instances policy.
+                        description: |-
+                          Use this structure to specify the launch templates and instance types (overrides)
+                          for a mixed instances policy.
                         properties:
                           launchTemplateSpecification:
-                            description: Describes the launch template and the version
-                              of the launch template that Amazon EC2 Auto Scaling
-                              uses to launch Amazon EC2 instances. For more information
+                            description: |-
+                              Describes the launch template and the version of the launch template that
+                              Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
                               about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
                               in the Amazon EC2 Auto Scaling User Guide.
                             properties:
@@ -937,42 +991,46 @@ spec:
                             items:
                               properties:
                                 instanceRequirements:
-                                  description: "The attributes for the instance types
-                                    for a mixed instances policy. Amazon EC2 Auto
-                                    Scaling uses your specified requirements to identify
-                                    instance types. Then, it uses your On-Demand and
-                                    Spot allocation strategies to launch instances
-                                    from these instance types. \n When you specify
-                                    multiple attributes, you get instance types that
-                                    satisfy all of the specified attributes. If you
-                                    specify multiple values for an attribute, you
-                                    get instance types that satisfy any of the specified
-                                    values. \n To limit the list of instance types
-                                    from which Amazon EC2 Auto Scaling can identify
-                                    matching instance types, you can use one of the
-                                    following parameters, but not both in the same
-                                    request: \n * AllowedInstanceTypes - The instance
-                                    types to include in the list. All other instance
-                                    types are ignored, even if they match your specified
-                                    attributes. \n * ExcludedInstanceTypes - The instance
-                                    types to exclude from the list, even if they match
-                                    your specified attributes. \n You must specify
-                                    VCpuCount and MemoryMiB. All other attributes
-                                    are optional. Any unspecified optional attribute
-                                    is set to its default. \n For more information,
-                                    see Creating an Auto Scaling group using attribute-based
+                                  description: |-
+                                    The attributes for the instance types for a mixed instances policy. Amazon
+                                    EC2 Auto Scaling uses your specified requirements to identify instance types.
+                                    Then, it uses your On-Demand and Spot allocation strategies to launch instances
+                                    from these instance types.
+
+
+                                    When you specify multiple attributes, you get instance types that satisfy
+                                    all of the specified attributes. If you specify multiple values for an attribute,
+                                    you get instance types that satisfy any of the specified values.
+
+
+                                    To limit the list of instance types from which Amazon EC2 Auto Scaling can
+                                    identify matching instance types, you can use one of the following parameters,
+                                    but not both in the same request:
+
+
+                                       * AllowedInstanceTypes - The instance types to include in the list. All
+                                       other instance types are ignored, even if they match your specified attributes.
+
+
+                                       * ExcludedInstanceTypes - The instance types to exclude from the list,
+                                       even if they match your specified attributes.
+
+
+                                    You must specify VCpuCount and MemoryMiB. All other attributes are optional.
+                                    Any unspecified optional attribute is set to its default.
+
+
+                                    For more information, see Creating an Auto Scaling group using attribute-based
                                     instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
-                                    in the Amazon EC2 Auto Scaling User Guide. For
-                                    help determining which instance types match your
-                                    attributes before you apply them to your Auto
-                                    Scaling group, see Preview instance types with
-                                    specified attributes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html#ec2fleet-get-instance-types-from-instance-requirements)
-                                    in the Amazon EC2 User Guide for Linux Instances."
+                                    in the Amazon EC2 Auto Scaling User Guide. For help determining which instance
+                                    types match your attributes before you apply them to your Auto Scaling group,
+                                    see Preview instance types with specified attributes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html#ec2fleet-get-instance-types-from-instance-requirements)
+                                    in the Amazon EC2 User Guide for Linux Instances.
                                   properties:
                                     acceleratorCount:
-                                      description: Specifies the minimum and maximum
-                                        for the AcceleratorCount object when you specify
-                                        InstanceRequirements for an Auto Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the AcceleratorCount object when you
+                                        specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           format: int64
@@ -990,10 +1048,9 @@ spec:
                                         type: string
                                       type: array
                                     acceleratorTotalMemoryMiB:
-                                      description: Specifies the minimum and maximum
-                                        for the AcceleratorTotalMemoryMiB object when
-                                        you specify InstanceRequirements for an Auto
-                                        Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the AcceleratorTotalMemoryMiB object
+                                        when you specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           format: int64
@@ -1013,10 +1070,9 @@ spec:
                                     bareMetal:
                                       type: string
                                     baselineEBSBandwidthMbps:
-                                      description: Specifies the minimum and maximum
-                                        for the BaselineEbsBandwidthMbps object when
-                                        you specify InstanceRequirements for an Auto
-                                        Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the BaselineEbsBandwidthMbps object
+                                        when you specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           format: int64
@@ -1046,9 +1102,9 @@ spec:
                                         type: string
                                       type: array
                                     memoryGiBPerVCPU:
-                                      description: Specifies the minimum and maximum
-                                        for the MemoryGiBPerVCpu object when you specify
-                                        InstanceRequirements for an Auto Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the MemoryGiBPerVCpu object when you
+                                        specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           type: number
@@ -1056,8 +1112,8 @@ spec:
                                           type: number
                                       type: object
                                     memoryMiB:
-                                      description: Specifies the minimum and maximum
-                                        for the MemoryMiB object when you specify
+                                      description: |-
+                                        Specifies the minimum and maximum for the MemoryMiB object when you specify
                                         InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
@@ -1068,18 +1124,17 @@ spec:
                                           type: integer
                                       type: object
                                     networkBandwidthGbps:
-                                      description: "Specifies the minimum and maximum
-                                        for the NetworkBandwidthGbps object when you
-                                        specify InstanceRequirements for an Auto Scaling
-                                        group. \n Setting the minimum bandwidth does
-                                        not guarantee that your instance will achieve
-                                        the minimum bandwidth. Amazon EC2 will identify
-                                        instance types that support the specified
-                                        minimum bandwidth, but the actual bandwidth
-                                        of your instance might go below the specified
-                                        minimum at times. For more information, see
-                                        Available instance bandwidth (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth)
-                                        in the Amazon EC2 User Guide for Linux Instances."
+                                      description: |-
+                                        Specifies the minimum and maximum for the NetworkBandwidthGbps object when
+                                        you specify InstanceRequirements for an Auto Scaling group.
+
+
+                                        Setting the minimum bandwidth does not guarantee that your instance will
+                                        achieve the minimum bandwidth. Amazon EC2 will identify instance types that
+                                        support the specified minimum bandwidth, but the actual bandwidth of your
+                                        instance might go below the specified minimum at times. For more information,
+                                        see Available instance bandwidth (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth)
+                                        in the Amazon EC2 User Guide for Linux Instances.
                                       properties:
                                         max:
                                           type: number
@@ -1087,10 +1142,9 @@ spec:
                                           type: number
                                       type: object
                                     networkInterfaceCount:
-                                      description: Specifies the minimum and maximum
-                                        for the NetworkInterfaceCount object when
-                                        you specify InstanceRequirements for an Auto
-                                        Scaling group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the NetworkInterfaceCount object when
+                                        you specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           format: int64
@@ -1108,10 +1162,9 @@ spec:
                                       format: int64
                                       type: integer
                                     totalLocalStorageGB:
-                                      description: Specifies the minimum and maximum
-                                        for the TotalLocalStorageGB object when you
-                                        specify InstanceRequirements for an Auto Scaling
-                                        group.
+                                      description: |-
+                                        Specifies the minimum and maximum for the TotalLocalStorageGB object when
+                                        you specify InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
                                           type: number
@@ -1119,8 +1172,8 @@ spec:
                                           type: number
                                       type: object
                                     vCPUCount:
-                                      description: Specifies the minimum and maximum
-                                        for the VCpuCount object when you specify
+                                      description: |-
+                                        Specifies the minimum and maximum for the VCpuCount object when you specify
                                         InstanceRequirements for an Auto Scaling group.
                                       properties:
                                         max:
@@ -1134,11 +1187,10 @@ spec:
                                 instanceType:
                                   type: string
                                 launchTemplateSpecification:
-                                  description: Describes the launch template and the
-                                    version of the launch template that Amazon EC2
-                                    Auto Scaling uses to launch Amazon EC2 instances.
-                                    For more information about launch templates, see
-                                    Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+                                  description: |-
+                                    Describes the launch template and the version of the launch template that
+                                    Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
+                                    about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
                                     in the Amazon EC2 Auto Scaling User Guide.
                                   properties:
                                     launchTemplateID:
@@ -1155,8 +1207,9 @@ spec:
                         type: object
                     type: object
                   newInstancesProtectedFromScaleIn:
-                    description: Indicates whether newly launched instances are protected
-                      from termination by Amazon EC2 Auto Scaling when scaling in.
+                    description: |-
+                      Indicates whether newly launched instances are protected from termination
+                      by Amazon EC2 Auto Scaling when scaling in.
                     type: boolean
                   placementGroup:
                     description: The name of the placement group into which to launch
@@ -1168,13 +1221,14 @@ spec:
                     format: int64
                     type: integer
                   serviceLinkedRoleARN:
-                    description: The Amazon Resource Name (ARN) of the service-linked
-                      role that the Auto Scaling group uses to call other Amazon Web
-                      Services on your behalf.
+                    description: |-
+                      The Amazon Resource Name (ARN) of the service-linked role that the Auto Scaling
+                      group uses to call other Amazon Web Services on your behalf.
                     type: string
                   status:
-                    description: The current state of the group when the DeleteAutoScalingGroup
-                      operation is in progress.
+                    description: |-
+                      The current state of the group when the DeleteAutoScalingGroup operation
+                      is in progress.
                     type: string
                   suspendedProcesses:
                     description: The suspended processes associated with the group.
@@ -1232,10 +1286,12 @@ spec:
                     description: The warm pool for the group.
                     properties:
                       instanceReusePolicy:
-                        description: "Describes an instance reuse policy for a warm
-                          pool. \n For more information, see Warm pools for Amazon
-                          EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html)
-                          in the Amazon EC2 Auto Scaling User Guide."
+                        description: |-
+                          Describes an instance reuse policy for a warm pool.
+
+
+                          For more information, see Warm pools for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html)
+                          in the Amazon EC2 Auto Scaling User Guide.
                         properties:
                           reuseOnScaleIn:
                             type: boolean
@@ -1262,14 +1318,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -1279,8 +1344,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -1292,6 +1358,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

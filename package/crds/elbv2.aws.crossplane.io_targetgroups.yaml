@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: targetgroups.elbv2.aws.crossplane.io
 spec:
   group: elbv2.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: TargetGroup is the Schema for the TargetGroups API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,74 +74,78 @@ spec:
                 description: TargetGroupParameters defines the desired state of TargetGroup
                 properties:
                   healthCheckEnabled:
-                    description: Indicates whether health checks are enabled. If the
-                      target type is lambda, health checks are disabled by default
-                      but can be enabled. If the target type is instance, ip, or alb,
-                      health checks are always enabled and cannot be disabled.
+                    description: |-
+                      Indicates whether health checks are enabled. If the target type is lambda,
+                      health checks are disabled by default but can be enabled. If the target type
+                      is instance, ip, or alb, health checks are always enabled and cannot be disabled.
                     type: boolean
                   healthCheckIntervalSeconds:
-                    description: The approximate amount of time, in seconds, between
-                      health checks of an individual target. The range is 5-300. If
-                      the target group protocol is TCP, TLS, UDP, TCP_UDP, HTTP or
-                      HTTPS, the default is 30 seconds. If the target group protocol
-                      is GENEVE, the default is 10 seconds. If the target type is
-                      lambda, the default is 35 seconds.
+                    description: |-
+                      The approximate amount of time, in seconds, between health checks of an individual
+                      target. The range is 5-300. If the target group protocol is TCP, TLS, UDP,
+                      TCP_UDP, HTTP or HTTPS, the default is 30 seconds. If the target group protocol
+                      is GENEVE, the default is 10 seconds. If the target type is lambda, the default
+                      is 35 seconds.
                     format: int64
                     type: integer
                   healthCheckPath:
-                    description: "[HTTP/HTTPS health checks] The destination for health
-                      checks on the targets. \n [HTTP1 or HTTP2 protocol version]
-                      The ping path. The default is /. \n [GRPC protocol version]
-                      The path of a custom health check method with the format /package.service/method.
-                      The default is /Amazon Web Services.ALB/healthcheck."
+                    description: |-
+                      [HTTP/HTTPS health checks] The destination for health checks on the targets.
+
+
+                      [HTTP1 or HTTP2 protocol version] The ping path. The default is /.
+
+
+                      [GRPC protocol version] The path of a custom health check method with the
+                      format /package.service/method. The default is /Amazon Web Services.ALB/healthcheck.
                     type: string
                   healthCheckPort:
-                    description: The port the load balancer uses when performing health
-                      checks on targets. If the protocol is HTTP, HTTPS, TCP, TLS,
-                      UDP, or TCP_UDP, the default is traffic-port, which is the port
-                      on which each target receives traffic from the load balancer.
-                      If the protocol is GENEVE, the default is port 80.
+                    description: |-
+                      The port the load balancer uses when performing health checks on targets.
+                      If the protocol is HTTP, HTTPS, TCP, TLS, UDP, or TCP_UDP, the default is
+                      traffic-port, which is the port on which each target receives traffic from
+                      the load balancer. If the protocol is GENEVE, the default is port 80.
                     type: string
                   healthCheckProtocol:
-                    description: The protocol the load balancer uses when performing
-                      health checks on targets. For Application Load Balancers, the
-                      default is HTTP. For Network Load Balancers and Gateway Load
-                      Balancers, the default is TCP. The TCP protocol is not supported
-                      for health checks if the protocol of the target group is HTTP
-                      or HTTPS. The GENEVE, TLS, UDP, and TCP_UDP protocols are not
-                      supported for health checks.
+                    description: |-
+                      The protocol the load balancer uses when performing health checks on targets.
+                      For Application Load Balancers, the default is HTTP. For Network Load Balancers
+                      and Gateway Load Balancers, the default is TCP. The TCP protocol is not supported
+                      for health checks if the protocol of the target group is HTTP or HTTPS. The
+                      GENEVE, TLS, UDP, and TCP_UDP protocols are not supported for health checks.
                     type: string
                   healthCheckTimeoutSeconds:
-                    description: The amount of time, in seconds, during which no response
-                      from a target means a failed health check. The range is 2–120
-                      seconds. For target groups with a protocol of HTTP, the default
-                      is 6 seconds. For target groups with a protocol of TCP, TLS
-                      or HTTPS, the default is 10 seconds. For target groups with
-                      a protocol of GENEVE, the default is 5 seconds. If the target
-                      type is lambda, the default is 30 seconds.
+                    description: |-
+                      The amount of time, in seconds, during which no response from a target means
+                      a failed health check. The range is 2–120 seconds. For target groups with
+                      a protocol of HTTP, the default is 6 seconds. For target groups with a protocol
+                      of TCP, TLS or HTTPS, the default is 10 seconds. For target groups with a
+                      protocol of GENEVE, the default is 5 seconds. If the target type is lambda,
+                      the default is 30 seconds.
                     format: int64
                     type: integer
                   healthyThresholdCount:
-                    description: The number of consecutive health check successes
-                      required before considering a target healthy. The range is 2-10.
-                      If the target group protocol is TCP, TCP_UDP, UDP, TLS, HTTP
-                      or HTTPS, the default is 5. For target groups with a protocol
-                      of GENEVE, the default is 5. If the target type is lambda, the
+                    description: |-
+                      The number of consecutive health check successes required before considering
+                      a target healthy. The range is 2-10. If the target group protocol is TCP,
+                      TCP_UDP, UDP, TLS, HTTP or HTTPS, the default is 5. For target groups with
+                      a protocol of GENEVE, the default is 5. If the target type is lambda, the
                       default is 5.
                     format: int64
                     type: integer
                   ipAddressType:
-                    description: The type of IP address used for this target group.
-                      The possible values are ipv4 and ipv6. This is an optional parameter.
-                      If not specified, the IP address type defaults to ipv4.
+                    description: |-
+                      The type of IP address used for this target group. The possible values are
+                      ipv4 and ipv6. This is an optional parameter. If not specified, the IP address
+                      type defaults to ipv4.
                     type: string
                   matcher:
-                    description: '[HTTP/HTTPS health checks] The HTTP or gRPC codes
-                      to use when checking for a successful response from a target.
-                      For target groups with a protocol of TCP, TCP_UDP, UDP or TLS
-                      the range is 200-599. For target groups with a protocol of HTTP
-                      or HTTPS, the range is 200-499. For target groups with a protocol
-                      of GENEVE, the range is 200-399.'
+                    description: |-
+                      [HTTP/HTTPS health checks] The HTTP or gRPC codes to use when checking for
+                      a successful response from a target. For target groups with a protocol of
+                      TCP, TCP_UDP, UDP or TLS the range is 200-599. For target groups with a protocol
+                      of HTTP or HTTPS, the range is 200-499. For target groups with a protocol
+                      of GENEVE, the range is 200-399.
                     properties:
                       grpcCode:
                         type: string
@@ -143,33 +153,36 @@ spec:
                         type: string
                     type: object
                   name:
-                    description: "The name of the target group. \n This name must
-                      be unique per region per account, can have a maximum of 32 characters,
-                      must contain only alphanumeric characters or hyphens, and must
-                      not begin or end with a hyphen."
+                    description: |-
+                      The name of the target group.
+
+
+                      This name must be unique per region per account, can have a maximum of 32
+                      characters, must contain only alphanumeric characters or hyphens, and must
+                      not begin or end with a hyphen.
                     type: string
                   port:
-                    description: The port on which the targets receive traffic. This
-                      port is used unless you specify a port override when registering
-                      the target. If the target is a Lambda function, this parameter
-                      does not apply. If the protocol is GENEVE, the supported port
-                      is 6081.
+                    description: |-
+                      The port on which the targets receive traffic. This port is used unless you
+                      specify a port override when registering the target. If the target is a Lambda
+                      function, this parameter does not apply. If the protocol is GENEVE, the supported
+                      port is 6081.
                     format: int64
                     type: integer
                   protocol:
-                    description: The protocol to use for routing traffic to the targets.
-                      For Application Load Balancers, the supported protocols are
-                      HTTP and HTTPS. For Network Load Balancers, the supported protocols
-                      are TCP, TLS, UDP, or TCP_UDP. For Gateway Load Balancers, the
-                      supported protocol is GENEVE. A TCP_UDP listener must be associated
-                      with a TCP_UDP target group. If the target is a Lambda function,
-                      this parameter does not apply.
+                    description: |-
+                      The protocol to use for routing traffic to the targets. For Application Load
+                      Balancers, the supported protocols are HTTP and HTTPS. For Network Load Balancers,
+                      the supported protocols are TCP, TLS, UDP, or TCP_UDP. For Gateway Load Balancers,
+                      the supported protocol is GENEVE. A TCP_UDP listener must be associated with
+                      a TCP_UDP target group. If the target is a Lambda function, this parameter
+                      does not apply.
                     type: string
                   protocolVersion:
-                    description: '[HTTP/HTTPS protocol] The protocol version. Specify
-                      GRPC to send requests to targets using gRPC. Specify HTTP2 to
-                      send requests to targets using HTTP/2. The default is HTTP1,
-                      which sends requests to targets using HTTP/1.1.'
+                    description: |-
+                      [HTTP/HTTPS protocol] The protocol version. Specify GRPC to send requests
+                      to targets using gRPC. Specify HTTP2 to send requests to targets using HTTP/2.
+                      The default is HTTP1, which sends requests to targets using HTTP/1.1.
                     type: string
                   region:
                     description: Region is which region the TargetGroup will be created.
@@ -185,31 +198,40 @@ spec:
                       type: object
                     type: array
                   targetType:
-                    description: "The type of target that you must specify when registering
-                      targets with this target group. You can't specify targets for
-                      a target group using more than one target type. \n * instance
-                      - Register targets by instance ID. This is the default value.
-                      \n * ip - Register targets by IP address. You can specify IP
-                      addresses from the subnets of the virtual private cloud (VPC)
-                      for the target group, the RFC 1918 range (10.0.0.0/8, 172.16.0.0/12,
-                      and 192.168.0.0/16), and the RFC 6598 range (100.64.0.0/10).
-                      You can't specify publicly routable IP addresses. \n * lambda
-                      - Register a single Lambda function as a target. \n * alb -
-                      Register a single Application Load Balancer as a target."
+                    description: |-
+                      The type of target that you must specify when registering targets with this
+                      target group. You can't specify targets for a target group using more than
+                      one target type.
+
+
+                         * instance - Register targets by instance ID. This is the default value.
+
+
+                         * ip - Register targets by IP address. You can specify IP addresses from
+                         the subnets of the virtual private cloud (VPC) for the target group, the
+                         RFC 1918 range (10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16), and the
+                         RFC 6598 range (100.64.0.0/10). You can't specify publicly routable IP
+                         addresses.
+
+
+                         * lambda - Register a single Lambda function as a target.
+
+
+                         * alb - Register a single Application Load Balancer as a target.
                     type: string
                   unhealthyThresholdCount:
-                    description: The number of consecutive health check failures required
-                      before considering a target unhealthy. The range is 2-10. If
-                      the target group protocol is TCP, TCP_UDP, UDP, TLS, HTTP or
-                      HTTPS, the default is 2. For target groups with a protocol of
-                      GENEVE, the default is 2. If the target type is lambda, the
+                    description: |-
+                      The number of consecutive health check failures required before considering
+                      a target unhealthy. The range is 2-10. If the target group protocol is TCP,
+                      TCP_UDP, UDP, TLS, HTTP or HTTPS, the default is 2. For target groups with
+                      a protocol of GENEVE, the default is 2. If the target type is lambda, the
                       default is 5.
                     format: int64
                     type: integer
                   vpcID:
-                    description: The identifier of the virtual private cloud (VPC).
-                      If the target is a Lambda function, this parameter does not
-                      apply. Otherwise, this parameter is required.
+                    description: |-
+                      The identifier of the virtual private cloud (VPC). If the target is a Lambda
+                      function, this parameter does not apply. Otherwise, this parameter is required.
                     type: string
                   vpcIdRef:
                     description: Reference to VPC for VPCID
@@ -222,21 +244,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -249,8 +271,9 @@ spec:
                     description: Selector for references to VPC for VPCID
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -263,21 +286,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -291,19 +314,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -316,9 +341,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -328,21 +354,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -352,17 +378,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -372,21 +400,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -401,21 +429,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -426,14 +455,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -483,9 +513,10 @@ spec:
                             type: string
                           type: array
                         matcher:
-                          description: The codes to use when checking for a successful
-                            response from a target. If the protocol version is gRPC,
-                            these are gRPC codes. Otherwise, these are HTTP codes.
+                          description: |-
+                            The codes to use when checking for a successful response from a target. If
+                            the protocol version is gRPC, these are gRPC codes. Otherwise, these are
+                            HTTP codes.
                           properties:
                             grpcCode:
                               type: string
@@ -519,14 +550,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -536,8 +576,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -549,6 +590,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec

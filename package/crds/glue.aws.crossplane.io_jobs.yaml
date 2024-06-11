@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.13.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: jobs.glue.aws.crossplane.io
 spec:
   group: glue.aws.crossplane.io
@@ -37,14 +37,19 @@ spec:
         description: Job is the Schema for the Jobs API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -53,13 +58,14 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: 'DeletionPolicy specifies what will happen to the underlying
-                  external when this managed resource is deleted - either "Delete"
-                  or "Orphan" the external resource. This field is planned to be deprecated
-                  in favor of the ManagementPolicies field in a future release. Currently,
-                  both could be set independently and non-default values would be
-                  honored if the feature flag is enabled. See the design doc for more
-                  information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223'
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
                 enum:
                 - Orphan
                 - Delete
@@ -68,21 +74,23 @@ spec:
                 description: JobParameters defines the desired state of Job
                 properties:
                   allocatedCapacity:
-                    description: "This parameter is deprecated. Use MaxCapacity instead.
-                      \n The number of Glue data processing units (DPUs) to allocate
-                      to this Job. You can allocate a minimum of 2 DPUs; the default
-                      is 10. A DPU is a relative measure of processing power that
-                      consists of 4 vCPUs of compute capacity and 16 GB of memory.
-                      For more information, see the Glue pricing page (https://aws.amazon.com/glue/pricing/)."
+                    description: |-
+                      This parameter is deprecated. Use MaxCapacity instead.
+
+
+                      The number of Glue data processing units (DPUs) to allocate to this Job.
+                      You can allocate a minimum of 2 DPUs; the default is 10. A DPU is a relative
+                      measure of processing power that consists of 4 vCPUs of compute capacity
+                      and 16 GB of memory. For more information, see the Glue pricing page (https://aws.amazon.com/glue/pricing/).
                     format: int64
                     type: integer
                   codeGenConfigurationNodes:
                     additionalProperties:
                       properties:
                         aggregate:
-                          description: Specifies a transform that groups rows by chosen
-                            fields and computes the aggregated value by specified
-                            function.
+                          description: |-
+                            Specifies a transform that groups rows by chosen fields and computes the
+                            aggregated value by specified function.
                           properties:
                             aggs:
                               items:
@@ -383,10 +391,10 @@ spec:
                               type: string
                           type: object
                         applyMapping:
-                          description: Specifies a transform that maps data property
-                            keys in the data source to data property keys in the data
-                            target. You can rename keys, modify the data types for
-                            keys, and choose which keys to drop from the dataset.
+                          description: |-
+                            Specifies a transform that maps data property keys in the data source to
+                            data property keys in the data target. You can rename keys, modify the data
+                            types for keys, and choose which keys to drop from the dataset.
                           properties:
                             inputs:
                               items:
@@ -685,9 +693,9 @@ spec:
                               type: string
                           type: object
                         customCode:
-                          description: Specifies a transform that uses custom code
-                            you provide to perform the data transformation. The output
-                            is a collection of DynamicFrames.
+                          description: |-
+                            Specifies a transform that uses custom code you provide to perform the data
+                            transformation. The output is a collection of DynamicFrames.
                           properties:
                             className:
                               type: string
@@ -896,8 +904,9 @@ spec:
                               type: string
                           type: object
                         dropFields:
-                          description: Specifies a transform that chooses the data
-                            property keys that you want to drop.
+                          description: |-
+                            Specifies a transform that chooses the data property keys that you want to
+                            drop.
                           properties:
                             inputs:
                               items:
@@ -913,12 +922,12 @@ spec:
                               type: array
                           type: object
                         dropNullFields:
-                          description: Specifies a transform that removes columns
-                            from the dataset if all values in the column are 'null'.
-                            By default, Glue Studio will recognize null objects, but
-                            some values such as empty strings, strings that are "null",
-                            -1 integers or other placeholders such as zeros, are not
-                            automatically recognized as nulls.
+                          description: |-
+                            Specifies a transform that removes columns from the dataset if all values
+                            in the column are 'null'. By default, Glue Studio will recognize null objects,
+                            but some values such as empty strings, strings that are "null", -1 integers
+                            or other placeholders such as zeros, are not automatically recognized as
+                            nulls.
                           properties:
                             inputs:
                               items:
@@ -1046,8 +1055,9 @@ spec:
                             ruleset:
                               type: string
                             stopJobOnFailureOptions:
-                              description: Options to configure how your job will
-                                stop if your data quality evaluation fails.
+                              description: |-
+                                Options to configure how your job will stop if your data quality evaluation
+                                fails.
                               properties:
                                 stopJobOnFailureTiming:
                                   type: string
@@ -1086,19 +1096,20 @@ spec:
                             ruleset:
                               type: string
                             stopJobOnFailureOptions:
-                              description: Options to configure how your job will
-                                stop if your data quality evaluation fails.
+                              description: |-
+                                Options to configure how your job will stop if your data quality evaluation
+                                fails.
                               properties:
                                 stopJobOnFailureTiming:
                                   type: string
                               type: object
                           type: object
                         fillMissingValues:
-                          description: Specifies a transform that locates records
-                            in the dataset that have missing values and adds a new
-                            field with a value determined by imputation. The input
-                            data set is used to train the machine learning model that
-                            determines what the missing value should be.
+                          description: |-
+                            Specifies a transform that locates records in the dataset that have missing
+                            values and adds a new field with a value determined by imputation. The input
+                            data set is used to train the machine learning model that determines what
+                            the missing value should be.
                           properties:
                             filledPath:
                               type: string
@@ -1256,8 +1267,9 @@ spec:
                               type: string
                           type: object
                         jDBCConnectorTarget:
-                          description: Specifies a data target that writes to Amazon
-                            S3 in Apache Parquet columnar storage.
+                          description: |-
+                            Specifies a data target that writes to Amazon S3 in Apache Parquet columnar
+                            storage.
                           properties:
                             additionalOptions:
                               additionalProperties:
@@ -1293,10 +1305,10 @@ spec:
                               type: array
                           type: object
                         join:
-                          description: Specifies a transform that joins two datasets
-                            into one dataset using a comparison phrase on the specified
-                            data property keys. You can use inner, outer, left, right,
-                            left semi, and left anti joins.
+                          description: |-
+                            Specifies a transform that joins two datasets into one dataset using a comparison
+                            phrase on the specified data property keys. You can use inner, outer, left,
+                            right, left semi, and left anti joins.
                           properties:
                             columns:
                               items:
@@ -1321,10 +1333,10 @@ spec:
                               type: string
                           type: object
                         merge:
-                          description: Specifies a transform that merges a DynamicFrame
-                            with a staging DynamicFrame based on the specified primary
-                            keys to identify records. Duplicate records (records with
-                            the same primary keys) are not de-duplicated.
+                          description: |-
+                            Specifies a transform that merges a DynamicFrame with a staging DynamicFrame
+                            based on the specified primary keys to identify records. Duplicate records
+                            (records with the same primary keys) are not de-duplicated.
                           properties:
                             inputs:
                               items:
@@ -1561,9 +1573,9 @@ spec:
                               type: array
                           type: object
                         s3CatalogDeltaSource:
-                          description: Specifies a Delta Lake data source that is
-                            registered in the Glue Data Catalog. The data source must
-                            be stored in Amazon S3.
+                          description: |-
+                            Specifies a Delta Lake data source that is registered in the Glue Data Catalog.
+                            The data source must be stored in Amazon S3.
                           properties:
                             additionalDeltaOptions:
                               additionalProperties:
@@ -1591,9 +1603,9 @@ spec:
                               type: string
                           type: object
                         s3CatalogHudiSource:
-                          description: Specifies a Hudi data source that is registered
-                            in the Glue Data Catalog. The Hudi data source must be
-                            stored in Amazon S3.
+                          description: |-
+                            Specifies a Hudi data source that is registered in the Glue Data Catalog.
+                            The Hudi data source must be stored in Amazon S3.
                           properties:
                             additionalHudiOptions:
                               additionalProperties:
@@ -1749,8 +1761,9 @@ spec:
                               type: boolean
                           type: object
                         s3DeltaCatalogTarget:
-                          description: Specifies a target that writes to a Delta Lake
-                            data source in the Glue Data Catalog.
+                          description: |-
+                            Specifies a target that writes to a Delta Lake data source in the Glue Data
+                            Catalog.
                           properties:
                             additionalOptions:
                               additionalProperties:
@@ -1903,8 +1916,9 @@ spec:
                               type: object
                           type: object
                         s3GlueParquetTarget:
-                          description: Specifies a data target that writes to Amazon
-                            S3 in Apache Parquet columnar storage.
+                          description: |-
+                            Specifies a data target that writes to Amazon S3 in Apache Parquet columnar
+                            storage.
                           properties:
                             compression:
                               type: string
@@ -2175,8 +2189,9 @@ spec:
                               type: boolean
                           type: object
                         selectFields:
-                          description: Specifies a transform that chooses the data
-                            property keys that you want to keep.
+                          description: |-
+                            Specifies a transform that chooses the data property keys that you want to
+                            keep.
                           properties:
                             inputs:
                               items:
@@ -2192,9 +2207,9 @@ spec:
                               type: array
                           type: object
                         selectFromCollection:
-                          description: Specifies a transform that chooses one DynamicFrame
-                            from a collection of DynamicFrames. The output is the
-                            selected DynamicFrame
+                          description: |-
+                            Specifies a transform that chooses one DynamicFrame from a collection of
+                            DynamicFrames. The output is the selected DynamicFrame
                           properties:
                             index:
                               format: int64
@@ -2469,9 +2484,9 @@ spec:
                               type: array
                           type: object
                         sparkSQL:
-                          description: Specifies a transform where you enter a SQL
-                            query using Spark SQL syntax to transform the data. The
-                            output is a single DynamicFrame.
+                          description: |-
+                            Specifies a transform where you enter a SQL query using Spark SQL syntax
+                            to transform the data. The output is a single DynamicFrame.
                           properties:
                             inputs:
                               items:
@@ -2524,10 +2539,10 @@ spec:
                               type: integer
                           type: object
                         splitFields:
-                          description: 'Specifies a transform that splits data property
-                            keys into two DynamicFrames. The output is a collection
-                            of DynamicFrames: one with selected data property keys,
-                            and one with the remaining data property keys.'
+                          description: |-
+                            Specifies a transform that splits data property keys into two DynamicFrames.
+                            The output is a collection of DynamicFrames: one with selected data property
+                            keys, and one with the remaining data property keys.
                           properties:
                             inputs:
                               items:
@@ -2543,8 +2558,9 @@ spec:
                               type: array
                           type: object
                         union:
-                          description: Specifies a transform that combines the rows
-                            from two or more datasets into a single result.
+                          description: |-
+                            Specifies a transform that combines the rows from two or more datasets into
+                            a single result.
                           properties:
                             inputs:
                               items:
@@ -2556,9 +2572,9 @@ spec:
                               type: string
                           type: object
                       type: object
-                    description: The representation of a directed acyclic graph on
-                      which both the Glue Studio visual component and Glue Studio
-                      code generation is based.
+                    description: |-
+                      The representation of a directed acyclic graph on which both the Glue Studio
+                      visual component and Glue Studio code generation is based.
                     type: object
                   command:
                     description: The JobCommand that runs this job.
@@ -2573,8 +2589,9 @@ spec:
                         type: string
                     type: object
                   connectionRefs:
-                    description: ConnectionRefs is a list of references to Connections
-                      used to set the Connections.
+                    description: |-
+                      ConnectionRefs is a list of references to Connections used to set
+                      the Connections.
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -2586,21 +2603,21 @@ spec:
                           properties:
                             resolution:
                               default: Required
-                              description: Resolution specifies whether resolution
-                                of this reference is required. The default is 'Required',
-                                which means the reconcile will fail if the reference
-                                cannot be resolved. 'Optional' means this reference
-                                will be a no-op if it cannot be resolved.
+                              description: |-
+                                Resolution specifies whether resolution of this reference is required.
+                                The default is 'Required', which means the reconcile will fail if the
+                                reference cannot be resolved. 'Optional' means this reference will be
+                                a no-op if it cannot be resolved.
                               enum:
                               - Required
                               - Optional
                               type: string
                             resolve:
-                              description: Resolve specifies when this reference should
-                                be resolved. The default is 'IfNotPresent', which
-                                will attempt to resolve the reference only when the
-                                corresponding field is not present. Use 'Always' to
-                                resolve the reference on every reconcile.
+                              description: |-
+                                Resolve specifies when this reference should be resolved. The default
+                                is 'IfNotPresent', which will attempt to resolve the reference only when
+                                the corresponding field is not present. Use 'Always' to resolve the
+                                reference on every reconcile.
                               enum:
                               - Always
                               - IfNotPresent
@@ -2611,12 +2628,14 @@ spec:
                       type: object
                     type: array
                   connectionSelector:
-                    description: ConnectionsSelector selects references to Connections
-                      used to set the Connections.
+                    description: |-
+                      ConnectionsSelector selects references to Connections used
+                      to set the Connections.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -2629,21 +2648,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -2658,80 +2677,112 @@ spec:
                   defaultArguments:
                     additionalProperties:
                       type: string
-                    description: "The default arguments for every run of this job,
-                      specified as name-value pairs. \n You can specify arguments
-                      here that your own job-execution script consumes, as well as
-                      arguments that Glue itself consumes. \n Job arguments may be
-                      logged. Do not pass plaintext secrets as arguments. Retrieve
-                      secrets from a Glue Connection, Secrets Manager or other secret
+                    description: |-
+                      The default arguments for every run of this job, specified as name-value
+                      pairs.
+
+
+                      You can specify arguments here that your own job-execution script consumes,
+                      as well as arguments that Glue itself consumes.
+
+
+                      Job arguments may be logged. Do not pass plaintext secrets as arguments.
+                      Retrieve secrets from a Glue Connection, Secrets Manager or other secret
                       management mechanism if you intend to keep them within the Job.
-                      \n For information about how to specify and consume your own
-                      Job arguments, see the Calling Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
-                      topic in the developer guide. \n For information about the arguments
-                      you can provide to this field when configuring Spark jobs, see
-                      the Special Parameters Used by Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
-                      topic in the developer guide. \n For information about the arguments
-                      you can provide to this field when configuring Ray jobs, see
-                      Using job parameters in Ray jobs (https://docs.aws.amazon.com/glue/latest/dg/author-job-ray-job-parameters.html)
-                      in the developer guide."
+
+
+                      For information about how to specify and consume your own Job arguments,
+                      see the Calling Glue APIs in Python (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-calling.html)
+                      topic in the developer guide.
+
+
+                      For information about the arguments you can provide to this field when configuring
+                      Spark jobs, see the Special Parameters Used by Glue (https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-glue-arguments.html)
+                      topic in the developer guide.
+
+
+                      For information about the arguments you can provide to this field when configuring
+                      Ray jobs, see Using job parameters in Ray jobs (https://docs.aws.amazon.com/glue/latest/dg/author-job-ray-job-parameters.html)
+                      in the developer guide.
                     type: object
                   description:
                     description: Description of the job being defined.
                     type: string
                   executionClass:
-                    description: "Indicates whether the job is run with a standard
-                      or flexible execution class. The standard execution-class is
-                      ideal for time-sensitive workloads that require fast job startup
-                      and dedicated resources. \n The flexible execution class is
-                      appropriate for time-insensitive jobs whose start and completion
-                      times may vary. \n Only jobs with Glue version 3.0 and above
-                      and command type glueetl will be allowed to set ExecutionClass
-                      to FLEX. The flexible execution class is available for Spark
-                      jobs."
+                    description: |-
+                      Indicates whether the job is run with a standard or flexible execution class.
+                      The standard execution-class is ideal for time-sensitive workloads that require
+                      fast job startup and dedicated resources.
+
+
+                      The flexible execution class is appropriate for time-insensitive jobs whose
+                      start and completion times may vary.
+
+
+                      Only jobs with Glue version 3.0 and above and command type glueetl will be
+                      allowed to set ExecutionClass to FLEX. The flexible execution class is available
+                      for Spark jobs.
                     type: string
                   executionProperty:
-                    description: An ExecutionProperty specifying the maximum number
-                      of concurrent runs allowed for this job.
+                    description: |-
+                      An ExecutionProperty specifying the maximum number of concurrent runs allowed
+                      for this job.
                     properties:
                       maxConcurrentRuns:
                         format: int64
                         type: integer
                     type: object
                   glueVersion:
-                    description: "In Spark jobs, GlueVersion determines the versions
-                      of Apache Spark and Python that Glue available in a job. The
-                      Python version indicates the version supported for jobs of type
-                      Spark. \n Ray jobs should set GlueVersion to 4.0 or greater.
-                      However, the versions of Ray, Python and additional libraries
-                      available in your Ray job are determined by the Runtime parameter
-                      of the Job command. \n For more information about the available
-                      Glue versions and corresponding Spark and Python versions, see
-                      Glue version (https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
-                      in the developer guide. \n Jobs that are created without specifying
-                      a Glue version default to Glue 0.9."
+                    description: |-
+                      In Spark jobs, GlueVersion determines the versions of Apache Spark and Python
+                      that Glue available in a job. The Python version indicates the version supported
+                      for jobs of type Spark.
+
+
+                      Ray jobs should set GlueVersion to 4.0 or greater. However, the versions
+                      of Ray, Python and additional libraries available in your Ray job are determined
+                      by the Runtime parameter of the Job command.
+
+
+                      For more information about the available Glue versions and corresponding
+                      Spark and Python versions, see Glue version (https://docs.aws.amazon.com/glue/latest/dg/add-job.html)
+                      in the developer guide.
+
+
+                      Jobs that are created without specifying a Glue version default to Glue 0.9.
                     type: string
                   logURI:
                     description: This field is reserved for future use.
                     type: string
                   maxCapacity:
-                    description: "For Glue version 1.0 or earlier jobs, using the
-                      standard worker type, the number of Glue data processing units
-                      (DPUs) that can be allocated when this job runs. A DPU is a
-                      relative measure of processing power that consists of 4 vCPUs
-                      of compute capacity and 16 GB of memory. For more information,
-                      see the Glue pricing page (https://aws.amazon.com/glue/pricing/).
-                      \n For Glue version 2.0+ jobs, you cannot specify a Maximum
-                      capacity. Instead, you should specify a Worker type and the
-                      Number of workers. \n Do not set MaxCapacity if using WorkerType
-                      and NumberOfWorkers. \n The value that can be allocated for
-                      MaxCapacity depends on whether you are running a Python shell
-                      job, an Apache Spark ETL job, or an Apache Spark streaming ETL
-                      job: \n * When you specify a Python shell job (JobCommand.Name=\"pythonshell\"),
-                      you can allocate either 0.0625 or 1 DPU. The default is 0.0625
-                      DPU. \n * When you specify an Apache Spark ETL job (JobCommand.Name=\"glueetl\")
-                      or Apache Spark streaming ETL job (JobCommand.Name=\"gluestreaming\"),
-                      you can allocate from 2 to 100 DPUs. The default is 10 DPUs.
-                      This job type cannot have a fractional DPU allocation."
+                    description: |-
+                      For Glue version 1.0 or earlier jobs, using the standard worker type, the
+                      number of Glue data processing units (DPUs) that can be allocated when this
+                      job runs. A DPU is a relative measure of processing power that consists of
+                      4 vCPUs of compute capacity and 16 GB of memory. For more information, see
+                      the Glue pricing page (https://aws.amazon.com/glue/pricing/).
+
+
+                      For Glue version 2.0+ jobs, you cannot specify a Maximum capacity. Instead,
+                      you should specify a Worker type and the Number of workers.
+
+
+                      Do not set MaxCapacity if using WorkerType and NumberOfWorkers.
+
+
+                      The value that can be allocated for MaxCapacity depends on whether you are
+                      running a Python shell job, an Apache Spark ETL job, or an Apache Spark streaming
+                      ETL job:
+
+
+                         * When you specify a Python shell job (JobCommand.Name="pythonshell"),
+                         you can allocate either 0.0625 or 1 DPU. The default is 0.0625 DPU.
+
+
+                         * When you specify an Apache Spark ETL job (JobCommand.Name="glueetl")
+                         or Apache Spark streaming ETL job (JobCommand.Name="gluestreaming"), you
+                         can allocate from 2 to 100 DPUs. The default is 10 DPUs. This job type
+                         cannot have a fractional DPU allocation.
                     type: number
                   maxRetries:
                     description: The maximum number of times to retry this job if
@@ -2741,9 +2792,9 @@ spec:
                   nonOverridableArguments:
                     additionalProperties:
                       type: string
-                    description: Arguments for this job that are not overridden when
-                      providing job arguments in a job run, specified as name-value
-                      pairs.
+                    description: |-
+                      Arguments for this job that are not overridden when providing job arguments
+                      in a job run, specified as name-value pairs.
                     type: object
                   notificationProperty:
                     description: Specifies configuration properties of a job notification.
@@ -2753,19 +2804,22 @@ spec:
                         type: integer
                     type: object
                   numberOfWorkers:
-                    description: The number of workers of a defined workerType that
-                      are allocated when a job runs.
+                    description: |-
+                      The number of workers of a defined workerType that are allocated when a job
+                      runs.
                     format: int64
                     type: integer
                   region:
                     description: Region is which region the Job will be created.
                     type: string
                   role:
-                    description: The name or Amazon Resource Name (ARN) of the IAM
-                      role associated with this job. Role is a required field
+                    description: |-
+                      The name or Amazon Resource Name (ARN) of the IAM role associated with this
+                      job. Role is a required field
                     type: string
                   roleRef:
-                    description: RoleRef is a reference to an IAMRole used to set
+                    description: |-
+                      RoleRef is a reference to an IAMRole used to set
                       the Role.
                     properties:
                       name:
@@ -2776,21 +2830,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -2800,12 +2854,14 @@ spec:
                     - name
                     type: object
                   roleSelector:
-                    description: RoleSelector selects references to IAMRole used to
-                      set the Role.
+                    description: |-
+                      RoleSelector selects references to IAMRole used
+                      to set the Role.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -2818,21 +2874,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -2844,8 +2900,9 @@ spec:
                       be used with this job.
                     type: string
                   securityConfigurationRef:
-                    description: SecurityConfigurationRef is a reference to an SecurityConfiguration
-                      used to set the SecurityConfiguration.
+                    description: |-
+                      SecurityConfigurationRef is a reference to an SecurityConfiguration used to set
+                      the SecurityConfiguration.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -2855,21 +2912,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -2879,12 +2936,14 @@ spec:
                     - name
                     type: object
                   securityConfigurationSelector:
-                    description: SecurityConfigurationSelector selects references
-                      to SecurityConfiguration used to set the SecurityConfiguration.
+                    description: |-
+                      SecurityConfigurationSelector selects references to SecurityConfiguration used
+                      to set the SecurityConfiguration.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
@@ -2897,21 +2956,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -2919,9 +2978,9 @@ spec:
                         type: object
                     type: object
                   sourceControlDetails:
-                    description: The details for a source control configuration for
-                      a job, allowing synchronization of job artifacts to or from
-                      a remote repository.
+                    description: |-
+                      The details for a source control configuration for a job, allowing synchronization
+                      of job artifacts to or from a remote repository.
                     properties:
                       authStrategy:
                         type: string
@@ -2943,57 +3002,70 @@ spec:
                   tags:
                     additionalProperties:
                       type: string
-                    description: The tags to use with this job. You may use tags to
-                      limit access to the job. For more information about tags in
-                      Glue, see Amazon Web Services Tags in Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html)
-                      in the developer guide.
+                    description: |-
+                      The tags to use with this job. You may use tags to limit access to the job.
+                      For more information about tags in Glue, see Amazon Web Services Tags in
+                      Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html) in the
+                      developer guide.
                     type: object
                   timeout:
-                    description: The job timeout in minutes. This is the maximum time
-                      that a job run can consume resources before it is terminated
-                      and enters TIMEOUT status. The default is 2,880 minutes (48
-                      hours).
+                    description: |-
+                      The job timeout in minutes. This is the maximum time that a job run can consume
+                      resources before it is terminated and enters TIMEOUT status. The default
+                      is 2,880 minutes (48 hours).
                     format: int64
                     type: integer
                   workerType:
-                    description: "The type of predefined worker that is allocated
-                      when a job runs. Accepts a value of G.1X, G.2X, G.4X, G.8X or
-                      G.025X for Spark jobs. Accepts the value Z.2X for Ray jobs.
-                      \n * For the G.1X worker type, each worker maps to 1 DPU (4
-                      vCPUs, 16 GB of memory) with 84GB disk (approximately 34GB free),
-                      and provides 1 executor per worker. We recommend this worker
-                      type for workloads such as data transforms, joins, and queries,
-                      to offers a scalable and cost effective way to run most jobs.
-                      \n * For the G.2X worker type, each worker maps to 2 DPU (8
-                      vCPUs, 32 GB of memory) with 128GB disk (approximately 77GB
-                      free), and provides 1 executor per worker. We recommend this
-                      worker type for workloads such as data transforms, joins, and
-                      queries, to offers a scalable and cost effective way to run
-                      most jobs. \n * For the G.4X worker type, each worker maps to
-                      4 DPU (16 vCPUs, 64 GB of memory) with 256GB disk (approximately
-                      235GB free), and provides 1 executor per worker. We recommend
-                      this worker type for jobs whose workloads contain your most
-                      demanding transforms, aggregations, joins, and queries. This
-                      worker type is available only for Glue version 3.0 or later
-                      Spark ETL jobs in the following Amazon Web Services Regions:
-                      US East (Ohio), US East (N. Virginia), US West (Oregon), Asia
-                      Pacific (Singapore), Asia Pacific (Sydney), Asia Pacific (Tokyo),
-                      Canada (Central), Europe (Frankfurt), Europe (Ireland), and
-                      Europe (Stockholm). \n * For the G.8X worker type, each worker
-                      maps to 8 DPU (32 vCPUs, 128 GB of memory) with 512GB disk (approximately
-                      487GB free), and provides 1 executor per worker. We recommend
-                      this worker type for jobs whose workloads contain your most
-                      demanding transforms, aggregations, joins, and queries. This
-                      worker type is available only for Glue version 3.0 or later
-                      Spark ETL jobs, in the same Amazon Web Services Regions as supported
-                      for the G.4X worker type. \n * For the G.025X worker type, each
-                      worker maps to 0.25 DPU (2 vCPUs, 4 GB of memory) with 84GB
-                      disk (approximately 34GB free), and provides 1 executor per
-                      worker. We recommend this worker type for low volume streaming
-                      jobs. This worker type is only available for Glue version 3.0
-                      streaming jobs. \n * For the Z.2X worker type, each worker maps
-                      to 2 M-DPU (8vCPUs, 64 GB of memory) with 128 GB disk (approximately
-                      120GB free), and provides up to 8 Ray workers based on the autoscaler."
+                    description: |-
+                      The type of predefined worker that is allocated when a job runs. Accepts
+                      a value of G.1X, G.2X, G.4X, G.8X or G.025X for Spark jobs. Accepts the value
+                      Z.2X for Ray jobs.
+
+
+                         * For the G.1X worker type, each worker maps to 1 DPU (4 vCPUs, 16 GB
+                         of memory) with 84GB disk (approximately 34GB free), and provides 1 executor
+                         per worker. We recommend this worker type for workloads such as data transforms,
+                         joins, and queries, to offers a scalable and cost effective way to run
+                         most jobs.
+
+
+                         * For the G.2X worker type, each worker maps to 2 DPU (8 vCPUs, 32 GB
+                         of memory) with 128GB disk (approximately 77GB free), and provides 1 executor
+                         per worker. We recommend this worker type for workloads such as data transforms,
+                         joins, and queries, to offers a scalable and cost effective way to run
+                         most jobs.
+
+
+                         * For the G.4X worker type, each worker maps to 4 DPU (16 vCPUs, 64 GB
+                         of memory) with 256GB disk (approximately 235GB free), and provides 1
+                         executor per worker. We recommend this worker type for jobs whose workloads
+                         contain your most demanding transforms, aggregations, joins, and queries.
+                         This worker type is available only for Glue version 3.0 or later Spark
+                         ETL jobs in the following Amazon Web Services Regions: US East (Ohio),
+                         US East (N. Virginia), US West (Oregon), Asia Pacific (Singapore), Asia
+                         Pacific (Sydney), Asia Pacific (Tokyo), Canada (Central), Europe (Frankfurt),
+                         Europe (Ireland), and Europe (Stockholm).
+
+
+                         * For the G.8X worker type, each worker maps to 8 DPU (32 vCPUs, 128 GB
+                         of memory) with 512GB disk (approximately 487GB free), and provides 1
+                         executor per worker. We recommend this worker type for jobs whose workloads
+                         contain your most demanding transforms, aggregations, joins, and queries.
+                         This worker type is available only for Glue version 3.0 or later Spark
+                         ETL jobs, in the same Amazon Web Services Regions as supported for the
+                         G.4X worker type.
+
+
+                         * For the G.025X worker type, each worker maps to 0.25 DPU (2 vCPUs, 4
+                         GB of memory) with 84GB disk (approximately 34GB free), and provides 1
+                         executor per worker. We recommend this worker type for low volume streaming
+                         jobs. This worker type is only available for Glue version 3.0 streaming
+                         jobs.
+
+
+                         * For the Z.2X worker type, each worker maps to 2 M-DPU (8vCPUs, 64 GB
+                         of memory) with 128 GB disk (approximately 120GB free), and provides up
+                         to 8 Ray workers based on the autoscaler.
                     type: string
                 required:
                 - command
@@ -3002,19 +3074,21 @@ spec:
               managementPolicies:
                 default:
                 - '*'
-                description: 'THIS IS A BETA FIELD. It is on by default but can be
-                  opted out through a Crossplane feature flag. ManagementPolicies
-                  specify the array of actions Crossplane is allowed to take on the
-                  managed and external resources. This field is planned to replace
-                  the DeletionPolicy field in a future release. Currently, both could
-                  be set independently and non-default values would be honored if
-                  the feature flag is enabled. If both are custom, the DeletionPolicy
-                  field will be ignored. See the design doc for more information:
-                  https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
-                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
                 items:
-                  description: A ManagementAction represents an action that the Crossplane
-                    controllers can take on an external resource.
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
                   enum:
                   - Observe
                   - Create
@@ -3027,9 +3101,10 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that
-                  will be used to create, observe, update, and delete this managed
-                  resource should be configured.
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -3039,21 +3114,21 @@ spec:
                     properties:
                       resolution:
                         default: Required
-                        description: Resolution specifies whether resolution of this
-                          reference is required. The default is 'Required', which
-                          means the reconcile will fail if the reference cannot be
-                          resolved. 'Optional' means this reference will be a no-op
-                          if it cannot be resolved.
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
                         enum:
                         - Required
                         - Optional
                         type: string
                       resolve:
-                        description: Resolve specifies when this reference should
-                          be resolved. The default is 'IfNotPresent', which will attempt
-                          to resolve the reference only when the corresponding field
-                          is not present. Use 'Always' to resolve the reference on
-                          every reconcile.
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
                         enum:
                         - Always
                         - IfNotPresent
@@ -3063,17 +3138,19 @@ spec:
                 - name
                 type: object
               publishConnectionDetailsTo:
-                description: PublishConnectionDetailsTo specifies the connection secret
-                  config which contains a name, metadata and a reference to secret
-                  store config to which any connection details for this managed resource
-                  should be written. Connection details frequently include the endpoint,
-                  username, and password required to connect to the managed resource.
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
                 properties:
                   configRef:
                     default:
                       name: default
-                    description: SecretStoreConfigRef specifies which secret store
-                      config should be used for this ConnectionSecret.
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -3083,21 +3160,21 @@ spec:
                         properties:
                           resolution:
                             default: Required
-                            description: Resolution specifies whether resolution of
-                              this reference is required. The default is 'Required',
-                              which means the reconcile will fail if the reference
-                              cannot be resolved. 'Optional' means this reference
-                              will be a no-op if it cannot be resolved.
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
                             enum:
                             - Required
                             - Optional
                             type: string
                           resolve:
-                            description: Resolve specifies when this reference should
-                              be resolved. The default is 'IfNotPresent', which will
-                              attempt to resolve the reference only when the corresponding
-                              field is not present. Use 'Always' to resolve the reference
-                              on every reconcile.
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
                             enum:
                             - Always
                             - IfNotPresent
@@ -3112,21 +3189,22 @@ spec:
                       annotations:
                         additionalProperties:
                           type: string
-                        description: Annotations are the annotations to be added to
-                          connection secret. - For Kubernetes secrets, this will be
-                          used as "metadata.annotations". - It is up to Secret Store
-                          implementation for others store types.
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       labels:
                         additionalProperties:
                           type: string
-                        description: Labels are the labels/tags to be added to connection
-                          secret. - For Kubernetes secrets, this will be used as "metadata.labels".
-                          - It is up to Secret Store implementation for others store
-                          types.
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
                         type: object
                       type:
-                        description: Type is the SecretType for the connection secret.
+                        description: |-
+                          Type is the SecretType for the connection secret.
                           - Only valid for Kubernetes Secret Stores.
                         type: string
                     type: object
@@ -3137,14 +3215,15 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace
-                  and name of a Secret to which any connection details for this managed
-                  resource should be written. Connection details frequently include
-                  the endpoint, username, and password required to connect to the
-                  managed resource. This field is planned to be replaced in a future
-                  release in favor of PublishConnectionDetailsTo. Currently, both
-                  could be set independently and connection details would be published
-                  to both without affecting each other.
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
                 properties:
                   name:
                     description: Name of the secret.
@@ -3184,14 +3263,23 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition
-                        transitioned from one status to another.
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's
-                        last transition from one status to another, if any.
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
                       type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
                     reason:
                       description: A Reason for this condition's last transition from
                         one status to another.
@@ -3201,8 +3289,9 @@ spec:
                         False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition
-                        type may apply to a resource at any point in time.
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
@@ -3214,6 +3303,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
             type: object
         required:
         - spec
