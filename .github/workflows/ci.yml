@@ -55,7 +55,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       - name: Check Diff
         run: make check-diff
@@ -132,7 +132,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       # We could run 'make lint' to ensure our desired Go version, but we prefer
       # this action because it leaves 'annotations' (i.e. it comments on PRs to
@@ -248,7 +248,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       - name: Run Unit Tests
         run: make -j2 test
@@ -308,7 +308,7 @@ jobs:
             ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       - name: Build Helm Chart
         run: make -j2 build
@@ -379,7 +379,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       - name: Build Artifacts
         run: make -j2 build.all
