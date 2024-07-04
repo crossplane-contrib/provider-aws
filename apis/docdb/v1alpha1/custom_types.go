@@ -31,6 +31,8 @@ const (
 	DocDBInstanceStateDeleting = "deleting"
 	// The instance is being modified.
 	DocDBInstanceStateModifying = "modifying"
+	// The instance is being upgraded.
+	DocDBInstanceStateUpgrading = "upgrading"
 	// The instance has failed and Amazon RDS can't recover it. Perform a point-in-time restore to the latest restorable time of the instance to recover the data.
 	DocDBInstanceStateFailed = "failed"
 )

@@ -29,6 +29,12 @@ type DBClusterParameters struct {
 	// Region is which region the DBCluster will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// A value that indicates whether major version upgrades are allowed.
+	//
+	// Constraints: You must allow major version upgrades when specifying a value
+	// for the EngineVersion parameter that is a different major version than the
+	// DB cluster's current version.
+	AllowMajorVersionUpgrade *bool `json:"allowMajorVersionUpgrade,omitempty"`
 	// A list of Amazon EC2 Availability Zones that instances in the cluster can
 	// be created in.
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
@@ -188,6 +194,8 @@ type DBClusterObservation struct {
 	EnabledCloudwatchLogsExports []*string `json:"enabledCloudwatchLogsExports,omitempty"`
 	// Specifies the connection endpoint for the primary instance of the cluster.
 	Endpoint *string `json:"endpoint,omitempty"`
+	// Indicates the database engine version.
+	EngineVersion *string `json:"engineVersion,omitempty"`
 	// Specifies the ID that Amazon Route 53 assigns when you create a hosted zone.
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
 	// Specifies the latest time to which a database can be restored with point-in-time

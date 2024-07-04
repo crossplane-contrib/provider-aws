@@ -371,6 +371,9 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 func GenerateModifyDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.ModifyDBClusterInput {
 	res := &svcsdk.ModifyDBClusterInput{}
 
+	if cr.Spec.ForProvider.AllowMajorVersionUpgrade != nil {
+		res.SetAllowMajorVersionUpgrade(*cr.Spec.ForProvider.AllowMajorVersionUpgrade)
+	}
 	if cr.Spec.ForProvider.BackupRetentionPeriod != nil {
 		res.SetBackupRetentionPeriod(*cr.Spec.ForProvider.BackupRetentionPeriod)
 	}
