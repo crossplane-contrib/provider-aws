@@ -585,6 +585,10 @@ func TestGenerateObservation(t *testing.T) {
 				Address: pointer.ToOrNilIfZeroValue("random-12"),
 				Port:    124,
 			},
+			ReaderEndpoint: &elasticachetypes.Endpoint{
+				Address: pointer.ToOrNilIfZeroValue("random-12-ro"),
+				Port:    124,
+			},
 			NodeGroupMembers: []elasticachetypes.NodeGroupMember{
 				{
 					CacheClusterId:            pointer.ToOrNilIfZeroValue("my-cache-cluster"),

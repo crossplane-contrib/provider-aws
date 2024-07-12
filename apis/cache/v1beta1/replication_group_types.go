@@ -93,6 +93,9 @@ type NodeGroup struct {
 	// node group (shard).
 	PrimaryEndpoint Endpoint `json:"primaryEndpoint,omitempty"`
 
+	// ReaderEndpoint is the endpoint of the replica nodes in this node group (shard).
+	ReaderEndpoint Endpoint `json:"readerEndpoint,omitempty"`
+
 	// Slots is the keyspace for this node group (shard).
 	Slots string `json:"slots,omitempty"`
 

@@ -1096,6 +1096,19 @@ spec:
                                 on.
                               type: integer
                           type: object
+                        readerEndpoint:
+                          description: ReaderEndpoint is the endpoint of the replica
+                            nodes in this node group (shard).
+                          properties:
+                            address:
+                              description: Address is the DNS hostname of the cache
+                                node.
+                              type: string
+                            port:
+                              description: Port number that the cache engine is listening
+                                on.
+                              type: integer
+                          type: object
                         slots:
                           description: Slots is the keyspace for this node group (shard).
                           type: string
