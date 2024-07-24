@@ -45,9 +45,9 @@ GOLANGCILINT_VERSION = 1.54.2
 # ====================================================================================
 # Setup Kubernetes tools
 
-UP_VERSION = v0.18.0
+UP_VERSION = v0.27.0
 UP_CHANNEL = stable
-UPTEST_VERSION = v0.5.0
+UPTEST_VERSION = v0.12.0
 
 -include build/makelib/k8s_tools.mk
 
@@ -101,7 +101,7 @@ manifests:
 e2e.run: test-integration
 
 # Run integration tests.
-test-integration: $(KIND) $(KUBECTL) $(UP) $(HELM3)
+test-integration: $(KIND) $(KUBECTL) $(UP) $(HELM)
 	@$(INFO) running integration tests using kind $(KIND_VERSION)
 	@KIND_NODE_IMAGE_TAG=${KIND_NODE_IMAGE_TAG} $(ROOT_DIR)/cluster/local/integration_tests.sh || $(FAIL)
 	@$(OK) integration tests passed

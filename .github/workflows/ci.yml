@@ -12,7 +12,7 @@ env:
   # Common versions
   GO_VERSION: '1.21.2'
   GOLANGCI_VERSION: 'v1.54.2'
-  DOCKER_BUILDX_VERSION: 'v0.10.0'
+  DOCKER_BUILDX_VERSION: 'v0.14.1'
 
   # Common users. We can't run a step 'if secrets.AWS_USR != ""' but we can run
   # a step 'if env.AWS_USR' != ""', so we copy these to succinctly test whether
@@ -35,6 +35,9 @@ jobs:
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
         with:
           go-version: ${{ env.GO_VERSION }}
+          
+      - name: Install goimports
+        run: go install golang.org/x/tools/cmd/goimports
 
       - name: Find the Go Build Cache
         id: go
@@ -55,7 +58,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       - name: Check Diff
         run: make check-diff
@@ -132,7 +135,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       # We could run 'make lint' to ensure our desired Go version, but we prefer
       # this action because it leaves 'annotations' (i.e. it comments on PRs to
@@ -248,7 +251,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       - name: Run Unit Tests
         run: make -j2 test
@@ -308,7 +311,7 @@ jobs:
             ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       - name: Build Helm Chart
         run: make -j2 build
@@ -379,7 +382,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pkg-
 
       - name: Vendor Dependencies
-        run: make vendor vendor.check
+        run: make modules.download modules.check
 
       - name: Build Artifacts
         run: make -j2 build.all
