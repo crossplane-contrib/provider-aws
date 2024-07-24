@@ -55,7 +55,8 @@ var (
 	testCloudWatchLog                    = "some-log"
 	testOtherCloudWatchLog               = "some-other-log"
 	testEngine                           = "some-engine"
-	testEngineVersion                    = "some-engine-version"
+	testEngineVersion                    = "4.0.0"
+	testOtherEngineVersion               = "5.0.0"
 	testKMSKeyID                         = "some-key"
 	testMasterUserName                   = "some-user"
 	testMasterUserPassword               = "some-pw"
@@ -211,18 +212,31 @@ func withEngineVersion(value string) docDBModifier {
 	}
 }
 
+func withStatusEngineVersion(value string) docDBModifier {
+	return func(o *svcapitypes.DBCluster) {
+		o.Status.AtProvider.EngineVersion = pointer.ToOrNilIfZeroValue(value)
+
+	}
+}
+
+func withAllowMajorVersionUpgrade(value bool) docDBModifier {
+	return func(o *svcapitypes.DBCluster) {
+		o.Spec.ForProvider.AllowMajorVersionUpgrade = pointer.ToOrNilIfZeroValue(value)
+	}
+}
+
 func withMasterUserName(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
 		o.Spec.ForProvider.MasterUsername = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
-func withMasterPasswordSecretRef(namesapce, name, key string) docDBModifier {
+func withMasterPasswordSecretRef(namespace, name, key string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
 		o.Spec.ForProvider.MasterUserPasswordSecretRef = &xpv1.SecretKeySelector{
 			SecretReference: xpv1.SecretReference{
 				Name:      name,
-				Namespace: o.Namespace,
+				Namespace: namespace,
 			},
 			Key: key,
 		}
@@ -1199,6 +1213,114 @@ func TestObserve(t *testing.T) {
 						testCloudWatchLog,
 						testOtherCloudWatchLog,
 					),
+					withVpcSecurityGroupIds(),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: true,
+					ConnectionDetails:       generateConnectionDetails("", "", "", "", 0),
+				},
+				docdb: fake.MockDocDBClientCall{
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
+					ListTagsForResource: []*fake.CallListTagsForResource{
+						{
+							I: &docdb.ListTagsForResourceInput{},
+						},
+					},
+				},
+			},
+		},
+		"AvailableState_and_changed_EngineVersion_should_not_be_UpToDate": {
+			args: args{
+				docdb: &fake.MockDocDBClient{
+					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									EngineVersion:       pointer.ToOrNilIfZeroValue(testEngineVersion),
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withEngineVersion(testOtherEngineVersion),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withConditions(xpv1.Available()),
+					withStatus(svcapitypes.DocDBInstanceStateAvailable),
+					withEngineVersion(testOtherEngineVersion),
+					withStatusEngineVersion(testEngineVersion),
+					withVpcSecurityGroupIds(),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceUpToDate:        false,
+					ResourceLateInitialized: true,
+					ConnectionDetails:       generateConnectionDetails("", "", "", "", 0),
+				},
+				docdb: fake.MockDocDBClientCall{
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
+				},
+			},
+		},
+		"AvailableState_and_same_EngineVersion_should_be_UpToDate": {
+			args: args{
+				docdb: &fake.MockDocDBClient{
+					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									EngineVersion:       pointer.ToOrNilIfZeroValue(testEngineVersion),
+								},
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
+						return &docdb.ListTagsForResourceOutput{
+							TagList: []*docdb.Tag{},
+						}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withEngineVersion(testEngineVersion),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withConditions(xpv1.Available()),
+					withStatus(svcapitypes.DocDBInstanceStateAvailable),
+					withEngineVersion(testEngineVersion),
+					withStatusEngineVersion(testEngineVersion),
 					withVpcSecurityGroupIds(),
 				),
 				result: managed.ExternalObservation{
@@ -2697,7 +2819,7 @@ func TestUpdate(t *testing.T) {
 		args
 		want
 	}{
-		"SuccessfulUpdate": {
+		"SuccessfulRegularUpdate": {
 			args: args{
 				docdb: &fake.MockDocDBClient{
 					MockModifyDBClusterWithContext: func(c context.Context, mdpgi *docdb.ModifyDBClusterInput, o []request.Option) (*docdb.ModifyDBClusterOutput, error) {
@@ -2705,6 +2827,17 @@ func TestUpdate(t *testing.T) {
 							DBCluster: &docdb.DBCluster{
 								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
+							},
+						}, nil
+					},
+					MockDescribeDBClustersWithContext: func(ctx context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier:     pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									DBClusterParameterGroup: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+									EngineVersion:           pointer.ToOrNilIfZeroValue(testEngineVersion),
+								},
 							},
 						}, nil
 					},
@@ -2792,9 +2925,9 @@ func TestUpdate(t *testing.T) {
 							I: &docdb.ModifyDBClusterInput{
 								DBClusterIdentifier:         pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								BackupRetentionPeriod:       pointer.ToIntAsInt64(testBackupRetentionPeriod),
-								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+								DBClusterParameterGroupName: nil,
 								DeletionProtection:          pointer.ToOrNilIfZeroValue(true),
-								EngineVersion:               pointer.ToOrNilIfZeroValue(testEngineVersion),
+								EngineVersion:               nil,
 								Port:                        pointer.ToIntAsInt64(testPort),
 								PreferredBackupWindow:       pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
 								PreferredMaintenanceWindow:  pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
@@ -2809,6 +2942,189 @@ func TestUpdate(t *testing.T) {
 							},
 						},
 					},
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
+					ListTagsForResource: []*fake.CallListTagsForResource{
+						{
+							I: &docdb.ListTagsForResourceInput{
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
+							},
+						},
+					},
+					AddTagsToResource: []*fake.CallAddTagsToResource{
+						{
+							I: &docdb.AddTagsToResourceInput{
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
+								Tags: []*docdb.Tag{
+									{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+									{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
+								},
+							},
+						},
+					},
+					RemoveTagsFromResource: []*fake.CallRemoveTagsFromResource{
+						{
+							I: &docdb.RemoveTagsFromResourceInput{
+								ResourceName: pointer.ToOrNilIfZeroValue(testDBClusterArn),
+								TagKeys: []*string{
+									pointer.ToOrNilIfZeroValue(testOtherOtherTagKey),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"Successful_EngineVersion_DBClusterParameterGroupName_Update": {
+			args: args{
+				docdb: &fake.MockDocDBClient{
+					MockModifyDBClusterWithContext: func(c context.Context, mdpgi *docdb.ModifyDBClusterInput, o []request.Option) (*docdb.ModifyDBClusterOutput, error) {
+						return &docdb.ModifyDBClusterOutput{
+							DBCluster: &docdb.DBCluster{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
+							},
+						}, nil
+					},
+					MockDescribeDBClustersWithContext: func(ctx context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier:     pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									DBClusterParameterGroup: pointer.ToOrNilIfZeroValue(testDBClusterParameterGroupName),
+									EngineVersion:           pointer.ToOrNilIfZeroValue(testEngineVersion),
+								},
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
+						return &docdb.ListTagsForResourceOutput{
+							TagList: []*docdb.Tag{
+								{
+									Key:   pointer.ToOrNilIfZeroValue(testOtherOtherTagKey),
+									Value: pointer.ToOrNilIfZeroValue(testOtherOtherTagValue),
+								},
+							},
+						}, nil
+					},
+					MockAddTagsToResource: func(attri *docdb.AddTagsToResourceInput) (*docdb.AddTagsToResourceOutput, error) {
+						return &docdb.AddTagsToResourceOutput{}, nil
+					},
+					MockRemoveTagsFromResource: func(rtfri *docdb.RemoveTagsFromResourceInput) (*docdb.RemoveTagsFromResourceOutput, error) {
+						return &docdb.RemoveTagsFromResourceOutput{}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withAvailabilityZones(
+						testAvailabilityZone,
+						testOtherAvailabilityZone,
+					),
+					withBackupRetentionPeriod(testBackupRetentionPeriod),
+					withDBClusterParameterGroupName(testOtherDBClusterParameterGroupName),
+					withDBSubnetGroup(testDBSubnetGroupName),
+					withDeletionProtection(true),
+					withEngine(testEngine),
+					withEngineVersion(testOtherEngineVersion),
+					withAllowMajorVersionUpgrade(true),
+					withKmsKeyID(testKMSKeyID),
+					withMasterUserName(testMasterUserName),
+					withPort(testPort),
+					withPreSignedURL(testPresignedURL),
+					withPreferredBackupWindow(testPreferredBackupWindow),
+					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
+					withStorageEncrypted(true),
+					withTags(
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
+					),
+					withVpcSecurityGroupIds(
+						testVpcSecurityGroup,
+						testOtherVpcSecurityGroup,
+					),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withAvailabilityZones(
+						testAvailabilityZone,
+						testOtherAvailabilityZone,
+					),
+					withBackupRetentionPeriod(testBackupRetentionPeriod),
+					withDBClusterParameterGroupName(testOtherDBClusterParameterGroupName),
+					withDBSubnetGroup(testDBSubnetGroupName),
+					withDeletionProtection(true),
+					withEngine(testEngine),
+					withEngineVersion(testOtherEngineVersion),
+					withAllowMajorVersionUpgrade(true),
+					withKmsKeyID(testKMSKeyID),
+					withMasterUserName(testMasterUserName),
+					withPort(testPort),
+					withPreSignedURL(testPresignedURL),
+					withPreferredBackupWindow(testPreferredBackupWindow),
+					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
+					withStorageEncrypted(true),
+					withTags(
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testTagKey), Value: pointer.ToOrNilIfZeroValue(testTagValue)},
+						&svcapitypes.Tag{Key: pointer.ToOrNilIfZeroValue(testOtherTagKey), Value: pointer.ToOrNilIfZeroValue(testOtherTagValue)},
+					),
+					withVpcSecurityGroupIds(
+						testVpcSecurityGroup,
+						testOtherVpcSecurityGroup,
+					),
+				),
+				docdb: fake.MockDocDBClientCall{
+					ModifyDBClusterWithContext: []*fake.CallModifyDBClusterWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.ModifyDBClusterInput{
+								AllowMajorVersionUpgrade:    pointer.ToOrNilIfZeroValue(true),
+								DBClusterIdentifier:         pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								BackupRetentionPeriod:       pointer.ToIntAsInt64(testBackupRetentionPeriod),
+								DBClusterParameterGroupName: nil,
+								DeletionProtection:          pointer.ToOrNilIfZeroValue(true),
+								EngineVersion:               nil,
+								Port:                        pointer.ToIntAsInt64(testPort),
+								PreferredBackupWindow:       pointer.ToOrNilIfZeroValue(testPreferredBackupWindow),
+								PreferredMaintenanceWindow:  pointer.ToOrNilIfZeroValue(testPreferredMaintenanceWindow),
+								VpcSecurityGroupIds: toStringPtrArray(
+									testVpcSecurityGroup,
+									testOtherVpcSecurityGroup,
+								),
+								CloudwatchLogsExportConfiguration: &docdb.CloudwatchLogsExportConfiguration{
+									DisableLogTypes: []*string{},
+									EnableLogTypes:  []*string{},
+								},
+							},
+						},
+						{ // Modify call for engineVersion/dbClusterParameterGroupName in postUpdate
+							Ctx: context.Background(),
+							I: &docdb.ModifyDBClusterInput{
+								AllowMajorVersionUpgrade:    pointer.ToOrNilIfZeroValue(true),
+								DBClusterIdentifier:         pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								DBClusterParameterGroupName: pointer.ToOrNilIfZeroValue(testOtherDBClusterParameterGroupName),
+								EngineVersion:               pointer.ToOrNilIfZeroValue(testOtherEngineVersion),
+							},
+						},
+					},
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
+
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
@@ -2851,6 +3167,15 @@ func TestUpdate(t *testing.T) {
 							},
 						}, nil
 					},
+					MockDescribeDBClustersWithContext: func(ctx context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								},
+							},
+						}, nil
+					},
 					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
 						return &docdb.ListTagsForResourceOutput{
 							TagList: []*docdb.Tag{},
@@ -2891,6 +3216,14 @@ func TestUpdate(t *testing.T) {
 							},
 						},
 					},
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
@@ -2909,6 +3242,15 @@ func TestUpdate(t *testing.T) {
 							DBCluster: &docdb.DBCluster{
 								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
+							},
+						}, nil
+					},
+					MockDescribeDBClustersWithContext: func(ctx context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								},
 							},
 						}, nil
 					},
@@ -2951,6 +3293,14 @@ func TestUpdate(t *testing.T) {
 							},
 						},
 					},
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
 					ListTagsForResource: []*fake.CallListTagsForResource{
 						{
 							I: &docdb.ListTagsForResourceInput{
@@ -2969,6 +3319,15 @@ func TestUpdate(t *testing.T) {
 							DBCluster: &docdb.DBCluster{
 								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 								DBClusterArn:        pointer.ToOrNilIfZeroValue(testDBClusterArn),
+							},
+						}, nil
+					},
+					MockDescribeDBClustersWithContext: func(ctx context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+								},
 							},
 						}, nil
 					},
@@ -3014,6 +3373,14 @@ func TestUpdate(t *testing.T) {
 										testOtherCloudWatchLog,
 									),
 								},
+							},
+						},
+					},
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
 							},
 						},
 					},

@@ -1,3 +1,16 @@
+resources:
+  DBCluster:
+    fields:
+      AllowMajorVersionUpgrade:
+        from:
+          operation: ModifyDBCluster
+          path: AllowMajorVersionUpgrade
+      EngineVersion:
+        is_read_only: true
+        from:
+          operation: DescribeDBClusters
+          path: DBClusters.EngineVersion
+
 ignore:
   field_paths:
     - DescribeDBClusterParameterGroupsInput.DBClusterParameterGroupName

@@ -73,6 +73,15 @@ spec:
               forProvider:
                 description: DBClusterParameters defines the desired state of DBCluster
                 properties:
+                  allowMajorVersionUpgrade:
+                    description: |-
+                      A value that indicates whether major version upgrades are allowed.
+
+
+                      Constraints: You must allow major version upgrades when specifying a value
+                      for the EngineVersion parameter that is a different major version than the
+                      DB cluster's current version.
+                    type: boolean
                   applyImmediately:
                     description: |-
                       A value that specifies whether the changes in this request and any pending
@@ -983,6 +992,9 @@ spec:
                   endpoint:
                     description: Specifies the connection endpoint for the primary
                       instance of the cluster.
+                    type: string
+                  engineVersion:
+                    description: Indicates the database engine version.
                     type: string
                   hostedZoneID:
                     description: Specifies the ID that Amazon Route 53 assigns when
