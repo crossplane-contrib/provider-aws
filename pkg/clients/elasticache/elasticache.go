@@ -527,6 +527,18 @@ func generateNodeGroup(ng elasticachetypes.NodeGroup) v1beta1.NodeGroup {
 		Slots:       pointer.StringValue(ng.Slots),
 		Status:      pointer.StringValue(ng.Status),
 	}
+	if ng.ReaderEndpoint != nil {
+		r.ReaderEndpoint = v1beta1.Endpoint{
+			Address: pointer.StringValue(ng.ReaderEndpoint.Address),
+			Port:    int(ng.ReaderEndpoint.Port),
+		}
+	}
+	if ng.PrimaryEndpoint != nil {
+		r.PrimaryEndpoint = v1beta1.Endpoint{
+			Address: pointer.StringValue(ng.PrimaryEndpoint.Address),
+			Port:    int(ng.PrimaryEndpoint.Port),
+		}
+	}
 	if len(ng.NodeGroupMembers) != 0 {
 		r.NodeGroupMembers = make([]v1beta1.NodeGroupMember, len(ng.NodeGroupMembers))
 		for i, m := range ng.NodeGroupMembers {
