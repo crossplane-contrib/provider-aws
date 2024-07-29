@@ -17,6 +17,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/lambda/v1beta1"
@@ -131,7 +132,13 @@ func postObserve(_ context.Context, cr *svcapitypes.Function, resp *svcsdk.GetFu
 		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.State_Pending):
 		cr.SetConditions(xpv1.Creating())
-	case string(svcapitypes.State_Failed), string(svcapitypes.State_Inactive):
+	case string(svcapitypes.State_Inactive):
+		if aws.StringValue(resp.Configuration.StateReasonCode) == string(svcapitypes.StateReasonCode_Idle) {
+			cr.SetConditions(xpv1.Available().WithMessage(ptr.Deref(resp.Configuration.StateReason, "")))
+		} else {
+			cr.SetConditions(xpv1.Unavailable().WithMessage(ptr.Deref(resp.Configuration.StateReason, "")))
+		}
+	case string(svcapitypes.State_Failed):
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	return obs, nil
