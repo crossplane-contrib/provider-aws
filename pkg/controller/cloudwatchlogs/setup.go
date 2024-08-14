@@ -21,6 +21,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudwatchlogs/loggroup"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudwatchlogs/resourcepolicy"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
 
@@ -29,5 +30,6 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 	return setup.SetupControllers(
 		mgr, o,
 		loggroup.SetupLogGroup,
+		resourcepolicy.SetupResourcePolicy,
 	)
 }

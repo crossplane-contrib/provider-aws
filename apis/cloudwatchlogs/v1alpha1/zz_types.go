@@ -32,6 +32,8 @@ type AccountPolicy struct {
 	AccountID *string `json:"accountID,omitempty"`
 
 	LastUpdatedTime *int64 `json:"lastUpdatedTime,omitempty"`
+
+	PolicyName *string `json:"policyName,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -137,8 +139,12 @@ type QueryInfo struct {
 }
 
 // +kubebuilder:skipversion
-type ResourcePolicy struct {
+type ResourcePolicy_SDK struct {
 	LastUpdatedTime *int64 `json:"lastUpdatedTime,omitempty"`
+
+	PolicyDocument *string `json:"policyDocument,omitempty"`
+
+	PolicyName *string `json:"policyName,omitempty"`
 }
 
 // +kubebuilder:skipversion
