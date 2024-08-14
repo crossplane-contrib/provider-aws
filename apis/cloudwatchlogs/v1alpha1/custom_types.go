@@ -44,3 +44,6 @@ type CustomLogGroupParameters struct {
 	// +optional
 	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIDSelector,omitempty"`
 }
+
+// CustomResourcePolicyParameters includes the custom fields of ResourcePolicy.
+type CustomResourcePolicyParameters struct{}
