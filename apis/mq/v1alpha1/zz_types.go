@@ -88,7 +88,23 @@ type BrokerSummary struct {
 }
 
 // +kubebuilder:skipversion
-type Configuration struct {
+type ConfigurationID struct {
+	ID *string `json:"id,omitempty"`
+
+	Revision *int64 `json:"revision,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ConfigurationRevision struct {
+	Created *metav1.Time `json:"created,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	Revision *int64 `json:"revision,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Configuration_SDK struct {
 	ARN *string `json:"arn,omitempty"`
 	// Optional. The authentication strategy used to secure the broker. The default
 	// is SIMPLE.
@@ -103,26 +119,12 @@ type Configuration struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	ID *string `json:"id,omitempty"`
+	// Returns information about the specified configuration revision.
+	LatestRevision *ConfigurationRevision `json:"latestRevision,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 
 	Tags map[string]*string `json:"tags,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type ConfigurationID struct {
-	ID *string `json:"id,omitempty"`
-
-	Revision *int64 `json:"revision,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type ConfigurationRevision struct {
-	Created *metav1.Time `json:"created,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-
-	Revision *int64 `json:"revision,omitempty"`
 }
 
 // +kubebuilder:skipversion

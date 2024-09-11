@@ -1,4 +1,6 @@
 ignore:
+  operations:
+    - UpdateConfiguration
   field_paths:
     - CreateBrokerRequest.Users
     - CreateBrokerRequest.BrokerName
@@ -7,9 +9,20 @@ ignore:
     - CreateUserRequest.Username
     - CreateUserRequest.BrokerId
     - CreateUserRequest.Password
-  resource_names:
-    - Configuration
 resources:
+  Configuration:
+    fields:
+      LatestRevision.Data:
+        is_read_only: true
+        from:
+          operation: DescribeConfigurationRevision
+          path: Data
+      Tags:
+        is_read_only: true
+        from:
+          operation: DescribeConfiguration
+          path: Tags 
+
   Broker:
     fields:
       BrokerInstances:

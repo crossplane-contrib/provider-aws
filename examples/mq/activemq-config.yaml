@@ -1,0 +1,25 @@
+apiVersion: mq.aws.crossplane.io/v1alpha1
+kind: Configuration
+metadata:
+  name: example-mq-config
+spec:
+  forProvider:
+    name: example-mq-config
+    description: example description
+    data: |
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <broker xmlns="http://activemq.apache.org/schema/core">
+        <plugins>
+          <forcePersistencyModeBrokerPlugin persistenceFlag="false"/>
+          <statisticsBrokerPlugin/>
+          <timeStampingBrokerPlugin zeroExpirationOverride="86400000" ttlCeiling="84400000" />
+          <discardingDLQBrokerPlugin dropAll="true" dropTemporaryQueues="true" dropTemporaryTopics="true"/>
+        </plugins>
+      </broker>
+    region: eu-central-1
+    engineType: ActiveMQ
+    engineVersion: 5.17.6
+    tags:
+      Test: test
+  providerConfigRef:
+    name: default

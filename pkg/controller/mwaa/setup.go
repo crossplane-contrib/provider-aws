@@ -21,6 +21,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/mq/broker"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/mq/configuration"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/mq/user"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
@@ -31,5 +32,6 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		mgr, o,
 		broker.SetupBroker,
 		user.SetupUser,
+		configuration.SetupConfiguration,
 	)
 }
