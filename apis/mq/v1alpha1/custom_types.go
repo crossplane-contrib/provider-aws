@@ -81,3 +81,18 @@ type CustomUserParameters struct {
 
 	PasswordSecretRef xpv1.SecretKeySelector `json:"passwordSecretRef,omitempty"`
 }
+
+// CustomConfigurationParameters contains the additional fields for CustomConfigurationParameters
+type CustomConfigurationParameters struct {
+	Data        *string `json:"data,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
+const (
+	// LatestUnsanitizedConfiguration is the key in the annotations map of a
+	// Configuration resource to track the latest unsanitized version
+	// and stop the update loop if the external update result always results in
+	// sanitization of the desired configuration.spec.data
+	// the latest desired config is stored as
+	LatestUnsanitizedConfiguration = "crossplane.io/latest-unsanitized-desired"
+)
