@@ -23,6 +23,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ecs/cluster"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ecs/service"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/ecs/taskdefinition"
+	taskdefinitionfamiliy "github.com/crossplane-contrib/provider-aws/pkg/controller/ecs/taskdefinitionfamily"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
 
@@ -33,5 +34,6 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cluster.SetupCluster,
 		service.SetupService,
 		taskdefinition.SetupTaskDefinition,
+		taskdefinitionfamiliy.SetupTaskDefinitionFamily,
 	)
 }

@@ -232,3 +232,88 @@ func (mg *TaskDefinition) ResolveReferences(ctx context.Context, c client.Reader
 
 	return nil
 }
+
+// ResolveReferences of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	var rsp reference.ResolutionResponse
+	var err error
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTaskDefinitionParameters.ExecutionRoleARN),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomTaskDefinitionParameters.ExecutionRoleARNRef,
+		Selector:     mg.Spec.ForProvider.CustomTaskDefinitionParameters.ExecutionRoleARNSelector,
+		To: reference.To{
+			List:    &v1beta11.RoleList{},
+			Managed: &v1beta11.Role{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomTaskDefinitionParameters.ExecutionRoleARN")
+	}
+	mg.Spec.ForProvider.CustomTaskDefinitionParameters.ExecutionRoleARN = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomTaskDefinitionParameters.ExecutionRoleARNRef = rsp.ResolvedReference
+
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTaskDefinitionParameters.TaskRoleARN),
+		Extract:      reference.ExternalName(),
+		Reference:    mg.Spec.ForProvider.CustomTaskDefinitionParameters.TaskRoleARNRef,
+		Selector:     mg.Spec.ForProvider.CustomTaskDefinitionParameters.TaskRoleARNSelector,
+		To: reference.To{
+			List:    &v1beta11.RoleList{},
+			Managed: &v1beta11.Role{},
+		},
+	})
+	if err != nil {
+		return errors.Wrap(err, "mg.Spec.ForProvider.CustomTaskDefinitionParameters.TaskRoleARN")
+	}
+	mg.Spec.ForProvider.CustomTaskDefinitionParameters.TaskRoleARN = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomTaskDefinitionParameters.TaskRoleARNRef = rsp.ResolvedReference
+
+	for i4 := 0; i4 < len(mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes); i4++ {
+		if mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration != nil {
+			if mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.AuthorizationConfig != nil {
+				rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+					CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.AuthorizationConfig.AccessPointID),
+					Extract:      reference.ExternalName(),
+					Reference:    mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.AuthorizationConfig.AccessPointIDRef,
+					Selector:     mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.AuthorizationConfig.AccessPointIDSelector,
+					To: reference.To{
+						List:    &v1alpha11.AccessPointList{},
+						Managed: &v1alpha11.AccessPoint{},
+					},
+				})
+				if err != nil {
+					return errors.Wrap(err, "mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.AuthorizationConfig.AccessPointID")
+				}
+				mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.AuthorizationConfig.AccessPointID = reference.ToPtrValue(rsp.ResolvedValue)
+				mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.AuthorizationConfig.AccessPointIDRef = rsp.ResolvedReference
+
+			}
+		}
+	}
+	for i4 := 0; i4 < len(mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes); i4++ {
+		if mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration != nil {
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.FileSystemID),
+				Extract:      reference.ExternalName(),
+				Reference:    mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.FileSystemIDRef,
+				Selector:     mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.FileSystemIDSelector,
+				To: reference.To{
+					List:    &v1alpha11.FileSystemList{},
+					Managed: &v1alpha11.FileSystem{},
+				},
+			})
+			if err != nil {
+				return errors.Wrap(err, "mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.FileSystemID")
+			}
+			mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.FileSystemID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.CustomTaskDefinitionParameters.Volumes[i4].EFSVolumeConfiguration.FileSystemIDRef = rsp.ResolvedReference
+
+		}
+	}
+
+	return nil
+}

@@ -209,7 +209,7 @@ func TestConvertVolumes(t *testing.T) {
 	for name, tc := range cases {
 
 		t.Run(name, func(t *testing.T) {
-			got := generateVolumes(tc.cr)
+			got := GenerateVolumes(tc.cr)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("%s\nExample(...): -want, +got:\n%s", tc.reason, diff)
 			}
