@@ -37,8 +37,8 @@ import (
 )
 
 const (
-	name = "coolGroup"
-	engineVersionToTest = "5.0.2"
+	name                         = "coolGroup"
+	engineVersionToTest          = "5.0.2"
 	alternateEngineVersionToTest = "6.x"
 )
 
@@ -47,7 +47,7 @@ var (
 	autoFailoverEnabled      = true
 	cacheParameterGroupName  = "coolParamGroup"
 	engineVersion            = "5.0"
-	alternateEngineVersion	 = "6.x"
+	alternateEngineVersion   = "6.x"
 	port                     = 6379
 	host                     = "172.16.0.1"
 	maintenanceWindow        = "tomorrow"
