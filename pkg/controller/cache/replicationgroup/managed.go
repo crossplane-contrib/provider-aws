@@ -364,11 +364,15 @@ func getVersion(version *string) (*string, error) {
 	}
 	versionOut := strconv.Itoa(version1)
 	if len(versionSplit) > 1 {
-		version2, err := strconv.Atoi(versionSplit[1])
-		if err != nil {
-			return nil, errors.Wrap(err, errVersionInput)
+		if versionSplit[1] != "x" {
+			version2, err := strconv.Atoi(versionSplit[1])
+			if err != nil {
+				return nil, errors.Wrap(err, errVersionInput)
+			}
+			versionOut += "." + strconv.Itoa(version2)
+		} else {
+			versionOut += ".x"
 		}
-		versionOut += "." + strconv.Itoa(version2)
 	}
 	return &versionOut, nil
 }
