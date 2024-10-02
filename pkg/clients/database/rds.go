@@ -301,7 +301,7 @@ func GenerateRestoreRDSInstanceToPointInTimeInput(name string, p *v1beta1.RDSIns
 
 		TargetDBInstanceIdentifier:          aws.String(name),
 		RestoreTime:                         restoreTime,
-		UseLatestRestorableTime:             p.RestoreFrom.PointInTime.UseLatestRestorableTime,
+		UseLatestRestorableTime:             &p.RestoreFrom.PointInTime.UseLatestRestorableTime,
 		SourceDBInstanceAutomatedBackupsArn: p.RestoreFrom.PointInTime.SourceDBInstanceAutomatedBackupsArn,
 		SourceDBInstanceIdentifier:          p.RestoreFrom.PointInTime.SourceDBInstanceIdentifier,
 		SourceDbiResourceId:                 p.RestoreFrom.PointInTime.SourceDbiResourceID,
@@ -399,8 +399,8 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 	m := &rds.ModifyDBInstanceInput{
 		DBInstanceIdentifier:               aws.String(name),
 		AllocatedStorage:                   pointer.ToIntAsInt32Ptr(p.AllocatedStorage),
-		AllowMajorVersionUpgrade:           aws.ToBool(p.AllowMajorVersionUpgrade),
-		ApplyImmediately:                   aws.ToBool(p.ApplyModificationsImmediately),
+		AllowMajorVersionUpgrade:           p.AllowMajorVersionUpgrade,
+		ApplyImmediately:                   p.ApplyModificationsImmediately,
 		AutoMinorVersionUpgrade:            p.AutoMinorVersionUpgrade,
 		BackupRetentionPeriod:              pointer.ToIntAsInt32Ptr(p.BackupRetentionPeriod),
 		CACertificateIdentifier:            p.CACertificateIdentifier,
@@ -455,12 +455,12 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 // rds.DBInstance.
 func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation { //nolint:gocyclo
 	o := v1beta1.RDSInstanceObservation{
-		AllocatedStorage:                      int(db.AllocatedStorage),
+		AllocatedStorage:                      int(ptr.Deref(db.AllocatedStorage, 0)),
 		AWSBackupRecoveryPointARN:             aws.ToString(db.AwsBackupRecoveryPointArn),
-		BackupRetentionPeriod:                 int(db.BackupRetentionPeriod),
+		BackupRetentionPeriod:                 int(ptr.Deref(db.BackupRetentionPeriod, 0)),
 		DBInstanceStatus:                      aws.ToString(db.DBInstanceStatus),
 		DBInstanceArn:                         aws.ToString(db.DBInstanceArn),
-		DBInstancePort:                        int(db.DbInstancePort),
+		DBInstancePort:                        int(ptr.Deref(db.DbInstancePort, 0)),
 		DBResourceID:                          aws.ToString(db.DbiResourceId),
 		EnabledCloudwatchLogsExports:          db.EnabledCloudwatchLogsExports,
 		EnhancedMonitoringResourceArn:         aws.ToString(db.EnhancedMonitoringResourceArn),
@@ -534,7 +534,7 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 		o.Endpoint = v1beta1.Endpoint{
 			Address:      aws.ToString(db.Endpoint.Address),
 			HostedZoneID: aws.ToString(db.Endpoint.HostedZoneId),
-			Port:         int(db.Endpoint.Port),
+			Port:         int(ptr.Deref(db.Endpoint.Port, 0)),
 		}
 	}
 	if len(db.OptionGroupMemberships) != 0 {
@@ -583,7 +583,7 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 				Message:    aws.ToString(val.Message),
 				Status:     aws.ToString(val.Status),
 				StatusType: aws.ToString(val.StatusType),
-				Normal:     val.Normal,
+				Normal:     ptr.Deref(val.Normal, false),
 			}
 		}
 	}
@@ -608,17 +608,17 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	in.DBInstanceClass = pointer.LateInitializeValueFromPtr(in.DBInstanceClass, db.DBInstanceClass)
 	in.Engine = pointer.LateInitializeValueFromPtr(in.Engine, db.Engine)
 
-	in.AllocatedStorage = pointer.LateInitializeIntFrom32Ptr(in.AllocatedStorage, &db.AllocatedStorage)
-	in.AutoMinorVersionUpgrade = pointer.LateInitialize(in.AutoMinorVersionUpgrade, ptr.To(db.AutoMinorVersionUpgrade))
+	in.AllocatedStorage = pointer.LateInitializeIntFrom32Ptr(in.AllocatedStorage, db.AllocatedStorage)
+	in.AutoMinorVersionUpgrade = pointer.LateInitialize(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
 	in.AvailabilityZone = pointer.LateInitialize(in.AvailabilityZone, db.AvailabilityZone)
-	in.BackupRetentionPeriod = pointer.LateInitializeIntFromInt32Ptr(in.BackupRetentionPeriod, &db.BackupRetentionPeriod)
+	in.BackupRetentionPeriod = pointer.LateInitializeIntFromInt32Ptr(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
 	in.CACertificateIdentifier = pointer.LateInitialize(in.CACertificateIdentifier, db.CACertificateIdentifier)
 	in.CharacterSetName = pointer.LateInitialize(in.CharacterSetName, db.CharacterSetName)
-	in.CopyTagsToSnapshot = pointer.LateInitialize(in.CopyTagsToSnapshot, ptr.To(db.CopyTagsToSnapshot))
+	in.CopyTagsToSnapshot = pointer.LateInitialize(in.CopyTagsToSnapshot, db.CopyTagsToSnapshot)
 	in.DBClusterIdentifier = pointer.LateInitialize(in.DBClusterIdentifier, db.DBClusterIdentifier)
 	in.DBName = pointer.LateInitialize(in.DBName, db.DBName)
-	in.DeletionProtection = pointer.LateInitialize(in.DeletionProtection, ptr.To(db.DeletionProtection))
-	in.EnableIAMDatabaseAuthentication = pointer.LateInitialize(in.EnableIAMDatabaseAuthentication, ptr.To(db.IAMDatabaseAuthenticationEnabled))
+	in.DeletionProtection = pointer.LateInitialize(in.DeletionProtection, db.DeletionProtection)
+	in.EnableIAMDatabaseAuthentication = pointer.LateInitialize(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
 	in.EnablePerformanceInsights = pointer.LateInitialize(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
 	in.IOPS = pointer.LateInitializeIntFrom32Ptr(in.IOPS, db.Iops)
 	in.KMSKeyID = pointer.LateInitialize(in.KMSKeyID, db.KmsKeyId)
@@ -627,14 +627,14 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	in.MaxAllocatedStorage = pointer.LateInitializeIntFrom32Ptr(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
 	in.MonitoringInterval = pointer.LateInitializeIntFrom32Ptr(in.MonitoringInterval, db.MonitoringInterval)
 	in.MonitoringRoleARN = pointer.LateInitialize(in.MonitoringRoleARN, db.MonitoringRoleArn)
-	in.MultiAZ = pointer.LateInitialize(in.MultiAZ, ptr.To(db.MultiAZ))
+	in.MultiAZ = pointer.LateInitialize(in.MultiAZ, db.MultiAZ)
 	in.PerformanceInsightsKMSKeyID = pointer.LateInitialize(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)
 	in.PerformanceInsightsRetentionPeriod = pointer.LateInitializeIntFrom32Ptr(in.PerformanceInsightsRetentionPeriod, db.PerformanceInsightsRetentionPeriod)
 	in.PreferredBackupWindow = pointer.LateInitialize(in.PreferredBackupWindow, db.PreferredBackupWindow)
 	in.PreferredMaintenanceWindow = pointer.LateInitialize(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
 	in.PromotionTier = pointer.LateInitializeIntFrom32Ptr(in.PromotionTier, db.PromotionTier)
-	in.PubliclyAccessible = pointer.LateInitialize(in.PubliclyAccessible, ptr.To(db.PubliclyAccessible))
-	in.StorageEncrypted = pointer.LateInitialize(in.StorageEncrypted, ptr.To(db.StorageEncrypted))
+	in.PubliclyAccessible = pointer.LateInitialize(in.PubliclyAccessible, db.PubliclyAccessible)
+	in.StorageEncrypted = pointer.LateInitialize(in.StorageEncrypted, db.StorageEncrypted)
 	in.StorageThroughput = pointer.LateInitializeIntFrom32Ptr(in.StorageThroughput, db.StorageThroughput)
 	in.StorageType = pointer.LateInitialize(in.StorageType, db.StorageType)
 	in.Timezone = pointer.LateInitialize(in.Timezone, db.Timezone)
@@ -643,7 +643,7 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	// some reason. See the bug here:
 	// https://github.com/aws/aws-sdk-java/issues/924#issuecomment-658089792
 	if db.Endpoint != nil {
-		in.Port = pointer.LateInitializeIntFrom32Ptr(in.Port, &db.Endpoint.Port)
+		in.Port = pointer.LateInitializeIntFrom32Ptr(in.Port, db.Endpoint.Port)
 	}
 
 	if len(in.DBSecurityGroups) == 0 && len(db.DBSecurityGroups) != 0 {

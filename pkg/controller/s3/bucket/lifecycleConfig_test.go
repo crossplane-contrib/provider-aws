@@ -29,6 +29,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -88,11 +89,11 @@ func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 	conf := &s3types.BucketLifecycleConfiguration{
 		Rules: []s3types.LifecycleRule{
 			{
-				AbortIncompleteMultipartUpload: &s3types.AbortIncompleteMultipartUpload{DaysAfterInitiation: 1},
+				AbortIncompleteMultipartUpload: &s3types.AbortIncompleteMultipartUpload{DaysAfterInitiation: ptr.To[int32](1)},
 				Expiration: &s3types.LifecycleExpiration{
 					Date:                      &awsDate,
-					Days:                      days,
-					ExpiredObjectDeleteMarker: marker,
+					Days:                      &days,
+					ExpiredObjectDeleteMarker: &marker,
 				},
 				Filter: &s3types.LifecycleRuleFilterMemberAnd{
 					Value: s3types.LifecycleRuleAndOperator{
@@ -101,15 +102,15 @@ func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 					},
 				},
 				ID:                          pointer.ToOrNilIfZeroValue(id),
-				NoncurrentVersionExpiration: &s3types.NoncurrentVersionExpiration{NoncurrentDays: days},
+				NoncurrentVersionExpiration: &s3types.NoncurrentVersionExpiration{NoncurrentDays: &days},
 				NoncurrentVersionTransitions: []s3types.NoncurrentVersionTransition{{
-					NoncurrentDays: days,
+					NoncurrentDays: &days,
 					StorageClass:   s3types.TransitionStorageClassOnezoneIa,
 				}},
 				Status: s3types.ExpirationStatusEnabled,
 				Transitions: []s3types.Transition{{
 					Date:         &awsDate,
-					Days:         days,
+					Days:         &days,
 					StorageClass: s3types.TransitionStorageClassOnezoneIa,
 				}},
 			},

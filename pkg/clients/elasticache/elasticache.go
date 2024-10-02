@@ -31,6 +31,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 
 	cachev1alpha1 "github.com/crossplane-contrib/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
@@ -140,7 +141,7 @@ func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string) *elasticache.ModifyReplicationGroupInput {
 	return &elasticache.ModifyReplicationGroupInput{
 		ReplicationGroupId:          aws.String(id),
-		ApplyImmediately:            g.ApplyModificationsImmediately,
+		ApplyImmediately:            &g.ApplyModificationsImmediately,
 		AutomaticFailoverEnabled:    g.AutomaticFailoverEnabled,
 		CacheNodeType:               aws.String(g.CacheNodeType),
 		CacheParameterGroupName:     g.CacheParameterGroupName,
@@ -163,15 +164,15 @@ func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 // shard configuration modification input suitable for use with the AWS API.
 func NewModifyReplicationGroupShardConfigurationInput(g v1beta1.ReplicationGroupParameters, id string, rg elasticachetypes.ReplicationGroup) *elasticache.ModifyReplicationGroupShardConfigurationInput {
 	input := &elasticache.ModifyReplicationGroupShardConfigurationInput{
-		ApplyImmediately:   g.ApplyModificationsImmediately,
-		NodeGroupCount:     int32(*g.NumNodeGroups),
+		ApplyImmediately:   &g.ApplyModificationsImmediately,
+		NodeGroupCount:     pointer.ToIntAsInt32Ptr(g.NumNodeGroups),
 		ReplicationGroupId: aws.String(id),
 	}
 
 	// For scale down we must name the nodes. This code picks the oldest rg
 	// now, but there might be a better algorithm, such as the one with least
 	// data
-	remove := len(rg.NodeGroups) - int(input.NodeGroupCount)
+	remove := len(rg.NodeGroups) - int(ptr.Deref(input.NodeGroupCount, 0))
 	for i := 0; i < remove; i++ {
 		input.NodeGroupsToRemove = append(input.NodeGroupsToRemove, aws.ToString(rg.NodeGroups[i].NodeGroupId))
 	}
@@ -207,7 +208,7 @@ func NewListTagsForResourceInput(arn *string) *elasticache.ListTagsForResourceIn
 // the number of replicaGroup cache clusters
 func NewDecreaseReplicaCountInput(replicationGroupID string, newReplicaCount *int32) *elasticache.DecreaseReplicaCountInput {
 	return &elasticache.DecreaseReplicaCountInput{
-		ApplyImmediately:   true, // false is not supported by the API
+		ApplyImmediately:   ptr.To(true), // false is not supported by the API
 		ReplicationGroupId: &replicationGroupID,
 		NewReplicaCount:    newReplicaCount,
 	}
@@ -218,7 +219,7 @@ func NewDecreaseReplicaCountInput(replicationGroupID string, newReplicaCount *in
 // the number of replicaGroup cache clusters
 func NewIncreaseReplicaCountInput(replicationGroupID string, newReplicaCount *int32) *elasticache.IncreaseReplicaCountInput {
 	return &elasticache.IncreaseReplicaCountInput{
-		ApplyImmediately:   true, // false is not supported by the API
+		ApplyImmediately:   ptr.To(true), // false is not supported by the API
 		ReplicationGroupId: &replicationGroupID,
 		NewReplicaCount:    newReplicaCount,
 	}
@@ -530,13 +531,13 @@ func generateNodeGroup(ng elasticachetypes.NodeGroup) v1beta1.NodeGroup {
 	if ng.ReaderEndpoint != nil {
 		r.ReaderEndpoint = v1beta1.Endpoint{
 			Address: pointer.StringValue(ng.ReaderEndpoint.Address),
-			Port:    int(ng.ReaderEndpoint.Port),
+			Port:    int(ptr.Deref(ng.ReaderEndpoint.Port, 0)),
 		}
 	}
 	if ng.PrimaryEndpoint != nil {
 		r.PrimaryEndpoint = v1beta1.Endpoint{
 			Address: pointer.StringValue(ng.PrimaryEndpoint.Address),
-			Port:    int(ng.PrimaryEndpoint.Port),
+			Port:    int(ptr.Deref(ng.PrimaryEndpoint.Port, 0)),
 		}
 	}
 	if len(ng.NodeGroupMembers) != 0 {
@@ -551,7 +552,7 @@ func generateNodeGroup(ng elasticachetypes.NodeGroup) v1beta1.NodeGroup {
 			if m.ReadEndpoint != nil {
 				r.NodeGroupMembers[i].ReadEndpoint = v1beta1.Endpoint{
 					Address: pointer.StringValue(m.ReadEndpoint.Address),
-					Port:    int(m.ReadEndpoint.Port),
+					Port:    int(ptr.Deref(m.ReadEndpoint.Port, 0)),
 				}
 			}
 
@@ -568,7 +569,7 @@ func generateReplicationGroupPendingModifiedValues(in elasticachetypes.Replicati
 	if in.Resharding != nil && in.Resharding.SlotMigration != nil {
 		r.Resharding = v1beta1.ReshardingStatus{
 			SlotMigration: v1beta1.SlotMigration{
-				ProgressPercentage: int(in.Resharding.SlotMigration.ProgressPercentage),
+				ProgressPercentage: int(ptr.Deref(in.Resharding.SlotMigration.ProgressPercentage, 0)),
 			},
 		}
 	}
@@ -587,7 +588,7 @@ func newEndpoint(rg elasticachetypes.ReplicationGroup) v1beta1.Endpoint {
 	default:
 		return v1beta1.Endpoint{}
 	}
-	return v1beta1.Endpoint{Address: pointer.StringValue(e.Address), Port: int(e.Port)}
+	return v1beta1.Endpoint{Address: pointer.StringValue(e.Address), Port: int(ptr.Deref(e.Port, 0))}
 }
 
 // ConnectionEndpoint returns the connection endpoint for a Replication Group.
@@ -600,7 +601,7 @@ func ConnectionEndpoint(rg elasticachetypes.ReplicationGroup) managed.Connection
 		rg.ConfigurationEndpoint.Address != nil {
 		return managed.ConnectionDetails{
 			xpv1.ResourceCredentialsSecretEndpointKey: []byte(aws.ToString(rg.ConfigurationEndpoint.Address)),
-			xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(rg.ConfigurationEndpoint.Port))),
+			xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(ptr.Deref(rg.ConfigurationEndpoint.Port, 0)))),
 		}
 	}
 
@@ -616,13 +617,13 @@ func ConnectionEndpoint(rg elasticachetypes.ReplicationGroup) managed.Connection
 			rg.NodeGroups[0].PrimaryEndpoint.Address != nil {
 			hasData = true
 			cd[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(aws.ToString(rg.NodeGroups[0].PrimaryEndpoint.Address))
-			cd[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.Itoa(int(rg.NodeGroups[0].PrimaryEndpoint.Port)))
+			cd[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.Itoa(int(ptr.Deref(rg.NodeGroups[0].PrimaryEndpoint.Port, 0))))
 		}
 		if rg.NodeGroups[0].ReaderEndpoint != nil &&
 			rg.NodeGroups[0].ReaderEndpoint.Address != nil {
 			hasData = true
 			cd["readerEndpoint"] = []byte(aws.ToString(rg.NodeGroups[0].ReaderEndpoint.Address))
-			cd["readerPort"] = []byte(strconv.Itoa(int(rg.NodeGroups[0].ReaderEndpoint.Port)))
+			cd["readerPort"] = []byte(strconv.Itoa(int(ptr.Deref(rg.NodeGroups[0].ReaderEndpoint.Port, 0))))
 		}
 		if hasData {
 			return cd
@@ -731,7 +732,7 @@ func GenerateModifyCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id 
 	c := &elasticache.ModifyCacheClusterInput{
 		CacheClusterId:             aws.String(id),
 		AZMode:                     elasticachetypes.AZMode(aws.ToString(p.AZMode)),
-		ApplyImmediately:           aws.ToBool(p.ApplyImmediately),
+		ApplyImmediately:           p.ApplyImmediately,
 		AuthToken:                  p.AuthToken,
 		AuthTokenUpdateStrategy:    elasticachetypes.AuthTokenUpdateStrategyType(aws.ToString(p.AuthTokenUpdateStrategy)),
 		CacheNodeIdsToRemove:       p.CacheNodeIDsToRemove,
@@ -784,7 +785,7 @@ func GenerateClusterObservation(c elasticachetypes.CacheCluster) cachev1alpha1.C
 			if v.Endpoint != nil {
 				cacheNodes[i].Endpoint = &cachev1alpha1.Endpoint{
 					Address: aws.ToString(v.Endpoint.Address),
-					Port:    int(v.Endpoint.Port),
+					Port:    int(ptr.Deref(v.Endpoint.Port, 0)),
 				}
 			}
 		}

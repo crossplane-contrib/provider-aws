@@ -68,7 +68,7 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2types.Subnet) {
 	in.MapPublicIPOnLaunch = pointer.LateInitialize(in.MapPublicIPOnLaunch, s.MapPublicIpOnLaunch)
 	in.VPCID = pointer.LateInitialize(in.VPCID, s.VpcId)
 
-	if s.Ipv6CidrBlockAssociationSet != nil && len(s.Ipv6CidrBlockAssociationSet) > 0 {
+	if len(s.Ipv6CidrBlockAssociationSet) > 0 {
 		in.IPv6CIDRBlock = pointer.LateInitialize(in.IPv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)
 	}
 

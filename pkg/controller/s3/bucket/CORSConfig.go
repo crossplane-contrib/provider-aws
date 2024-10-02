@@ -21,6 +21,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -124,7 +125,7 @@ func GeneratePutBucketCorsInput(name string, config *v1beta1.CORSConfiguration) 
 			AllowedMethods: cors.AllowedMethods,
 			AllowedOrigins: cors.AllowedOrigins,
 			ExposeHeaders:  cors.ExposeHeaders,
-			MaxAgeSeconds:  cors.MaxAgeSeconds,
+			MaxAgeSeconds:  ptr.To(cors.MaxAgeSeconds),
 		})
 	}
 	return bci
@@ -147,7 +148,7 @@ func CompareCORS(local []v1beta1.CORSRule, external []types.CORSRule) ResourceSt
 			cmp.Equal(local[i].AllowedMethods, outputRule.AllowedMethods) &&
 			cmp.Equal(local[i].AllowedOrigins, outputRule.AllowedOrigins) &&
 			cmp.Equal(local[i].ExposeHeaders, outputRule.ExposeHeaders) &&
-			local[i].MaxAgeSeconds == outputRule.MaxAgeSeconds) {
+			local[i].MaxAgeSeconds == ptr.Deref(outputRule.MaxAgeSeconds, 0)) {
 			return NeedsUpdate
 		}
 	}
@@ -164,7 +165,7 @@ func GenerateCORSRule(config []types.CORSRule) []v1beta1.CORSRule {
 			AllowedMethods: cors.AllowedMethods,
 			AllowedOrigins: cors.AllowedOrigins,
 			ExposeHeaders:  cors.ExposeHeaders,
-			MaxAgeSeconds:  cors.MaxAgeSeconds,
+			MaxAgeSeconds:  ptr.Deref(cors.MaxAgeSeconds, 0),
 		}
 	}
 	return output

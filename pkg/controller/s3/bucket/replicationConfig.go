@@ -28,6 +28,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -143,7 +144,7 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 	for i, rule := range external.Rules {
 		config.Rules[i] = v1beta1.ReplicationRule{
 			ID:       rule.ID,
-			Priority: rule.Priority,
+			Priority: ptr.Deref(rule.Priority, 0),
 			Filter:   &v1beta1.ReplicationRuleFilter{},
 			Status:   string(rule.Status),
 		}
@@ -194,7 +195,7 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 				config.Rules[i].Destination.Metrics = &v1beta1.Metrics{}
 				if rule.Destination.Metrics.EventThreshold != nil {
 					config.Rules[i].Destination.Metrics.EventThreshold = &v1beta1.ReplicationTimeValue{}
-					config.Rules[i].Destination.Metrics.EventThreshold.Minutes = rule.Destination.Metrics.EventThreshold.Minutes
+					config.Rules[i].Destination.Metrics.EventThreshold.Minutes = ptr.Deref(rule.Destination.Metrics.EventThreshold.Minutes, 0)
 				}
 				config.Rules[i].Destination.Metrics.Status = string(rule.Destination.Metrics.Status)
 			}
@@ -202,7 +203,7 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 				config.Rules[i].Destination.ReplicationTime = &v1beta1.ReplicationTime{}
 				config.Rules[i].Destination.ReplicationTime.Status = string(rule.Destination.ReplicationTime.Status)
 				if rule.Destination.ReplicationTime.Time != nil {
-					config.Rules[i].Destination.ReplicationTime.Time.Minutes = rule.Destination.ReplicationTime.Time.Minutes
+					config.Rules[i].Destination.ReplicationTime.Time.Minutes = ptr.Deref(rule.Destination.ReplicationTime.Time.Minutes, 0)
 				}
 			}
 		}
@@ -261,7 +262,7 @@ func copyDestination(input *v1beta1.ReplicationRule, newRule *types.ReplicationR
 			Status: types.MetricsStatus(input.Destination.Metrics.Status),
 		}
 		if input.Destination.Metrics.EventThreshold != nil {
-			newRule.Destination.Metrics.EventThreshold = &types.ReplicationTimeValue{Minutes: input.Destination.Metrics.EventThreshold.Minutes}
+			newRule.Destination.Metrics.EventThreshold = &types.ReplicationTimeValue{Minutes: &input.Destination.Metrics.EventThreshold.Minutes}
 		}
 	}
 	if input.Destination.ReplicationTime != nil {
@@ -271,7 +272,7 @@ func copyDestination(input *v1beta1.ReplicationRule, newRule *types.ReplicationR
 		}
 		if input.Destination.ReplicationTime != nil {
 			newRule.Destination.ReplicationTime.Time = &types.ReplicationTimeValue{
-				Minutes: input.Destination.ReplicationTime.Time.Minutes,
+				Minutes: &input.Destination.ReplicationTime.Time.Minutes,
 			}
 		}
 	}
@@ -281,7 +282,7 @@ func createRule(input v1beta1.ReplicationRule) types.ReplicationRule {
 	Rule := input
 	newRule := types.ReplicationRule{
 		ID:       Rule.ID,
-		Priority: Rule.Priority,
+		Priority: &Rule.Priority,
 		Filter:   &types.ReplicationRuleFilterMemberPrefix{Value: ""},
 		Status:   types.ReplicationRuleStatus(Rule.Status),
 	}

@@ -77,7 +77,7 @@ func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2types.Intern
 	if ig == nil {
 		return
 	}
-	if ig.Attachments != nil && len(ig.Attachments) > 0 {
+	if len(ig.Attachments) > 0 {
 		in.VPCID = pointer.LateInitialize(in.VPCID, ig.Attachments[0].VpcId)
 	}
 	if len(in.Tags) == 0 && len(ig.Tags) != 0 {

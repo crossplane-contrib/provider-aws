@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
@@ -100,7 +101,7 @@ func GenerateRevocationConfiguration(p *v1beta1.RevocationConfiguration) *types.
 	m := &types.RevocationConfiguration{
 		CrlConfiguration: &types.CrlConfiguration{
 			CustomCname:      p.CustomCname,
-			Enabled:          p.Enabled,
+			Enabled:          &p.Enabled,
 			ExpirationInDays: p.ExpirationInDays,
 			S3BucketName:     p.S3BucketName,
 		},
@@ -127,7 +128,7 @@ func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParamete
 		in.Status = pointer.ToOrNilIfZeroValue(string(certificateAuthority.Status))
 	}
 
-	if certificateAuthority.RevocationConfiguration.CrlConfiguration.Enabled {
+	if ptr.Deref(certificateAuthority.RevocationConfiguration.CrlConfiguration.Enabled, false) {
 		if in.RevocationConfiguration.ExpirationInDays == nil && certificateAuthority.RevocationConfiguration.CrlConfiguration.ExpirationInDays != nil {
 			in.RevocationConfiguration.ExpirationInDays = certificateAuthority.RevocationConfiguration.CrlConfiguration.ExpirationInDays
 		}
@@ -145,7 +146,7 @@ func LateInitializeCertificateAuthority(in *v1beta1.CertificateAuthorityParamete
 // IsCertificateAuthorityUpToDate checks whether there is a change in any of the modifiable fields.
 func IsCertificateAuthorityUpToDate(p *v1beta1.CertificateAuthority, cd types.CertificateAuthority, tags []types.Tag) bool { //nolint:gocyclo
 
-	if cd.RevocationConfiguration.CrlConfiguration.Enabled {
+	if ptr.Deref(cd.RevocationConfiguration.CrlConfiguration.Enabled, false) {
 		if !strings.EqualFold(aws.ToString(p.Spec.ForProvider.RevocationConfiguration.CustomCname), aws.ToString(cd.RevocationConfiguration.CrlConfiguration.CustomCname)) {
 			return false
 		}
@@ -154,7 +155,7 @@ func IsCertificateAuthorityUpToDate(p *v1beta1.CertificateAuthority, cd types.Ce
 			return false
 		}
 
-		if p.Spec.ForProvider.RevocationConfiguration.Enabled != cd.RevocationConfiguration.CrlConfiguration.Enabled {
+		if p.Spec.ForProvider.RevocationConfiguration.Enabled != ptr.Deref(cd.RevocationConfiguration.CrlConfiguration.Enabled, false) {
 			return false
 		}
 

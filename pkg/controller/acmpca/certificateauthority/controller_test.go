@@ -30,6 +30,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 	acmpca "github.com/crossplane-contrib/provider-aws/pkg/clients/acmpca"
@@ -133,7 +134,7 @@ func TestObserve(t *testing.T) {
 								Status: awsacmpcatypes.CertificateAuthorityStatusActive,
 								RevocationConfiguration: &awsacmpcatypes.RevocationConfiguration{
 									CrlConfiguration: &awsacmpcatypes.CrlConfiguration{
-										Enabled: false,
+										Enabled: ptr.To(false),
 									},
 								},
 								CertificateAuthorityConfiguration: &awsacmpcatypes.CertificateAuthorityConfiguration{
@@ -330,7 +331,7 @@ func TestUpdate(t *testing.T) {
 								Status: awsacmpcatypes.CertificateAuthorityStatusActive,
 								RevocationConfiguration: &awsacmpcatypes.RevocationConfiguration{
 									CrlConfiguration: &awsacmpcatypes.CrlConfiguration{
-										Enabled: false,
+										Enabled: ptr.To(false),
 									},
 								},
 							},

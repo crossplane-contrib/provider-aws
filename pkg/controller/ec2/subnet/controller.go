@@ -148,7 +148,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeSubnet(&cr.Spec.ForProvider, &observed)
 
-	switch observed.State {
+	switch observed.State { //nolint:exhaustive
 	case awsec2types.SubnetStateAvailable:
 		cr.SetConditions(xpv1.Available())
 	case awsec2types.SubnetStatePending:

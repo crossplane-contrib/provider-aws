@@ -25,6 +25,7 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	clientss3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -90,11 +91,11 @@ func generateAWSReplication() *s3types.ReplicationConfiguration {
 				Bucket:                   &bucketName,
 				EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 				Metrics: &s3types.Metrics{
-					EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+					EventThreshold: &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 					Status:         s3types.MetricsStatusEnabled,
 				},
 				ReplicationTime: &s3types.ReplicationTime{
-					Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+					Time:   &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 					Status: s3types.ReplicationTimeStatusEnabled,
 				},
 				StorageClass: s3types.StorageClassOnezoneIa,
@@ -107,7 +108,7 @@ func generateAWSReplication() *s3types.ReplicationConfiguration {
 				},
 			},
 			ID:                      &id,
-			Priority:                priority,
+			Priority:                &priority,
 			SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 			Status:                  s3types.ReplicationRuleStatusEnabled,
 		}},
@@ -519,11 +520,11 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   &bucketName,
 							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &s3types.Metrics{
-								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status:         s3types.MetricsStatusEnabled,
 							},
 							ReplicationTime: &s3types.ReplicationTime{
-								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Time:   &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status: s3types.ReplicationTimeStatusEnabled,
 							},
 							StorageClass: s3types.StorageClassOnezoneIa,
@@ -536,7 +537,7 @@ func TestIsUpToDate(t *testing.T) {
 							},
 						},
 						ID:                      &id,
-						Priority:                priority,
+						Priority:                &priority,
 						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 						Status:                  s3types.ReplicationRuleStatusEnabled,
 					}},
@@ -619,11 +620,11 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   pointer.ToOrNilIfZeroValue("bucket-2"),
 							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &s3types.Metrics{
-								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status:         s3types.MetricsStatusEnabled,
 							},
 							ReplicationTime: &s3types.ReplicationTime{
-								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Time:   &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status: s3types.ReplicationTimeStatusEnabled,
 							},
 							StorageClass: s3types.StorageClassOnezoneIa,
@@ -636,7 +637,7 @@ func TestIsUpToDate(t *testing.T) {
 							},
 						},
 						ID:                      pointer.ToOrNilIfZeroValue("rule-2"),
-						Priority:                priority,
+						Priority:                &priority,
 						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 						Status:                  s3types.ReplicationRuleStatusEnabled,
 					},
@@ -648,11 +649,11 @@ func TestIsUpToDate(t *testing.T) {
 								Bucket:                   pointer.ToOrNilIfZeroValue("bucket-1"),
 								EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 								Metrics: &s3types.Metrics{
-									EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+									EventThreshold: &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 									Status:         s3types.MetricsStatusEnabled,
 								},
 								ReplicationTime: &s3types.ReplicationTime{
-									Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+									Time:   &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 									Status: s3types.ReplicationTimeStatusEnabled,
 								},
 								StorageClass: s3types.StorageClassOnezoneIa,
@@ -665,7 +666,7 @@ func TestIsUpToDate(t *testing.T) {
 								},
 							},
 							ID:                      pointer.ToOrNilIfZeroValue("rule-1"),
-							Priority:                priority,
+							Priority:                &priority,
 							SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 							Status:                  s3types.ReplicationRuleStatusEnabled,
 						}},
@@ -726,11 +727,11 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   &bucketName,
 							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &s3types.Metrics{
-								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status:         s3types.MetricsStatusEnabled,
 							},
 							ReplicationTime: &s3types.ReplicationTime{
-								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Time:   &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status: s3types.ReplicationTimeStatusEnabled,
 							},
 							StorageClass: s3types.StorageClassOnezoneIa,
@@ -752,7 +753,7 @@ func TestIsUpToDate(t *testing.T) {
 							},
 						},
 						ID:                      &id,
-						Priority:                priority,
+						Priority:                &priority,
 						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 						Status:                  s3types.ReplicationRuleStatusEnabled,
 					}},
@@ -801,11 +802,11 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   &bucketName,
 							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &s3types.Metrics{
-								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status:         s3types.MetricsStatusEnabled,
 							},
 							ReplicationTime: &s3types.ReplicationTime{
-								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Time:   &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status: s3types.ReplicationTimeStatusEnabled,
 							},
 							StorageClass: s3types.StorageClassOnezoneIa,
@@ -815,7 +816,7 @@ func TestIsUpToDate(t *testing.T) {
 							Value: "",
 						},
 						ID:                      &id,
-						Priority:                priority,
+						Priority:                &priority,
 						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 						Status:                  s3types.ReplicationRuleStatusEnabled,
 					}},
@@ -869,11 +870,11 @@ func TestIsUpToDate(t *testing.T) {
 							Bucket:                   &bucketName,
 							EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 							Metrics: &s3types.Metrics{
-								EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								EventThreshold: &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status:         s3types.MetricsStatusEnabled,
 							},
 							ReplicationTime: &s3types.ReplicationTime{
-								Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+								Time:   &s3types.ReplicationTimeValue{Minutes: ptr.To(int32(replicationTime))},
 								Status: s3types.ReplicationTimeStatusEnabled,
 							},
 							StorageClass: s3types.StorageClassOnezoneIa,
@@ -886,7 +887,7 @@ func TestIsUpToDate(t *testing.T) {
 							},
 						},
 						ID:                      &id,
-						Priority:                priority,
+						Priority:                &priority,
 						SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 						Status:                  s3types.ReplicationRuleStatusEnabled,
 					}},

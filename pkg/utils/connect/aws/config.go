@@ -154,9 +154,9 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 	}
 }
 
-type awsEndpointResolverAdaptorWithOptions func(service, region string, options interface{}) (aws.Endpoint, error)
+type awsEndpointResolverAdaptorWithOptions func(service, region string, options interface{}) (aws.Endpoint, error) //nolint:staticcheck
 
-func (a awsEndpointResolverAdaptorWithOptions) ResolveEndpoint(service, region string, options ...interface{}) (aws.Endpoint, error) {
+func (a awsEndpointResolverAdaptorWithOptions) ResolveEndpoint(service, region string, options ...interface{}) (aws.Endpoint, error) { //nolint:staticcheck
 	return a(service, region, options)
 }
 
@@ -166,17 +166,17 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //no
 	if pc.Spec.Endpoint == nil {
 		return cfg
 	}
-	cfg.EndpointResolverWithOptions = awsEndpointResolverAdaptorWithOptions(func(service, region string, options interface{}) (aws.Endpoint, error) {
+	cfg.EndpointResolverWithOptions = awsEndpointResolverAdaptorWithOptions(func(service, region string, options interface{}) (aws.Endpoint, error) { //nolint:staticcheck
 		fullURL := ""
 		switch pc.Spec.Endpoint.URL.Type {
 		case URLConfigTypeStatic:
 			if pc.Spec.Endpoint.URL.Static == nil {
-				return aws.Endpoint{}, errors.New("static type is chosen but static field does not have a value")
+				return aws.Endpoint{}, errors.New("static type is chosen but static field does not have a value") //nolint:staticcheck
 			}
 			fullURL = pointer.StringValue(pc.Spec.Endpoint.URL.Static)
 		case URLConfigTypeDynamic:
 			if pc.Spec.Endpoint.URL.Dynamic == nil {
-				return aws.Endpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given")
+				return aws.Endpoint{}, errors.New("dynamic type is chosen but dynamic configuration is not given") //nolint:staticcheck
 			}
 			// NOTE(muvaf): IAM and Route 53 do not have a region.
 			if service == "IAM" || service == "Route 53" {
@@ -185,9 +185,9 @@ func SetResolver(pc *v1beta1.ProviderConfig, cfg *aws.Config) *aws.Config { //no
 				fullURL = fmt.Sprintf("%s://%s.%s.%s", pc.Spec.Endpoint.URL.Dynamic.Protocol, strings.ToLower(service), region, pc.Spec.Endpoint.URL.Dynamic.Host)
 			}
 		default:
-			return aws.Endpoint{}, errors.New("unsupported url config type is chosen")
+			return aws.Endpoint{}, errors.New("unsupported url config type is chosen") //nolint:staticcheck
 		}
-		e := aws.Endpoint{
+		e := aws.Endpoint{ //nolint:staticcheck
 			URL:               fullURL,
 			HostnameImmutable: pointer.BoolValue(pc.Spec.Endpoint.HostnameImmutable),
 			PartitionID:       pointer.StringValue(pc.Spec.Endpoint.PartitionID),
@@ -783,7 +783,7 @@ func SetAssumeRoleOptions(pc *v1beta1.ProviderConfig) func(*stscreds.AssumeRoleO
 				opt.ExternalID = pc.Spec.AssumeRole.ExternalID
 			}
 
-			if pc.Spec.AssumeRole.Tags != nil && len(pc.Spec.AssumeRole.Tags) > 0 {
+			if len(pc.Spec.AssumeRole.Tags) > 0 {
 				for _, t := range pc.Spec.AssumeRole.Tags {
 					opt.Tags = append(
 						opt.Tags,
@@ -791,7 +791,7 @@ func SetAssumeRoleOptions(pc *v1beta1.ProviderConfig) func(*stscreds.AssumeRoleO
 				}
 			}
 
-			if pc.Spec.AssumeRole.TransitiveTagKeys != nil && len(pc.Spec.AssumeRole.TransitiveTagKeys) > 0 {
+			if len(pc.Spec.AssumeRole.TransitiveTagKeys) > 0 {
 				opt.TransitiveTagKeys = pc.Spec.AssumeRole.TransitiveTagKeys
 			}
 		}

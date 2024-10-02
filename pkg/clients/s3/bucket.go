@@ -145,7 +145,7 @@ func GenerateCreateBucketInput(name string, s v1beta1.BucketParameters) *s3.Crea
 		GrantReadACP:               s.GrantReadACP,
 		GrantWrite:                 s.GrantWrite,
 		GrantWriteACP:              s.GrantWriteACP,
-		ObjectLockEnabledForBucket: aws.ToBool(s.ObjectLockEnabledForBucket),
+		ObjectLockEnabledForBucket: s.ObjectLockEnabledForBucket,
 		ObjectOwnership:            s3types.ObjectOwnership(aws.ToString(s.ObjectOwnership)),
 	}
 	if s.LocationConstraint != "us-east-1" {

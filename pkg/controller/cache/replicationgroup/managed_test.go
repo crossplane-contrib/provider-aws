@@ -31,6 +31,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/cache/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/elasticache/fake"
@@ -297,7 +298,7 @@ func TestObserve(t *testing.T) {
 						ReplicationGroups: []types.ReplicationGroup{{
 							ClusterEnabled:        aws.Bool(true),
 							Status:                aws.String(v1beta1.StatusAvailable),
-							ConfigurationEndpoint: &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+							ConfigurationEndpoint: &types.Endpoint{Address: aws.String(host), Port: ptr.To(int32(port))},
 						}},
 					}, nil
 				},
@@ -526,7 +527,7 @@ func TestUpdate(t *testing.T) {
 							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
 							SnapshotWindow:         aws.String(snapshotWindow),
 							ClusterEnabled:         aws.Bool(true),
-							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: ptr.To(int32(port))},
 						}},
 					}, nil
 				},
@@ -572,7 +573,7 @@ func TestUpdate(t *testing.T) {
 							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
 							SnapshotWindow:         aws.String(snapshotWindow),
 							ClusterEnabled:         aws.Bool(true),
-							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: ptr.To(int32(port))},
 						}},
 					}, nil
 				},
@@ -618,7 +619,7 @@ func TestUpdate(t *testing.T) {
 							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
 							SnapshotWindow:         aws.String(snapshotWindow),
 							ClusterEnabled:         aws.Bool(true),
-							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: ptr.To(int32(port))},
 						}},
 					}, nil
 				},
@@ -664,7 +665,7 @@ func TestUpdate(t *testing.T) {
 							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
 							SnapshotWindow:         aws.String(snapshotWindow),
 							ClusterEnabled:         aws.Bool(true),
-							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: ptr.To(int32(port))},
 						}},
 					}, nil
 				},
@@ -710,7 +711,7 @@ func TestUpdate(t *testing.T) {
 							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
 							SnapshotWindow:         aws.String(snapshotWindow),
 							ClusterEnabled:         aws.Bool(true),
-							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: ptr.To(int32(port))},
 						}},
 					}, nil
 				},
@@ -756,7 +757,7 @@ func TestUpdate(t *testing.T) {
 							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
 							SnapshotWindow:         aws.String(snapshotWindow),
 							ClusterEnabled:         aws.Bool(true),
-							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: ptr.To(int32(port))},
 						}},
 					}, nil
 				},
@@ -804,7 +805,7 @@ func TestUpdate(t *testing.T) {
 							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
 							SnapshotWindow:         aws.String(snapshotWindow),
 							ClusterEnabled:         aws.Bool(true),
-							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: ptr.To(int32(port))},
 						}},
 					}, nil
 				},

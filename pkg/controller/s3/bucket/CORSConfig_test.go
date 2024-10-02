@@ -25,6 +25,7 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	clientss3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -55,7 +56,7 @@ func generateAWSCORS() *s3types.CORSConfiguration {
 			AllowedMethods: []string{"GET"},
 			AllowedOrigins: []string{"test.origin"},
 			ExposeHeaders:  []string{"test.expose"},
-			MaxAgeSeconds:  10,
+			MaxAgeSeconds:  ptr.To[int32](10),
 		},
 	},
 	}

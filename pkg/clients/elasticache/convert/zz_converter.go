@@ -32,7 +32,12 @@ func (c *ConverterImpl) DeepCopyAWSCacheCluster(source *types.CacheCluster) *typ
 		}
 		typesCacheCluster.AuthTokenEnabled = pBool2
 		typesCacheCluster.AuthTokenLastModifiedDate = c.pTimeTimeToPTimeTime((*source).AuthTokenLastModifiedDate)
-		typesCacheCluster.AutoMinorVersionUpgrade = (*source).AutoMinorVersionUpgrade
+		var pBool3 *bool
+		if (*source).AutoMinorVersionUpgrade != nil {
+			xbool3 := *(*source).AutoMinorVersionUpgrade
+			pBool3 = &xbool3
+		}
+		typesCacheCluster.AutoMinorVersionUpgrade = pBool3
 		typesCacheCluster.CacheClusterCreateTime = c.pTimeTimeToPTimeTime((*source).CacheClusterCreateTime)
 		var pString2 *string
 		if (*source).CacheClusterId != nil {
@@ -94,6 +99,7 @@ func (c *ConverterImpl) DeepCopyAWSCacheCluster(source *types.CacheCluster) *typ
 			pString8 = &xstring8
 		}
 		typesCacheCluster.EngineVersion = pString8
+		typesCacheCluster.IpDiscovery = types.IpDiscovery((*source).IpDiscovery)
 		var typesLogDeliveryConfigurationList []types.LogDeliveryConfiguration
 		if (*source).LogDeliveryConfigurations != nil {
 			typesLogDeliveryConfigurationList = make([]types.LogDeliveryConfiguration, len((*source).LogDeliveryConfigurations))
@@ -102,6 +108,7 @@ func (c *ConverterImpl) DeepCopyAWSCacheCluster(source *types.CacheCluster) *typ
 			}
 		}
 		typesCacheCluster.LogDeliveryConfigurations = typesLogDeliveryConfigurationList
+		typesCacheCluster.NetworkType = types.NetworkType((*source).NetworkType)
 		typesCacheCluster.NotificationConfiguration = c.pTypesNotificationConfigurationToPTypesNotificationConfiguration((*source).NotificationConfiguration)
 		var pInt32 *int32
 		if (*source).NumCacheNodes != nil {
@@ -134,7 +141,12 @@ func (c *ConverterImpl) DeepCopyAWSCacheCluster(source *types.CacheCluster) *typ
 			pString12 = &xstring12
 		}
 		typesCacheCluster.ReplicationGroupId = pString12
-		typesCacheCluster.ReplicationGroupLogDeliveryEnabled = (*source).ReplicationGroupLogDeliveryEnabled
+		var pBool4 *bool
+		if (*source).ReplicationGroupLogDeliveryEnabled != nil {
+			xbool4 := *(*source).ReplicationGroupLogDeliveryEnabled
+			pBool4 = &xbool4
+		}
+		typesCacheCluster.ReplicationGroupLogDeliveryEnabled = pBool4
 		var typesSecurityGroupMembershipList []types.SecurityGroupMembership
 		if (*source).SecurityGroups != nil {
 			typesSecurityGroupMembershipList = make([]types.SecurityGroupMembership, len((*source).SecurityGroups))
@@ -155,12 +167,13 @@ func (c *ConverterImpl) DeepCopyAWSCacheCluster(source *types.CacheCluster) *typ
 			pString13 = &xstring13
 		}
 		typesCacheCluster.SnapshotWindow = pString13
-		var pBool3 *bool
+		var pBool5 *bool
 		if (*source).TransitEncryptionEnabled != nil {
-			xbool3 := *(*source).TransitEncryptionEnabled
-			pBool3 = &xbool3
+			xbool5 := *(*source).TransitEncryptionEnabled
+			pBool5 = &xbool5
 		}
-		typesCacheCluster.TransitEncryptionEnabled = pBool3
+		typesCacheCluster.TransitEncryptionEnabled = pBool5
+		typesCacheCluster.TransitEncryptionMode = types.TransitEncryptionMode((*source).TransitEncryptionMode)
 		pTypesCacheCluster = &typesCacheCluster
 	}
 	return pTypesCacheCluster
@@ -236,7 +249,12 @@ func (c *ConverterImpl) pTypesEndpointToPTypesEndpoint(source *types.Endpoint) *
 			pString = &xstring
 		}
 		typesEndpoint.Address = pString
-		typesEndpoint.Port = (*source).Port
+		var pInt32 *int32
+		if (*source).Port != nil {
+			xint32 := *(*source).Port
+			pInt32 = &xint32
+		}
+		typesEndpoint.Port = pInt32
 		pTypesEndpoint = &typesEndpoint
 	}
 	return pTypesEndpoint
@@ -314,6 +332,13 @@ func (c *ConverterImpl) pTypesPendingModifiedValuesToPTypesPendingModifiedValues
 			pInt32 = &xint32
 		}
 		typesPendingModifiedValues.NumCacheNodes = pInt32
+		var pBool *bool
+		if (*source).TransitEncryptionEnabled != nil {
+			xbool := *(*source).TransitEncryptionEnabled
+			pBool = &xbool
+		}
+		typesPendingModifiedValues.TransitEncryptionEnabled = pBool
+		typesPendingModifiedValues.TransitEncryptionMode = types.TransitEncryptionMode((*source).TransitEncryptionMode)
 		pTypesPendingModifiedValues = &typesPendingModifiedValues
 	}
 	return pTypesPendingModifiedValues

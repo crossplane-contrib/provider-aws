@@ -58,7 +58,6 @@ var (
 	enabledCloudwatchExports           = []string{"test"}
 	enabledCloudwatchExportsNone       = []string{}
 	engine                             = "5.6.41"
-	falseFlag                          = false
 	iamRole                            = "iamRole"
 	instanceClass                      = "class"
 	kmsID                              = "kms"
@@ -113,7 +112,7 @@ func TestCreatePatch(t *testing.T) {
 		"SameFields": {
 			args: args{
 				db: &rdstypes.DBInstance{
-					AllocatedStorage: allocatedStorage,
+					AllocatedStorage: &allocatedStorage,
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
@@ -130,7 +129,7 @@ func TestCreatePatch(t *testing.T) {
 		"DifferentFields": {
 			args: args{
 				db: &rdstypes.DBInstance{
-					AllocatedStorage: allocatedStorage,
+					AllocatedStorage: &allocatedStorage,
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 					AvailabilityZone: ptr.To("az1"),
@@ -153,7 +152,7 @@ func TestCreatePatch(t *testing.T) {
 			args: args{
 				db: &rdstypes.DBInstance{
 					AvailabilityZone: ptr.To("az1"),
-					MultiAZ:          true,
+					MultiAZ:          ptr.To(true),
 				},
 				p: &v1beta1.RDSInstanceParameters{
 					AvailabilityZone: ptr.To("az2"),
@@ -192,7 +191,7 @@ func TestIsUpToDate(t *testing.T) {
 		"SameFields": {
 			args: args{
 				db: rdstypes.DBInstance{
-					AllocatedStorage: allocatedStorage,
+					AllocatedStorage: &allocatedStorage,
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
@@ -211,7 +210,7 @@ func TestIsUpToDate(t *testing.T) {
 		"IgnoreDeletionOptions": {
 			args: args{
 				db: rdstypes.DBInstance{
-					AllocatedStorage: allocatedStorage,
+					AllocatedStorage: &allocatedStorage,
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
@@ -233,7 +232,7 @@ func TestIsUpToDate(t *testing.T) {
 		"DifferentFields": {
 			args: args{
 				db: rdstypes.DBInstance{
-					AllocatedStorage: allocatedStorage,
+					AllocatedStorage: &allocatedStorage,
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
@@ -468,7 +467,7 @@ func TestIsUpToDate(t *testing.T) {
 			args: args{
 				db: rdstypes.DBInstance{
 					AvailabilityZone: ptr.To("az1"),
-					MultiAZ:          true,
+					MultiAZ:          ptr.To(true),
 				},
 				r: v1beta1.RDSInstance{
 					Spec: v1beta1.RDSInstanceSpec{
@@ -784,7 +783,7 @@ func TestGenerateObservation(t *testing.T) {
 	endpoint := rdstypes.Endpoint{
 		Address:      &address,
 		HostedZoneId: &zone,
-		Port:         port32,
+		Port:         &port32,
 	}
 	pendingModifiedValues := rdstypes.PendingModifiedValues{
 		AllocatedStorage:        &storage32,
@@ -818,9 +817,9 @@ func TestGenerateObservation(t *testing.T) {
 				DBInstanceStatus:                      &status,
 				DBInstanceArn:                         &arn,
 				InstanceCreateTime:                    &createTime,
-				DbInstancePort:                        port32,
+				DbInstancePort:                        &port32,
 				DbiResourceId:                         &resourceID,
-				BackupRetentionPeriod:                 retention32,
+				BackupRetentionPeriod:                 &retention32,
 				EnabledCloudwatchLogsExports:          enabledCloudwatchExports,
 				EnhancedMonitoringResourceArn:         &arn,
 				PerformanceInsightsEnabled:            &trueFlag,
@@ -848,7 +847,7 @@ func TestGenerateObservation(t *testing.T) {
 					Message:    &status,
 					Status:     &status,
 					StatusType: &status,
-					Normal:     normal,
+					Normal:     &normal,
 				}},
 				VpcSecurityGroups: []rdstypes.VpcSecurityGroupMembership{{
 					Status:             &status,
@@ -922,7 +921,7 @@ func TestGenerateObservation(t *testing.T) {
 				DBInstanceStatus:                      &status,
 				DBInstanceArn:                         &arn,
 				InstanceCreateTime:                    &createTime,
-				DbInstancePort:                        port32,
+				DbInstancePort:                        &port32,
 				DbiResourceId:                         &resourceID,
 				EnhancedMonitoringResourceArn:         &arn,
 				PerformanceInsightsEnabled:            &trueFlag,
@@ -946,7 +945,7 @@ func TestGenerateObservation(t *testing.T) {
 					Message:    &status,
 					Status:     &status,
 					StatusType: &status,
-					Normal:     normal,
+					Normal:     &normal,
 				}},
 				VpcSecurityGroups: []rdstypes.VpcSecurityGroupMembership{{
 					Status:             &status,
@@ -1050,19 +1049,19 @@ func TestLateInitialize(t *testing.T) {
 	}{
 		"AllFields": {
 			rds: rdstypes.DBInstance{
-				AllocatedStorage:                   storage32,
+				AllocatedStorage:                   &storage32,
 				DBInstanceClass:                    &instanceClass,
 				Engine:                             &engine,
-				AutoMinorVersionUpgrade:            trueFlag,
+				AutoMinorVersionUpgrade:            &trueFlag,
 				AvailabilityZone:                   &az,
-				BackupRetentionPeriod:              storage32,
+				BackupRetentionPeriod:              &storage32,
 				CACertificateIdentifier:            &name,
 				CharacterSetName:                   &name,
-				CopyTagsToSnapshot:                 trueFlag,
+				CopyTagsToSnapshot:                 &trueFlag,
 				DBClusterIdentifier:                &clusterName,
 				DBName:                             &name,
-				DeletionProtection:                 trueFlag,
-				IAMDatabaseAuthenticationEnabled:   trueFlag,
+				DeletionProtection:                 &trueFlag,
+				IAMDatabaseAuthenticationEnabled:   &trueFlag,
 				PerformanceInsightsEnabled:         &trueFlag,
 				Iops:                               &storage32,
 				KmsKeyId:                           &kmsID,
@@ -1070,15 +1069,15 @@ func TestLateInitialize(t *testing.T) {
 				MasterUsername:                     &username,
 				MonitoringInterval:                 &monitoring32,
 				MonitoringRoleArn:                  &arn,
-				MultiAZ:                            multiAZ,
+				MultiAZ:                            &multiAZ,
 				PerformanceInsightsKMSKeyId:        &kmsID,
 				PerformanceInsightsRetentionPeriod: &retention32,
-				Endpoint:                           &rdstypes.Endpoint{Port: port32},
+				Endpoint:                           &rdstypes.Endpoint{Port: &port32},
 				PreferredBackupWindow:              &window,
 				PreferredMaintenanceWindow:         &window,
 				PromotionTier:                      &tier32,
-				PubliclyAccessible:                 trueFlag,
-				StorageEncrypted:                   trueFlag,
+				PubliclyAccessible:                 &trueFlag,
+				StorageEncrypted:                   &trueFlag,
 				StorageThroughput:                  &storage32,
 				StorageType:                        &storageType,
 				Timezone:                           &zone,
@@ -1146,15 +1145,7 @@ func TestLateInitialize(t *testing.T) {
 			},
 			params: v1beta1.RDSInstanceParameters{},
 			want: v1beta1.RDSInstanceParameters{
-				DBSubnetGroupName:               subnetGroup.DBSubnetGroupName,
-				AutoMinorVersionUpgrade:         &falseFlag,
-				BackupRetentionPeriod:           new(int),
-				CopyTagsToSnapshot:              &falseFlag,
-				DeletionProtection:              &falseFlag,
-				EnableIAMDatabaseAuthentication: &falseFlag,
-				MultiAZ:                         &falseFlag,
-				PubliclyAccessible:              &falseFlag,
-				StorageEncrypted:                &falseFlag,
+				DBSubnetGroupName: subnetGroup.DBSubnetGroupName,
 			},
 		},
 		"SubnetGroupNameNotOverwritten": {
@@ -1165,15 +1156,7 @@ func TestLateInitialize(t *testing.T) {
 				DBSubnetGroupName: &existingName,
 			},
 			want: v1beta1.RDSInstanceParameters{
-				DBSubnetGroupName:               &existingName,
-				AutoMinorVersionUpgrade:         &falseFlag,
-				BackupRetentionPeriod:           new(int),
-				CopyTagsToSnapshot:              &falseFlag,
-				DeletionProtection:              &falseFlag,
-				EnableIAMDatabaseAuthentication: &falseFlag,
-				MultiAZ:                         &falseFlag,
-				PubliclyAccessible:              &falseFlag,
-				StorageEncrypted:                &falseFlag,
+				DBSubnetGroupName: &existingName,
 			},
 		},
 		"SecurityGroupNotOverwritten": {
@@ -1185,15 +1168,6 @@ func TestLateInitialize(t *testing.T) {
 			},
 			want: v1beta1.RDSInstanceParameters{
 				DBSecurityGroups: []string{"newGroup"},
-
-				AutoMinorVersionUpgrade:         &falseFlag,
-				BackupRetentionPeriod:           new(int),
-				CopyTagsToSnapshot:              &falseFlag,
-				DeletionProtection:              &falseFlag,
-				EnableIAMDatabaseAuthentication: &falseFlag,
-				MultiAZ:                         &falseFlag,
-				PubliclyAccessible:              &falseFlag,
-				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"ProcessorFeaturesNotOverwritten": {
@@ -1214,15 +1188,6 @@ func TestLateInitialize(t *testing.T) {
 					Name:  existingName,
 					Value: existingName,
 				}},
-
-				AutoMinorVersionUpgrade:         &falseFlag,
-				BackupRetentionPeriod:           new(int),
-				CopyTagsToSnapshot:              &falseFlag,
-				DeletionProtection:              &falseFlag,
-				EnableIAMDatabaseAuthentication: &falseFlag,
-				MultiAZ:                         &falseFlag,
-				PubliclyAccessible:              &falseFlag,
-				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"VPCSecurityGroupIdsNotOverwritten": {
@@ -1243,15 +1208,6 @@ func TestLateInitialize(t *testing.T) {
 					Name:  existingName,
 					Value: existingName,
 				}},
-
-				AutoMinorVersionUpgrade:         &falseFlag,
-				BackupRetentionPeriod:           new(int),
-				CopyTagsToSnapshot:              &falseFlag,
-				DeletionProtection:              &falseFlag,
-				EnableIAMDatabaseAuthentication: &falseFlag,
-				MultiAZ:                         &falseFlag,
-				PubliclyAccessible:              &falseFlag,
-				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"EngineVersion": {
@@ -1263,30 +1219,12 @@ func TestLateInitialize(t *testing.T) {
 			},
 			want: v1beta1.RDSInstanceParameters{
 				EngineVersion: &engine,
-
-				AutoMinorVersionUpgrade:         &falseFlag,
-				BackupRetentionPeriod:           new(int),
-				CopyTagsToSnapshot:              &falseFlag,
-				DeletionProtection:              &falseFlag,
-				EnableIAMDatabaseAuthentication: &falseFlag,
-				MultiAZ:                         &falseFlag,
-				PubliclyAccessible:              &falseFlag,
-				StorageEncrypted:                &falseFlag,
 			},
 		},
 		"EmptyInstance": {
 			rds:    rdstypes.DBInstance{},
 			params: v1beta1.RDSInstanceParameters{},
-			want: v1beta1.RDSInstanceParameters{
-				AutoMinorVersionUpgrade:         &falseFlag,
-				BackupRetentionPeriod:           new(int),
-				CopyTagsToSnapshot:              &falseFlag,
-				DeletionProtection:              &falseFlag,
-				EnableIAMDatabaseAuthentication: &falseFlag,
-				MultiAZ:                         &falseFlag,
-				PubliclyAccessible:              &falseFlag,
-				StorageEncrypted:                &falseFlag,
-			},
+			want:   v1beta1.RDSInstanceParameters{},
 		},
 	}
 
@@ -1367,8 +1305,8 @@ func TestGenerateModifyDBInstanceInput(t *testing.T) {
 			want: rds.ModifyDBInstanceInput{
 				DBInstanceIdentifier:     &allFieldsName,
 				AllocatedStorage:         &storage32,
-				AllowMajorVersionUpgrade: trueFlag,
-				ApplyImmediately:         trueFlag,
+				AllowMajorVersionUpgrade: &trueFlag,
+				ApplyImmediately:         &trueFlag,
 				AutoMinorVersionUpgrade:  &trueFlag,
 				BackupRetentionPeriod:    &retention32,
 				CACertificateIdentifier:  &name,
