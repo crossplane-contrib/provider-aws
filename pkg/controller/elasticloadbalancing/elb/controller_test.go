@@ -45,7 +45,7 @@ var (
 	securityGroups          = []string{"sg-someid"}
 	subnets                 = []string{"subnet1"}
 	listener                = awselbtypes.Listener{
-		InstancePort:     port80,
+		InstancePort:     &port80,
 		InstanceProtocol: &protocol,
 		LoadBalancerPort: port80,
 		Protocol:         &protocol,

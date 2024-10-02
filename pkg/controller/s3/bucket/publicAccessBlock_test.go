@@ -9,6 +9,7 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	clients3 "github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -101,7 +102,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
 					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
 						return &s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{
-							BlockPublicAcls: false,
+							BlockPublicAcls: ptr.To(false),
 						}}, nil
 					},
 				}),
@@ -127,7 +128,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
 					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
 						return &s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{
-							BlockPublicAcls: true,
+							BlockPublicAcls: ptr.To(true),
 						}}, nil
 					},
 				}),
@@ -150,8 +151,8 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
 					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
 						return &s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{
-							BlockPublicAcls:  true,
-							IgnorePublicAcls: true,
+							BlockPublicAcls:  ptr.To(true),
+							IgnorePublicAcls: ptr.To(true),
 						}}, nil
 					},
 				}),
@@ -174,7 +175,7 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
 					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
 						return &s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{
-							BlockPublicAcls: true,
+							BlockPublicAcls: ptr.To(true),
 						}}, nil
 					},
 				}),

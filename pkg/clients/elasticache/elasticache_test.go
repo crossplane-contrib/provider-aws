@@ -239,7 +239,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 			params: replicationGroupParams(),
 			want: &elasticache.ModifyReplicationGroupInput{
 				ReplicationGroupId:          ptr.To(name),
-				ApplyImmediately:            true,
+				ApplyImmediately:            ptr.To(true),
 				AutomaticFailoverEnabled:    pointer.ToOrNilIfZeroValue(autoFailoverEnabled),
 				CacheNodeType:               pointer.ToOrNilIfZeroValue(cacheNodeType),
 				CacheParameterGroupName:     pointer.ToOrNilIfZeroValue(cacheParameterGroupName),
@@ -264,7 +264,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				ReplicationGroupDescription: description,
 			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ApplyImmediately:            false,
+				ApplyImmediately:            ptr.To(false),
 				ReplicationGroupId:          ptr.To(name),
 				ReplicationGroupDescription: ptr.To(description),
 				CacheNodeType:               ptr.To(cacheNodeType),
@@ -278,7 +278,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				ReplicationGroupDescription: description,
 			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ApplyImmediately:            false,
+				ApplyImmediately:            ptr.To(false),
 				ReplicationGroupId:          ptr.To(name),
 				ReplicationGroupDescription: ptr.To(description),
 				CacheNodeType:               ptr.To(cacheNodeType),
@@ -315,8 +315,8 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
-				ApplyImmediately:   true,
-				NodeGroupCount:     2,
+				ApplyImmediately:   ptr.To(true),
+				NodeGroupCount:     ptr.To[int32](2),
 				ReplicationGroupId: ptr.To(name),
 			},
 		},
@@ -331,8 +331,8 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
-				ApplyImmediately:   true,
-				NodeGroupCount:     2,
+				ApplyImmediately:   ptr.To(true),
+				NodeGroupCount:     ptr.To[int32](2),
 				NodeGroupsToRemove: []string{"ng-01"},
 				ReplicationGroupId: pointer.ToOrNilIfZeroValue(name),
 			},
@@ -351,8 +351,8 @@ func TestNewModifyReplicationGroupShardConfigurationInput(t *testing.T) {
 				},
 			},
 			want: &elasticache.ModifyReplicationGroupShardConfigurationInput{
-				ApplyImmediately:   false,
-				NodeGroupCount:     2,
+				ApplyImmediately:   ptr.To(false),
+				NodeGroupCount:     ptr.To[int32](2),
 				NodeGroupsToRemove: []string{"ng-01"},
 				ReplicationGroupId: pointer.ToOrNilIfZeroValue(name),
 			},
@@ -572,7 +572,7 @@ func TestGenerateObservation(t *testing.T) {
 	clusterEnabled := true
 	configurationEndpoint := &elasticachetypes.Endpoint{
 		Address: pointer.ToOrNilIfZeroValue("istanbul"),
-		Port:    34,
+		Port:    ptr.To[int32](34),
 	}
 	memberClusters := []string{"member-1", "member-2"}
 	status := "creating"
@@ -583,11 +583,11 @@ func TestGenerateObservation(t *testing.T) {
 			Status:      pointer.ToOrNilIfZeroValue("creating"),
 			PrimaryEndpoint: &elasticachetypes.Endpoint{
 				Address: pointer.ToOrNilIfZeroValue("random-12"),
-				Port:    124,
+				Port:    ptr.To[int32](124),
 			},
 			ReaderEndpoint: &elasticachetypes.Endpoint{
 				Address: pointer.ToOrNilIfZeroValue("random-12-ro"),
-				Port:    124,
+				Port:    ptr.To[int32](124),
 			},
 			NodeGroupMembers: []elasticachetypes.NodeGroupMember{
 				{
@@ -597,7 +597,7 @@ func TestGenerateObservation(t *testing.T) {
 					PreferredAvailabilityZone: pointer.ToOrNilIfZeroValue("us-east-1"),
 					ReadEndpoint: &elasticachetypes.Endpoint{
 						Address: pointer.ToOrNilIfZeroValue("random-1"),
-						Port:    23,
+						Port:    ptr.To[int32](23),
 					},
 				},
 			},
@@ -609,7 +609,7 @@ func TestGenerateObservation(t *testing.T) {
 		PrimaryClusterId:        pointer.ToOrNilIfZeroValue("my-coolest-cluster"),
 		Resharding: &elasticachetypes.ReshardingStatus{
 			SlotMigration: &elasticachetypes.SlotMigration{
-				ProgressPercentage: percentage,
+				ProgressPercentage: &percentage,
 			},
 		},
 	}
@@ -634,7 +634,7 @@ func TestGenerateObservation(t *testing.T) {
 				ClusterEnabled:    clusterEnabled,
 				ConfigurationEndpoint: v1beta1.Endpoint{
 					Address: *configurationEndpoint.Address,
-					Port:    int(configurationEndpoint.Port),
+					Port:    int(ptr.Deref(configurationEndpoint.Port, 0)),
 				},
 				MemberClusters: memberClusters,
 				NodeGroups: []v1beta1.NodeGroup{
@@ -683,7 +683,7 @@ func TestGenerateObservation(t *testing.T) {
 				ClusterEnabled:    false,
 				ConfigurationEndpoint: v1beta1.Endpoint{
 					Address: *nodeGroups[0].PrimaryEndpoint.Address,
-					Port:    int(nodeGroups[0].PrimaryEndpoint.Port),
+					Port:    int(ptr.Deref(nodeGroups[0].PrimaryEndpoint.Port, 0)),
 				},
 				MemberClusters: memberClusters,
 				NodeGroups: []v1beta1.NodeGroup{
@@ -1112,7 +1112,7 @@ func TestConnectionEndpoint(t *testing.T) {
 				ClusterEnabled: pointer.ToOrNilIfZeroValue(true),
 				ConfigurationEndpoint: &elasticachetypes.Endpoint{
 					Address: pointer.ToOrNilIfZeroValue(host),
-					Port:    int32(port),
+					Port:    ptr.To[int32](int32(port)),
 				},
 			},
 			want: managed.ConnectionDetails{
@@ -1133,7 +1133,7 @@ func TestConnectionEndpoint(t *testing.T) {
 				NodeGroups: []elasticachetypes.NodeGroup{{
 					PrimaryEndpoint: &elasticachetypes.Endpoint{
 						Address: pointer.ToOrNilIfZeroValue(host),
-						Port:    int32(port),
+						Port:    ptr.To[int32](int32(port)),
 					}},
 				},
 			},

@@ -24,6 +24,7 @@ import (
 	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/acmpca/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
@@ -195,7 +196,7 @@ func TestGenerateRevocationConfiguration(t *testing.T) {
 			out: &types.RevocationConfiguration{
 				CrlConfiguration: &types.CrlConfiguration{
 					CustomCname:  pointer.ToOrNilIfZeroValue(customCname),
-					Enabled:      revocationConfigurationEnabled,
+					Enabled:      &revocationConfigurationEnabled,
 					S3BucketName: pointer.ToOrNilIfZeroValue(s3BucketName),
 				},
 			},
@@ -239,7 +240,7 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 					},
 					RevocationConfiguration: &types.RevocationConfiguration{
 						CrlConfiguration: &types.CrlConfiguration{
-							Enabled: false,
+							Enabled: ptr.To(false),
 						},
 					},
 				},
@@ -285,7 +286,7 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 						CrlConfiguration: &types.CrlConfiguration{
 							CustomCname:  pointer.ToOrNilIfZeroValue(customCname),
 							S3BucketName: pointer.ToOrNilIfZeroValue(s3BucketName),
-							Enabled:      true,
+							Enabled:      ptr.To(true),
 						},
 					},
 					Status: types.CertificateAuthorityStatus(status),

@@ -258,7 +258,7 @@ func (c *custom) getDBEngineVersion(ctx context.Context, selector *svcapitypes.D
 	if err != nil {
 		return nil, err
 	}
-	if resp.DBEngineVersions == nil || len(resp.DBEngineVersions) == 0 || resp.DBEngineVersions[0] == nil {
+	if len(resp.DBEngineVersions) == 0 || resp.DBEngineVersions[0] == nil {
 		return nil, errors.New(errNoDBEngineVersions)
 	}
 	return resp.DBEngineVersions[0], nil

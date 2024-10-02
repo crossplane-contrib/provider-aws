@@ -237,11 +237,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		if _, err := e.client.ConfigureHealthCheck(ctx, &awselb.ConfigureHealthCheckInput{
 			LoadBalancerName: aws.String(meta.GetExternalName(cr)),
 			HealthCheck: &awselbtypes.HealthCheck{
-				HealthyThreshold:   cr.Spec.ForProvider.HealthCheck.HealthyThreshold,
-				Interval:           cr.Spec.ForProvider.HealthCheck.Interval,
+				HealthyThreshold:   &cr.Spec.ForProvider.HealthCheck.HealthyThreshold,
+				Interval:           &cr.Spec.ForProvider.HealthCheck.Interval,
 				Target:             aws.String(cr.Spec.ForProvider.HealthCheck.Target),
-				Timeout:            cr.Spec.ForProvider.HealthCheck.Timeout,
-				UnhealthyThreshold: cr.Spec.ForProvider.HealthCheck.HealthyThreshold,
+				Timeout:            &cr.Spec.ForProvider.HealthCheck.Timeout,
+				UnhealthyThreshold: &cr.Spec.ForProvider.HealthCheck.HealthyThreshold,
 			},
 		}); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)

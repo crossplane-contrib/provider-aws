@@ -31,6 +31,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/database/v1beta1"
@@ -173,21 +174,7 @@ func withStatusAWSBackupRecoveryPointARN(s string) rdsModifier {
 }
 
 func instance(m ...rdsModifier) *v1beta1.RDSInstance {
-	falseFlag := false
-	cr := &v1beta1.RDSInstance{
-		Spec: v1beta1.RDSInstanceSpec{
-			ForProvider: v1beta1.RDSInstanceParameters{
-				AutoMinorVersionUpgrade:         &falseFlag,
-				BackupRetentionPeriod:           new(int),
-				CopyTagsToSnapshot:              &falseFlag,
-				DeletionProtection:              &falseFlag,
-				EnableIAMDatabaseAuthentication: &falseFlag,
-				MultiAZ:                         &falseFlag,
-				PubliclyAccessible:              &falseFlag,
-				StorageEncrypted:                &falseFlag,
-			},
-		},
-	}
+	cr := &v1beta1.RDSInstance{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -254,7 +241,7 @@ func TestObserve(t *testing.T) {
 								{
 									DBInstanceStatus:    aws.String(string(v1beta1.RDSInstanceStateAvailable)),
 									MaxAllocatedStorage: aws.Int32(100),
-									AllocatedStorage:    30,
+									AllocatedStorage:    ptr.To(int32(30)),
 								},
 							},
 						}, nil
@@ -284,7 +271,7 @@ func TestObserve(t *testing.T) {
 							DBInstances: []awsrdstypes.DBInstance{
 								{
 									DBInstanceStatus:          aws.String(string(v1beta1.RDSInstanceStateAvailable)),
-									BackupRetentionPeriod:     10,
+									BackupRetentionPeriod:     ptr.To[int32](10),
 									AwsBackupRecoveryPointArn: aws.String(awsBackupRecoveryPointARN),
 								},
 							},
@@ -315,7 +302,7 @@ func TestObserve(t *testing.T) {
 							DBInstances: []awsrdstypes.DBInstance{
 								{
 									DBInstanceStatus:      aws.String(string(v1beta1.RDSInstanceStateAvailable)),
-									BackupRetentionPeriod: 10,
+									BackupRetentionPeriod: ptr.To[int32](10),
 								},
 							},
 						}, nil
@@ -756,7 +743,7 @@ func TestUpdate(t *testing.T) {
 						return &awsrds.DescribeDBInstancesOutput{
 							DBInstances: []awsrdstypes.DBInstance{{
 								MaxAllocatedStorage: aws.Int32(100),
-								AllocatedStorage:    30,
+								AllocatedStorage:    ptr.To[int32](30),
 							}},
 						}, nil
 					},
@@ -788,7 +775,7 @@ func TestUpdate(t *testing.T) {
 					MockDescribe: func(ctx context.Context, input *awsrds.DescribeDBInstancesInput, opts []func(*awsrds.Options)) (*awsrds.DescribeDBInstancesOutput, error) {
 						return &awsrds.DescribeDBInstancesOutput{
 							DBInstances: []awsrdstypes.DBInstance{{
-								BackupRetentionPeriod:     7,
+								BackupRetentionPeriod:     ptr.To[int32](7),
 								PreferredBackupWindow:     &backupWindow,
 								AwsBackupRecoveryPointArn: aws.String(awsBackupRecoveryPointARN),
 							}},

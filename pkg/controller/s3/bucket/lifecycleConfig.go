@@ -157,26 +157,26 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 		}
 		if local.AbortIncompleteMultipartUpload != nil {
 			rule.AbortIncompleteMultipartUpload = &types.AbortIncompleteMultipartUpload{
-				DaysAfterInitiation: local.AbortIncompleteMultipartUpload.DaysAfterInitiation,
+				DaysAfterInitiation: ptr.To(local.AbortIncompleteMultipartUpload.DaysAfterInitiation),
 			}
 		}
 		if local.Expiration != nil {
 			rule.Expiration = &types.LifecycleExpiration{
-				Days:                      local.Expiration.Days,
-				ExpiredObjectDeleteMarker: local.Expiration.ExpiredObjectDeleteMarker,
+				Days:                      ptr.To(local.Expiration.Days),
+				ExpiredObjectDeleteMarker: ptr.To(local.Expiration.ExpiredObjectDeleteMarker),
 			}
 			if local.Expiration.Date != nil {
 				rule.Expiration.Date = ptr.To(local.Expiration.Date.Time)
 			}
 		}
 		if local.NoncurrentVersionExpiration != nil {
-			rule.NoncurrentVersionExpiration = &types.NoncurrentVersionExpiration{NoncurrentDays: local.NoncurrentVersionExpiration.NoncurrentDays}
+			rule.NoncurrentVersionExpiration = &types.NoncurrentVersionExpiration{NoncurrentDays: ptr.To(local.NoncurrentVersionExpiration.NoncurrentDays)}
 		}
 		if local.NoncurrentVersionTransitions != nil {
 			rule.NoncurrentVersionTransitions = make([]types.NoncurrentVersionTransition, len(local.NoncurrentVersionTransitions))
 			for tIndex, transition := range local.NoncurrentVersionTransitions {
 				rule.NoncurrentVersionTransitions[tIndex] = types.NoncurrentVersionTransition{
-					NoncurrentDays: transition.NoncurrentDays,
+					NoncurrentDays: ptr.To(transition.NoncurrentDays),
 					StorageClass:   types.TransitionStorageClass(transition.StorageClass),
 				}
 			}
@@ -185,7 +185,7 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 			rule.Transitions = make([]types.Transition, len(local.Transitions))
 			for tIndex, transition := range local.Transitions {
 				rule.Transitions[tIndex] = types.Transition{
-					Days:         transition.Days,
+					Days:         ptr.To(transition.Days),
 					StorageClass: types.TransitionStorageClass(transition.StorageClass),
 				}
 				if transition.Date != nil {
@@ -268,7 +268,7 @@ func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1
 
 		if rule.AbortIncompleteMultipartUpload != nil {
 			config.Rules[i].AbortIncompleteMultipartUpload = &v1beta1.AbortIncompleteMultipartUpload{}
-			config.Rules[i].AbortIncompleteMultipartUpload.DaysAfterInitiation = rule.AbortIncompleteMultipartUpload.DaysAfterInitiation
+			config.Rules[i].AbortIncompleteMultipartUpload.DaysAfterInitiation = ptr.Deref(rule.AbortIncompleteMultipartUpload.DaysAfterInitiation, 0)
 		}
 		if rule.Expiration != nil {
 			config.Rules[i].Expiration = &v1beta1.LifecycleExpiration{}
@@ -276,25 +276,25 @@ func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1
 				config.Rules[i].Expiration.Date,
 				rule.Expiration.Date,
 			)
-			config.Rules[i].Expiration.Days = rule.Expiration.Days
-			config.Rules[i].Expiration.ExpiredObjectDeleteMarker = rule.Expiration.ExpiredObjectDeleteMarker
+			config.Rules[i].Expiration.Days = ptr.Deref(rule.Expiration.Days, 0)
+			config.Rules[i].Expiration.ExpiredObjectDeleteMarker = ptr.Deref(rule.Expiration.ExpiredObjectDeleteMarker, false)
 		}
 		if rule.NoncurrentVersionExpiration != nil {
 			config.Rules[i].NoncurrentVersionExpiration = &v1beta1.NoncurrentVersionExpiration{}
-			config.Rules[i].NoncurrentVersionExpiration.NoncurrentDays = rule.NoncurrentVersionExpiration.NoncurrentDays
+			config.Rules[i].NoncurrentVersionExpiration.NoncurrentDays = ptr.Deref(rule.NoncurrentVersionExpiration.NoncurrentDays, 0)
 		}
 		if len(rule.NoncurrentVersionTransitions) != 0 {
 			config.Rules[i].NoncurrentVersionTransitions = make([]v1beta1.NoncurrentVersionTransition, len(rule.NoncurrentVersionTransitions))
 
 			for j, nvt := range rule.NoncurrentVersionTransitions {
-				config.Rules[i].NoncurrentVersionTransitions[j].NoncurrentDays = nvt.NoncurrentDays
+				config.Rules[i].NoncurrentVersionTransitions[j].NoncurrentDays = ptr.Deref(nvt.NoncurrentDays, 0)
 				config.Rules[i].NoncurrentVersionTransitions[j].StorageClass = string(nvt.StorageClass)
 			}
 		}
 		if len(rule.Transitions) != 0 {
 			config.Rules[i].Transitions = make([]v1beta1.Transition, len(rule.Transitions))
 			for j, transition := range rule.Transitions {
-				config.Rules[i].Transitions[j].Days = transition.Days
+				config.Rules[i].Transitions[j].Days = ptr.Deref(transition.Days, 0)
 				config.Rules[i].Transitions[j].Date = pointer.LateInitializeTimePtr(
 					config.Rules[i].Transitions[j].Date,
 					transition.Date,

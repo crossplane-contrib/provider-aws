@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -76,13 +77,13 @@ func (in *PublicAccessBlockClient) Observe(ctx context.Context, cr *v1beta1.Buck
 func isPublicAccessBlockUpToDate(cr *v1beta1.Bucket, external *awss3.GetPublicAccessBlockOutput) bool {
 	if cr.Spec.ForProvider.PublicAccessBlockConfiguration != nil {
 		switch {
-		case pointer.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls) != external.PublicAccessBlockConfiguration.BlockPublicAcls:
+		case !ptr.Equal(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls, external.PublicAccessBlockConfiguration.BlockPublicAcls):
 			return false
-		case pointer.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy) != external.PublicAccessBlockConfiguration.BlockPublicPolicy:
+		case !ptr.Equal(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy, external.PublicAccessBlockConfiguration.BlockPublicPolicy):
 			return false
-		case pointer.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets) != external.PublicAccessBlockConfiguration.RestrictPublicBuckets:
+		case !ptr.Equal(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets, external.PublicAccessBlockConfiguration.RestrictPublicBuckets):
 			return false
-		case pointer.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls) != external.PublicAccessBlockConfiguration.IgnorePublicAcls:
+		case !ptr.Equal(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls, external.PublicAccessBlockConfiguration.IgnorePublicAcls):
 			return false
 		}
 	}
@@ -97,10 +98,10 @@ func (in *PublicAccessBlockClient) CreateOrUpdate(ctx context.Context, cr *v1bet
 	input := &awss3.PutPublicAccessBlockInput{
 		Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		PublicAccessBlockConfiguration: &awss3types.PublicAccessBlockConfiguration{
-			BlockPublicAcls:       pointer.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls),
-			BlockPublicPolicy:     pointer.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy),
-			RestrictPublicBuckets: pointer.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets),
-			IgnorePublicAcls:      pointer.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls),
+			BlockPublicAcls:       cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls,
+			BlockPublicPolicy:     cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy,
+			RestrictPublicBuckets: cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets,
+			IgnorePublicAcls:      cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls,
 		},
 	}
 	_, err := in.client.PutPublicAccessBlock(ctx, input)
@@ -129,10 +130,10 @@ func (in *PublicAccessBlockClient) LateInitialize(ctx context.Context, cr *v1bet
 	if cr.Spec.ForProvider.PublicAccessBlockConfiguration == nil {
 		cr.Spec.ForProvider.PublicAccessBlockConfiguration = &v1beta1.PublicAccessBlockConfiguration{}
 	}
-	cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls = pointer.LateInitialize(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls, pointer.ToOrNilIfZeroValue(external.PublicAccessBlockConfiguration.BlockPublicAcls))
-	cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy = pointer.LateInitialize(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy, pointer.ToOrNilIfZeroValue(external.PublicAccessBlockConfiguration.BlockPublicPolicy))
-	cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets = pointer.LateInitialize(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets, pointer.ToOrNilIfZeroValue(external.PublicAccessBlockConfiguration.RestrictPublicBuckets))
-	cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls = pointer.LateInitialize(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls, pointer.ToOrNilIfZeroValue(external.PublicAccessBlockConfiguration.IgnorePublicAcls))
+	cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls = pointer.LateInitialize(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls, external.PublicAccessBlockConfiguration.BlockPublicAcls)
+	cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy = pointer.LateInitialize(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy, external.PublicAccessBlockConfiguration.BlockPublicPolicy)
+	cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets = pointer.LateInitialize(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets, external.PublicAccessBlockConfiguration.RestrictPublicBuckets)
+	cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls = pointer.LateInitialize(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls, external.PublicAccessBlockConfiguration.IgnorePublicAcls)
 	return nil
 }
 

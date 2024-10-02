@@ -30,6 +30,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/redshift/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
@@ -55,36 +56,36 @@ func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) {
 	if cl == nil {
 		return
 	}
-	in.AllowVersionUpgrade = pointer.LateInitialize(in.AllowVersionUpgrade, &cl.AllowVersionUpgrade)
-	in.AutomatedSnapshotRetentionPeriod = pointer.LateInitialize(in.AutomatedSnapshotRetentionPeriod, &cl.AutomatedSnapshotRetentionPeriod)
+	in.AllowVersionUpgrade = pointer.LateInitialize(in.AllowVersionUpgrade, cl.AllowVersionUpgrade)
+	in.AutomatedSnapshotRetentionPeriod = pointer.LateInitialize(in.AutomatedSnapshotRetentionPeriod, cl.AutomatedSnapshotRetentionPeriod)
 	in.AvailabilityZone = pointer.LateInitialize(in.AvailabilityZone, cl.AvailabilityZone)
 	in.ClusterVersion = pointer.LateInitialize(in.ClusterVersion, cl.ClusterVersion)
 	in.ClusterSubnetGroupName = pointer.LateInitialize(in.ClusterSubnetGroupName, cl.ClusterSubnetGroupName)
 	in.DBName = pointer.LateInitialize(in.DBName, cl.DBName)
-	in.Encrypted = pointer.LateInitialize(in.Encrypted, &cl.Encrypted)
-	in.EnhancedVPCRouting = pointer.LateInitialize(in.EnhancedVPCRouting, &cl.EnhancedVpcRouting)
+	in.Encrypted = pointer.LateInitialize(in.Encrypted, cl.Encrypted)
+	in.EnhancedVPCRouting = pointer.LateInitialize(in.EnhancedVPCRouting, cl.EnhancedVpcRouting)
 	in.KMSKeyID = pointer.LateInitialize(in.KMSKeyID, cl.KmsKeyId)
 	in.MaintenanceTrackName = pointer.LateInitialize(in.MaintenanceTrackName, cl.MaintenanceTrackName)
-	in.ManualSnapshotRetentionPeriod = pointer.LateInitialize(in.ManualSnapshotRetentionPeriod, &cl.ManualSnapshotRetentionPeriod)
+	in.ManualSnapshotRetentionPeriod = pointer.LateInitialize(in.ManualSnapshotRetentionPeriod, cl.ManualSnapshotRetentionPeriod)
 	in.MasterUsername = pointer.LateInitializeValueFromPtr(in.MasterUsername, cl.MasterUsername)
 	in.NodeType = pointer.LateInitializeValueFromPtr(in.NodeType, cl.NodeType)
-	in.NumberOfNodes = pointer.LateInitialize(in.NumberOfNodes, &cl.NumberOfNodes)
+	in.NumberOfNodes = pointer.LateInitialize(in.NumberOfNodes, cl.NumberOfNodes)
 	in.PreferredMaintenanceWindow = pointer.LateInitialize(in.PreferredMaintenanceWindow, cl.PreferredMaintenanceWindow)
-	in.PubliclyAccessible = pointer.LateInitialize(in.PubliclyAccessible, &cl.PubliclyAccessible)
+	in.PubliclyAccessible = pointer.LateInitialize(in.PubliclyAccessible, cl.PubliclyAccessible)
 	in.SnapshotScheduleIdentifier = pointer.LateInitialize(in.SnapshotScheduleIdentifier, cl.SnapshotScheduleIdentifier)
 
 	// If ClusterType is not provided by the user then set it to it's default value.
 	// As redshift.Cluster type doesn't hold this info.
 	if in.ClusterType == nil {
-		if cl.NumberOfNodes > 1 {
+		numNodes := ptr.Deref(cl.NumberOfNodes, 0)
+		if numNodes > 1 {
 			in.ClusterType = aws.String("multi-node")
-		}
-		if cl.NumberOfNodes == 1 {
+		} else if numNodes == 1 {
 			in.ClusterType = aws.String("single-node")
 		}
 	}
 	if cl.Endpoint != nil {
-		in.Port = pointer.LateInitialize(in.Port, &cl.Endpoint.Port)
+		in.Port = pointer.LateInitialize(in.Port, cl.Endpoint.Port)
 	}
 	if cl.HsmStatus != nil {
 		in.HSMClientCertificateIdentifier = pointer.LateInitialize(in.HSMClientCertificateIdentifier, cl.HsmStatus.HsmClientCertificateIdentifier)
@@ -138,10 +139,11 @@ func IsUpToDate(p v1alpha1.ClusterParameters, cl redshifttypes.Cluster) (bool, e
 	}
 
 	// Since redshift.Cluster doesn't have a ClusterType field therefore determine its value based upon number of nodes.
-	if cl.NumberOfNodes > 1 && aws.ToString(p.ClusterType) != "multi-node" {
+	numNodes := ptr.Deref(cl.NumberOfNodes, 0)
+	if numNodes > 1 && aws.ToString(p.ClusterType) != "multi-node" {
 		return false, nil
 	}
-	if cl.NumberOfNodes == 1 && aws.ToString(p.ClusterType) != "single-node" {
+	if numNodes == 1 && aws.ToString(p.ClusterType) != "single-node" {
 		return false, nil
 	}
 
@@ -321,7 +323,7 @@ func GenerateDeleteClusterInput(p *v1alpha1.ClusterParameters, cid *string) *red
 		ClusterIdentifier:                   cid,
 		FinalClusterSnapshotIdentifier:      p.FinalClusterSnapshotIdentifier,
 		FinalClusterSnapshotRetentionPeriod: p.FinalClusterSnapshotRetentionPeriod,
-		SkipFinalClusterSnapshot:            aws.ToBool(p.SkipFinalClusterSnapshot),
+		SkipFinalClusterSnapshot:            p.SkipFinalClusterSnapshot,
 	}
 }
 
@@ -409,19 +411,19 @@ func GenerateObservation(in redshifttypes.Cluster) v1alpha1.ClusterObservation {
 	if in.ClusterSnapshotCopyStatus != nil {
 		o.ClusterSnapshotCopyStatus = v1alpha1.ClusterSnapshotCopyStatus{
 			DestinationRegion:             aws.ToString(in.ClusterSnapshotCopyStatus.DestinationRegion),
-			ManualSnapshotRetentionPeriod: in.ClusterSnapshotCopyStatus.ManualSnapshotRetentionPeriod,
-			RetentionPeriod:               in.ClusterSnapshotCopyStatus.RetentionPeriod,
+			ManualSnapshotRetentionPeriod: ptr.Deref(in.ClusterSnapshotCopyStatus.ManualSnapshotRetentionPeriod, 0),
+			RetentionPeriod:               ptr.Deref(in.ClusterSnapshotCopyStatus.RetentionPeriod, 0),
 			SnapshotCopyGrantName:         aws.ToString(in.ClusterSnapshotCopyStatus.SnapshotCopyGrantName),
 		}
 	}
 	if in.DataTransferProgress != nil {
 		o.DataTransferProgress = v1alpha1.DataTransferProgress{
 			CurrentRateInMegaBytesPerSecond:    int(aws.ToFloat64(in.DataTransferProgress.CurrentRateInMegaBytesPerSecond)),
-			DataTransferredInMegaBytes:         in.DataTransferProgress.DataTransferredInMegaBytes,
+			DataTransferredInMegaBytes:         ptr.Deref(in.DataTransferProgress.DataTransferredInMegaBytes, 0),
 			ElapsedTimeInSeconds:               aws.ToInt64(in.DataTransferProgress.ElapsedTimeInSeconds),
 			EstimatedTimeToCompletionInSeconds: aws.ToInt64(in.DataTransferProgress.EstimatedTimeToCompletionInSeconds),
 			Status:                             aws.ToString(in.DataTransferProgress.Status),
-			TotalDataInMegaBytes:               in.DataTransferProgress.TotalDataInMegaBytes,
+			TotalDataInMegaBytes:               ptr.Deref(in.DataTransferProgress.TotalDataInMegaBytes, 0),
 		}
 	}
 	if in.ElasticIpStatus != nil {
@@ -433,7 +435,7 @@ func GenerateObservation(in redshifttypes.Cluster) v1alpha1.ClusterObservation {
 	if in.Endpoint != nil {
 		o.Endpoint = v1alpha1.Endpoint{
 			Address: aws.ToString(in.Endpoint.Address),
-			Port:    in.Endpoint.Port,
+			Port:    ptr.Deref(in.Endpoint.Port, 0),
 		}
 	}
 	if in.HsmStatus != nil {

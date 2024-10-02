@@ -28,6 +28,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/redshift/v1alpha1"
@@ -120,12 +121,18 @@ func TestObserve(t *testing.T) {
 						return &awsredshift.DescribeClustersOutput{
 							Clusters: []awsredshifttypes.Cluster{
 								{
-									ClusterStatus:     aws.String(string(v1alpha1.StateAvailable)),
-									NumberOfNodes:     1,
-									ClusterIdentifier: &name,
-									MasterUsername:    &masterUsername,
-									NodeType:          &nodeType,
-									VpcSecurityGroups: vpcSecurityGroups,
+									ClusterStatus:                    aws.String(string(v1alpha1.StateAvailable)),
+									NumberOfNodes:                    ptr.To[int32](1),
+									ClusterIdentifier:                &name,
+									MasterUsername:                   &masterUsername,
+									NodeType:                         &nodeType,
+									VpcSecurityGroups:                vpcSecurityGroups,
+									AllowVersionUpgrade:              aws.Bool(false),
+									AutomatedSnapshotRetentionPeriod: aws.Int32(0),
+									Encrypted:                        aws.Bool(false),
+									EnhancedVpcRouting:               aws.Bool(false),
+									ManualSnapshotRetentionPeriod:    aws.Int32(0),
+									PubliclyAccessible:               aws.Bool(false),
 								},
 							},
 						}, nil
@@ -151,12 +158,18 @@ func TestObserve(t *testing.T) {
 						return &awsredshift.DescribeClustersOutput{
 							Clusters: []awsredshifttypes.Cluster{
 								{
-									ClusterStatus:     aws.String(string(v1alpha1.StateDeleting)),
-									NumberOfNodes:     1,
-									ClusterIdentifier: &name,
-									MasterUsername:    &masterUsername,
-									NodeType:          &nodeType,
-									VpcSecurityGroups: vpcSecurityGroups,
+									ClusterStatus:                    aws.String(string(v1alpha1.StateDeleting)),
+									NumberOfNodes:                    ptr.To[int32](1),
+									ClusterIdentifier:                &name,
+									MasterUsername:                   &masterUsername,
+									NodeType:                         &nodeType,
+									VpcSecurityGroups:                vpcSecurityGroups,
+									AllowVersionUpgrade:              aws.Bool(false),
+									AutomatedSnapshotRetentionPeriod: aws.Int32(0),
+									Encrypted:                        aws.Bool(false),
+									EnhancedVpcRouting:               aws.Bool(false),
+									ManualSnapshotRetentionPeriod:    aws.Int32(0),
+									PubliclyAccessible:               aws.Bool(false),
 								},
 							},
 						}, nil
@@ -182,12 +195,18 @@ func TestObserve(t *testing.T) {
 						return &awsredshift.DescribeClustersOutput{
 							Clusters: []awsredshifttypes.Cluster{
 								{
-									ClusterStatus:     aws.String(string(v1alpha1.StateFailed)),
-									NumberOfNodes:     1,
-									ClusterIdentifier: &name,
-									MasterUsername:    &masterUsername,
-									NodeType:          &nodeType,
-									VpcSecurityGroups: vpcSecurityGroups,
+									ClusterStatus:                    aws.String(string(v1alpha1.StateFailed)),
+									NumberOfNodes:                    ptr.To[int32](1),
+									ClusterIdentifier:                &name,
+									MasterUsername:                   &masterUsername,
+									NodeType:                         &nodeType,
+									VpcSecurityGroups:                vpcSecurityGroups,
+									AllowVersionUpgrade:              aws.Bool(false),
+									AutomatedSnapshotRetentionPeriod: aws.Int32(0),
+									Encrypted:                        aws.Bool(false),
+									EnhancedVpcRouting:               aws.Bool(false),
+									ManualSnapshotRetentionPeriod:    aws.Int32(0),
+									PubliclyAccessible:               aws.Bool(false),
 								},
 							},
 						}, nil
@@ -243,12 +262,18 @@ func TestObserve(t *testing.T) {
 						return &awsredshift.DescribeClustersOutput{
 							Clusters: []awsredshifttypes.Cluster{
 								{
-									ClusterStatus:     aws.String(v1alpha1.StateCreating),
-									NumberOfNodes:     1,
-									ClusterIdentifier: &name,
-									MasterUsername:    &masterUsername,
-									NodeType:          &nodeType,
-									VpcSecurityGroups: vpcSecurityGroups,
+									ClusterStatus:                    aws.String(v1alpha1.StateCreating),
+									NumberOfNodes:                    ptr.To[int32](1),
+									ClusterIdentifier:                &name,
+									MasterUsername:                   &masterUsername,
+									NodeType:                         &nodeType,
+									VpcSecurityGroups:                vpcSecurityGroups,
+									AllowVersionUpgrade:              aws.Bool(false),
+									AutomatedSnapshotRetentionPeriod: aws.Int32(0),
+									Encrypted:                        aws.Bool(false),
+									EnhancedVpcRouting:               aws.Bool(false),
+									ManualSnapshotRetentionPeriod:    aws.Int32(0),
+									PubliclyAccessible:               aws.Bool(false),
 								},
 							},
 						}, nil

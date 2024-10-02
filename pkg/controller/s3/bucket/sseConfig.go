@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3"
@@ -76,7 +77,7 @@ func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.B
 		if string(outputRule.SSEAlgorithm) != Rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm {
 			return NeedsUpdate, nil
 		}
-		if external.ServerSideEncryptionConfiguration.Rules[i].BucketKeyEnabled != Rule.BucketKeyEnabled {
+		if ptr.Deref(external.ServerSideEncryptionConfiguration.Rules[i].BucketKeyEnabled, false) != Rule.BucketKeyEnabled {
 			return NeedsUpdate, nil
 		}
 	}
@@ -144,7 +145,7 @@ func GeneratePutBucketEncryptionInput(name string, config *v1beta1.ServerSideEnc
 	}
 	for i, rule := range config.Rules {
 		bei.ServerSideEncryptionConfiguration.Rules[i] = types.ServerSideEncryptionRule{
-			BucketKeyEnabled: rule.BucketKeyEnabled,
+			BucketKeyEnabled: ptr.To(rule.BucketKeyEnabled),
 			ApplyServerSideEncryptionByDefault: &types.ServerSideEncryptionByDefault{
 				KMSMasterKeyID: rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID,
 				SSEAlgorithm:   types.ServerSideEncryption(rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm),

@@ -321,11 +321,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -357,11 +357,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -418,11 +418,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -454,11 +454,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -518,15 +518,15 @@ func TestCreate(t *testing.T) {
 						var prefixListID *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
-						if input.IpPermissions[0].PrefixListIds != nil && len(input.IpPermissions[0].PrefixListIds) > 0 {
+						if len(input.IpPermissions[0].PrefixListIds) > 0 {
 							prefixListID = input.IpPermissions[0].PrefixListIds[0].PrefixListId
 							description = input.IpPermissions[0].PrefixListIds[0].Description
 						}
@@ -560,15 +560,15 @@ func TestCreate(t *testing.T) {
 						var prefixListID *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
-						if input.IpPermissions[0].PrefixListIds != nil && len(input.IpPermissions[0].PrefixListIds) > 0 {
+						if len(input.IpPermissions[0].PrefixListIds) > 0 {
 							prefixListID = input.IpPermissions[0].PrefixListIds[0].PrefixListId
 							description = input.IpPermissions[0].PrefixListIds[0].Description
 						}
@@ -628,11 +628,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -664,11 +664,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -727,11 +727,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -763,11 +763,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -824,11 +824,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -860,11 +860,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -924,15 +924,15 @@ func TestCreate(t *testing.T) {
 						var prefixListID *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
-						if input.IpPermissions[0].PrefixListIds != nil && len(input.IpPermissions[0].PrefixListIds) > 0 {
+						if len(input.IpPermissions[0].PrefixListIds) > 0 {
 							prefixListID = input.IpPermissions[0].PrefixListIds[0].PrefixListId
 							description = input.IpPermissions[0].PrefixListIds[0].Description
 						}
@@ -966,15 +966,15 @@ func TestCreate(t *testing.T) {
 						var prefixListID *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
-						if input.IpPermissions[0].PrefixListIds != nil && len(input.IpPermissions[0].PrefixListIds) > 0 {
+						if len(input.IpPermissions[0].PrefixListIds) > 0 {
 							prefixListID = input.IpPermissions[0].PrefixListIds[0].PrefixListId
 							description = input.IpPermissions[0].PrefixListIds[0].Description
 						}
@@ -1034,11 +1034,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
@@ -1070,11 +1070,11 @@ func TestCreate(t *testing.T) {
 						var cidrIpv4 *string = nil
 						var description *string = nil
 						var refSg *types.ReferencedSecurityGroup = nil
-						if input.IpPermissions[0].Ipv6Ranges != nil && len(input.IpPermissions[0].Ipv6Ranges) > 0 {
+						if len(input.IpPermissions[0].Ipv6Ranges) > 0 {
 							cidrIpv6 = input.IpPermissions[0].Ipv6Ranges[0].CidrIpv6
 							description = input.IpPermissions[0].Ipv6Ranges[0].Description
 						}
-						if input.IpPermissions[0].IpRanges != nil && len(input.IpPermissions[0].IpRanges) > 0 {
+						if len(input.IpPermissions[0].IpRanges) > 0 {
 							cidrIpv4 = input.IpPermissions[0].IpRanges[0].CidrIp
 							description = input.IpPermissions[0].IpRanges[0].Description
 						}
