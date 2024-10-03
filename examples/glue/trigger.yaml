@@ -1,0 +1,19 @@
+---
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Trigger
+metadata:
+  name: glue-trigger
+spec:
+  forProvider:
+    region: eu-central-1
+    actions:
+      - jobName: "job-name"
+        timeout: 1
+    description: "Trigger for Glue"
+    triggerType: SCHEDULED
+    schedule: "cron(*/5 * * * ? *)"
+    startOnCreation: false
+    tags:
+      created-by: crossplane
+  providerConfigRef:
+    name: example

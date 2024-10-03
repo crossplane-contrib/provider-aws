@@ -185,11 +185,15 @@ type BasicCatalogTarget struct {
 // +kubebuilder:skipversion
 type BatchStopJobRunError struct {
 	JobName *string `json:"jobName,omitempty"`
+
+	JobRunID *string `json:"jobRunID,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type BatchStopJobRunSuccessfulSubmission struct {
 	JobName *string `json:"jobName,omitempty"`
+
+	JobRunID *string `json:"jobRunID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -206,8 +210,15 @@ type Blueprint struct {
 }
 
 // +kubebuilder:skipversion
+type BlueprintDetails struct {
+	RunID *string `json:"runID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type BlueprintRun struct {
 	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
+
+	RunID *string `json:"runID,omitempty"`
 
 	StartedOn *metav1.Time `json:"startedOn,omitempty"`
 
@@ -547,9 +558,15 @@ type ColumnStatistics struct {
 
 // +kubebuilder:skipversion
 type Condition struct {
+	CrawlState *string `json:"crawlState,omitempty"`
+
 	CrawlerName *string `json:"crawlerName,omitempty"`
 
 	JobName *string `json:"jobName,omitempty"`
+
+	LogicalOperator *string `json:"logicalOperator,omitempty"`
+
+	State *string `json:"state,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -611,6 +628,8 @@ type Crawl struct {
 	LogStream *string `json:"logStream,omitempty"`
 
 	StartedOn *metav1.Time `json:"startedOn,omitempty"`
+
+	State *string `json:"state,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1242,6 +1261,13 @@ type EvaluateDataQualityMultiFrame struct {
 }
 
 // +kubebuilder:skipversion
+type EventBatchingCondition struct {
+	BatchSize *int64 `json:"batchSize,omitempty"`
+
+	BatchWindow *int64 `json:"batchWindow,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ExecutionProperty struct {
 	MaxConcurrentRuns *int64 `json:"maxConcurrentRuns,omitempty"`
 }
@@ -1537,7 +1563,11 @@ type JobRun struct {
 
 	GlueVersion *string `json:"glueVersion,omitempty"`
 
+	ID *string `json:"id,omitempty"`
+
 	JobName *string `json:"jobName,omitempty"`
+
+	JobRunState *string `json:"jobRunState,omitempty"`
 
 	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
 
@@ -1548,6 +1578,8 @@ type JobRun struct {
 	NotificationProperty *NotificationProperty `json:"notificationProperty,omitempty"`
 
 	NumberOfWorkers *int64 `json:"numberOfWorkers,omitempty"`
+
+	PreviousRunID *string `json:"previousRunID,omitempty"`
 
 	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
 
@@ -2061,6 +2093,15 @@ type PostgreSQLCatalogTarget struct {
 // +kubebuilder:skipversion
 type Predecessor struct {
 	JobName *string `json:"jobName,omitempty"`
+
+	RunID *string `json:"runID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Predicate struct {
+	Conditions []*Condition `json:"conditions,omitempty"`
+
+	Logical *string `json:"logical,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2918,23 +2959,49 @@ type TransformFilterCriteria struct {
 }
 
 // +kubebuilder:skipversion
-type Trigger struct {
-	Description *string `json:"description,omitempty"`
-
-	Name *string `json:"name,omitempty"`
-
-	Schedule *string `json:"schedule,omitempty"`
-
-	WorkflowName *string `json:"workflowName,omitempty"`
+type TriggerNodeDetails struct {
+	// Information about a specific trigger.
+	Trigger *Trigger_SDK `json:"trigger,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type TriggerUpdate struct {
+	Actions []*Action `json:"actions,omitempty"`
+
 	Description *string `json:"description,omitempty"`
+	// Batch condition that must be met (specified number of events received or
+	// batch time window expired) before EventBridge event trigger fires.
+	EventBatchingCondition *EventBatchingCondition `json:"eventBatchingCondition,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+	// Defines the predicate of the trigger, which determines when it fires.
+	Predicate *Predicate `json:"predicate,omitempty"`
 
 	Schedule *string `json:"schedule,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Trigger_SDK struct {
+	Actions []*Action `json:"actions,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+	// Batch condition that must be met (specified number of events received or
+	// batch time window expired) before EventBridge event trigger fires.
+	EventBatchingCondition *EventBatchingCondition `json:"eventBatchingCondition,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+	// Defines the predicate of the trigger, which determines when it fires.
+	Predicate *Predicate `json:"predicate,omitempty"`
+
+	Schedule *string `json:"schedule,omitempty"`
+
+	State *string `json:"state,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
+
+	WorkflowName *string `json:"workflowName,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -3053,7 +3120,11 @@ type WorkflowRun struct {
 
 	Name *string `json:"name,omitempty"`
 
+	PreviousRunID *string `json:"previousRunID,omitempty"`
+
 	StartedOn *metav1.Time `json:"startedOn,omitempty"`
+
+	WorkflowRunID *string `json:"workflowRunID,omitempty"`
 }
 
 // +kubebuilder:skipversion
