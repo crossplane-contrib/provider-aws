@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -66,6 +67,9 @@ func main() {
 		// *very* verbose even at info level, so we only provide it a real
 		// logger when we're running in debug mode.
 		ctrl.SetLogger(zl)
+	} else {
+		// explicitly provide a no-op logger by default, otherwise controller-runtime gives a warning
+		ctrl.SetLogger(zap.New(zap.WriteTo(io.Discard)))
 	}
 
 	log.Debug("Starting", "sync-period", syncInterval.String())
