@@ -36,6 +36,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
@@ -231,6 +232,20 @@ func GenerateUpdateClusterConfigInputForVPC(name string, p *v1beta1.ClusterParam
 	return u
 }
 
+// GenerateUpdateClusterConfigInputForAccessConfig from ClusterParameters.
+func GenerateUpdateClusterConfigInputForAccessConfig(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
+	u := &eks.UpdateClusterConfigInput{
+		Name: pointer.ToOrNilIfZeroValue(name),
+	}
+
+	if p.AccessConfig != nil && p.AccessConfig.AuthenticationMode != nil {
+		u.AccessConfig = &ekstypes.UpdateAccessConfigRequest{
+			AuthenticationMode: ekstypes.AuthenticationMode(string(*p.AccessConfig.AuthenticationMode)),
+		}
+	}
+	return u
+}
+
 // GenerateObservation is used to produce v1beta1.ClusterObservation from
 // ekstypes.Cluster.
 func GenerateObservation(cluster *ekstypes.Cluster) v1beta1.ClusterObservation {
@@ -343,6 +358,11 @@ func LateInitialize(in *v1beta1.ClusterParameters, cluster *ekstypes.Cluster) { 
 		in.KubernetesNetworkConfig = &v1beta1.KubernetesNetworkConfigRequest{
 			ServiceIpv4Cidr: pointer.StringValue(cluster.KubernetesNetworkConfig.ServiceIpv4Cidr),
 			IPFamily:        v1beta1.IPFamily(cluster.KubernetesNetworkConfig.IpFamily),
+		}
+	}
+	if cluster.AccessConfig != nil {
+		in.AccessConfig = &v1beta1.AccessConfig{
+			AuthenticationMode: ptr.To(v1beta1.AuthenticationMode(string(cluster.AccessConfig.AuthenticationMode))),
 		}
 	}
 

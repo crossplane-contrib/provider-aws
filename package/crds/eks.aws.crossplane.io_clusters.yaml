@@ -74,6 +74,17 @@ spec:
                   ClusterParameters define the desired state of an AWS Elastic Kubernetes
                   Service cluster.
                 properties:
+                  accessConfig:
+                    description: The access configuration for the cluster.
+                    properties:
+                      authenticationMode:
+                        description: The desired authentication mode for the cluster.
+                        enum:
+                        - API
+                        - API_AND_CONFIG_MAP
+                        - CONFIG_MAP
+                        type: string
+                    type: object
                   encryptionConfig:
                     description: The encryption configuration for the cluster.
                     items:

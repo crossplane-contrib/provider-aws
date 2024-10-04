@@ -27,6 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1beta1"
 )
@@ -372,6 +373,70 @@ func TestGenerateUpdateClusterConfigInputForVPC(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got := GenerateUpdateClusterConfigInputForVPC(tc.args.name, tc.args.p)
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateUpdateClusterConfigInputForAccessConfig(t *testing.T) {
+	type args struct {
+		name string
+		p    *v1beta1.ClusterParameters
+	}
+
+	cases := map[string]struct {
+		args args
+		want *eks.UpdateClusterConfigInput
+	}{
+		"AllFields": {
+			args: args{
+				name: clusterName,
+				p: &v1beta1.ClusterParameters{
+					EncryptionConfig: []v1beta1.EncryptionConfig{
+						{
+							Provider: v1beta1.Provider{
+								KeyArn: keyArn,
+							},
+							Resources: []string{"secrets"},
+						},
+					},
+					Logging: &v1beta1.Logging{
+						ClusterLogging: []v1beta1.LogSetup{
+							{
+								Enabled: &falseVal,
+								Types: []v1beta1.LogType{
+									v1beta1.LogTypeAPI,
+								},
+							},
+						},
+					},
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+					},
+					RoleArn: roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+					AccessConfig: &v1beta1.AccessConfig{
+						AuthenticationMode: ptr.To(v1beta1.AuthenticationModeApiAndConfigMap),
+					},
+				},
+			},
+			want: &eks.UpdateClusterConfigInput{
+				Name: &clusterName,
+				AccessConfig: &ekstypes.UpdateAccessConfigRequest{
+					AuthenticationMode: ekstypes.AuthenticationModeApiAndConfigMap,
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GenerateUpdateClusterConfigInputForAccessConfig(tc.args.name, tc.args.p)
 			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
