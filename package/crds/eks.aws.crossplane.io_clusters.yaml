@@ -765,6 +765,13 @@ spec:
               atProvider:
                 description: ClusterObservation is the observed state of a cluster.
                 properties:
+                  accessConfig:
+                    description: The access configuration for the cluster.
+                    properties:
+                      authenticationMode:
+                        description: The authentication mode used for the cluster.
+                        type: string
+                    type: object
                   arn:
                     description: The Amazon Resource Name (ARN) of the cluster.
                     type: string
