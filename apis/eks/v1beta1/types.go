@@ -360,6 +360,9 @@ type ClusterObservation struct {
 	// in the Amazon EKS User Guide.
 	ResourcesVpcConfig VpcConfigResponse `json:"resourcesVpcConfig,omitempty"`
 
+	// The access configuration for the cluster.
+	AccessConfig AccessConfigResponse `json:"accessConfig,omitempty"`
+
 	// The current status of the cluster.
 	Status ClusterStatusType `json:"status,omitempty"`
 }
@@ -462,6 +465,12 @@ type VpcConfigResponse struct {
 
 	// The VPC associated with your cluster.
 	VpcID string `json:"vpcId,omitempty"`
+}
+
+// AccessConfigResponse is the observed access configuration for a cluster.
+type AccessConfigResponse struct {
+	// The authentication mode used for the cluster.
+	AuthenticationMode AuthenticationMode `json:"authenticationMode,omitempty"`
 }
 
 // A ClusterSpec defines the desired state of an EKS Cluster.
