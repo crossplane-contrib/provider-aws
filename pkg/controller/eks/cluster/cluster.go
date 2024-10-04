@@ -219,6 +219,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForLogging(meta.GetExternalName(cr), patch))
 		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
+	if patch.AccessConfig != nil {
+		_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForAccessConfig(meta.GetExternalName(cr), patch))
+		return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
+	}
 	_, err = e.client.UpdateClusterConfig(ctx, eks.GenerateUpdateClusterConfigInputForVPC(meta.GetExternalName(cr), patch))
 	return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }

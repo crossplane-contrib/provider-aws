@@ -45,9 +45,29 @@ const (
 	LogTypeScheduler         LogType = "scheduler"
 )
 
+// AuthenticationMode specifies the authentication mode of the cluster
+type AuthenticationMode string
+
+const (
+	AuthenticationModeApi             AuthenticationMode = "API"
+	AuthenticationModeApiAndConfigMap AuthenticationMode = "API_AND_CONFIG_MAP"
+	AuthenticationModeConfigMap       AuthenticationMode = "CONFIG_MAP"
+)
+
+type AccessConfig struct {
+	// The desired authentication mode for the cluster.
+	// +kubebuilder:validation:Enum=API;API_AND_CONFIG_MAP;CONFIG_MAP
+	// +optional
+	AuthenticationMode *AuthenticationMode `json:"authenticationMode,omitempty"`
+}
+
 // ClusterParameters define the desired state of an AWS Elastic Kubernetes
 // Service cluster.
 type ClusterParameters struct {
+	// The access configuration for the cluster.
+	// +optional
+	AccessConfig *AccessConfig `json:"accessConfig,omitempty"`
+
 	// TODO(muvaf): Region is a required field but in order to keep backward compatibility
 	// with old Provider type and not bear the cost of bumping to v1beta2, we're
 	// keeping it optional for now. Reconsider before v1beta2 or v1.
