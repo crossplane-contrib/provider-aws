@@ -8,7 +8,6 @@ ignore:
     - Schema
     - Script
     - Table
-    - Trigger
     - UserDefinedFunction
     - Workflow
     - Partition
@@ -34,6 +33,9 @@ ignore:
     - CreateClassifierInput.JsonClassifier
     - CreateClassifierInput.GrokClassifier
     - CreateConnectionInput.ConnectionInput
+    - CreateTriggerInput.Name
+    - DeleteTriggerInput.Name
+    - GetTriggerInput.Name
     - Mapping.Children
 resources:
   Job:
@@ -176,3 +178,24 @@ resources:
         from:
           operation: GetClassifier
           path: Classifier.CsvClassifier.Version
+  Trigger:
+    renames:
+      operations:
+        CreateTrigger:
+          input_fields:
+            Type: TriggerType
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+    fields:
+      ID:
+        is_read_only: true
+        from:
+          operation: GetTrigger
+          path: Trigger.Id
+      State:
+        is_read_only: true
+        from:
+          operation: GetTrigger
+          path: Trigger.State
