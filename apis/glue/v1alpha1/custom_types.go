@@ -632,3 +632,5 @@ type CustomCreateCSVClassifierRequest struct {
 	// +optional
 	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
 }
+
+type CustomTriggerParameters struct{}
