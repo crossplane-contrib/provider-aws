@@ -549,6 +549,21 @@ func TestIsUpToDate(t *testing.T) {
 			},
 			want: false,
 		},
+		"EnableCloudwatchLogExportsEmptyAndNil": {
+			args: args{
+				db: rdstypes.DBInstance{
+					EnabledCloudwatchLogsExports: nil,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							EnableCloudwatchLogsExports: []string{},
+						},
+					},
+				},
+			},
+			want: true,
+		},
 	}
 
 	for name, tc := range cases {
@@ -1130,7 +1145,7 @@ func TestLateInitialize(t *testing.T) {
 				Timezone:                           &zone,
 				DBSecurityGroups:                   []string{name},
 				DBSubnetGroupName:                  subnetGroup.DBSubnetGroupName,
-				EnableCloudwatchLogsExports:        nil,
+				EnableCloudwatchLogsExports:        enabledCloudwatchExports,
 				ProcessorFeatures: []v1beta1.ProcessorFeature{{
 					Name:  name,
 					Value: value,

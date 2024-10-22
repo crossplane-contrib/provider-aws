@@ -687,12 +687,13 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	}
 	// TODO: remove deprecated field + code. Mapping to EnableCloudwatchLogsExports while in deprecation.
 	//nolint:staticcheck
-	if len(in.EnableCloudwatchLogsExports) == 0 && in.CloudwatchLogsExportConfiguration != nil {
+	if in.EnableCloudwatchLogsExports == nil && in.CloudwatchLogsExportConfiguration != nil {
 		in.EnableCloudwatchLogsExports = in.CloudwatchLogsExportConfiguration.EnableLogTypes
 	}
-
+	if in.EnableCloudwatchLogsExports == nil {
+		in.EnableCloudwatchLogsExports = db.EnabledCloudwatchLogsExports
+	}
 	in.OptionGroupName = lateInitializeOptionGroupName(in.OptionGroupName, db.OptionGroupMemberships)
-
 }
 
 func lateInitializeOptionGroupName(inOptionGroupName *string, members []rdstypes.OptionGroupMembership) *string {
@@ -757,7 +758,7 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 	cloudwatchLogsExportChanged := false
 	// only check CloudwatchLogsExports if there are no pending cloudwatchlogs exports (ignores the apply immediately setting)
 	// (to avoid: "api error InvalidParameterCombination: You cannot configure CloudWatch Logs while a previous configuration is in progress.")
-	if db.PendingModifiedValues != nil && db.PendingModifiedValues.PendingCloudwatchLogsExports == nil {
+	if db.PendingModifiedValues == nil || (db.PendingModifiedValues != nil && db.PendingModifiedValues.PendingCloudwatchLogsExports == nil) {
 		cloudwatchLogsExportChanged = !areSameElements(r.Spec.ForProvider.EnableCloudwatchLogsExports, db.EnabledCloudwatchLogsExports)
 	}
 
