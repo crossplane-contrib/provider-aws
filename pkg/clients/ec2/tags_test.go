@@ -70,6 +70,34 @@ func TestDiffEC2Tags(t *testing.T) {
 				remove: []ec2types.Tag{},
 			},
 		},
+		"TagsWithSameKeyValuesButDifferentOrder": {
+			args: args{
+				local: []ec2types.Tag{
+					{
+						Key:   aws.String("val"),
+						Value: aws.String("key"),
+					},
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+				},
+				remote: []ec2types.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+					{
+						Key:   aws.String("val"),
+						Value: aws.String("key"),
+					},
+				},
+			},
+			want: want{
+				add:    []ec2types.Tag{},
+				remove: []ec2types.Tag{},
+			},
+		},
 		"TagsWithSameKeyDifferentValuesAndSameLength": {
 			args: args{
 				local: []ec2types.Tag{
