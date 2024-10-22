@@ -31,6 +31,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/ec2/v1beta1"
@@ -157,6 +158,254 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
+				},
+			},
+		},
+		"SameTags": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{
+								Tags: []awsec2types.Tag{
+									{
+										Key:   ptr.To("key1"),
+										Value: ptr.To("value1"),
+									},
+									{
+										Key:   ptr.To("key2"),
+										Value: ptr.To("value2"),
+									},
+									{
+										Key:   ptr.To("key3"),
+										Value: ptr.To("value3"),
+									},
+								},
+							}},
+						}, nil
+					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
+						}, nil
+					},
+				},
+				cr: sg(
+					withExternalName(sgID),
+					withSpec(v1beta1.SecurityGroupParameters{
+						Tags: []v1beta1.Tag{
+							{
+								Key:   "key1",
+								Value: "value1",
+							},
+							{
+								Key:   "key2",
+								Value: "value2",
+							},
+							{
+								Key:   "key3",
+								Value: "value3",
+							},
+						},
+					}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					}),
+				),
+			},
+			want: want{
+				cr: sg(
+					withExternalName(sgID),
+					withSpec(v1beta1.SecurityGroupParameters{
+						Tags: []v1beta1.Tag{
+							{
+								Key:   "key1",
+								Value: "value1",
+							},
+							{
+								Key:   "key2",
+								Value: "value2",
+							},
+							{
+								Key:   "key3",
+								Value: "value3",
+							},
+						},
+					}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						IngressRules: []v1beta1.SecurityGroupRuleObservation{},
+						EgressRules:  []v1beta1.SecurityGroupRuleObservation{},
+					}),
+					withConditions(xpv1.Available()),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"SameTagsDifferentOrder": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{
+								Tags: []awsec2types.Tag{
+									{
+										Key:   ptr.To("key1"),
+										Value: ptr.To("value1"),
+									},
+									{
+										Key:   ptr.To("key3"),
+										Value: ptr.To("value3"),
+									},
+									{
+										Key:   ptr.To("key2"),
+										Value: ptr.To("value2"),
+									},
+								},
+							}},
+						}, nil
+					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
+						}, nil
+					},
+				},
+				cr: sg(
+					withExternalName(sgID),
+					withSpec(v1beta1.SecurityGroupParameters{
+						Tags: []v1beta1.Tag{
+							{
+								Key:   "key3",
+								Value: "value3",
+							},
+							{
+								Key:   "key2",
+								Value: "value2",
+							},
+							{
+								Key:   "key1",
+								Value: "value1",
+							},
+						},
+					}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					}),
+				),
+			},
+			want: want{
+				cr: sg(
+					withExternalName(sgID),
+					withSpec(v1beta1.SecurityGroupParameters{
+						Tags: []v1beta1.Tag{
+							{
+								Key:   "key3",
+								Value: "value3",
+							},
+							{
+								Key:   "key2",
+								Value: "value2",
+							},
+							{
+								Key:   "key1",
+								Value: "value1",
+							},
+						},
+					}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						IngressRules: []v1beta1.SecurityGroupRuleObservation{},
+						EgressRules:  []v1beta1.SecurityGroupRuleObservation{},
+					}),
+					withConditions(xpv1.Available()),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"DifferentTagValues": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeSecurityGroupsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupsOutput, error) {
+						return &awsec2.DescribeSecurityGroupsOutput{
+							SecurityGroups: []awsec2types.SecurityGroup{{
+								Tags: []awsec2types.Tag{
+									{
+										Key:   ptr.To("key1"),
+										Value: ptr.To("othervalue"),
+									},
+									{
+										Key:   ptr.To("key2"),
+										Value: ptr.To("value2"),
+									},
+									{
+										Key:   ptr.To("key3"),
+										Value: ptr.To("value3"),
+									},
+								},
+							}},
+						}, nil
+					},
+					MockDescribeRules: func(ctx context.Context, input *awsec2.DescribeSecurityGroupRulesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeSecurityGroupRulesOutput, error) {
+						return &awsec2.DescribeSecurityGroupRulesOutput{
+							SecurityGroupRules: []awsec2types.SecurityGroupRule{},
+						}, nil
+					},
+				},
+				cr: sg(
+					withExternalName(sgID),
+					withSpec(v1beta1.SecurityGroupParameters{
+						Tags: []v1beta1.Tag{
+							{
+								Key:   "key1",
+								Value: "value1",
+							},
+							{
+								Key:   "key2",
+								Value: "value2",
+							},
+							{
+								Key:   "key3",
+								Value: "value3",
+							},
+						},
+					}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					}),
+				),
+			},
+			want: want{
+				cr: sg(
+					withExternalName(sgID),
+					withSpec(v1beta1.SecurityGroupParameters{
+						Tags: []v1beta1.Tag{
+							{
+								Key:   "key1",
+								Value: "value1",
+							},
+							{
+								Key:   "key2",
+								Value: "value2",
+							},
+							{
+								Key:   "key3",
+								Value: "value3",
+							},
+						},
+					}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						IngressRules: []v1beta1.SecurityGroupRuleObservation{},
+						EgressRules:  []v1beta1.SecurityGroupRuleObservation{},
+					}),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
 				},
 			},
 		},

@@ -3,7 +3,6 @@ package ec2
 import (
 	"context"
 	"errors"
-	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -100,32 +99,4 @@ func BuildFromEC2Tags(tags []ec2types.Tag) []v1beta1.Tag {
 	}
 
 	return res
-}
-
-// CompareTags compares arrays of v1beta1.Tag and ec2types.Tag
-func CompareTags(tags []v1beta1.Tag, ec2Tags []ec2types.Tag) bool {
-	if len(tags) != len(ec2Tags) {
-		return false
-	}
-
-	SortTags(tags, ec2Tags)
-
-	for i, t := range tags {
-		if t.Key != *ec2Tags[i].Key || t.Value != *ec2Tags[i].Value {
-			return false
-		}
-	}
-
-	return true
-}
-
-// SortTags sorts array of v1beta1.Tag and ec2types.Tag on 'Key'
-func SortTags(tags []v1beta1.Tag, ec2Tags []ec2types.Tag) {
-	sort.Slice(tags, func(i, j int) bool {
-		return tags[i].Key < tags[j].Key
-	})
-
-	sort.Slice(ec2Tags, func(i, j int) bool {
-		return *ec2Tags[i].Key < *ec2Tags[j].Key
-	})
 }

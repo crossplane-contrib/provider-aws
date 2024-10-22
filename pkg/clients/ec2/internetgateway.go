@@ -96,7 +96,7 @@ func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2types.InternetGatew
 	// if the attachment in spec exists in ig.Attachments, compare the tags and return
 	for _, a := range ig.Attachments {
 		if aws.ToString(p.VPCID) == aws.ToString(a.VpcId) {
-			return CompareTagsV1Beta1(p.Tags, ig.Tags)
+			return CompareTags(p.Tags, ig.Tags)
 		}
 	}
 

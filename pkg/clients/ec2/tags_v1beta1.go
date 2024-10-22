@@ -17,8 +17,6 @@ limitations under the License.
 package ec2
 
 import (
-	"sort"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
@@ -47,30 +45,11 @@ func GenerateEC2TagsV1Beta1(tags []svcapitypes.Tag) []ec2types.Tag {
 	return res
 }
 
-// CompareTags compares arrays of v1beta1.Tag and ec2type.Tag
-func CompareTagsV1Beta1(tags []svcapitypes.Tag, ec2Tags []ec2types.Tag) bool {
-	if len(tags) != len(ec2Tags) {
+// CompareTags compares arrays of v1beta1.Tag and ec2types.Tag
+func CompareTags(spec []svcapitypes.Tag, current []ec2types.Tag) bool {
+	if len(spec) != len(current) {
 		return false
 	}
-
-	SortTagsV1Beta1(tags, ec2Tags)
-
-	for i, t := range tags {
-		if t.Key != *ec2Tags[i].Key || t.Value != *ec2Tags[i].Value {
-			return false
-		}
-	}
-
-	return true
-}
-
-// SortTags sorts array of v1beta1.Tag and ec2type.Tag on 'Key'
-func SortTagsV1Beta1(tags []svcapitypes.Tag, ec2Tags []ec2types.Tag) {
-	sort.Slice(tags, func(i, j int) bool {
-		return tags[i].Key < tags[j].Key
-	})
-
-	sort.Slice(ec2Tags, func(i, j int) bool {
-		return *ec2Tags[i].Key < *ec2Tags[j].Key
-	})
+	toAdd, toRemove := DiffEC2Tags(GenerateEC2TagsV1Beta1(spec), current)
+	return len(toAdd) == 0 && len(toRemove) == 0
 }

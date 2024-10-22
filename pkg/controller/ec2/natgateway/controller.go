@@ -142,7 +142,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: ec2.CompareTagsV1Beta1(cr.Spec.ForProvider.Tags, observed.Tags),
+		ResourceUpToDate: ec2.CompareTags(cr.Spec.ForProvider.Tags, observed.Tags),
 	}, nil
 }
 
