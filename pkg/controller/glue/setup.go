@@ -26,6 +26,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/glue/database"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/glue/job"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/glue/securityconfiguration"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/glue/trigger"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
 
@@ -39,5 +40,6 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		database.SetupDatabase,
 		job.SetupJob,
 		securityconfiguration.SetupSecurityConfiguration,
+		trigger.SetupTrigger,
 	)
 }
