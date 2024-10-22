@@ -85,5 +85,5 @@ func IsSubnetUpToDate(p v1beta1.SubnetParameters, s ec2types.Subnet) bool {
 	if aws.ToBool(p.AssignIPv6AddressOnCreation) != aws.ToBool(s.AssignIpv6AddressOnCreation) {
 		return false
 	}
-	return CompareTagsV1Beta1(p.Tags, s.Tags)
+	return CompareTags(p.Tags, s.Tags)
 }

@@ -53,7 +53,7 @@ func IsVpcUpToDate(spec v1beta1.VPCParameters, vpc ec2types.Vpc, attributes ec2.
 		return false
 	}
 
-	return CompareTagsV1Beta1(spec.Tags, vpc.Tags)
+	return CompareTags(spec.Tags, vpc.Tags)
 }
 
 // GenerateVpcObservation is used to produce v1beta1.VPCObservation from

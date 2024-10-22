@@ -160,7 +160,7 @@ func CreateRTPatch(in ec2types.RouteTable, target v1beta1.RouteTableParameters) 
 	targetCopy := target.DeepCopy()
 	currentParams := &v1beta1.RouteTableParameters{}
 
-	SortTagsV1Beta1(target.Tags, in.Tags)
+	CompareTags(target.Tags, in.Tags)
 
 	if !pointer.BoolValue(target.IgnoreRoutes) {
 		// Add the default route for fair comparison.
