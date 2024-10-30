@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
+	"slices"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
@@ -180,6 +181,9 @@ func GenerateEncryptionConfig(parameters *v1beta1.ClusterParameters) []ekstypes.
 func CreatePatch(in *ekstypes.Cluster, target *v1beta1.ClusterParameters) (*v1beta1.ClusterParameters, error) {
 	currentParams := &v1beta1.ClusterParameters{}
 	LateInitialize(currentParams, in)
+
+	slices.Sort(currentParams.ResourcesVpcConfig.SubnetIDs)
+	slices.Sort(target.ResourcesVpcConfig.SubnetIDs)
 
 	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
 	if err != nil {
