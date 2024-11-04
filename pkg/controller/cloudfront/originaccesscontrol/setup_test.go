@@ -20,15 +20,14 @@ import (
 	"context"
 	"testing"
 
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
-
+	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
-
-	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
 )
 
 type upToDateArgs struct {

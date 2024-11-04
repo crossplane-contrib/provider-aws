@@ -14,20 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//nolint:gocyclo,staticcheck,golint
 package originaccesscontrol
 
 import (
 	"context"
 	"slices"
 
-	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
-	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
-	cloudfront "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/utils"
-	"github.com/crossplane-contrib/provider-aws/pkg/features"
-	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
-	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
-
+	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -36,9 +29,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
-	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudfront/v1alpha1"
+	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	cloudfront "github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/utils"
+	"github.com/crossplane-contrib/provider-aws/pkg/features"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
+	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
 var (
