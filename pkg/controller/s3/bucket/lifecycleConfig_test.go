@@ -44,7 +44,7 @@ var (
 	location, _       = time.LoadLocation("UTC")
 	date              = metav1.Date(2020, time.September, 25, 11, 40, 0, 0, location)
 	awsDate           = time.Date(2020, time.September, 25, 11, 40, 0, 0, location)
-	marker            = false
+	marker            = true
 	prefix            = "test-"
 	id                = "test-id"
 	storage           = "ONEZONE_IA"
@@ -58,9 +58,8 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 			{
 				AbortIncompleteMultipartUpload: &v1beta1.AbortIncompleteMultipartUpload{DaysAfterInitiation: 1},
 				Expiration: &v1beta1.LifecycleExpiration{
-					Date:                      &date,
-					Days:                      days,
-					ExpiredObjectDeleteMarker: marker,
+					Date: &date,
+					Days: days,
 				},
 				Filter: &v1beta1.LifecycleRuleFilter{
 					And: &v1beta1.LifecycleRuleAndOperator{
@@ -85,6 +84,14 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 	}
 }
 
+func generateLifecycleConfigWithMarker() *v1beta1.BucketLifecycleConfiguration {
+	res := generateLifecycleConfig()
+	res.Rules[0].Expiration = &v1beta1.LifecycleExpiration{
+		ExpiredObjectDeleteMarker: marker,
+	}
+	return res
+}
+
 func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 	conf := &s3types.BucketLifecycleConfiguration{
 		Rules: []s3types.LifecycleRule{
@@ -93,7 +100,7 @@ func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 				Expiration: &s3types.LifecycleExpiration{
 					Date:                      &awsDate,
 					Days:                      &days,
-					ExpiredObjectDeleteMarker: &marker,
+					ExpiredObjectDeleteMarker: nil,
 				},
 				Filter: &s3types.LifecycleRuleFilterMemberAnd{
 					Value: s3types.LifecycleRuleAndOperator{
@@ -122,6 +129,14 @@ func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 	return conf
 }
 
+func generateAWSLifecycleWithMarker(sortTag bool) *s3types.BucketLifecycleConfiguration {
+	res := generateAWSLifecycle(sortTag)
+	res.Rules[0].Expiration = &s3types.LifecycleExpiration{
+		ExpiredObjectDeleteMarker: &marker,
+	}
+	return res
+}
+
 func TestGenerateLifecycleConfiguration(t *testing.T) {
 	type args struct {
 		b *v1beta1.Bucket
@@ -141,6 +156,14 @@ func TestGenerateLifecycleConfiguration(t *testing.T) {
 			},
 			want: want{
 				input: generateAWSLifecycle(true).Rules,
+			},
+		},
+		"Marker": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithLifecycleConfig(generateLifecycleConfigWithMarker())),
+			},
+			want: want{
+				input: generateAWSLifecycleWithMarker(true).Rules,
 			},
 		},
 	}
