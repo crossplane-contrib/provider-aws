@@ -161,12 +161,18 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 			}
 		}
 		if local.Expiration != nil {
-			rule.Expiration = &types.LifecycleExpiration{
-				Days:                      ptr.To(local.Expiration.Days),
-				ExpiredObjectDeleteMarker: ptr.To(local.Expiration.ExpiredObjectDeleteMarker),
+			rule.Expiration = &types.LifecycleExpiration{}
+			if local.Expiration.Days > 0 {
+				rule.Expiration.Days = ptr.To(local.Expiration.Days)
 			}
 			if local.Expiration.Date != nil {
 				rule.Expiration.Date = ptr.To(local.Expiration.Date.Time)
+			}
+			// NOTE(kkendzia): ExpiredObjectDeleteMarker must not be set when Days or Date is specified
+			// This behaviour is in line with terraform provider aws and avoids a MalformedXML Error
+			// When both is set, ExpiredObjectDeleteMarker will be ignored.
+			if local.Expiration.Date == nil && local.Expiration.Days == 0 {
+				rule.Expiration.ExpiredObjectDeleteMarker = ptr.To(local.Expiration.ExpiredObjectDeleteMarker)
 			}
 		}
 		if local.NoncurrentVersionExpiration != nil {
