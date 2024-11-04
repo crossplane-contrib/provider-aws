@@ -23,6 +23,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/cloudfrontoriginaccessidentity"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/distribution"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/originaccesscontrol"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/cloudfront/responseheaderspolicy"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
@@ -35,5 +36,6 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		cloudfrontoriginaccessidentity.SetupCloudFrontOriginAccessIdentity,
 		distribution.SetupDistribution,
 		responseheaderspolicy.SetupResponseHeadersPolicy,
+		originaccesscontrol.SetupOriginAccessControl,
 	)
 }
