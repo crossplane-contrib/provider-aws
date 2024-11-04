@@ -53,6 +53,12 @@ func ToIntAsInt64(v int) *int64 {
 	return &val64
 }
 
+// Int64 converts the supplied int for use with the AWS Go SDK, this allows 0 to be converted.
+func ToIntAsInt64Zero(v int) *int64 {
+	val64 := int64(v)
+	return &val64
+}
+
 // Int32 converts the supplied int for use with the AWS Go SDK.
 func ToIntAsInt32(v int) *int32 {
 	if v == 0 {
