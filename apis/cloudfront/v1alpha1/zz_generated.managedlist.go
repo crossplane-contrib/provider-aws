@@ -47,6 +47,15 @@ func (l *DistributionList) GetItems() []resource.Managed {
 	return items
 }
 
+// GetItems of this OriginAccessControlList.
+func (l *OriginAccessControlList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this ResponseHeadersPolicyList.
 func (l *ResponseHeadersPolicyList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))

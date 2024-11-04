@@ -1033,20 +1033,23 @@ type Origin struct {
 }
 
 // +kubebuilder:skipversion
-type OriginAccessControl struct {
-	ID *string `json:"id,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type OriginAccessControlConfig struct {
 	Description *string `json:"description,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	OriginAccessControlOriginType *string `json:"originAccessControlOriginType,omitempty"`
+
+	SigningBehavior *string `json:"signingBehavior,omitempty"`
+
+	SigningProtocol *string `json:"signingProtocol,omitempty"`
 }
 
 // +kubebuilder:skipversion
-type OriginAccessControlList struct {
+type OriginAccessControlList_SDK struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
+
+	Items []*OriginAccessControlSummary `json:"items,omitempty"`
 
 	Marker *string `json:"marker,omitempty"`
 
@@ -1064,6 +1067,19 @@ type OriginAccessControlSummary struct {
 	ID *string `json:"id,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	OriginAccessControlOriginType *string `json:"originAccessControlOriginType,omitempty"`
+
+	SigningBehavior *string `json:"signingBehavior,omitempty"`
+
+	SigningProtocol *string `json:"signingProtocol,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OriginAccessControl_SDK struct {
+	ID *string `json:"id,omitempty"`
+	// A CloudFront origin access control configuration.
+	OriginAccessControlConfig *OriginAccessControlConfig `json:"originAccessControlConfig,omitempty"`
 }
 
 // +kubebuilder:skipversion
