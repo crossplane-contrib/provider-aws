@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ecs"
 	svcsdk "github.com/aws/aws-sdk-go/service/ecs"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
@@ -15,6 +14,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ecs/v1alpha1"
@@ -68,14 +68,20 @@ func SetupService(mgr ctrl.Manager, o controller.Options) error {
 }
 
 func isUpToDate(context context.Context, service *svcapitypes.Service, output *svcsdk.DescribeServicesOutput) (bool, string, error) {
+	if len(output.Services) != 1 {
+		return false, "", nil
+	}
+
 	t := service.Spec.ForProvider.DeepCopy()
 	c := GenerateServiceCustom(output).Spec.ForProvider.DeepCopy()
 
-	tags := func(a, b *ecs.Tag) bool { return aws.StringValue(a.Key) < aws.StringValue(b.Key) }
+	tags := func(a, b *svcapitypes.Tag) bool { return aws.StringValue(a.Key) < aws.StringValue(b.Key) }
+	stringpointer := func(a, b *string) bool { return aws.StringValue(a) < aws.StringValue(b) }
 
 	diff := cmp.Diff(c, t,
 		cmpopts.EquateEmpty(),
 		cmpopts.SortSlices(tags),
+		cmpopts.SortSlices(stringpointer),
 		// Not present in DescribeServicesOutput
 		cmpopts.IgnoreFields(svcapitypes.ServiceParameters{}, "Region"),
 		cmpopts.IgnoreFields(svcapitypes.CustomServiceParameters{}, "Cluster"),
@@ -85,7 +91,7 @@ func isUpToDate(context context.Context, service *svcapitypes.Service, output *s
 	return diff == "", diff, nil
 }
 
-func lateInitialize(in *svcapitypes.ServiceParameters, out *svcsdk.DescribeServicesOutput) error {
+func lateInitialize(in *svcapitypes.ServiceParameters, out *svcsdk.DescribeServicesOutput) error { //nolint:gocyclo
 	if len(out.Services) != 1 {
 		return nil
 	}
@@ -95,14 +101,59 @@ func lateInitialize(in *svcapitypes.ServiceParameters, out *svcsdk.DescribeServi
 		in.PlatformVersion = o.PlatformVersion
 	}
 
+	if in.EnableECSManagedTags == nil {
+		in.EnableECSManagedTags = o.EnableECSManagedTags
+	}
+
+	if in.SchedulingStrategy == nil {
+		in.SchedulingStrategy = o.SchedulingStrategy
+	}
+
+	if in.HealthCheckGracePeriodSeconds == nil {
+		in.HealthCheckGracePeriodSeconds = o.HealthCheckGracePeriodSeconds
+	}
+
 	if in.DeploymentController == nil && o.DeploymentController != nil {
 		in.DeploymentController = &svcapitypes.DeploymentController{
 			Type: o.DeploymentController.Type,
 		}
 	}
 
+	if o.DeploymentConfiguration != nil {
+		if in.DeploymentConfiguration == nil {
+			in.DeploymentConfiguration = &svcapitypes.DeploymentConfiguration{}
+		}
+
+		if in.DeploymentConfiguration.MaximumPercent == nil {
+			in.DeploymentConfiguration.MaximumPercent = o.DeploymentConfiguration.MaximumPercent
+		}
+		if in.DeploymentConfiguration.MinimumHealthyPercent == nil {
+			in.DeploymentConfiguration.MinimumHealthyPercent = o.DeploymentConfiguration.MinimumHealthyPercent
+		}
+	}
+
+	if in.EnableECSManagedTags == nil {
+		in.EnableECSManagedTags = o.EnableECSManagedTags
+	}
+
 	if in.PropagateTags == nil {
 		in.PropagateTags = o.PropagateTags
+	}
+
+	if o.NetworkConfiguration != nil {
+		if in.CustomServiceParameters.NetworkConfiguration == nil {
+			in.CustomServiceParameters.NetworkConfiguration = &svcapitypes.CustomNetworkConfiguration{}
+		}
+
+		if o.NetworkConfiguration.AwsvpcConfiguration != nil {
+			if in.CustomServiceParameters.NetworkConfiguration.AWSvpcConfiguration == nil {
+				in.CustomServiceParameters.NetworkConfiguration.AWSvpcConfiguration = &svcapitypes.CustomAWSVPCConfiguration{}
+			}
+
+			if in.CustomServiceParameters.NetworkConfiguration.AWSvpcConfiguration.AssignPublicIP == nil {
+				in.CustomServiceParameters.NetworkConfiguration.AWSvpcConfiguration.AssignPublicIP = o.NetworkConfiguration.AwsvpcConfiguration.AssignPublicIp
+			}
+		}
 	}
 
 	return nil
@@ -111,6 +162,7 @@ func lateInitialize(in *svcapitypes.ServiceParameters, out *svcsdk.DescribeServi
 func preObserve(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.DescribeServicesInput) error {
 	obj.Cluster = cr.Spec.ForProvider.Cluster
 	obj.Services = []*string{aws.String(meta.GetExternalName(cr))}
+	obj.Include = []*string{ptr.To("TAGS")}
 
 	if err := obj.Validate(); err != nil {
 		return err
