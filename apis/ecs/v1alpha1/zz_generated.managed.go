@@ -199,3 +199,63 @@ func (mg *TaskDefinition) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectio
 func (mg *TaskDefinition) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
+
+// GetCondition of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetManagementPolicies of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// GetProviderConfigReference of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+// GetPublishConnectionDetailsTo of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
+	return mg.Spec.PublishConnectionDetailsTo
+}
+
+// GetWriteConnectionSecretToReference of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetManagementPolicies of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) SetManagementPolicies(r xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = r
+}
+
+// SetProviderConfigReference of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+// SetPublishConnectionDetailsTo of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectionDetailsTo) {
+	mg.Spec.PublishConnectionDetailsTo = r
+}
+
+// SetWriteConnectionSecretToReference of this TaskDefinitionFamily.
+func (mg *TaskDefinitionFamily) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
