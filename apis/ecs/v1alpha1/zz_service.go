@@ -263,6 +263,8 @@ type ServiceObservation struct {
 	ServiceName *string `json:"serviceName,omitempty"`
 	// The status of the service. The valid values are ACTIVE, DRAINING, or INACTIVE.
 	Status *string `json:"status,omitempty"`
+	// The list of task ARN entries for the ListTasks request.
+	TaskARNs []*string `json:"taskARNs,omitempty"`
 	// The task definition to use for tasks in the service. This value is specified
 	// when the service is created with CreateService, and it can be modified with
 	// UpdateService.
