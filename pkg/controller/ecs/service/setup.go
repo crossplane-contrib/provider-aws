@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/ecs"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/ecs/ecsiface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
@@ -14,8 +15,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/pkg/errors"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ecs/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
@@ -23,13 +26,19 @@ import (
 	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
+type custom struct {
+	kube   client.Client
+	client svcsdkapi.ECSAPI
+}
+
 // SetupService adds a controller that reconciles Service.
 func SetupService(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.ServiceGroupKind)
 	opts := []option{
 		func(e *external) {
+			c := &custom{client: e.client, kube: e.kube}
 			e.preObserve = preObserve
-			e.postObserve = postObserve
+			e.postObserve = c.postObserve
 			e.preCreate = preCreate
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
@@ -170,7 +179,7 @@ func preObserve(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.Describe
 	return nil
 }
 
-func postObserve(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.DescribeServicesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (e *custom) postObserve(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.DescribeServicesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return obs, err
 	}
@@ -178,6 +187,15 @@ func postObserve(_ context.Context, cr *svcapitypes.Service, resp *svcsdk.Descri
 		obs.ResourceExists = false
 		return obs, err
 	}
+
+	listTasksOutput, err := e.client.ListTasks(&svcsdk.ListTasksInput{
+		Cluster:     cr.Spec.ForProvider.Cluster,
+		ServiceName: aws.String(meta.GetExternalName(cr)),
+	})
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "ListTasks failed")
+	}
+	cr.Status.AtProvider.TaskARNs = listTasksOutput.TaskArns
 
 	switch aws.StringValue(resp.Services[0].Status) {
 	case "ACTIVE":
