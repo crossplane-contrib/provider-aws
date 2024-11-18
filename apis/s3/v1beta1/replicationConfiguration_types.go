@@ -186,7 +186,7 @@ type Destination struct {
 	// For valid values, see the StorageClass element of the PUT Bucket replication
 	// (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUTreplication.html)
 	// action in the Amazon Simple Storage Service API Reference.
-	// +kubebuilder:validation:Enum=STANDARD;GLACIER;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
+	// +kubebuilder:validation:Enum=STANDARD;GLACIER;GLACIER_IR;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
 	// +optional
 	StorageClass *string `json:"storageClass"`
 }

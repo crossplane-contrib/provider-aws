@@ -149,7 +149,7 @@ type NoncurrentVersionExpiration struct {
 }
 
 // NoncurrentVersionTransition contains the transition rule that describes when noncurrent objects
-// transition to the STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, GLACIER,
+// transition to the STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, GLACIER, GLACIER_IR
 // or DEEP_ARCHIVE storage class. If your bucket is versioning-enabled (or versioning
 // is suspended), you can set this action to request that Amazon S3 transition
 // noncurrent object versions to the STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING,
@@ -164,8 +164,8 @@ type NoncurrentVersionTransition struct {
 	NoncurrentDays int32 `json:"noncurrentDays,omitempty"`
 
 	// The class of storage used to store the object.
-	// Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
-	// +kubebuilder:validation:Enum=GLACIER;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
+	// Valid values are: GLACIER, GLACIER_IR, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
+	// +kubebuilder:validation:Enum=GLACIER;GLACIER_IR;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
 	StorageClass string `json:"storageClass"`
 }
 
@@ -184,7 +184,7 @@ type Transition struct {
 	Days int32 `json:"days,omitempty"`
 
 	// The storage class to which you want the object to transition.
-	// Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
-	// +kubebuilder:validation:Enum=GLACIER;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
+	// Valid values are: GLACIER, GLACIER_IR, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
+	// +kubebuilder:validation:Enum=GLACIER;GLACIER_IR;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
 	StorageClass string `json:"storageClass"`
 }
