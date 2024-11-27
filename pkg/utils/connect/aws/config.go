@@ -32,7 +32,7 @@ import (
 	stscredstypesv2 "github.com/aws/aws-sdk-go-v2/service/sts/types"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
 	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
-	stscredsv1 "github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	defaultsv1 "github.com/aws/aws-sdk-go/aws/defaults"
 	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	requestv1 "github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -672,17 +672,8 @@ func GetDefaultConfigV1() (*awsv1.Config, error) {
 	muV1.Lock()
 	defer muV1.Unlock()
 	if defaultConfigV1 == nil {
-		cfg := awsv1.NewConfig()
-		sess, err := GetSessionV1(cfg)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to load default AWS config")
-		}
-		envCfg, err := config.NewEnvConfig()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to load default AWS env config")
-		}
-		creds := stscredsv1.NewWebIdentityCredentials(sess, envCfg.RoleARN, envCfg.RoleSessionName, envCfg.WebIdentityTokenFilePath) //nolint:staticcheck
-		defaultConfigV1 = cfg.WithCredentials(creds)
+		// use the sdk's default config
+		defaultConfigV1 = defaultsv1.Get().Config
 	}
 	return defaultConfigV1.Copy(), nil
 }
