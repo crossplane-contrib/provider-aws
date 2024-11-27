@@ -3592,6 +3592,17 @@ func (in *ServiceObservation) DeepCopyInto(out *ServiceObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.TaskARNs != nil {
+		in, out := &in.TaskARNs, &out.TaskARNs
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	if in.TaskDefinition != nil {
 		in, out := &in.TaskDefinition, &out.TaskDefinition
 		*out = new(string)
