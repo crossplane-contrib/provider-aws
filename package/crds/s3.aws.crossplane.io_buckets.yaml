@@ -333,7 +333,7 @@ spec:
                               items:
                                 description: |-
                                   NoncurrentVersionTransition contains the transition rule that describes when noncurrent objects
-                                  transition to the STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, GLACIER,
+                                  transition to the STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, GLACIER, GLACIER_IR
                                   or DEEP_ARCHIVE storage class. If your bucket is versioning-enabled (or versioning
                                   is suspended), you can set this action to request that Amazon S3 transition
                                   noncurrent object versions to the STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING,
@@ -352,9 +352,10 @@ spec:
                                   storageClass:
                                     description: |-
                                       The class of storage used to store the object.
-                                      Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
+                                      Valid values are: GLACIER, GLACIER_IR, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
                                     enum:
                                     - GLACIER
+                                    - GLACIER_IR
                                     - STANDARD_IA
                                     - ONEZONE_IA
                                     - INTELLIGENT_TIERING
@@ -401,9 +402,10 @@ spec:
                                   storageClass:
                                     description: |-
                                       The storage class to which you want the object to transition.
-                                      Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
+                                      Valid values are: GLACIER, GLACIER_IR, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
                                     enum:
                                     - GLACIER
+                                    - GLACIER_IR
                                     - STANDARD_IA
                                     - ONEZONE_IA
                                     - INTELLIGENT_TIERING
@@ -2046,6 +2048,7 @@ spec:
                                   enum:
                                   - STANDARD
                                   - GLACIER
+                                  - GLACIER_IR
                                   - STANDARD_IA
                                   - ONEZONE_IA
                                   - INTELLIGENT_TIERING
