@@ -18,6 +18,14 @@ ignore:
   resource_names:
   - CapacityProvider
   - TaskSet
+resources:
+  Service:
+    fields:
+      TaskArns:
+        is_read_only: true
+        from:
+          operation: ListTasks
+          path: TaskArns
 operations:
   DeregisterTaskDefinition:
     operation_type:
