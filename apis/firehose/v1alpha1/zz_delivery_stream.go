@@ -61,6 +61,8 @@ type DeliveryStreamParameters struct {
 	// a KinesisStreamSourceConfiguration containing the Kinesis data stream Amazon
 	// Resource Name (ARN) and the role ARN for the source stream.
 	KinesisStreamSourceConfiguration *KinesisStreamSourceConfiguration `json:"kinesisStreamSourceConfiguration,omitempty"`
+
+	MSKSourceConfiguration *MSKSourceConfiguration `json:"mSKSourceConfiguration,omitempty"`
 	// The destination in Amazon Redshift. You can specify only one destination.
 	RedshiftDestinationConfiguration *RedshiftDestinationConfiguration `json:"redshiftDestinationConfiguration,omitempty"`
 	// [Deprecated] The destination in Amazon S3. You can specify only one destination.

@@ -56,7 +56,8 @@ type AmazonOpenSearchServerlessDestinationConfiguration struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes the configuration of a destination in Amazon S3.
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
-	// The details of the VPC of the Amazon ES destination.
+	// The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+	// destination.
 	VPCConfiguration *VPCConfiguration `json:"vpcConfiguration,omitempty"`
 }
 
@@ -127,6 +128,10 @@ type AmazonopensearchserviceDestinationConfiguration struct {
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
 
@@ -146,7 +151,8 @@ type AmazonopensearchserviceDestinationConfiguration struct {
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
 
 	TypeName *string `json:"typeName,omitempty"`
-	// The details of the VPC of the Amazon ES destination.
+	// The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+	// destination.
 	VPCConfiguration *VPCConfiguration `json:"vpcConfiguration,omitempty"`
 }
 
@@ -159,6 +165,10 @@ type AmazonopensearchserviceDestinationDescription struct {
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
 
@@ -191,6 +201,10 @@ type AmazonopensearchserviceDestinationUpdate struct {
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
 
@@ -211,6 +225,13 @@ type AmazonopensearchserviceDestinationUpdate struct {
 // +kubebuilder:skipversion
 type AmazonopensearchserviceRetryOptions struct {
 	DurationInSeconds *int64 `json:"durationInSeconds,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AuthenticationConfiguration struct {
+	Connectivity *string `json:"connectivity,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -348,6 +369,11 @@ type DestinationDescription struct {
 }
 
 // +kubebuilder:skipversion
+type DocumentIDOptions struct {
+	DefaultDocumentIDFormat *string `json:"defaultDocumentIDFormat,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DynamicPartitioningConfiguration struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// The retry behavior in case Kinesis Data Firehose is unable to deliver data
@@ -371,6 +397,10 @@ type ElasticsearchDestinationConfiguration struct {
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
 
@@ -390,7 +420,8 @@ type ElasticsearchDestinationConfiguration struct {
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
 
 	TypeName *string `json:"typeName,omitempty"`
-	// The details of the VPC of the Amazon ES destination.
+	// The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+	// destination.
 	VPCConfiguration *VPCConfiguration `json:"vpcConfiguration,omitempty"`
 }
 
@@ -403,6 +434,10 @@ type ElasticsearchDestinationDescription struct {
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
 
@@ -435,6 +470,10 @@ type ElasticsearchDestinationUpdate struct {
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
 
@@ -756,6 +795,28 @@ type KinesisStreamSourceDescription struct {
 }
 
 // +kubebuilder:skipversion
+type MSKSourceConfiguration struct {
+	// The authentication configuration of the Amazon MSK cluster.
+	AuthenticationConfiguration *AuthenticationConfiguration `json:"authenticationConfiguration,omitempty"`
+
+	MSKClusterARN *string `json:"mSKClusterARN,omitempty"`
+
+	TopicName *string `json:"topicName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MSKSourceDescription struct {
+	// The authentication configuration of the Amazon MSK cluster.
+	AuthenticationConfiguration *AuthenticationConfiguration `json:"authenticationConfiguration,omitempty"`
+
+	DeliveryStartTimestamp *metav1.Time `json:"deliveryStartTimestamp,omitempty"`
+
+	MSKClusterARN *string `json:"mSKClusterARN,omitempty"`
+
+	TopicName *string `json:"topicName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type OpenXJSONSerDe struct {
 	CaseInsensitive *bool `json:"caseInsensitive,omitempty"`
 
@@ -1016,6 +1077,9 @@ type SourceDescription struct {
 	// Details about a Kinesis data stream used as the source for a Kinesis Data
 	// Firehose delivery stream.
 	KinesisStreamSourceDescription *KinesisStreamSourceDescription `json:"kinesisStreamSourceDescription,omitempty"`
+	// Details about the Amazon MSK cluster used as the source for a Kinesis Data
+	// Firehose delivery stream.
+	MSKSourceDescription *MSKSourceDescription `json:"mSKSourceDescription,omitempty"`
 }
 
 // +kubebuilder:skipversion

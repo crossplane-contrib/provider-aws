@@ -3,6 +3,7 @@ ignore:
     - Nodegroup
     - Cluster
     - FargateProfile
+    - EksAnywhereSubscription
   shape_names:
     - Nodegroup
     - Cluster

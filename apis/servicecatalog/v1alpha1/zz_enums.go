@@ -122,6 +122,7 @@ const (
 	ProductType_MARKETPLACE              ProductType = "MARKETPLACE"
 	ProductType_TERRAFORM_OPEN_SOURCE    ProductType = "TERRAFORM_OPEN_SOURCE"
 	ProductType_TERRAFORM_CLOUD          ProductType = "TERRAFORM_CLOUD"
+	ProductType_EXTERNAL                 ProductType = "EXTERNAL"
 )
 
 type ProductViewFilterBy string
@@ -202,6 +203,7 @@ const (
 	ProvisioningArtifactType_MARKETPLACE_CAR          ProvisioningArtifactType = "MARKETPLACE_CAR"
 	ProvisioningArtifactType_TERRAFORM_OPEN_SOURCE    ProvisioningArtifactType = "TERRAFORM_OPEN_SOURCE"
 	ProvisioningArtifactType_TERRAFORM_CLOUD          ProvisioningArtifactType = "TERRAFORM_CLOUD"
+	ProvisioningArtifactType_EXTERNAL                 ProvisioningArtifactType = "EXTERNAL"
 )
 
 type RecordStatus string

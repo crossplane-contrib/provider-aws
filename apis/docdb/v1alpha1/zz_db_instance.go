@@ -41,6 +41,13 @@ type DBInstanceParameters struct {
 	//
 	// Example: us-east-1d
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+	// The CA certificate identifier to use for the DB instance's server certificate.
+	//
+	// For more information, see Updating Your Amazon DocumentDB TLS Certificates
+	// (https://docs.aws.amazon.com/documentdb/latest/developerguide/ca_cert_rotation.html)
+	// and Encrypting Data in Transit (https://docs.aws.amazon.com/documentdb/latest/developerguide/security.encryption.ssl.html)
+	// in the Amazon DocumentDB Developer Guide.
+	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
 	// A value that indicates whether to copy tags from the DB instance to snapshots
 	// of the DB instance. By default, tags are not copied.
 	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
@@ -102,8 +109,8 @@ type DBInstanceSpec struct {
 type DBInstanceObservation struct {
 	// Specifies the number of days for which automatic snapshots are retained.
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
-	// The identifier of the CA certificate for this DB instance.
-	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
+	// The details of the DB instance's server certificate.
+	CertificateDetails *CertificateDetails `json:"certificateDetails,omitempty"`
 	// Contains the name of the cluster that the instance is a member of if the
 	// instance is a member of a cluster.
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`

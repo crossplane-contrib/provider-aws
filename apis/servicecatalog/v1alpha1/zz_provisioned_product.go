@@ -104,7 +104,7 @@ type ProvisionedProductObservation struct {
 	// The user-friendly name of the provisioned product.
 	ProvisionedProductName *string `json:"provisionedProductName,omitempty"`
 	// The type of provisioned product. The supported values are CFN_STACK, CFN_STACKSET,
-	// TERRAFORM_OPEN_SOURCE, and TERRAFORM_CLOUD.
+	// TERRAFORM_OPEN_SOURCE, TERRAFORM_CLOUD, and EXTERNAL.
 	ProvisionedProductType *string `json:"provisionedProductType,omitempty"`
 	// The errors that occurred.
 	RecordErrors []*RecordError `json:"recordErrors,omitempty"`

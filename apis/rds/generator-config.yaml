@@ -89,3 +89,5 @@ ignore:
     - DBSubnetGroup
     - EventSubscription
     - BlueGreenDeployment
+    - Integration
+    - TenantDatabase

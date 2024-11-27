@@ -197,7 +197,9 @@ spec:
                             type: string
                         type: object
                       vpcConfiguration:
-                        description: The details of the VPC of the Amazon ES destination.
+                        description: |-
+                          The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+                          destination.
                         properties:
                           roleARN:
                             type: string
@@ -240,6 +242,15 @@ spec:
                         type: object
                       clusterEndpoint:
                         type: string
+                      documentIDOptions:
+                        description: |-
+                          Indicates the method for setting up document ID. The supported methods are
+                          Kinesis Data Firehose generated document ID and OpenSearch Service generated
+                          document ID.
+                        properties:
+                          defaultDocumentIDFormat:
+                            type: string
+                        type: object
                       domainARN:
                         type: string
                       indexName:
@@ -339,7 +350,9 @@ spec:
                       typeName:
                         type: string
                       vpcConfiguration:
-                        description: The details of the VPC of the Amazon ES destination.
+                        description: |-
+                          The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+                          destination.
                         properties:
                           roleARN:
                             type: string
@@ -410,6 +423,15 @@ spec:
                         type: object
                       clusterEndpoint:
                         type: string
+                      documentIDOptions:
+                        description: |-
+                          Indicates the method for setting up document ID. The supported methods are
+                          Kinesis Data Firehose generated document ID and OpenSearch Service generated
+                          document ID.
+                        properties:
+                          defaultDocumentIDFormat:
+                            type: string
+                        type: object
                       domainARN:
                         type: string
                       indexName:
@@ -509,7 +531,9 @@ spec:
                       typeName:
                         type: string
                       vpcConfiguration:
-                        description: The details of the VPC of the Amazon ES destination.
+                        description: |-
+                          The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+                          destination.
                         properties:
                           roleARN:
                             type: string
@@ -1055,6 +1079,22 @@ spec:
                             - IfNotPresent
                             type: string
                         type: object
+                    type: object
+                  mSKSourceConfiguration:
+                    properties:
+                      authenticationConfiguration:
+                        description: The authentication configuration of the Amazon
+                          MSK cluster.
+                        properties:
+                          connectivity:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      mSKClusterARN:
+                        type: string
+                      topicName:
+                        type: string
                     type: object
                   redshiftDestinationConfiguration:
                     description: The destination in Amazon Redshift. You can specify
