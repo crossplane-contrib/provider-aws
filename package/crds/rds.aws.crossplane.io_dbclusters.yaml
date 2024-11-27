@@ -90,7 +90,7 @@ spec:
                       Specifies whether major version upgrades are allowed.
 
 
-                      Valid for Cluster Type: Aurora DB clusters only
+                      Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
 
 
                       Constraints:
@@ -1295,6 +1295,14 @@ spec:
                          * If the subnets are part of a VPC that has an internet gateway attached
                          to it, the DB cluster is public.
                     type: boolean
+                  rdsCustomClusterConfiguration:
+                    description: Reserved for future use.
+                    properties:
+                      interconnectSubnetID:
+                        type: string
+                      transitGatewayMulticastDomainID:
+                        type: string
+                    type: object
                   region:
                     description: Region is which region the DBCluster will be created.
                     type: string
@@ -1849,6 +1857,11 @@ spec:
                     description: The time when a stopped DB cluster is restarted automatically.
                     format: date-time
                     type: string
+                  awsBackupRecoveryPointARN:
+                    description: |-
+                      The Amazon Resource Name (ARN) of the recovery point in Amazon Web Services
+                      Backup.
+                    type: string
                   backtrackConsumedChangeRecords:
                     description: The number of change records stored for Backtrack.
                     format: int64
@@ -1986,7 +1999,7 @@ spec:
                     type: string
                   globalWriteForwardingRequested:
                     description: |-
-                      Specifies whether write forwarding is enabled for a secondary cluster in
+                      Indicates whether write forwarding is enabled for a secondary cluster in
                       an Aurora global database. Because write forwarding takes time to enable,
                       check the value of GlobalWriteForwardingStatus to confirm that the request
                       has completed before using the write forwarding feature for this cluster.
@@ -2035,7 +2048,7 @@ spec:
                     type: string
                   localWriteForwardingStatus:
                     description: |-
-                      Specifies whether an Aurora DB cluster has in-cluster write forwarding enabled,
+                      Indicates whether an Aurora DB cluster has in-cluster write forwarding enabled,
                       not enabled, requested, or is in the process of enabling it.
                     type: string
                   masterUserSecret:

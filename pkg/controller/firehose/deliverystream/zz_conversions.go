@@ -259,6 +259,13 @@ func GenerateCreateDeliveryStreamInput(cr *svcapitypes.DeliveryStream) *svcsdk.C
 		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ClusterEndpoint != nil {
 			f1.SetClusterEndpoint(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ClusterEndpoint)
 		}
+		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.DocumentIDOptions != nil {
+			f1f3 := &svcsdk.DocumentIdOptions{}
+			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.DocumentIDOptions.DefaultDocumentIDFormat != nil {
+				f1f3.SetDefaultDocumentIdFormat(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.DocumentIDOptions.DefaultDocumentIDFormat)
+			}
+			f1.SetDocumentIdOptions(f1f3)
+		}
 		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.DomainARN != nil {
 			f1.SetDomainARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.DomainARN)
 		}
@@ -269,43 +276,43 @@ func GenerateCreateDeliveryStreamInput(cr *svcapitypes.DeliveryStream) *svcsdk.C
 			f1.SetIndexRotationPeriod(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.IndexRotationPeriod)
 		}
 		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ProcessingConfiguration != nil {
-			f1f6 := &svcsdk.ProcessingConfiguration{}
+			f1f7 := &svcsdk.ProcessingConfiguration{}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ProcessingConfiguration.Enabled != nil {
-				f1f6.SetEnabled(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ProcessingConfiguration.Enabled)
+				f1f7.SetEnabled(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ProcessingConfiguration.Enabled)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ProcessingConfiguration.Processors != nil {
-				f1f6f1 := []*svcsdk.Processor{}
-				for _, f1f6f1iter := range cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ProcessingConfiguration.Processors {
-					f1f6f1elem := &svcsdk.Processor{}
-					if f1f6f1iter.Parameters != nil {
-						f1f6f1elemf0 := []*svcsdk.ProcessorParameter{}
-						for _, f1f6f1elemf0iter := range f1f6f1iter.Parameters {
-							f1f6f1elemf0elem := &svcsdk.ProcessorParameter{}
-							if f1f6f1elemf0iter.ParameterName != nil {
-								f1f6f1elemf0elem.SetParameterName(*f1f6f1elemf0iter.ParameterName)
+				f1f7f1 := []*svcsdk.Processor{}
+				for _, f1f7f1iter := range cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.ProcessingConfiguration.Processors {
+					f1f7f1elem := &svcsdk.Processor{}
+					if f1f7f1iter.Parameters != nil {
+						f1f7f1elemf0 := []*svcsdk.ProcessorParameter{}
+						for _, f1f7f1elemf0iter := range f1f7f1iter.Parameters {
+							f1f7f1elemf0elem := &svcsdk.ProcessorParameter{}
+							if f1f7f1elemf0iter.ParameterName != nil {
+								f1f7f1elemf0elem.SetParameterName(*f1f7f1elemf0iter.ParameterName)
 							}
-							if f1f6f1elemf0iter.ParameterValue != nil {
-								f1f6f1elemf0elem.SetParameterValue(*f1f6f1elemf0iter.ParameterValue)
+							if f1f7f1elemf0iter.ParameterValue != nil {
+								f1f7f1elemf0elem.SetParameterValue(*f1f7f1elemf0iter.ParameterValue)
 							}
-							f1f6f1elemf0 = append(f1f6f1elemf0, f1f6f1elemf0elem)
+							f1f7f1elemf0 = append(f1f7f1elemf0, f1f7f1elemf0elem)
 						}
-						f1f6f1elem.SetParameters(f1f6f1elemf0)
+						f1f7f1elem.SetParameters(f1f7f1elemf0)
 					}
-					if f1f6f1iter.Type != nil {
-						f1f6f1elem.SetType(*f1f6f1iter.Type)
+					if f1f7f1iter.Type != nil {
+						f1f7f1elem.SetType(*f1f7f1iter.Type)
 					}
-					f1f6f1 = append(f1f6f1, f1f6f1elem)
+					f1f7f1 = append(f1f7f1, f1f7f1elem)
 				}
-				f1f6.SetProcessors(f1f6f1)
+				f1f7.SetProcessors(f1f7f1)
 			}
-			f1.SetProcessingConfiguration(f1f6)
+			f1.SetProcessingConfiguration(f1f7)
 		}
 		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.RetryOptions != nil {
-			f1f7 := &svcsdk.AmazonopensearchserviceRetryOptions{}
+			f1f8 := &svcsdk.AmazonopensearchserviceRetryOptions{}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.RetryOptions.DurationInSeconds != nil {
-				f1f7.SetDurationInSeconds(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.RetryOptions.DurationInSeconds)
+				f1f8.SetDurationInSeconds(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.RetryOptions.DurationInSeconds)
 			}
-			f1.SetRetryOptions(f1f7)
+			f1.SetRetryOptions(f1f8)
 		}
 		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.RoleARN != nil {
 			f1.SetRoleARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.RoleARN)
@@ -314,88 +321,88 @@ func GenerateCreateDeliveryStreamInput(cr *svcapitypes.DeliveryStream) *svcsdk.C
 			f1.SetS3BackupMode(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3BackupMode)
 		}
 		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration != nil {
-			f1f10 := &svcsdk.S3DestinationConfiguration{}
+			f1f11 := &svcsdk.S3DestinationConfiguration{}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BucketARN != nil {
-				f1f10.SetBucketARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BucketARN)
+				f1f11.SetBucketARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BucketARN)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BufferingHints != nil {
-				f1f10f1 := &svcsdk.BufferingHints{}
+				f1f11f1 := &svcsdk.BufferingHints{}
 				if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds != nil {
-					f1f10f1.SetIntervalInSeconds(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds)
+					f1f11f1.SetIntervalInSeconds(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds)
 				}
 				if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs != nil {
-					f1f10f1.SetSizeInMBs(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs)
+					f1f11f1.SetSizeInMBs(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs)
 				}
-				f1f10.SetBufferingHints(f1f10f1)
+				f1f11.SetBufferingHints(f1f11f1)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions != nil {
-				f1f10f2 := &svcsdk.CloudWatchLoggingOptions{}
+				f1f11f2 := &svcsdk.CloudWatchLoggingOptions{}
 				if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled != nil {
-					f1f10f2.SetEnabled(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled)
+					f1f11f2.SetEnabled(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled)
 				}
 				if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName != nil {
-					f1f10f2.SetLogGroupName(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName)
+					f1f11f2.SetLogGroupName(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName)
 				}
 				if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName != nil {
-					f1f10f2.SetLogStreamName(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName)
+					f1f11f2.SetLogStreamName(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName)
 				}
-				f1f10.SetCloudWatchLoggingOptions(f1f10f2)
+				f1f11.SetCloudWatchLoggingOptions(f1f11f2)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CompressionFormat != nil {
-				f1f10.SetCompressionFormat(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CompressionFormat)
+				f1f11.SetCompressionFormat(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.CompressionFormat)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.EncryptionConfiguration != nil {
-				f1f10f4 := &svcsdk.EncryptionConfiguration{}
+				f1f11f4 := &svcsdk.EncryptionConfiguration{}
 				if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig != nil {
-					f1f10f4f0 := &svcsdk.KMSEncryptionConfig{}
+					f1f11f4f0 := &svcsdk.KMSEncryptionConfig{}
 					if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN != nil {
-						f1f10f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
+						f1f11f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
 					}
-					f1f10f4.SetKMSEncryptionConfig(f1f10f4f0)
+					f1f11f4.SetKMSEncryptionConfig(f1f11f4f0)
 				}
 				if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig != nil {
-					f1f10f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig)
+					f1f11f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig)
 				}
-				f1f10.SetEncryptionConfiguration(f1f10f4)
+				f1f11.SetEncryptionConfiguration(f1f11f4)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.ErrorOutputPrefix != nil {
-				f1f10.SetErrorOutputPrefix(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.ErrorOutputPrefix)
+				f1f11.SetErrorOutputPrefix(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.ErrorOutputPrefix)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.Prefix != nil {
-				f1f10.SetPrefix(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.Prefix)
+				f1f11.SetPrefix(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.Prefix)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.RoleARN != nil {
-				f1f10.SetRoleARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.RoleARN)
+				f1f11.SetRoleARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.S3Configuration.RoleARN)
 			}
-			f1.SetS3Configuration(f1f10)
+			f1.SetS3Configuration(f1f11)
 		}
 		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.TypeName != nil {
 			f1.SetTypeName(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.TypeName)
 		}
 		if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration != nil {
-			f1f12 := &svcsdk.VpcConfiguration{}
+			f1f13 := &svcsdk.VpcConfiguration{}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.RoleARN != nil {
-				f1f12.SetRoleARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.RoleARN)
+				f1f13.SetRoleARN(*cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.RoleARN)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.SecurityGroupIDs != nil {
-				f1f12f1 := []*string{}
-				for _, f1f12f1iter := range cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.SecurityGroupIDs {
-					var f1f12f1elem string
-					f1f12f1elem = *f1f12f1iter
-					f1f12f1 = append(f1f12f1, &f1f12f1elem)
+				f1f13f1 := []*string{}
+				for _, f1f13f1iter := range cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.SecurityGroupIDs {
+					var f1f13f1elem string
+					f1f13f1elem = *f1f13f1iter
+					f1f13f1 = append(f1f13f1, &f1f13f1elem)
 				}
-				f1f12.SetSecurityGroupIds(f1f12f1)
+				f1f13.SetSecurityGroupIds(f1f13f1)
 			}
 			if cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.SubnetIDs != nil {
-				f1f12f2 := []*string{}
-				for _, f1f12f2iter := range cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.SubnetIDs {
-					var f1f12f2elem string
-					f1f12f2elem = *f1f12f2iter
-					f1f12f2 = append(f1f12f2, &f1f12f2elem)
+				f1f13f2 := []*string{}
+				for _, f1f13f2iter := range cr.Spec.ForProvider.AmazonopensearchserviceDestinationConfiguration.VPCConfiguration.SubnetIDs {
+					var f1f13f2elem string
+					f1f13f2elem = *f1f13f2iter
+					f1f13f2 = append(f1f13f2, &f1f13f2elem)
 				}
-				f1f12.SetSubnetIds(f1f12f2)
+				f1f13.SetSubnetIds(f1f13f2)
 			}
-			f1.SetVpcConfiguration(f1f12)
+			f1.SetVpcConfiguration(f1f13)
 		}
 		res.SetAmazonopensearchserviceDestinationConfiguration(f1)
 	}
@@ -443,6 +450,13 @@ func GenerateCreateDeliveryStreamInput(cr *svcapitypes.DeliveryStream) *svcsdk.C
 		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ClusterEndpoint != nil {
 			f5.SetClusterEndpoint(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ClusterEndpoint)
 		}
+		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.DocumentIDOptions != nil {
+			f5f3 := &svcsdk.DocumentIdOptions{}
+			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.DocumentIDOptions.DefaultDocumentIDFormat != nil {
+				f5f3.SetDefaultDocumentIdFormat(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.DocumentIDOptions.DefaultDocumentIDFormat)
+			}
+			f5.SetDocumentIdOptions(f5f3)
+		}
 		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.DomainARN != nil {
 			f5.SetDomainARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.DomainARN)
 		}
@@ -453,43 +467,43 @@ func GenerateCreateDeliveryStreamInput(cr *svcapitypes.DeliveryStream) *svcsdk.C
 			f5.SetIndexRotationPeriod(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.IndexRotationPeriod)
 		}
 		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ProcessingConfiguration != nil {
-			f5f6 := &svcsdk.ProcessingConfiguration{}
+			f5f7 := &svcsdk.ProcessingConfiguration{}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ProcessingConfiguration.Enabled != nil {
-				f5f6.SetEnabled(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ProcessingConfiguration.Enabled)
+				f5f7.SetEnabled(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ProcessingConfiguration.Enabled)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ProcessingConfiguration.Processors != nil {
-				f5f6f1 := []*svcsdk.Processor{}
-				for _, f5f6f1iter := range cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ProcessingConfiguration.Processors {
-					f5f6f1elem := &svcsdk.Processor{}
-					if f5f6f1iter.Parameters != nil {
-						f5f6f1elemf0 := []*svcsdk.ProcessorParameter{}
-						for _, f5f6f1elemf0iter := range f5f6f1iter.Parameters {
-							f5f6f1elemf0elem := &svcsdk.ProcessorParameter{}
-							if f5f6f1elemf0iter.ParameterName != nil {
-								f5f6f1elemf0elem.SetParameterName(*f5f6f1elemf0iter.ParameterName)
+				f5f7f1 := []*svcsdk.Processor{}
+				for _, f5f7f1iter := range cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.ProcessingConfiguration.Processors {
+					f5f7f1elem := &svcsdk.Processor{}
+					if f5f7f1iter.Parameters != nil {
+						f5f7f1elemf0 := []*svcsdk.ProcessorParameter{}
+						for _, f5f7f1elemf0iter := range f5f7f1iter.Parameters {
+							f5f7f1elemf0elem := &svcsdk.ProcessorParameter{}
+							if f5f7f1elemf0iter.ParameterName != nil {
+								f5f7f1elemf0elem.SetParameterName(*f5f7f1elemf0iter.ParameterName)
 							}
-							if f5f6f1elemf0iter.ParameterValue != nil {
-								f5f6f1elemf0elem.SetParameterValue(*f5f6f1elemf0iter.ParameterValue)
+							if f5f7f1elemf0iter.ParameterValue != nil {
+								f5f7f1elemf0elem.SetParameterValue(*f5f7f1elemf0iter.ParameterValue)
 							}
-							f5f6f1elemf0 = append(f5f6f1elemf0, f5f6f1elemf0elem)
+							f5f7f1elemf0 = append(f5f7f1elemf0, f5f7f1elemf0elem)
 						}
-						f5f6f1elem.SetParameters(f5f6f1elemf0)
+						f5f7f1elem.SetParameters(f5f7f1elemf0)
 					}
-					if f5f6f1iter.Type != nil {
-						f5f6f1elem.SetType(*f5f6f1iter.Type)
+					if f5f7f1iter.Type != nil {
+						f5f7f1elem.SetType(*f5f7f1iter.Type)
 					}
-					f5f6f1 = append(f5f6f1, f5f6f1elem)
+					f5f7f1 = append(f5f7f1, f5f7f1elem)
 				}
-				f5f6.SetProcessors(f5f6f1)
+				f5f7.SetProcessors(f5f7f1)
 			}
-			f5.SetProcessingConfiguration(f5f6)
+			f5.SetProcessingConfiguration(f5f7)
 		}
 		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.RetryOptions != nil {
-			f5f7 := &svcsdk.ElasticsearchRetryOptions{}
+			f5f8 := &svcsdk.ElasticsearchRetryOptions{}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.RetryOptions.DurationInSeconds != nil {
-				f5f7.SetDurationInSeconds(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.RetryOptions.DurationInSeconds)
+				f5f8.SetDurationInSeconds(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.RetryOptions.DurationInSeconds)
 			}
-			f5.SetRetryOptions(f5f7)
+			f5.SetRetryOptions(f5f8)
 		}
 		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.RoleARN != nil {
 			f5.SetRoleARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.RoleARN)
@@ -498,88 +512,88 @@ func GenerateCreateDeliveryStreamInput(cr *svcapitypes.DeliveryStream) *svcsdk.C
 			f5.SetS3BackupMode(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3BackupMode)
 		}
 		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration != nil {
-			f5f10 := &svcsdk.S3DestinationConfiguration{}
+			f5f11 := &svcsdk.S3DestinationConfiguration{}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BucketARN != nil {
-				f5f10.SetBucketARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BucketARN)
+				f5f11.SetBucketARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BucketARN)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BufferingHints != nil {
-				f5f10f1 := &svcsdk.BufferingHints{}
+				f5f11f1 := &svcsdk.BufferingHints{}
 				if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds != nil {
-					f5f10f1.SetIntervalInSeconds(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds)
+					f5f11f1.SetIntervalInSeconds(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds)
 				}
 				if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs != nil {
-					f5f10f1.SetSizeInMBs(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs)
+					f5f11f1.SetSizeInMBs(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs)
 				}
-				f5f10.SetBufferingHints(f5f10f1)
+				f5f11.SetBufferingHints(f5f11f1)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions != nil {
-				f5f10f2 := &svcsdk.CloudWatchLoggingOptions{}
+				f5f11f2 := &svcsdk.CloudWatchLoggingOptions{}
 				if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled != nil {
-					f5f10f2.SetEnabled(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled)
+					f5f11f2.SetEnabled(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled)
 				}
 				if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName != nil {
-					f5f10f2.SetLogGroupName(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName)
+					f5f11f2.SetLogGroupName(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName)
 				}
 				if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName != nil {
-					f5f10f2.SetLogStreamName(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName)
+					f5f11f2.SetLogStreamName(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName)
 				}
-				f5f10.SetCloudWatchLoggingOptions(f5f10f2)
+				f5f11.SetCloudWatchLoggingOptions(f5f11f2)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CompressionFormat != nil {
-				f5f10.SetCompressionFormat(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CompressionFormat)
+				f5f11.SetCompressionFormat(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.CompressionFormat)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.EncryptionConfiguration != nil {
-				f5f10f4 := &svcsdk.EncryptionConfiguration{}
+				f5f11f4 := &svcsdk.EncryptionConfiguration{}
 				if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig != nil {
-					f5f10f4f0 := &svcsdk.KMSEncryptionConfig{}
+					f5f11f4f0 := &svcsdk.KMSEncryptionConfig{}
 					if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN != nil {
-						f5f10f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
+						f5f11f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
 					}
-					f5f10f4.SetKMSEncryptionConfig(f5f10f4f0)
+					f5f11f4.SetKMSEncryptionConfig(f5f11f4f0)
 				}
 				if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig != nil {
-					f5f10f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig)
+					f5f11f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig)
 				}
-				f5f10.SetEncryptionConfiguration(f5f10f4)
+				f5f11.SetEncryptionConfiguration(f5f11f4)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.ErrorOutputPrefix != nil {
-				f5f10.SetErrorOutputPrefix(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.ErrorOutputPrefix)
+				f5f11.SetErrorOutputPrefix(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.ErrorOutputPrefix)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.Prefix != nil {
-				f5f10.SetPrefix(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.Prefix)
+				f5f11.SetPrefix(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.Prefix)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.RoleARN != nil {
-				f5f10.SetRoleARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.RoleARN)
+				f5f11.SetRoleARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.S3Configuration.RoleARN)
 			}
-			f5.SetS3Configuration(f5f10)
+			f5.SetS3Configuration(f5f11)
 		}
 		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.TypeName != nil {
 			f5.SetTypeName(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.TypeName)
 		}
 		if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration != nil {
-			f5f12 := &svcsdk.VpcConfiguration{}
+			f5f13 := &svcsdk.VpcConfiguration{}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.RoleARN != nil {
-				f5f12.SetRoleARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.RoleARN)
+				f5f13.SetRoleARN(*cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.RoleARN)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.SecurityGroupIDs != nil {
-				f5f12f1 := []*string{}
-				for _, f5f12f1iter := range cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.SecurityGroupIDs {
-					var f5f12f1elem string
-					f5f12f1elem = *f5f12f1iter
-					f5f12f1 = append(f5f12f1, &f5f12f1elem)
+				f5f13f1 := []*string{}
+				for _, f5f13f1iter := range cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.SecurityGroupIDs {
+					var f5f13f1elem string
+					f5f13f1elem = *f5f13f1iter
+					f5f13f1 = append(f5f13f1, &f5f13f1elem)
 				}
-				f5f12.SetSecurityGroupIds(f5f12f1)
+				f5f13.SetSecurityGroupIds(f5f13f1)
 			}
 			if cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.SubnetIDs != nil {
-				f5f12f2 := []*string{}
-				for _, f5f12f2iter := range cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.SubnetIDs {
-					var f5f12f2elem string
-					f5f12f2elem = *f5f12f2iter
-					f5f12f2 = append(f5f12f2, &f5f12f2elem)
+				f5f13f2 := []*string{}
+				for _, f5f13f2iter := range cr.Spec.ForProvider.ElasticsearchDestinationConfiguration.VPCConfiguration.SubnetIDs {
+					var f5f13f2elem string
+					f5f13f2elem = *f5f13f2iter
+					f5f13f2 = append(f5f13f2, &f5f13f2elem)
 				}
-				f5f12.SetSubnetIds(f5f12f2)
+				f5f13.SetSubnetIds(f5f13f2)
 			}
-			f5.SetVpcConfiguration(f5f12)
+			f5.SetVpcConfiguration(f5f13)
 		}
 		res.SetElasticsearchDestinationConfiguration(f5)
 	}
@@ -1055,398 +1069,418 @@ func GenerateCreateDeliveryStreamInput(cr *svcapitypes.DeliveryStream) *svcsdk.C
 		}
 		res.SetKinesisStreamSourceConfiguration(f8)
 	}
+	if cr.Spec.ForProvider.MSKSourceConfiguration != nil {
+		f9 := &svcsdk.MSKSourceConfiguration{}
+		if cr.Spec.ForProvider.MSKSourceConfiguration.AuthenticationConfiguration != nil {
+			f9f0 := &svcsdk.AuthenticationConfiguration{}
+			if cr.Spec.ForProvider.MSKSourceConfiguration.AuthenticationConfiguration.Connectivity != nil {
+				f9f0.SetConnectivity(*cr.Spec.ForProvider.MSKSourceConfiguration.AuthenticationConfiguration.Connectivity)
+			}
+			if cr.Spec.ForProvider.MSKSourceConfiguration.AuthenticationConfiguration.RoleARN != nil {
+				f9f0.SetRoleARN(*cr.Spec.ForProvider.MSKSourceConfiguration.AuthenticationConfiguration.RoleARN)
+			}
+			f9.SetAuthenticationConfiguration(f9f0)
+		}
+		if cr.Spec.ForProvider.MSKSourceConfiguration.MSKClusterARN != nil {
+			f9.SetMSKClusterARN(*cr.Spec.ForProvider.MSKSourceConfiguration.MSKClusterARN)
+		}
+		if cr.Spec.ForProvider.MSKSourceConfiguration.TopicName != nil {
+			f9.SetTopicName(*cr.Spec.ForProvider.MSKSourceConfiguration.TopicName)
+		}
+		res.SetMSKSourceConfiguration(f9)
+	}
 	if cr.Spec.ForProvider.RedshiftDestinationConfiguration != nil {
-		f9 := &svcsdk.RedshiftDestinationConfiguration{}
+		f10 := &svcsdk.RedshiftDestinationConfiguration{}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions != nil {
-			f9f0 := &svcsdk.CloudWatchLoggingOptions{}
+			f10f0 := &svcsdk.CloudWatchLoggingOptions{}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.Enabled != nil {
-				f9f0.SetEnabled(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.Enabled)
+				f10f0.SetEnabled(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.Enabled)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.LogGroupName != nil {
-				f9f0.SetLogGroupName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.LogGroupName)
+				f10f0.SetLogGroupName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.LogGroupName)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.LogStreamName != nil {
-				f9f0.SetLogStreamName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.LogStreamName)
+				f10f0.SetLogStreamName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CloudWatchLoggingOptions.LogStreamName)
 			}
-			f9.SetCloudWatchLoggingOptions(f9f0)
+			f10.SetCloudWatchLoggingOptions(f10f0)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.ClusterJDBCURL != nil {
-			f9.SetClusterJDBCURL(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.ClusterJDBCURL)
+			f10.SetClusterJDBCURL(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.ClusterJDBCURL)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand != nil {
-			f9f2 := &svcsdk.CopyCommand{}
+			f10f2 := &svcsdk.CopyCommand{}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.CopyOptions != nil {
-				f9f2.SetCopyOptions(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.CopyOptions)
+				f10f2.SetCopyOptions(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.CopyOptions)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.DataTableColumns != nil {
-				f9f2.SetDataTableColumns(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.DataTableColumns)
+				f10f2.SetDataTableColumns(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.DataTableColumns)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.DataTableName != nil {
-				f9f2.SetDataTableName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.DataTableName)
+				f10f2.SetDataTableName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.CopyCommand.DataTableName)
 			}
-			f9.SetCopyCommand(f9f2)
+			f10.SetCopyCommand(f10f2)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.Password != nil {
-			f9.SetPassword(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.Password)
+			f10.SetPassword(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.Password)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.ProcessingConfiguration != nil {
-			f9f4 := &svcsdk.ProcessingConfiguration{}
+			f10f4 := &svcsdk.ProcessingConfiguration{}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.ProcessingConfiguration.Enabled != nil {
-				f9f4.SetEnabled(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.ProcessingConfiguration.Enabled)
+				f10f4.SetEnabled(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.ProcessingConfiguration.Enabled)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.ProcessingConfiguration.Processors != nil {
-				f9f4f1 := []*svcsdk.Processor{}
-				for _, f9f4f1iter := range cr.Spec.ForProvider.RedshiftDestinationConfiguration.ProcessingConfiguration.Processors {
-					f9f4f1elem := &svcsdk.Processor{}
-					if f9f4f1iter.Parameters != nil {
-						f9f4f1elemf0 := []*svcsdk.ProcessorParameter{}
-						for _, f9f4f1elemf0iter := range f9f4f1iter.Parameters {
-							f9f4f1elemf0elem := &svcsdk.ProcessorParameter{}
-							if f9f4f1elemf0iter.ParameterName != nil {
-								f9f4f1elemf0elem.SetParameterName(*f9f4f1elemf0iter.ParameterName)
+				f10f4f1 := []*svcsdk.Processor{}
+				for _, f10f4f1iter := range cr.Spec.ForProvider.RedshiftDestinationConfiguration.ProcessingConfiguration.Processors {
+					f10f4f1elem := &svcsdk.Processor{}
+					if f10f4f1iter.Parameters != nil {
+						f10f4f1elemf0 := []*svcsdk.ProcessorParameter{}
+						for _, f10f4f1elemf0iter := range f10f4f1iter.Parameters {
+							f10f4f1elemf0elem := &svcsdk.ProcessorParameter{}
+							if f10f4f1elemf0iter.ParameterName != nil {
+								f10f4f1elemf0elem.SetParameterName(*f10f4f1elemf0iter.ParameterName)
 							}
-							if f9f4f1elemf0iter.ParameterValue != nil {
-								f9f4f1elemf0elem.SetParameterValue(*f9f4f1elemf0iter.ParameterValue)
+							if f10f4f1elemf0iter.ParameterValue != nil {
+								f10f4f1elemf0elem.SetParameterValue(*f10f4f1elemf0iter.ParameterValue)
 							}
-							f9f4f1elemf0 = append(f9f4f1elemf0, f9f4f1elemf0elem)
+							f10f4f1elemf0 = append(f10f4f1elemf0, f10f4f1elemf0elem)
 						}
-						f9f4f1elem.SetParameters(f9f4f1elemf0)
+						f10f4f1elem.SetParameters(f10f4f1elemf0)
 					}
-					if f9f4f1iter.Type != nil {
-						f9f4f1elem.SetType(*f9f4f1iter.Type)
+					if f10f4f1iter.Type != nil {
+						f10f4f1elem.SetType(*f10f4f1iter.Type)
 					}
-					f9f4f1 = append(f9f4f1, f9f4f1elem)
+					f10f4f1 = append(f10f4f1, f10f4f1elem)
 				}
-				f9f4.SetProcessors(f9f4f1)
+				f10f4.SetProcessors(f10f4f1)
 			}
-			f9.SetProcessingConfiguration(f9f4)
+			f10.SetProcessingConfiguration(f10f4)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.RetryOptions != nil {
-			f9f5 := &svcsdk.RedshiftRetryOptions{}
+			f10f5 := &svcsdk.RedshiftRetryOptions{}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.RetryOptions.DurationInSeconds != nil {
-				f9f5.SetDurationInSeconds(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.RetryOptions.DurationInSeconds)
+				f10f5.SetDurationInSeconds(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.RetryOptions.DurationInSeconds)
 			}
-			f9.SetRetryOptions(f9f5)
+			f10.SetRetryOptions(f10f5)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.RoleARN != nil {
-			f9.SetRoleARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.RoleARN)
+			f10.SetRoleARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.RoleARN)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration != nil {
-			f9f7 := &svcsdk.S3DestinationConfiguration{}
+			f10f7 := &svcsdk.S3DestinationConfiguration{}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BucketARN != nil {
-				f9f7.SetBucketARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BucketARN)
+				f10f7.SetBucketARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BucketARN)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BufferingHints != nil {
-				f9f7f1 := &svcsdk.BufferingHints{}
+				f10f7f1 := &svcsdk.BufferingHints{}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BufferingHints.IntervalInSeconds != nil {
-					f9f7f1.SetIntervalInSeconds(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BufferingHints.IntervalInSeconds)
+					f10f7f1.SetIntervalInSeconds(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BufferingHints.IntervalInSeconds)
 				}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BufferingHints.SizeInMBs != nil {
-					f9f7f1.SetSizeInMBs(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BufferingHints.SizeInMBs)
+					f10f7f1.SetSizeInMBs(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.BufferingHints.SizeInMBs)
 				}
-				f9f7.SetBufferingHints(f9f7f1)
+				f10f7.SetBufferingHints(f10f7f1)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions != nil {
-				f9f7f2 := &svcsdk.CloudWatchLoggingOptions{}
+				f10f7f2 := &svcsdk.CloudWatchLoggingOptions{}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.Enabled != nil {
-					f9f7f2.SetEnabled(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.Enabled)
+					f10f7f2.SetEnabled(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.Enabled)
 				}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.LogGroupName != nil {
-					f9f7f2.SetLogGroupName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.LogGroupName)
+					f10f7f2.SetLogGroupName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.LogGroupName)
 				}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.LogStreamName != nil {
-					f9f7f2.SetLogStreamName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.LogStreamName)
+					f10f7f2.SetLogStreamName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CloudWatchLoggingOptions.LogStreamName)
 				}
-				f9f7.SetCloudWatchLoggingOptions(f9f7f2)
+				f10f7.SetCloudWatchLoggingOptions(f10f7f2)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CompressionFormat != nil {
-				f9f7.SetCompressionFormat(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CompressionFormat)
+				f10f7.SetCompressionFormat(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.CompressionFormat)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.EncryptionConfiguration != nil {
-				f9f7f4 := &svcsdk.EncryptionConfiguration{}
+				f10f7f4 := &svcsdk.EncryptionConfiguration{}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.EncryptionConfiguration.KMSEncryptionConfig != nil {
-					f9f7f4f0 := &svcsdk.KMSEncryptionConfig{}
+					f10f7f4f0 := &svcsdk.KMSEncryptionConfig{}
 					if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN != nil {
-						f9f7f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
+						f10f7f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
 					}
-					f9f7f4.SetKMSEncryptionConfig(f9f7f4f0)
+					f10f7f4.SetKMSEncryptionConfig(f10f7f4f0)
 				}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.EncryptionConfiguration.NoEncryptionConfig != nil {
-					f9f7f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.EncryptionConfiguration.NoEncryptionConfig)
+					f10f7f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.EncryptionConfiguration.NoEncryptionConfig)
 				}
-				f9f7.SetEncryptionConfiguration(f9f7f4)
+				f10f7.SetEncryptionConfiguration(f10f7f4)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.ErrorOutputPrefix != nil {
-				f9f7.SetErrorOutputPrefix(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.ErrorOutputPrefix)
+				f10f7.SetErrorOutputPrefix(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.ErrorOutputPrefix)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.Prefix != nil {
-				f9f7.SetPrefix(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.Prefix)
+				f10f7.SetPrefix(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.Prefix)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.RoleARN != nil {
-				f9f7.SetRoleARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.RoleARN)
+				f10f7.SetRoleARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupConfiguration.RoleARN)
 			}
-			f9.SetS3BackupConfiguration(f9f7)
+			f10.SetS3BackupConfiguration(f10f7)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupMode != nil {
-			f9.SetS3BackupMode(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupMode)
+			f10.SetS3BackupMode(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3BackupMode)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration != nil {
-			f9f9 := &svcsdk.S3DestinationConfiguration{}
+			f10f9 := &svcsdk.S3DestinationConfiguration{}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BucketARN != nil {
-				f9f9.SetBucketARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BucketARN)
+				f10f9.SetBucketARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BucketARN)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BufferingHints != nil {
-				f9f9f1 := &svcsdk.BufferingHints{}
+				f10f9f1 := &svcsdk.BufferingHints{}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds != nil {
-					f9f9f1.SetIntervalInSeconds(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds)
+					f10f9f1.SetIntervalInSeconds(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds)
 				}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs != nil {
-					f9f9f1.SetSizeInMBs(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs)
+					f10f9f1.SetSizeInMBs(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs)
 				}
-				f9f9.SetBufferingHints(f9f9f1)
+				f10f9.SetBufferingHints(f10f9f1)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions != nil {
-				f9f9f2 := &svcsdk.CloudWatchLoggingOptions{}
+				f10f9f2 := &svcsdk.CloudWatchLoggingOptions{}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled != nil {
-					f9f9f2.SetEnabled(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled)
+					f10f9f2.SetEnabled(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled)
 				}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName != nil {
-					f9f9f2.SetLogGroupName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName)
+					f10f9f2.SetLogGroupName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName)
 				}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName != nil {
-					f9f9f2.SetLogStreamName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName)
+					f10f9f2.SetLogStreamName(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName)
 				}
-				f9f9.SetCloudWatchLoggingOptions(f9f9f2)
+				f10f9.SetCloudWatchLoggingOptions(f10f9f2)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CompressionFormat != nil {
-				f9f9.SetCompressionFormat(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CompressionFormat)
+				f10f9.SetCompressionFormat(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.CompressionFormat)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.EncryptionConfiguration != nil {
-				f9f9f4 := &svcsdk.EncryptionConfiguration{}
+				f10f9f4 := &svcsdk.EncryptionConfiguration{}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig != nil {
-					f9f9f4f0 := &svcsdk.KMSEncryptionConfig{}
+					f10f9f4f0 := &svcsdk.KMSEncryptionConfig{}
 					if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN != nil {
-						f9f9f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
+						f10f9f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
 					}
-					f9f9f4.SetKMSEncryptionConfig(f9f9f4f0)
+					f10f9f4.SetKMSEncryptionConfig(f10f9f4f0)
 				}
 				if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig != nil {
-					f9f9f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig)
+					f10f9f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig)
 				}
-				f9f9.SetEncryptionConfiguration(f9f9f4)
+				f10f9.SetEncryptionConfiguration(f10f9f4)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.ErrorOutputPrefix != nil {
-				f9f9.SetErrorOutputPrefix(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.ErrorOutputPrefix)
+				f10f9.SetErrorOutputPrefix(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.ErrorOutputPrefix)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.Prefix != nil {
-				f9f9.SetPrefix(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.Prefix)
+				f10f9.SetPrefix(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.Prefix)
 			}
 			if cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.RoleARN != nil {
-				f9f9.SetRoleARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.RoleARN)
+				f10f9.SetRoleARN(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.S3Configuration.RoleARN)
 			}
-			f9.SetS3Configuration(f9f9)
+			f10.SetS3Configuration(f10f9)
 		}
 		if cr.Spec.ForProvider.RedshiftDestinationConfiguration.Username != nil {
-			f9.SetUsername(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.Username)
+			f10.SetUsername(*cr.Spec.ForProvider.RedshiftDestinationConfiguration.Username)
 		}
-		res.SetRedshiftDestinationConfiguration(f9)
+		res.SetRedshiftDestinationConfiguration(f10)
 	}
 	if cr.Spec.ForProvider.S3DestinationConfiguration != nil {
-		f10 := &svcsdk.S3DestinationConfiguration{}
+		f11 := &svcsdk.S3DestinationConfiguration{}
 		if cr.Spec.ForProvider.S3DestinationConfiguration.BucketARN != nil {
-			f10.SetBucketARN(*cr.Spec.ForProvider.S3DestinationConfiguration.BucketARN)
+			f11.SetBucketARN(*cr.Spec.ForProvider.S3DestinationConfiguration.BucketARN)
 		}
 		if cr.Spec.ForProvider.S3DestinationConfiguration.BufferingHints != nil {
-			f10f1 := &svcsdk.BufferingHints{}
+			f11f1 := &svcsdk.BufferingHints{}
 			if cr.Spec.ForProvider.S3DestinationConfiguration.BufferingHints.IntervalInSeconds != nil {
-				f10f1.SetIntervalInSeconds(*cr.Spec.ForProvider.S3DestinationConfiguration.BufferingHints.IntervalInSeconds)
+				f11f1.SetIntervalInSeconds(*cr.Spec.ForProvider.S3DestinationConfiguration.BufferingHints.IntervalInSeconds)
 			}
 			if cr.Spec.ForProvider.S3DestinationConfiguration.BufferingHints.SizeInMBs != nil {
-				f10f1.SetSizeInMBs(*cr.Spec.ForProvider.S3DestinationConfiguration.BufferingHints.SizeInMBs)
+				f11f1.SetSizeInMBs(*cr.Spec.ForProvider.S3DestinationConfiguration.BufferingHints.SizeInMBs)
 			}
-			f10.SetBufferingHints(f10f1)
+			f11.SetBufferingHints(f11f1)
 		}
 		if cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions != nil {
-			f10f2 := &svcsdk.CloudWatchLoggingOptions{}
+			f11f2 := &svcsdk.CloudWatchLoggingOptions{}
 			if cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.Enabled != nil {
-				f10f2.SetEnabled(*cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.Enabled)
+				f11f2.SetEnabled(*cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.Enabled)
 			}
 			if cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.LogGroupName != nil {
-				f10f2.SetLogGroupName(*cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.LogGroupName)
+				f11f2.SetLogGroupName(*cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.LogGroupName)
 			}
 			if cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.LogStreamName != nil {
-				f10f2.SetLogStreamName(*cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.LogStreamName)
+				f11f2.SetLogStreamName(*cr.Spec.ForProvider.S3DestinationConfiguration.CloudWatchLoggingOptions.LogStreamName)
 			}
-			f10.SetCloudWatchLoggingOptions(f10f2)
+			f11.SetCloudWatchLoggingOptions(f11f2)
 		}
 		if cr.Spec.ForProvider.S3DestinationConfiguration.CompressionFormat != nil {
-			f10.SetCompressionFormat(*cr.Spec.ForProvider.S3DestinationConfiguration.CompressionFormat)
+			f11.SetCompressionFormat(*cr.Spec.ForProvider.S3DestinationConfiguration.CompressionFormat)
 		}
 		if cr.Spec.ForProvider.S3DestinationConfiguration.EncryptionConfiguration != nil {
-			f10f4 := &svcsdk.EncryptionConfiguration{}
+			f11f4 := &svcsdk.EncryptionConfiguration{}
 			if cr.Spec.ForProvider.S3DestinationConfiguration.EncryptionConfiguration.KMSEncryptionConfig != nil {
-				f10f4f0 := &svcsdk.KMSEncryptionConfig{}
+				f11f4f0 := &svcsdk.KMSEncryptionConfig{}
 				if cr.Spec.ForProvider.S3DestinationConfiguration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN != nil {
-					f10f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.S3DestinationConfiguration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
+					f11f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.S3DestinationConfiguration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
 				}
-				f10f4.SetKMSEncryptionConfig(f10f4f0)
+				f11f4.SetKMSEncryptionConfig(f11f4f0)
 			}
 			if cr.Spec.ForProvider.S3DestinationConfiguration.EncryptionConfiguration.NoEncryptionConfig != nil {
-				f10f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.S3DestinationConfiguration.EncryptionConfiguration.NoEncryptionConfig)
+				f11f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.S3DestinationConfiguration.EncryptionConfiguration.NoEncryptionConfig)
 			}
-			f10.SetEncryptionConfiguration(f10f4)
+			f11.SetEncryptionConfiguration(f11f4)
 		}
 		if cr.Spec.ForProvider.S3DestinationConfiguration.ErrorOutputPrefix != nil {
-			f10.SetErrorOutputPrefix(*cr.Spec.ForProvider.S3DestinationConfiguration.ErrorOutputPrefix)
+			f11.SetErrorOutputPrefix(*cr.Spec.ForProvider.S3DestinationConfiguration.ErrorOutputPrefix)
 		}
 		if cr.Spec.ForProvider.S3DestinationConfiguration.Prefix != nil {
-			f10.SetPrefix(*cr.Spec.ForProvider.S3DestinationConfiguration.Prefix)
+			f11.SetPrefix(*cr.Spec.ForProvider.S3DestinationConfiguration.Prefix)
 		}
 		if cr.Spec.ForProvider.S3DestinationConfiguration.RoleARN != nil {
-			f10.SetRoleARN(*cr.Spec.ForProvider.S3DestinationConfiguration.RoleARN)
+			f11.SetRoleARN(*cr.Spec.ForProvider.S3DestinationConfiguration.RoleARN)
 		}
-		res.SetS3DestinationConfiguration(f10)
+		res.SetS3DestinationConfiguration(f11)
 	}
 	if cr.Spec.ForProvider.SplunkDestinationConfiguration != nil {
-		f11 := &svcsdk.SplunkDestinationConfiguration{}
+		f12 := &svcsdk.SplunkDestinationConfiguration{}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions != nil {
-			f11f0 := &svcsdk.CloudWatchLoggingOptions{}
+			f12f0 := &svcsdk.CloudWatchLoggingOptions{}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.Enabled != nil {
-				f11f0.SetEnabled(*cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.Enabled)
+				f12f0.SetEnabled(*cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.Enabled)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.LogGroupName != nil {
-				f11f0.SetLogGroupName(*cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.LogGroupName)
+				f12f0.SetLogGroupName(*cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.LogGroupName)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.LogStreamName != nil {
-				f11f0.SetLogStreamName(*cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.LogStreamName)
+				f12f0.SetLogStreamName(*cr.Spec.ForProvider.SplunkDestinationConfiguration.CloudWatchLoggingOptions.LogStreamName)
 			}
-			f11.SetCloudWatchLoggingOptions(f11f0)
+			f12.SetCloudWatchLoggingOptions(f12f0)
 		}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.HECAcknowledgmentTimeoutInSeconds != nil {
-			f11.SetHECAcknowledgmentTimeoutInSeconds(*cr.Spec.ForProvider.SplunkDestinationConfiguration.HECAcknowledgmentTimeoutInSeconds)
+			f12.SetHECAcknowledgmentTimeoutInSeconds(*cr.Spec.ForProvider.SplunkDestinationConfiguration.HECAcknowledgmentTimeoutInSeconds)
 		}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.HECEndpoint != nil {
-			f11.SetHECEndpoint(*cr.Spec.ForProvider.SplunkDestinationConfiguration.HECEndpoint)
+			f12.SetHECEndpoint(*cr.Spec.ForProvider.SplunkDestinationConfiguration.HECEndpoint)
 		}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.HECEndpointType != nil {
-			f11.SetHECEndpointType(*cr.Spec.ForProvider.SplunkDestinationConfiguration.HECEndpointType)
+			f12.SetHECEndpointType(*cr.Spec.ForProvider.SplunkDestinationConfiguration.HECEndpointType)
 		}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.HECToken != nil {
-			f11.SetHECToken(*cr.Spec.ForProvider.SplunkDestinationConfiguration.HECToken)
+			f12.SetHECToken(*cr.Spec.ForProvider.SplunkDestinationConfiguration.HECToken)
 		}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.ProcessingConfiguration != nil {
-			f11f5 := &svcsdk.ProcessingConfiguration{}
+			f12f5 := &svcsdk.ProcessingConfiguration{}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.ProcessingConfiguration.Enabled != nil {
-				f11f5.SetEnabled(*cr.Spec.ForProvider.SplunkDestinationConfiguration.ProcessingConfiguration.Enabled)
+				f12f5.SetEnabled(*cr.Spec.ForProvider.SplunkDestinationConfiguration.ProcessingConfiguration.Enabled)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.ProcessingConfiguration.Processors != nil {
-				f11f5f1 := []*svcsdk.Processor{}
-				for _, f11f5f1iter := range cr.Spec.ForProvider.SplunkDestinationConfiguration.ProcessingConfiguration.Processors {
-					f11f5f1elem := &svcsdk.Processor{}
-					if f11f5f1iter.Parameters != nil {
-						f11f5f1elemf0 := []*svcsdk.ProcessorParameter{}
-						for _, f11f5f1elemf0iter := range f11f5f1iter.Parameters {
-							f11f5f1elemf0elem := &svcsdk.ProcessorParameter{}
-							if f11f5f1elemf0iter.ParameterName != nil {
-								f11f5f1elemf0elem.SetParameterName(*f11f5f1elemf0iter.ParameterName)
+				f12f5f1 := []*svcsdk.Processor{}
+				for _, f12f5f1iter := range cr.Spec.ForProvider.SplunkDestinationConfiguration.ProcessingConfiguration.Processors {
+					f12f5f1elem := &svcsdk.Processor{}
+					if f12f5f1iter.Parameters != nil {
+						f12f5f1elemf0 := []*svcsdk.ProcessorParameter{}
+						for _, f12f5f1elemf0iter := range f12f5f1iter.Parameters {
+							f12f5f1elemf0elem := &svcsdk.ProcessorParameter{}
+							if f12f5f1elemf0iter.ParameterName != nil {
+								f12f5f1elemf0elem.SetParameterName(*f12f5f1elemf0iter.ParameterName)
 							}
-							if f11f5f1elemf0iter.ParameterValue != nil {
-								f11f5f1elemf0elem.SetParameterValue(*f11f5f1elemf0iter.ParameterValue)
+							if f12f5f1elemf0iter.ParameterValue != nil {
+								f12f5f1elemf0elem.SetParameterValue(*f12f5f1elemf0iter.ParameterValue)
 							}
-							f11f5f1elemf0 = append(f11f5f1elemf0, f11f5f1elemf0elem)
+							f12f5f1elemf0 = append(f12f5f1elemf0, f12f5f1elemf0elem)
 						}
-						f11f5f1elem.SetParameters(f11f5f1elemf0)
+						f12f5f1elem.SetParameters(f12f5f1elemf0)
 					}
-					if f11f5f1iter.Type != nil {
-						f11f5f1elem.SetType(*f11f5f1iter.Type)
+					if f12f5f1iter.Type != nil {
+						f12f5f1elem.SetType(*f12f5f1iter.Type)
 					}
-					f11f5f1 = append(f11f5f1, f11f5f1elem)
+					f12f5f1 = append(f12f5f1, f12f5f1elem)
 				}
-				f11f5.SetProcessors(f11f5f1)
+				f12f5.SetProcessors(f12f5f1)
 			}
-			f11.SetProcessingConfiguration(f11f5)
+			f12.SetProcessingConfiguration(f12f5)
 		}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.RetryOptions != nil {
-			f11f6 := &svcsdk.SplunkRetryOptions{}
+			f12f6 := &svcsdk.SplunkRetryOptions{}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.RetryOptions.DurationInSeconds != nil {
-				f11f6.SetDurationInSeconds(*cr.Spec.ForProvider.SplunkDestinationConfiguration.RetryOptions.DurationInSeconds)
+				f12f6.SetDurationInSeconds(*cr.Spec.ForProvider.SplunkDestinationConfiguration.RetryOptions.DurationInSeconds)
 			}
-			f11.SetRetryOptions(f11f6)
+			f12.SetRetryOptions(f12f6)
 		}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3BackupMode != nil {
-			f11.SetS3BackupMode(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3BackupMode)
+			f12.SetS3BackupMode(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3BackupMode)
 		}
 		if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration != nil {
-			f11f8 := &svcsdk.S3DestinationConfiguration{}
+			f12f8 := &svcsdk.S3DestinationConfiguration{}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BucketARN != nil {
-				f11f8.SetBucketARN(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BucketARN)
+				f12f8.SetBucketARN(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BucketARN)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BufferingHints != nil {
-				f11f8f1 := &svcsdk.BufferingHints{}
+				f12f8f1 := &svcsdk.BufferingHints{}
 				if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds != nil {
-					f11f8f1.SetIntervalInSeconds(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds)
+					f12f8f1.SetIntervalInSeconds(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BufferingHints.IntervalInSeconds)
 				}
 				if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs != nil {
-					f11f8f1.SetSizeInMBs(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs)
+					f12f8f1.SetSizeInMBs(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.BufferingHints.SizeInMBs)
 				}
-				f11f8.SetBufferingHints(f11f8f1)
+				f12f8.SetBufferingHints(f12f8f1)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions != nil {
-				f11f8f2 := &svcsdk.CloudWatchLoggingOptions{}
+				f12f8f2 := &svcsdk.CloudWatchLoggingOptions{}
 				if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled != nil {
-					f11f8f2.SetEnabled(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled)
+					f12f8f2.SetEnabled(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.Enabled)
 				}
 				if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName != nil {
-					f11f8f2.SetLogGroupName(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName)
+					f12f8f2.SetLogGroupName(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogGroupName)
 				}
 				if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName != nil {
-					f11f8f2.SetLogStreamName(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName)
+					f12f8f2.SetLogStreamName(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CloudWatchLoggingOptions.LogStreamName)
 				}
-				f11f8.SetCloudWatchLoggingOptions(f11f8f2)
+				f12f8.SetCloudWatchLoggingOptions(f12f8f2)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CompressionFormat != nil {
-				f11f8.SetCompressionFormat(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CompressionFormat)
+				f12f8.SetCompressionFormat(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.CompressionFormat)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.EncryptionConfiguration != nil {
-				f11f8f4 := &svcsdk.EncryptionConfiguration{}
+				f12f8f4 := &svcsdk.EncryptionConfiguration{}
 				if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig != nil {
-					f11f8f4f0 := &svcsdk.KMSEncryptionConfig{}
+					f12f8f4f0 := &svcsdk.KMSEncryptionConfig{}
 					if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN != nil {
-						f11f8f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
+						f12f8f4f0.SetAWSKMSKeyARN(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.EncryptionConfiguration.KMSEncryptionConfig.AWSKMSKeyARN)
 					}
-					f11f8f4.SetKMSEncryptionConfig(f11f8f4f0)
+					f12f8f4.SetKMSEncryptionConfig(f12f8f4f0)
 				}
 				if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig != nil {
-					f11f8f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig)
+					f12f8f4.SetNoEncryptionConfig(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.EncryptionConfiguration.NoEncryptionConfig)
 				}
-				f11f8.SetEncryptionConfiguration(f11f8f4)
+				f12f8.SetEncryptionConfiguration(f12f8f4)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.ErrorOutputPrefix != nil {
-				f11f8.SetErrorOutputPrefix(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.ErrorOutputPrefix)
+				f12f8.SetErrorOutputPrefix(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.ErrorOutputPrefix)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.Prefix != nil {
-				f11f8.SetPrefix(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.Prefix)
+				f12f8.SetPrefix(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.Prefix)
 			}
 			if cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.RoleARN != nil {
-				f11f8.SetRoleARN(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.RoleARN)
+				f12f8.SetRoleARN(*cr.Spec.ForProvider.SplunkDestinationConfiguration.S3Configuration.RoleARN)
 			}
-			f11.SetS3Configuration(f11f8)
+			f12.SetS3Configuration(f12f8)
 		}
-		res.SetSplunkDestinationConfiguration(f11)
+		res.SetSplunkDestinationConfiguration(f12)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f12 := []*svcsdk.Tag{}
-		for _, f12iter := range cr.Spec.ForProvider.Tags {
-			f12elem := &svcsdk.Tag{}
-			if f12iter.Key != nil {
-				f12elem.SetKey(*f12iter.Key)
+		f13 := []*svcsdk.Tag{}
+		for _, f13iter := range cr.Spec.ForProvider.Tags {
+			f13elem := &svcsdk.Tag{}
+			if f13iter.Key != nil {
+				f13elem.SetKey(*f13iter.Key)
 			}
-			if f12iter.Value != nil {
-				f12elem.SetValue(*f12iter.Value)
+			if f13iter.Value != nil {
+				f13elem.SetValue(*f13iter.Value)
 			}
-			f12 = append(f12, f12elem)
+			f13 = append(f13, f13elem)
 		}
-		res.SetTags(f12)
+		res.SetTags(f13)
 	}
 
 	return res

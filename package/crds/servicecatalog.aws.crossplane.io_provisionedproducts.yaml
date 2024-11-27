@@ -414,7 +414,7 @@ spec:
                   provisionedProductType:
                     description: |-
                       The type of provisioned product. The supported values are CFN_STACK, CFN_STACKSET,
-                      TERRAFORM_OPEN_SOURCE, and TERRAFORM_CLOUD.
+                      TERRAFORM_OPEN_SOURCE, TERRAFORM_CLOUD, and EXTERNAL.
                     type: string
                   recordErrors:
                     description: The errors that occurred.

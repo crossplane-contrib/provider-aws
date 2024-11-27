@@ -838,6 +838,10 @@ spec:
                       Oracle background processes. If you don't specify a SID, the value defaults
                       to RDSCDB. The Oracle SID is also the name of your CDB.
                     type: string
+                  dedicatedLogVolume:
+                    description: Indicates whether the DB instance has a dedicated
+                      log volume (DLV) enabled.
+                    type: boolean
                   deleteAutomatedBackups:
                     description: |-
                       DeleteAutomatedBackups indicates whether to remove automated backups
@@ -1654,6 +1658,25 @@ spec:
 
 
                          * RDS Custom
+                    type: boolean
+                  multiTenant:
+                    description: |-
+                      Specifies whether to use the multi-tenant configuration or the single-tenant
+                      configuration (default). This parameter only applies to RDS for Oracle container
+                      database (CDB) engines.
+
+
+                      Note the following restrictions:
+
+
+                         * The DB engine that you specify in the request must support the multi-tenant
+                         configuration. If you attempt to enable the multi-tenant configuration
+                         on a DB engine that doesn't support it, the request fails.
+
+
+                         * If you specify the multi-tenant configuration when you create your DB
+                         instance, you can't later modify this DB instance to use the single-tenant
+                         configuration.
                     type: boolean
                   ncharCharacterSetName:
                     description: |-
@@ -2639,6 +2662,14 @@ spec:
                     description: The date and time when the DB instance was created.
                     format: date-time
                     type: string
+                  isStorageConfigUpgradeAvailable:
+                    description: |-
+                      Indicates whether an upgrade is recommended for the storage file system configuration
+                      on the DB instance. To migrate to the preferred configuration, you can either
+                      create a blue/green deployment, or create a read replica from the DB instance.
+                      For more information, see Upgrading the storage file system for a DB instance
+                      (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.UpgradeFileSystem).
+                    type: boolean
                   latestRestorableTime:
                     description: |-
                       The latest time to which a database in this DB instance can be restored with
@@ -2707,6 +2738,8 @@ spec:
                         type: string
                       dbSubnetGroupName:
                         type: string
+                      dedicatedLogVolume:
+                        type: boolean
                       engine:
                         type: string
                       engineVersion:
@@ -2721,6 +2754,8 @@ spec:
                       masterUserPassword:
                         type: string
                       multiAZ:
+                        type: boolean
+                      multiTenant:
                         type: boolean
                       pendingCloudwatchLogsExports:
                         description: |-

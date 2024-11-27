@@ -2,6 +2,7 @@ ignore:
   resource_names:
     - ClusterV2
     - VpcConnection
+    - Replicator
   field_paths:
     - CreateClusterInput.BrokerNodeGroupInfo
     - CreateClusterInput.ConfigurationInfo

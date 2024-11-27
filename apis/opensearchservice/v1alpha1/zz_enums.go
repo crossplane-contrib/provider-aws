@@ -95,6 +95,8 @@ const (
 	DescribePackagesFilterName_PackageID     DescribePackagesFilterName = "PackageID"
 	DescribePackagesFilterName_PackageName   DescribePackagesFilterName = "PackageName"
 	DescribePackagesFilterName_PackageStatus DescribePackagesFilterName = "PackageStatus"
+	DescribePackagesFilterName_PackageType   DescribePackagesFilterName = "PackageType"
+	DescribePackagesFilterName_EngineVersion DescribePackagesFilterName = "EngineVersion"
 )
 
 type DomainHealth string
@@ -138,6 +140,13 @@ const (
 	EngineType_Elasticsearch EngineType = "Elasticsearch"
 )
 
+type IPAddressType string
+
+const (
+	IPAddressType_ipv4      IPAddressType = "ipv4"
+	IPAddressType_dualstack IPAddressType = "dualstack"
+)
+
 type InboundConnectionStatusCode string
 
 const (
@@ -158,6 +167,24 @@ const (
 	LogType_SEARCH_SLOW_LOGS    LogType = "SEARCH_SLOW_LOGS"
 	LogType_ES_APPLICATION_LOGS LogType = "ES_APPLICATION_LOGS"
 	LogType_AUDIT_LOGS          LogType = "AUDIT_LOGS"
+)
+
+type MaintenanceStatus string
+
+const (
+	MaintenanceStatus_PENDING     MaintenanceStatus = "PENDING"
+	MaintenanceStatus_IN_PROGRESS MaintenanceStatus = "IN_PROGRESS"
+	MaintenanceStatus_COMPLETED   MaintenanceStatus = "COMPLETED"
+	MaintenanceStatus_FAILED      MaintenanceStatus = "FAILED"
+	MaintenanceStatus_TIMED_OUT   MaintenanceStatus = "TIMED_OUT"
+)
+
+type MaintenanceType string
+
+const (
+	MaintenanceType_REBOOT_NODE            MaintenanceType = "REBOOT_NODE"
+	MaintenanceType_RESTART_SEARCH_PROCESS MaintenanceType = "RESTART_SEARCH_PROCESS"
+	MaintenanceType_RESTART_DASHBOARD      MaintenanceType = "RESTART_DASHBOARD"
 )
 
 type MasterNodeStatus string
@@ -340,6 +367,7 @@ type PackageType string
 
 const (
 	PackageType_TXT_DICTIONARY PackageType = "TXT-DICTIONARY"
+	PackageType_ZIP_PLUGIN     PackageType = "ZIP-PLUGIN"
 )
 
 type PrincipalType string

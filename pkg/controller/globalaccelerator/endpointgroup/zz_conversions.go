@@ -137,6 +137,9 @@ func GenerateCreateEndpointGroupInput(cr *svcapitypes.EndpointGroup) *svcsdk.Cre
 		f0 := []*svcsdk.EndpointConfiguration{}
 		for _, f0iter := range cr.Spec.ForProvider.EndpointConfigurations {
 			f0elem := &svcsdk.EndpointConfiguration{}
+			if f0iter.AttachmentARN != nil {
+				f0elem.SetAttachmentArn(*f0iter.AttachmentARN)
+			}
 			if f0iter.ClientIPPreservationEnabled != nil {
 				f0elem.SetClientIPPreservationEnabled(*f0iter.ClientIPPreservationEnabled)
 			}
@@ -197,6 +200,9 @@ func GenerateUpdateEndpointGroupInput(cr *svcapitypes.EndpointGroup) *svcsdk.Upd
 		f0 := []*svcsdk.EndpointConfiguration{}
 		for _, f0iter := range cr.Spec.ForProvider.EndpointConfigurations {
 			f0elem := &svcsdk.EndpointConfiguration{}
+			if f0iter.AttachmentARN != nil {
+				f0elem.SetAttachmentArn(*f0iter.AttachmentARN)
+			}
 			if f0iter.ClientIPPreservationEnabled != nil {
 				f0elem.SetClientIPPreservationEnabled(*f0iter.ClientIPPreservationEnabled)
 			}

@@ -371,13 +371,14 @@ const (
 type SettingName string
 
 const (
-	SettingName_serviceLongArnFormat           SettingName = "serviceLongArnFormat"
-	SettingName_taskLongArnFormat              SettingName = "taskLongArnFormat"
-	SettingName_containerInstanceLongArnFormat SettingName = "containerInstanceLongArnFormat"
-	SettingName_awsvpcTrunking                 SettingName = "awsvpcTrunking"
-	SettingName_containerInsights              SettingName = "containerInsights"
-	SettingName_fargateFIPSMode                SettingName = "fargateFIPSMode"
-	SettingName_tagResourceAuthorization       SettingName = "tagResourceAuthorization"
+	SettingName_serviceLongArnFormat            SettingName = "serviceLongArnFormat"
+	SettingName_taskLongArnFormat               SettingName = "taskLongArnFormat"
+	SettingName_containerInstanceLongArnFormat  SettingName = "containerInstanceLongArnFormat"
+	SettingName_awsvpcTrunking                  SettingName = "awsvpcTrunking"
+	SettingName_containerInsights               SettingName = "containerInsights"
+	SettingName_fargateFIPSMode                 SettingName = "fargateFIPSMode"
+	SettingName_tagResourceAuthorization        SettingName = "tagResourceAuthorization"
+	SettingName_fargateTaskRetirementWaitPeriod SettingName = "fargateTaskRetirementWaitPeriod"
 )
 
 type SortOrder string

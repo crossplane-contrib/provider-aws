@@ -379,23 +379,26 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	if resp.VpcConfig != nil {
 		f33 := &svcapitypes.VPCConfigResponse{}
-		if resp.VpcConfig.SecurityGroupIds != nil {
-			f33f0 := []*string{}
-			for _, f33f0iter := range resp.VpcConfig.SecurityGroupIds {
-				var f33f0elem string
-				f33f0elem = *f33f0iter
-				f33f0 = append(f33f0, &f33f0elem)
-			}
-			f33.SecurityGroupIDs = f33f0
+		if resp.VpcConfig.Ipv6AllowedForDualStack != nil {
+			f33.IPv6AllowedForDualStack = resp.VpcConfig.Ipv6AllowedForDualStack
 		}
-		if resp.VpcConfig.SubnetIds != nil {
+		if resp.VpcConfig.SecurityGroupIds != nil {
 			f33f1 := []*string{}
-			for _, f33f1iter := range resp.VpcConfig.SubnetIds {
+			for _, f33f1iter := range resp.VpcConfig.SecurityGroupIds {
 				var f33f1elem string
 				f33f1elem = *f33f1iter
 				f33f1 = append(f33f1, &f33f1elem)
 			}
-			f33.SubnetIDs = f33f1
+			f33.SecurityGroupIDs = f33f1
+		}
+		if resp.VpcConfig.SubnetIds != nil {
+			f33f2 := []*string{}
+			for _, f33f2iter := range resp.VpcConfig.SubnetIds {
+				var f33f2elem string
+				f33f2elem = *f33f2iter
+				f33f2 = append(f33f2, &f33f2elem)
+			}
+			f33.SubnetIDs = f33f2
 		}
 		if resp.VpcConfig.VpcId != nil {
 			f33.VPCID = resp.VpcConfig.VpcId
