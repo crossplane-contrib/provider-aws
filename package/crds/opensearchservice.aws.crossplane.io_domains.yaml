@@ -389,6 +389,10 @@ spec:
                       Elasticsearch_7.9. For more information, see Creating and managing Amazon
                       OpenSearch Service domains (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
                     type: string
+                  iPAddressType:
+                    description: The type of IP addresses supported by the endpoint
+                      for the domain.
+                    type: string
                   logPublishingOptions:
                     additionalProperties:
                       properties:
@@ -1014,6 +1018,8 @@ spec:
                     description: |-
                       Domain-specific endpoint used to submit index, search, and data upload requests
                       to the domain.
+                    type: string
+                  endpointV2:
                     type: string
                   endpoints:
                     additionalProperties:

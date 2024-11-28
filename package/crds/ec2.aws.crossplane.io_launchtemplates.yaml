@@ -481,6 +481,20 @@ spec:
                             deviceIndex:
                               format: int64
                               type: integer
+                            enaSrdSpecification:
+                              description: Launch instances with ENA Express settings
+                                configured from your launch template.
+                              properties:
+                                enaSrdEnabled:
+                                  type: boolean
+                                enaSrdUDPSpecification:
+                                  description: Configures ENA Express for UDP network
+                                    traffic from your launch template.
+                                  properties:
+                                    enaSrdUDPEnabled:
+                                      type: boolean
+                                  type: object
+                              type: object
                             groups:
                               items:
                                 type: string

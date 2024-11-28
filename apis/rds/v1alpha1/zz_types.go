@@ -114,6 +114,8 @@ type ClusterPendingModifiedValues struct {
 	// A list of the log types whose configuration is still pending. In other words,
 	// these log types are in the process of being activated or deactivated.
 	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
+	// Reserved for future use.
+	RdsCustomClusterConfiguration *RdsCustomClusterConfiguration `json:"rdsCustomClusterConfiguration,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
 }
@@ -156,6 +158,8 @@ type DBClusterAutomatedBackup struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
+
+	AWSBackupRecoveryPointARN *string `json:"awsBackupRecoveryPointARN,omitempty"`
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
@@ -343,6 +347,8 @@ type DBCluster_SDK struct {
 
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
 
+	AWSBackupRecoveryPointARN *string `json:"awsBackupRecoveryPointARN,omitempty"`
+
 	BacktrackConsumedChangeRecords *int64 `json:"backtrackConsumedChangeRecords,omitempty"`
 
 	BacktrackWindow *int64 `json:"backtrackWindow,omitempty"`
@@ -455,6 +461,8 @@ type DBCluster_SDK struct {
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
 
 	PubliclyAccessible *bool `json:"publiclyAccessible,omitempty"`
+	// Reserved for future use.
+	RdsCustomClusterConfiguration *RdsCustomClusterConfiguration `json:"rdsCustomClusterConfiguration,omitempty"`
 
 	ReadReplicaIdentifiers []*string `json:"readReplicaIdentifiers,omitempty"`
 
@@ -523,6 +531,8 @@ type DBEngineVersion struct {
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
+	SupportsIntegrations *bool `json:"supportsIntegrations,omitempty"`
+
 	SupportsLocalWriteForwarding *bool `json:"supportsLocalWriteForwarding,omitempty"`
 
 	SupportsLogExportsToCloudwatchLogs *bool `json:"supportsLogExportsToCloudwatchLogs,omitempty"`
@@ -541,6 +551,8 @@ type DBInstanceAutomatedBackup struct {
 
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
+	AWSBackupRecoveryPointARN *string `json:"awsBackupRecoveryPointARN,omitempty"`
+
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
 	BackupTarget *string `json:"backupTarget,omitempty"`
@@ -554,6 +566,8 @@ type DBInstanceAutomatedBackup struct {
 	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
 
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
+
+	DedicatedLogVolume *bool `json:"dedicatedLogVolume,omitempty"`
 
 	Encrypted *bool `json:"encrypted,omitempty"`
 
@@ -572,6 +586,8 @@ type DBInstanceAutomatedBackup struct {
 	LicenseModel *string `json:"licenseModel,omitempty"`
 
 	MasterUsername *string `json:"masterUsername,omitempty"`
+
+	MultiTenant *bool `json:"multiTenant,omitempty"`
 
 	OptionGroupName *string `json:"optionGroupName,omitempty"`
 
@@ -696,6 +712,8 @@ type DBInstance_SDK struct {
 
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
 
+	DedicatedLogVolume *bool `json:"dedicatedLogVolume,omitempty"`
+
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
 
 	DomainMemberships []*DomainMembership `json:"domainMemberships,omitempty"`
@@ -726,6 +744,8 @@ type DBInstance_SDK struct {
 	InstanceCreateTime *metav1.Time `json:"instanceCreateTime,omitempty"`
 
 	IOPS *int64 `json:"iops,omitempty"`
+
+	IsStorageConfigUpgradeAvailable *bool `json:"isStorageConfigUpgradeAvailable,omitempty"`
 
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
@@ -764,6 +784,8 @@ type DBInstance_SDK struct {
 	MonitoringRoleARN *string `json:"monitoringRoleARN,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+
+	MultiTenant *bool `json:"multiTenant,omitempty"`
 
 	NcharCharacterSetName *string `json:"ncharCharacterSetName,omitempty"`
 
@@ -958,6 +980,8 @@ type DBSnapshot struct {
 
 	DBIResourceID *string `json:"dbiResourceID,omitempty"`
 
+	DedicatedLogVolume *bool `json:"dedicatedLogVolume,omitempty"`
+
 	Encrypted *bool `json:"encrypted,omitempty"`
 
 	Engine *string `json:"engine,omitempty"`
@@ -975,6 +999,8 @@ type DBSnapshot struct {
 	LicenseModel *string `json:"licenseModel,omitempty"`
 
 	MasterUsername *string `json:"masterUsername,omitempty"`
+
+	MultiTenant *bool `json:"multiTenant,omitempty"`
 
 	OptionGroupName *string `json:"optionGroupName,omitempty"`
 
@@ -1022,6 +1048,36 @@ type DBSnapshotAttribute struct {
 // +kubebuilder:skipversion
 type DBSnapshotAttributesResult struct {
 	DBSnapshotIdentifier *string `json:"dbSnapshotIdentifier,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DBSnapshotTenantDatabase struct {
+	CharacterSetName *string `json:"characterSetName,omitempty"`
+
+	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
+
+	DBSnapshotIdentifier *string `json:"dbSnapshotIdentifier,omitempty"`
+
+	DBSnapshotTenantDatabaseARN *string `json:"dbSnapshotTenantDatabaseARN,omitempty"`
+
+	DBIResourceID *string `json:"dbiResourceID,omitempty"`
+
+	EngineName *string `json:"engineName,omitempty"`
+
+	MasterUsername *string `json:"masterUsername,omitempty"`
+
+	NcharCharacterSetName *string `json:"ncharCharacterSetName,omitempty"`
+
+	SnapshotType *string `json:"snapshotType,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	TagList []*Tag `json:"tagList,omitempty"`
+
+	TenantDBName *string `json:"tenantDBName,omitempty"`
+
+	TenantDatabaseCreateTime *metav1.Time `json:"tenantDatabaseCreateTime,omitempty"`
+
+	TenantDatabaseResourceID *string `json:"tenantDatabaseResourceID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1223,6 +1279,23 @@ type IPRange struct {
 	CIDRIP *string `json:"cidrIP,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Integration struct {
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IntegrationError struct {
+	ErrorCode *string `json:"errorCode,omitempty"`
+
+	ErrorMessage *string `json:"errorMessage,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1429,6 +1502,8 @@ type OrderableDBInstanceOption struct {
 
 	SupportsClusters *bool `json:"supportsClusters,omitempty"`
 
+	SupportsDedicatedLogVolume *bool `json:"supportsDedicatedLogVolume,omitempty"`
+
 	SupportsEnhancedMonitoring *bool `json:"supportsEnhancedMonitoring,omitempty"`
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
@@ -1518,6 +1593,8 @@ type PendingModifiedValues struct {
 
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
 
+	DedicatedLogVolume *bool `json:"dedicatedLogVolume,omitempty"`
+
 	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
@@ -1531,6 +1608,8 @@ type PendingModifiedValues struct {
 	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+
+	MultiTenant *bool `json:"multiTenant,omitempty"`
 	// A list of the log types whose configuration is still pending. In other words,
 	// these log types are in the process of being activated or deactivated.
 	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
@@ -1560,6 +1639,13 @@ type Range struct {
 	Step *int64 `json:"step,omitempty"`
 
 	To *int64 `json:"to,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RdsCustomClusterConfiguration struct {
+	InterconnectSubnetID *string `json:"interconnectSubnetID,omitempty"`
+
+	TransitGatewayMulticastDomainID *string `json:"transitGatewayMulticastDomainID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1712,6 +1798,39 @@ type TargetHealth struct {
 }
 
 // +kubebuilder:skipversion
+type TenantDatabase struct {
+	CharacterSetName *string `json:"characterSetName,omitempty"`
+
+	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
+
+	DBIResourceID *string `json:"dbiResourceID,omitempty"`
+
+	DeletionProtection *bool `json:"deletionProtection,omitempty"`
+
+	MasterUsername *string `json:"masterUsername,omitempty"`
+
+	NcharCharacterSetName *string `json:"ncharCharacterSetName,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	TagList []*Tag `json:"tagList,omitempty"`
+
+	TenantDBName *string `json:"tenantDBName,omitempty"`
+
+	TenantDatabaseARN *string `json:"tenantDatabaseARN,omitempty"`
+
+	TenantDatabaseCreateTime *metav1.Time `json:"tenantDatabaseCreateTime,omitempty"`
+
+	TenantDatabaseResourceID *string `json:"tenantDatabaseResourceID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TenantDatabasePendingModifiedValues struct {
+	TenantDBName *string `json:"tenantDBName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Timezone struct {
 	TimezoneName *string `json:"timezoneName,omitempty"`
 }
@@ -1733,6 +1852,8 @@ type UpgradeTarget struct {
 	SupportsBabelfish *bool `json:"supportsBabelfish,omitempty"`
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
+
+	SupportsIntegrations *bool `json:"supportsIntegrations,omitempty"`
 
 	SupportsLocalWriteForwarding *bool `json:"supportsLocalWriteForwarding,omitempty"`
 
@@ -1762,6 +1883,11 @@ type VPCSecurityGroupMembership struct {
 	Status *string `json:"status,omitempty"`
 
 	VPCSecurityGroupID *string `json:"vpcSecurityGroupID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ValidDBInstanceModificationsMessage struct {
+	SupportsDedicatedLogVolume *bool `json:"supportsDedicatedLogVolume,omitempty"`
 }
 
 // +kubebuilder:skipversion

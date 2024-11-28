@@ -33,6 +33,8 @@ type UserParameters struct {
 	// using the client.
 	//
 	// A HomeDirectory example is /bucket_name/home/mydirectory.
+	//
+	// The HomeDirectory parameter is only used if HomeDirectoryType is set to PATH.
 	HomeDirectory *string `json:"homeDirectory,omitempty"`
 	// Logical directory mappings that specify what Amazon S3 or Amazon EFS paths
 	// and keys should be visible to your user and how you want to make them visible.
@@ -57,10 +59,15 @@ type UserParameters struct {
 	HomeDirectoryMappings []*HomeDirectoryMapEntry `json:"homeDirectoryMappings,omitempty"`
 	// The type of landing directory (folder) that you want your users' home directory
 	// to be when they log in to the server. If you set it to PATH, the user will
-	// see the absolute Amazon S3 bucket or EFS paths as is in their file transfer
-	// protocol clients. If you set it LOGICAL, you need to provide mappings in
-	// the HomeDirectoryMappings for how you want to make Amazon S3 or Amazon EFS
-	// paths visible to your users.
+	// see the absolute Amazon S3 bucket or Amazon EFS path as is in their file
+	// transfer protocol clients. If you set it to LOGICAL, you need to provide
+	// mappings in the HomeDirectoryMappings for how you want to make Amazon S3
+	// or Amazon EFS paths visible to your users.
+	//
+	// If HomeDirectoryType is LOGICAL, you must provide mappings, using the HomeDirectoryMappings
+	// parameter. If, on the other hand, HomeDirectoryType is PATH, you provide
+	// an absolute path using the HomeDirectory parameter. You cannot have both
+	// HomeDirectory and HomeDirectoryMappings in your template.
 	HomeDirectoryType *string `json:"homeDirectoryType,omitempty"`
 	// A session policy for your user so that you can use the same Identity and
 	// Access Management (IAM) role across multiple users. This policy scopes down

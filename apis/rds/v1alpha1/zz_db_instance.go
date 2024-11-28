@@ -377,6 +377,8 @@ type DBInstanceParameters struct {
 	// Oracle background processes. If you don't specify a SID, the value defaults
 	// to RDSCDB. The Oracle SID is also the name of your CDB.
 	DBSystemID *string `json:"dbSystemID,omitempty"`
+	// Indicates whether the DB instance has a dedicated log volume (DLV) enabled.
+	DedicatedLogVolume *bool `json:"dedicatedLogVolume,omitempty"`
 	// Specifies whether the DB instance has deletion protection enabled. The database
 	// can't be deleted when deletion protection is enabled. By default, deletion
 	// protection isn't enabled. For more information, see Deleting a DB Instance
@@ -690,6 +692,20 @@ type DBInstanceParameters struct {
 	//
 	//    * RDS Custom
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+	// Specifies whether to use the multi-tenant configuration or the single-tenant
+	// configuration (default). This parameter only applies to RDS for Oracle container
+	// database (CDB) engines.
+	//
+	// Note the following restrictions:
+	//
+	//    * The DB engine that you specify in the request must support the multi-tenant
+	//    configuration. If you attempt to enable the multi-tenant configuration
+	//    on a DB engine that doesn't support it, the request fails.
+	//
+	//    * If you specify the multi-tenant configuration when you create your DB
+	//    instance, you can't later modify this DB instance to use the single-tenant
+	//    configuration.
+	MultiTenant *bool `json:"multiTenant,omitempty"`
 	// The name of the NCHAR character set for the Oracle DB instance.
 	//
 	// This setting doesn't apply to RDS Custom DB instances.
@@ -1013,6 +1029,12 @@ type DBInstanceObservation struct {
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 	// The date and time when the DB instance was created.
 	InstanceCreateTime *metav1.Time `json:"instanceCreateTime,omitempty"`
+	// Indicates whether an upgrade is recommended for the storage file system configuration
+	// on the DB instance. To migrate to the preferred configuration, you can either
+	// create a blue/green deployment, or create a read replica from the DB instance.
+	// For more information, see Upgrading the storage file system for a DB instance
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.UpgradeFileSystem).
+	IsStorageConfigUpgradeAvailable *bool `json:"isStorageConfigUpgradeAvailable,omitempty"`
 	// The latest time to which a database in this DB instance can be restored with
 	// point-in-time restore.
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`

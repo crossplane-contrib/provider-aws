@@ -18,14 +18,30 @@ limitations under the License.
 
 package v1alpha1
 
+type ExecutionRedriveFilter string
+
+const (
+	ExecutionRedriveFilter_REDRIVEN     ExecutionRedriveFilter = "REDRIVEN"
+	ExecutionRedriveFilter_NOT_REDRIVEN ExecutionRedriveFilter = "NOT_REDRIVEN"
+)
+
+type ExecutionRedriveStatus string
+
+const (
+	ExecutionRedriveStatus_REDRIVABLE            ExecutionRedriveStatus = "REDRIVABLE"
+	ExecutionRedriveStatus_NOT_REDRIVABLE        ExecutionRedriveStatus = "NOT_REDRIVABLE"
+	ExecutionRedriveStatus_REDRIVABLE_BY_MAP_RUN ExecutionRedriveStatus = "REDRIVABLE_BY_MAP_RUN"
+)
+
 type ExecutionStatus string
 
 const (
-	ExecutionStatus_RUNNING   ExecutionStatus = "RUNNING"
-	ExecutionStatus_SUCCEEDED ExecutionStatus = "SUCCEEDED"
-	ExecutionStatus_FAILED    ExecutionStatus = "FAILED"
-	ExecutionStatus_TIMED_OUT ExecutionStatus = "TIMED_OUT"
-	ExecutionStatus_ABORTED   ExecutionStatus = "ABORTED"
+	ExecutionStatus_RUNNING         ExecutionStatus = "RUNNING"
+	ExecutionStatus_SUCCEEDED       ExecutionStatus = "SUCCEEDED"
+	ExecutionStatus_FAILED          ExecutionStatus = "FAILED"
+	ExecutionStatus_TIMED_OUT       ExecutionStatus = "TIMED_OUT"
+	ExecutionStatus_ABORTED         ExecutionStatus = "ABORTED"
+	ExecutionStatus_PENDING_REDRIVE ExecutionStatus = "PENDING_REDRIVE"
 )
 
 type HistoryEventType string
@@ -90,6 +106,8 @@ const (
 	HistoryEventType_MapRunFailed                 HistoryEventType = "MapRunFailed"
 	HistoryEventType_MapRunStarted                HistoryEventType = "MapRunStarted"
 	HistoryEventType_MapRunSucceeded              HistoryEventType = "MapRunSucceeded"
+	HistoryEventType_ExecutionRedriven            HistoryEventType = "ExecutionRedriven"
+	HistoryEventType_MapRunRedriven               HistoryEventType = "MapRunRedriven"
 )
 
 type LogLevel string

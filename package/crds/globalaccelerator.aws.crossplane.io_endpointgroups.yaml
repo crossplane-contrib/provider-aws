@@ -78,6 +78,8 @@ spec:
                     description: The list of endpoint objects.
                     items:
                       properties:
+                        attachmentARN:
+                          type: string
                         clientIPPreservationEnabled:
                           type: boolean
                         endpointID:
