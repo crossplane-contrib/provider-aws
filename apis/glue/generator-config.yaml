@@ -8,6 +8,7 @@ ignore:
     - Schema
     - Script
     - Table
+    - TableOptimizer
     - UserDefinedFunction
     - Workflow
     - Partition

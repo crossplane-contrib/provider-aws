@@ -137,7 +137,8 @@ type FunctionConfiguration struct {
 	// fails, the response contains details about the error.
 	Environment *EnvironmentResponse `json:"environment,omitempty"`
 	// The size of the function's /tmp directory in MB. The default value is 512,
-	// but it can be any whole number between 512 and 10,240 MB.
+	// but can be any whole number between 512 and 10,240 MB. For more information,
+	// see Configuring ephemeral storage (console) (https://docs.aws.amazon.com/lambda/latest/dg/configuration-function-common.html#configuration-ephemeral-storage).
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"`
@@ -342,6 +343,8 @@ type TracingConfigResponse struct {
 
 // +kubebuilder:skipversion
 type VPCConfig struct {
+	IPv6AllowedForDualStack *bool `json:"ipv6AllowedForDualStack,omitempty"`
+
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
@@ -349,6 +352,8 @@ type VPCConfig struct {
 
 // +kubebuilder:skipversion
 type VPCConfigResponse struct {
+	IPv6AllowedForDualStack *bool `json:"ipv6AllowedForDualStack,omitempty"`
+
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`

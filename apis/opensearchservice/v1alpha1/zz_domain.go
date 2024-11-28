@@ -78,6 +78,8 @@ type DomainParameters struct {
 	// Elasticsearch_7.9. For more information, see Creating and managing Amazon
 	// OpenSearch Service domains (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
 	EngineVersion *string `json:"engineVersion,omitempty"`
+	// The type of IP addresses supported by the endpoint for the domain.
+	IPAddressType *string `json:"iPAddressType,omitempty"`
 	// Key-value pairs to configure log publishing.
 	LogPublishingOptions map[string]*LogPublishingOption `json:"logPublishingOptions,omitempty"`
 	// Enables node-to-node encryption.
@@ -143,6 +145,8 @@ type DomainObservation struct {
 	// Domain-specific endpoint used to submit index, search, and data upload requests
 	// to the domain.
 	Endpoint *string `json:"endpoint,omitempty"`
+
+	EndpointV2 *string `json:"endpointV2,omitempty"`
 	// The key-value pair that exists if the OpenSearch Service domain uses VPC
 	// endpoints.. Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
 	Endpoints map[string]*string `json:"endpoints,omitempty"`

@@ -262,6 +262,13 @@ type DomainInfo struct {
 }
 
 // +kubebuilder:skipversion
+type DomainMaintenanceDetails struct {
+	// The name of an OpenSearch Service domain. Domain names are unique across
+	// the domains owned by an account within an Amazon Web Services Region.
+	DomainName *string `json:"domainName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DomainNodesStatus struct {
 	InstanceType *string `json:"instanceType,omitempty"`
 	// The type of EBS volume that a domain uses. For more information, see Configuring
@@ -333,10 +340,15 @@ type DomainStatus_SDK struct {
 	// The domain endpoint to which index and search requests are submitted. For
 	// example, search-imdb-movies-oopcnjfn6ugo.eu-west-1.es.amazonaws.com or doc-imdb-movies-oopcnjfn6u.eu-west-1.es.amazonaws.com.
 	Endpoint *string `json:"endpoint,omitempty"`
+	// The domain endpoint to which index and search requests are submitted. For
+	// example, search-imdb-movies-oopcnjfn6ugo.eu-west-1.es.amazonaws.com or doc-imdb-movies-oopcnjfn6u.eu-west-1.es.amazonaws.com.
+	EndpointV2 *string `json:"endpointV2,omitempty"`
 
 	Endpoints map[string]*string `json:"endpoints,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	IPAddressType *string `json:"iPAddressType,omitempty"`
 
 	LogPublishingOptions map[string]*LogPublishingOption `json:"logPublishingOptions,omitempty"`
 	// Enables or disables node-to-node encryption. For more information, see Node-to-node
@@ -425,6 +437,11 @@ type EncryptionAtRestOptionsStatus struct {
 	// Key Management Service (KMS) key to use. Can be used only to create a new
 	// domain, not update an existing one.
 	Options *EncryptionAtRestOptions `json:"options,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPAddressTypeStatus struct {
+	Options *string `json:"options,omitempty"`
 }
 
 // +kubebuilder:skipversion

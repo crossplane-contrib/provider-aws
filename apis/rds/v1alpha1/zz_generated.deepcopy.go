@@ -310,6 +310,11 @@ func (in *ClusterPendingModifiedValues) DeepCopyInto(out *ClusterPendingModified
 		*out = new(PendingCloudwatchLogsExports)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.RdsCustomClusterConfiguration != nil {
+		in, out := &in.RdsCustomClusterConfiguration, &out.RdsCustomClusterConfiguration
+		*out = new(RdsCustomClusterConfiguration)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.StorageType != nil {
 		in, out := &in.StorageType, &out.StorageType
 		*out = new(string)
@@ -987,6 +992,11 @@ func (in *DBClusterAutomatedBackup) DeepCopyInto(out *DBClusterAutomatedBackup) 
 			}
 		}
 	}
+	if in.AWSBackupRecoveryPointARN != nil {
+		in, out := &in.AWSBackupRecoveryPointARN, &out.AWSBackupRecoveryPointARN
+		*out = new(string)
+		**out = **in
+	}
 	if in.BackupRetentionPeriod != nil {
 		in, out := &in.BackupRetentionPeriod, &out.BackupRetentionPeriod
 		*out = new(int64)
@@ -1279,6 +1289,11 @@ func (in *DBClusterObservation) DeepCopyInto(out *DBClusterObservation) {
 	if in.AutomaticRestartTime != nil {
 		in, out := &in.AutomaticRestartTime, &out.AutomaticRestartTime
 		*out = (*in).DeepCopy()
+	}
+	if in.AWSBackupRecoveryPointARN != nil {
+		in, out := &in.AWSBackupRecoveryPointARN, &out.AWSBackupRecoveryPointARN
+		*out = new(string)
+		**out = **in
 	}
 	if in.BacktrackConsumedChangeRecords != nil {
 		in, out := &in.BacktrackConsumedChangeRecords, &out.BacktrackConsumedChangeRecords
@@ -1960,6 +1975,11 @@ func (in *DBClusterParameters) DeepCopyInto(out *DBClusterParameters) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.RdsCustomClusterConfiguration != nil {
+		in, out := &in.RdsCustomClusterConfiguration, &out.RdsCustomClusterConfiguration
+		*out = new(RdsCustomClusterConfiguration)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ReplicationSourceIdentifier != nil {
 		in, out := &in.ReplicationSourceIdentifier, &out.ReplicationSourceIdentifier
 		*out = new(string)
@@ -2327,6 +2347,11 @@ func (in *DBCluster_SDK) DeepCopyInto(out *DBCluster_SDK) {
 			}
 		}
 	}
+	if in.AWSBackupRecoveryPointARN != nil {
+		in, out := &in.AWSBackupRecoveryPointARN, &out.AWSBackupRecoveryPointARN
+		*out = new(string)
+		**out = **in
+	}
 	if in.BacktrackConsumedChangeRecords != nil {
 		in, out := &in.BacktrackConsumedChangeRecords, &out.BacktrackConsumedChangeRecords
 		*out = new(int64)
@@ -2617,6 +2642,11 @@ func (in *DBCluster_SDK) DeepCopyInto(out *DBCluster_SDK) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.RdsCustomClusterConfiguration != nil {
+		in, out := &in.RdsCustomClusterConfiguration, &out.RdsCustomClusterConfiguration
+		*out = new(RdsCustomClusterConfiguration)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ReadReplicaIdentifiers != nil {
 		in, out := &in.ReadReplicaIdentifiers, &out.ReadReplicaIdentifiers
 		*out = make([]*string, len(*in))
@@ -2801,6 +2831,11 @@ func (in *DBEngineVersion) DeepCopyInto(out *DBEngineVersion) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.SupportsIntegrations != nil {
+		in, out := &in.SupportsIntegrations, &out.SupportsIntegrations
+		*out = new(bool)
+		**out = **in
+	}
 	if in.SupportsLocalWriteForwarding != nil {
 		in, out := &in.SupportsLocalWriteForwarding, &out.SupportsLocalWriteForwarding
 		*out = new(bool)
@@ -2884,6 +2919,11 @@ func (in *DBInstanceAutomatedBackup) DeepCopyInto(out *DBInstanceAutomatedBackup
 		*out = new(string)
 		**out = **in
 	}
+	if in.AWSBackupRecoveryPointARN != nil {
+		in, out := &in.AWSBackupRecoveryPointARN, &out.AWSBackupRecoveryPointARN
+		*out = new(string)
+		**out = **in
+	}
 	if in.BackupRetentionPeriod != nil {
 		in, out := &in.BackupRetentionPeriod, &out.BackupRetentionPeriod
 		*out = new(int64)
@@ -2923,6 +2963,11 @@ func (in *DBInstanceAutomatedBackup) DeepCopyInto(out *DBInstanceAutomatedBackup
 	if in.DBIResourceID != nil {
 		in, out := &in.DBIResourceID, &out.DBIResourceID
 		*out = new(string)
+		**out = **in
+	}
+	if in.DedicatedLogVolume != nil {
+		in, out := &in.DedicatedLogVolume, &out.DedicatedLogVolume
+		*out = new(bool)
 		**out = **in
 	}
 	if in.Encrypted != nil {
@@ -2967,6 +3012,11 @@ func (in *DBInstanceAutomatedBackup) DeepCopyInto(out *DBInstanceAutomatedBackup
 	if in.MasterUsername != nil {
 		in, out := &in.MasterUsername, &out.MasterUsername
 		*out = new(string)
+		**out = **in
+	}
+	if in.MultiTenant != nil {
+		in, out := &in.MultiTenant, &out.MultiTenant
+		*out = new(bool)
 		**out = **in
 	}
 	if in.OptionGroupName != nil {
@@ -3260,6 +3310,11 @@ func (in *DBInstanceObservation) DeepCopyInto(out *DBInstanceObservation) {
 		in, out := &in.InstanceCreateTime, &out.InstanceCreateTime
 		*out = (*in).DeepCopy()
 	}
+	if in.IsStorageConfigUpgradeAvailable != nil {
+		in, out := &in.IsStorageConfigUpgradeAvailable, &out.IsStorageConfigUpgradeAvailable
+		*out = new(bool)
+		**out = **in
+	}
 	if in.LatestRestorableTime != nil {
 		in, out := &in.LatestRestorableTime, &out.LatestRestorableTime
 		*out = (*in).DeepCopy()
@@ -3474,6 +3529,11 @@ func (in *DBInstanceParameters) DeepCopyInto(out *DBInstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DedicatedLogVolume != nil {
+		in, out := &in.DedicatedLogVolume, &out.DedicatedLogVolume
+		*out = new(bool)
+		**out = **in
+	}
 	if in.DeletionProtection != nil {
 		in, out := &in.DeletionProtection, &out.DeletionProtection
 		*out = new(bool)
@@ -3593,6 +3653,11 @@ func (in *DBInstanceParameters) DeepCopyInto(out *DBInstanceParameters) {
 	}
 	if in.MultiAZ != nil {
 		in, out := &in.MultiAZ, &out.MultiAZ
+		*out = new(bool)
+		**out = **in
+	}
+	if in.MultiTenant != nil {
+		in, out := &in.MultiTenant, &out.MultiTenant
 		*out = new(bool)
 		**out = **in
 	}
@@ -4135,6 +4200,11 @@ func (in *DBInstance_SDK) DeepCopyInto(out *DBInstance_SDK) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DedicatedLogVolume != nil {
+		in, out := &in.DedicatedLogVolume, &out.DedicatedLogVolume
+		*out = new(bool)
+		**out = **in
+	}
 	if in.DeletionProtection != nil {
 		in, out := &in.DeletionProtection, &out.DeletionProtection
 		*out = new(bool)
@@ -4196,6 +4266,11 @@ func (in *DBInstance_SDK) DeepCopyInto(out *DBInstance_SDK) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.IsStorageConfigUpgradeAvailable != nil {
+		in, out := &in.IsStorageConfigUpgradeAvailable, &out.IsStorageConfigUpgradeAvailable
+		*out = new(bool)
+		**out = **in
+	}
 	if in.KMSKeyID != nil {
 		in, out := &in.KMSKeyID, &out.KMSKeyID
 		*out = new(string)
@@ -4242,6 +4317,11 @@ func (in *DBInstance_SDK) DeepCopyInto(out *DBInstance_SDK) {
 	}
 	if in.MultiAZ != nil {
 		in, out := &in.MultiAZ, &out.MultiAZ
+		*out = new(bool)
+		**out = **in
+	}
+	if in.MultiTenant != nil {
+		in, out := &in.MultiTenant, &out.MultiTenant
 		*out = new(bool)
 		**out = **in
 	}
@@ -5025,6 +5105,11 @@ func (in *DBSnapshot) DeepCopyInto(out *DBSnapshot) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DedicatedLogVolume != nil {
+		in, out := &in.DedicatedLogVolume, &out.DedicatedLogVolume
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Encrypted != nil {
 		in, out := &in.Encrypted, &out.Encrypted
 		*out = new(bool)
@@ -5067,6 +5152,11 @@ func (in *DBSnapshot) DeepCopyInto(out *DBSnapshot) {
 	if in.MasterUsername != nil {
 		in, out := &in.MasterUsername, &out.MasterUsername
 		*out = new(string)
+		**out = **in
+	}
+	if in.MultiTenant != nil {
+		in, out := &in.MultiTenant, &out.MultiTenant
+		*out = new(bool)
 		**out = **in
 	}
 	if in.OptionGroupName != nil {
@@ -5216,6 +5306,91 @@ func (in *DBSnapshotAttributesResult) DeepCopy() *DBSnapshotAttributesResult {
 		return nil
 	}
 	out := new(DBSnapshotAttributesResult)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *DBSnapshotTenantDatabase) DeepCopyInto(out *DBSnapshotTenantDatabase) {
+	*out = *in
+	if in.CharacterSetName != nil {
+		in, out := &in.CharacterSetName, &out.CharacterSetName
+		*out = new(string)
+		**out = **in
+	}
+	if in.DBInstanceIdentifier != nil {
+		in, out := &in.DBInstanceIdentifier, &out.DBInstanceIdentifier
+		*out = new(string)
+		**out = **in
+	}
+	if in.DBSnapshotIdentifier != nil {
+		in, out := &in.DBSnapshotIdentifier, &out.DBSnapshotIdentifier
+		*out = new(string)
+		**out = **in
+	}
+	if in.DBSnapshotTenantDatabaseARN != nil {
+		in, out := &in.DBSnapshotTenantDatabaseARN, &out.DBSnapshotTenantDatabaseARN
+		*out = new(string)
+		**out = **in
+	}
+	if in.DBIResourceID != nil {
+		in, out := &in.DBIResourceID, &out.DBIResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.EngineName != nil {
+		in, out := &in.EngineName, &out.EngineName
+		*out = new(string)
+		**out = **in
+	}
+	if in.MasterUsername != nil {
+		in, out := &in.MasterUsername, &out.MasterUsername
+		*out = new(string)
+		**out = **in
+	}
+	if in.NcharCharacterSetName != nil {
+		in, out := &in.NcharCharacterSetName, &out.NcharCharacterSetName
+		*out = new(string)
+		**out = **in
+	}
+	if in.SnapshotType != nil {
+		in, out := &in.SnapshotType, &out.SnapshotType
+		*out = new(string)
+		**out = **in
+	}
+	if in.TagList != nil {
+		in, out := &in.TagList, &out.TagList
+		*out = make([]*Tag, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(Tag)
+				(*in).DeepCopyInto(*out)
+			}
+		}
+	}
+	if in.TenantDBName != nil {
+		in, out := &in.TenantDBName, &out.TenantDBName
+		*out = new(string)
+		**out = **in
+	}
+	if in.TenantDatabaseCreateTime != nil {
+		in, out := &in.TenantDatabaseCreateTime, &out.TenantDatabaseCreateTime
+		*out = (*in).DeepCopy()
+	}
+	if in.TenantDatabaseResourceID != nil {
+		in, out := &in.TenantDatabaseResourceID, &out.TenantDatabaseResourceID
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new DBSnapshotTenantDatabase.
+func (in *DBSnapshotTenantDatabase) DeepCopy() *DBSnapshotTenantDatabase {
+	if in == nil {
+		return nil
+	}
+	out := new(DBSnapshotTenantDatabase)
 	in.DeepCopyInto(out)
 	return out
 }
@@ -6065,6 +6240,66 @@ func (in *IPRange) DeepCopy() *IPRange {
 }
 
 // DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Integration) DeepCopyInto(out *Integration) {
+	*out = *in
+	if in.CreateTime != nil {
+		in, out := &in.CreateTime, &out.CreateTime
+		*out = (*in).DeepCopy()
+	}
+	if in.KMSKeyID != nil {
+		in, out := &in.KMSKeyID, &out.KMSKeyID
+		*out = new(string)
+		**out = **in
+	}
+	if in.Tags != nil {
+		in, out := &in.Tags, &out.Tags
+		*out = make([]*Tag, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(Tag)
+				(*in).DeepCopyInto(*out)
+			}
+		}
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Integration.
+func (in *Integration) DeepCopy() *Integration {
+	if in == nil {
+		return nil
+	}
+	out := new(Integration)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *IntegrationError) DeepCopyInto(out *IntegrationError) {
+	*out = *in
+	if in.ErrorCode != nil {
+		in, out := &in.ErrorCode, &out.ErrorCode
+		*out = new(string)
+		**out = **in
+	}
+	if in.ErrorMessage != nil {
+		in, out := &in.ErrorMessage, &out.ErrorMessage
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new IntegrationError.
+func (in *IntegrationError) DeepCopy() *IntegrationError {
+	if in == nil {
+		return nil
+	}
+	out := new(IntegrationError)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
 func (in *MasterUserSecret) DeepCopyInto(out *MasterUserSecret) {
 	*out = *in
 	if in.KMSKeyID != nil {
@@ -6895,6 +7130,11 @@ func (in *OrderableDBInstanceOption) DeepCopyInto(out *OrderableDBInstanceOption
 		*out = new(bool)
 		**out = **in
 	}
+	if in.SupportsDedicatedLogVolume != nil {
+		in, out := &in.SupportsDedicatedLogVolume, &out.SupportsDedicatedLogVolume
+		*out = new(bool)
+		**out = **in
+	}
 	if in.SupportsEnhancedMonitoring != nil {
 		in, out := &in.SupportsEnhancedMonitoring, &out.SupportsEnhancedMonitoring
 		*out = new(bool)
@@ -7170,6 +7410,11 @@ func (in *PendingModifiedValues) DeepCopyInto(out *PendingModifiedValues) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DedicatedLogVolume != nil {
+		in, out := &in.DedicatedLogVolume, &out.DedicatedLogVolume
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Engine != nil {
 		in, out := &in.Engine, &out.Engine
 		*out = new(string)
@@ -7202,6 +7447,11 @@ func (in *PendingModifiedValues) DeepCopyInto(out *PendingModifiedValues) {
 	}
 	if in.MultiAZ != nil {
 		in, out := &in.MultiAZ, &out.MultiAZ
+		*out = new(bool)
+		**out = **in
+	}
+	if in.MultiTenant != nil {
+		in, out := &in.MultiTenant, &out.MultiTenant
 		*out = new(bool)
 		**out = **in
 	}
@@ -7376,6 +7626,31 @@ func (in *Range) DeepCopy() *Range {
 		return nil
 	}
 	out := new(Range)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *RdsCustomClusterConfiguration) DeepCopyInto(out *RdsCustomClusterConfiguration) {
+	*out = *in
+	if in.InterconnectSubnetID != nil {
+		in, out := &in.InterconnectSubnetID, &out.InterconnectSubnetID
+		*out = new(string)
+		**out = **in
+	}
+	if in.TransitGatewayMulticastDomainID != nil {
+		in, out := &in.TransitGatewayMulticastDomainID, &out.TransitGatewayMulticastDomainID
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new RdsCustomClusterConfiguration.
+func (in *RdsCustomClusterConfiguration) DeepCopy() *RdsCustomClusterConfiguration {
+	if in == nil {
+		return nil
+	}
+	out := new(RdsCustomClusterConfiguration)
 	in.DeepCopyInto(out)
 	return out
 }
@@ -7958,6 +8233,106 @@ func (in *TargetHealth) DeepCopy() *TargetHealth {
 }
 
 // DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *TenantDatabase) DeepCopyInto(out *TenantDatabase) {
+	*out = *in
+	if in.CharacterSetName != nil {
+		in, out := &in.CharacterSetName, &out.CharacterSetName
+		*out = new(string)
+		**out = **in
+	}
+	if in.DBInstanceIdentifier != nil {
+		in, out := &in.DBInstanceIdentifier, &out.DBInstanceIdentifier
+		*out = new(string)
+		**out = **in
+	}
+	if in.DBIResourceID != nil {
+		in, out := &in.DBIResourceID, &out.DBIResourceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.DeletionProtection != nil {
+		in, out := &in.DeletionProtection, &out.DeletionProtection
+		*out = new(bool)
+		**out = **in
+	}
+	if in.MasterUsername != nil {
+		in, out := &in.MasterUsername, &out.MasterUsername
+		*out = new(string)
+		**out = **in
+	}
+	if in.NcharCharacterSetName != nil {
+		in, out := &in.NcharCharacterSetName, &out.NcharCharacterSetName
+		*out = new(string)
+		**out = **in
+	}
+	if in.Status != nil {
+		in, out := &in.Status, &out.Status
+		*out = new(string)
+		**out = **in
+	}
+	if in.TagList != nil {
+		in, out := &in.TagList, &out.TagList
+		*out = make([]*Tag, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(Tag)
+				(*in).DeepCopyInto(*out)
+			}
+		}
+	}
+	if in.TenantDBName != nil {
+		in, out := &in.TenantDBName, &out.TenantDBName
+		*out = new(string)
+		**out = **in
+	}
+	if in.TenantDatabaseARN != nil {
+		in, out := &in.TenantDatabaseARN, &out.TenantDatabaseARN
+		*out = new(string)
+		**out = **in
+	}
+	if in.TenantDatabaseCreateTime != nil {
+		in, out := &in.TenantDatabaseCreateTime, &out.TenantDatabaseCreateTime
+		*out = (*in).DeepCopy()
+	}
+	if in.TenantDatabaseResourceID != nil {
+		in, out := &in.TenantDatabaseResourceID, &out.TenantDatabaseResourceID
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new TenantDatabase.
+func (in *TenantDatabase) DeepCopy() *TenantDatabase {
+	if in == nil {
+		return nil
+	}
+	out := new(TenantDatabase)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *TenantDatabasePendingModifiedValues) DeepCopyInto(out *TenantDatabasePendingModifiedValues) {
+	*out = *in
+	if in.TenantDBName != nil {
+		in, out := &in.TenantDBName, &out.TenantDBName
+		*out = new(string)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new TenantDatabasePendingModifiedValues.
+func (in *TenantDatabasePendingModifiedValues) DeepCopy() *TenantDatabasePendingModifiedValues {
+	if in == nil {
+		return nil
+	}
+	out := new(TenantDatabasePendingModifiedValues)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
 func (in *Timezone) DeepCopyInto(out *Timezone) {
 	*out = *in
 	if in.TimezoneName != nil {
@@ -8023,6 +8398,11 @@ func (in *UpgradeTarget) DeepCopyInto(out *UpgradeTarget) {
 	}
 	if in.SupportsGlobalDatabases != nil {
 		in, out := &in.SupportsGlobalDatabases, &out.SupportsGlobalDatabases
+		*out = new(bool)
+		**out = **in
+	}
+	if in.SupportsIntegrations != nil {
+		in, out := &in.SupportsIntegrations, &out.SupportsIntegrations
 		*out = new(bool)
 		**out = **in
 	}
@@ -8129,6 +8509,26 @@ func (in *VPCSecurityGroupMembership) DeepCopy() *VPCSecurityGroupMembership {
 		return nil
 	}
 	out := new(VPCSecurityGroupMembership)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *ValidDBInstanceModificationsMessage) DeepCopyInto(out *ValidDBInstanceModificationsMessage) {
+	*out = *in
+	if in.SupportsDedicatedLogVolume != nil {
+		in, out := &in.SupportsDedicatedLogVolume, &out.SupportsDedicatedLogVolume
+		*out = new(bool)
+		**out = **in
+	}
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new ValidDBInstanceModificationsMessage.
+func (in *ValidDBInstanceModificationsMessage) DeepCopy() *ValidDBInstanceModificationsMessage {
+	if in == nil {
+		return nil
+	}
+	out := new(ValidDBInstanceModificationsMessage)
 	in.DeepCopyInto(out)
 	return out
 }
