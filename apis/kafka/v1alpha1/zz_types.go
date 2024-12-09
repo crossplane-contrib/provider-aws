@@ -28,6 +28,11 @@ var (
 )
 
 // +kubebuilder:skipversion
+type AmazonMskCluster struct {
+	MskClusterARN *string `json:"mskClusterARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type BrokerEBSVolumeInfo struct {
 	KafkaBrokerNodeID *string `json:"kafkaBrokerNodeID,omitempty"`
 	// Contains information about provisioned throughput for EBS storage volumes
@@ -290,6 +295,20 @@ type ConnectivityInfo struct {
 }
 
 // +kubebuilder:skipversion
+type ConsumerGroupReplication struct {
+	DetectAndCopyNewConsumerGroups *bool `json:"detectAndCopyNewConsumerGroups,omitempty"`
+
+	SynchroniseConsumerGroupOffsets *bool `json:"synchroniseConsumerGroupOffsets,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ConsumerGroupReplicationUpdate struct {
+	DetectAndCopyNewConsumerGroups *bool `json:"detectAndCopyNewConsumerGroups,omitempty"`
+
+	SynchroniseConsumerGroupOffsets *bool `json:"synchroniseConsumerGroupOffsets,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EBSStorageInfo struct {
 	// Contains information about provisioned throughput for EBS storage volumes
 	// attached to kafka broker nodes.
@@ -346,6 +365,23 @@ type JmxExporter struct {
 // +kubebuilder:skipversion
 type JmxExporterInfo struct {
 	EnabledInBroker *bool `json:"enabledInBroker,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type KafkaClusterClientVPCConfig struct {
+	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
+
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type KafkaClusterDescription struct {
+	KafkaClusterAlias *string `json:"kafkaClusterAlias,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type KafkaClusterSummary struct {
+	KafkaClusterAlias *string `json:"kafkaClusterAlias,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -512,6 +548,49 @@ type PublicAccess struct {
 }
 
 // +kubebuilder:skipversion
+type ReplicationInfo struct {
+	SourceKafkaClusterARN *string `json:"sourceKafkaClusterARN,omitempty"`
+
+	TargetKafkaClusterARN *string `json:"targetKafkaClusterARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplicationInfoDescription struct {
+	SourceKafkaClusterAlias *string `json:"sourceKafkaClusterAlias,omitempty"`
+
+	TargetKafkaClusterAlias *string `json:"targetKafkaClusterAlias,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplicationInfoSummary struct {
+	SourceKafkaClusterAlias *string `json:"sourceKafkaClusterAlias,omitempty"`
+
+	TargetKafkaClusterAlias *string `json:"targetKafkaClusterAlias,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplicationStateInfo struct {
+	Code *string `json:"code,omitempty"`
+
+	Message *string `json:"message,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplicatorSummary struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	CurrentVersion *string `json:"currentVersion,omitempty"`
+
+	IsReplicatorReference *bool `json:"isReplicatorReference,omitempty"`
+
+	ReplicatorARN *string `json:"replicatorARN,omitempty"`
+
+	ReplicatorName *string `json:"replicatorName,omitempty"`
+
+	ReplicatorResourceARN *string `json:"replicatorResourceARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type S3 struct {
 	Bucket *string `json:"bucket,omitempty"`
 
@@ -556,6 +635,24 @@ type TLS struct {
 	CertificateAuthorityARNList []*string `json:"certificateAuthorityARNList,omitempty"`
 
 	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TopicReplication struct {
+	CopyAccessControlListsForTopics *bool `json:"copyAccessControlListsForTopics,omitempty"`
+
+	CopyTopicConfigurations *bool `json:"copyTopicConfigurations,omitempty"`
+
+	DetectAndCopyNewTopics *bool `json:"detectAndCopyNewTopics,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TopicReplicationUpdate struct {
+	CopyAccessControlListsForTopics *bool `json:"copyAccessControlListsForTopics,omitempty"`
+
+	CopyTopicConfigurations *bool `json:"copyTopicConfigurations,omitempty"`
+
+	DetectAndCopyNewTopics *bool `json:"detectAndCopyNewTopics,omitempty"`
 }
 
 // +kubebuilder:skipversion

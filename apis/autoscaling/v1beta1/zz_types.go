@@ -49,8 +49,6 @@ type Activity struct {
 
 	AutoScalingGroupName *string `json:"autoScalingGroupName,omitempty"`
 
-	Cause *string `json:"cause,omitempty"`
-
 	Description *string `json:"description,omitempty"`
 
 	Details *string `json:"details,omitempty"`
@@ -272,8 +270,6 @@ type InstanceRefresh struct {
 	InstanceRefreshID *string `json:"instanceRefreshID,omitempty"`
 
 	StartTime *metav1.Time `json:"startTime,omitempty"`
-
-	StatusReason *string `json:"statusReason,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -518,8 +514,6 @@ type MetricCollectionType struct {
 
 // +kubebuilder:skipversion
 type MetricDataQuery struct {
-	Expression *string `json:"expression,omitempty"`
-
 	ID *string `json:"id,omitempty"`
 }
 
@@ -563,34 +557,12 @@ type NotificationConfiguration struct {
 }
 
 // +kubebuilder:skipversion
-type PredefinedMetricSpecification struct {
-	ResourceLabel *string `json:"resourceLabel,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type PredictiveScalingPredefinedLoadMetric struct {
-	ResourceLabel *string `json:"resourceLabel,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type PredictiveScalingPredefinedMetricPair struct {
-	ResourceLabel *string `json:"resourceLabel,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type PredictiveScalingPredefinedScalingMetric struct {
-	ResourceLabel *string `json:"resourceLabel,omitempty"`
-}
-
-// +kubebuilder:skipversion
 type ProcessType struct {
 	ProcessName *string `json:"processName,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type RollbackDetails struct {
-	RollbackReason *string `json:"rollbackReason,omitempty"`
-
 	RollbackStartTime *metav1.Time `json:"rollbackStartTime,omitempty"`
 }
 

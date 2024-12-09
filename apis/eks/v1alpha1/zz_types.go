@@ -149,6 +149,27 @@ type ControlPlanePlacementResponse struct {
 }
 
 // +kubebuilder:skipversion
+type EKSAnywhereSubscription struct {
+	ARN *string `json:"arn,omitempty"`
+
+	AutoRenew *bool `json:"autoRenew,omitempty"`
+
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	EffectiveDate *metav1.Time `json:"effectiveDate,omitempty"`
+
+	ExpirationDate *metav1.Time `json:"expirationDate,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	LicenseARNs []*string `json:"licenseARNs,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EncryptionConfig struct {
 	Resources []*string `json:"resources,omitempty"`
 }
