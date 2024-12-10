@@ -69,6 +69,15 @@ type Accelerator_SDK struct {
 }
 
 // +kubebuilder:skipversion
+type Attachment struct {
+	AttachmentARN *string `json:"attachmentARN,omitempty"`
+
+	CreatedTime *metav1.Time `json:"createdTime,omitempty"`
+
+	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ByoipCIDR struct {
 	CIDR *string `json:"cidr,omitempty"`
 }
@@ -85,6 +94,13 @@ type CIDRAuthorizationContext struct {
 	Message *string `json:"message,omitempty"`
 
 	Signature *string `json:"signature,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CrossAccountResource struct {
+	AttachmentARN *string `json:"attachmentARN,omitempty"`
+
+	EndpointID *string `json:"endpointID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -131,6 +147,8 @@ type CustomRoutingDestinationDescription struct {
 
 // +kubebuilder:skipversion
 type CustomRoutingEndpointConfiguration struct {
+	AttachmentARN *string `json:"attachmentARN,omitempty"`
+
 	EndpointID *string `json:"endpointID,omitempty"`
 }
 
@@ -168,6 +186,8 @@ type DestinationPortMapping struct {
 
 // +kubebuilder:skipversion
 type EndpointConfiguration struct {
+	AttachmentARN *string `json:"attachmentARN,omitempty"`
+
 	ClientIPPreservationEnabled *bool `json:"clientIPPreservationEnabled,omitempty"`
 
 	EndpointID *string `json:"endpointID,omitempty"`
@@ -259,6 +279,13 @@ type PortRange struct {
 	FromPort *int64 `json:"fromPort,omitempty"`
 
 	ToPort *int64 `json:"toPort,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Resource struct {
+	EndpointID *string `json:"endpointID,omitempty"`
+
+	Region *string `json:"region,omitempty"`
 }
 
 // +kubebuilder:skipversion

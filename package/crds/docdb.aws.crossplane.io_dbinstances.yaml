@@ -453,10 +453,15 @@ spec:
                       snapshots are retained.
                     format: int64
                     type: integer
-                  caCertificateIdentifier:
-                    description: The identifier of the CA certificate for this DB
-                      instance.
-                    type: string
+                  certificateDetails:
+                    description: The details of the DB instance's server certificate.
+                    properties:
+                      cAIdentifier:
+                        type: string
+                      validTill:
+                        format: date-time
+                        type: string
+                    type: object
                   dbClusterIdentifier:
                     description: |-
                       Contains the name of the cluster that the instance is a member of if the

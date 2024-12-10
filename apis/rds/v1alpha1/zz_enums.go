@@ -157,6 +157,18 @@ const (
 	IAMAuthMode_ENABLED  IAMAuthMode = "ENABLED"
 )
 
+type IntegrationStatus string
+
+const (
+	IntegrationStatus_creating        IntegrationStatus = "creating"
+	IntegrationStatus_active          IntegrationStatus = "active"
+	IntegrationStatus_modifying       IntegrationStatus = "modifying"
+	IntegrationStatus_failed          IntegrationStatus = "failed"
+	IntegrationStatus_deleting        IntegrationStatus = "deleting"
+	IntegrationStatus_syncing         IntegrationStatus = "syncing"
+	IntegrationStatus_needs_attention IntegrationStatus = "needs_attention"
+)
+
 type LocalWriteForwardingStatus string
 
 const (

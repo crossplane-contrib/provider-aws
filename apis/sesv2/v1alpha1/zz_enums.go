@@ -327,6 +327,16 @@ const (
 	TLSPolicy_OPTIONAL TLSPolicy = "OPTIONAL"
 )
 
+type VerificationError string
+
+const (
+	VerificationError_SERVICE_ERROR    VerificationError = "SERVICE_ERROR"
+	VerificationError_DNS_SERVER_ERROR VerificationError = "DNS_SERVER_ERROR"
+	VerificationError_HOST_NOT_FOUND   VerificationError = "HOST_NOT_FOUND"
+	VerificationError_TYPE_NOT_FOUND   VerificationError = "TYPE_NOT_FOUND"
+	VerificationError_INVALID_VALUE    VerificationError = "INVALID_VALUE"
+)
+
 type VerificationStatus string
 
 const (

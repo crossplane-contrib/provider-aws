@@ -183,6 +183,16 @@ type BasicCatalogTarget struct {
 }
 
 // +kubebuilder:skipversion
+type BatchGetTableOptimizerEntry struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type BatchGetTableOptimizerError struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type BatchStopJobRunError struct {
 	JobName *string `json:"jobName,omitempty"`
 
@@ -194,6 +204,11 @@ type BatchStopJobRunSuccessfulSubmission struct {
 	JobName *string `json:"jobName,omitempty"`
 
 	JobRunID *string `json:"jobRunID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type BatchTableOptimizer struct {
+	CatalogID *string `json:"catalogID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -378,6 +393,10 @@ type CodeGenConfigurationNode struct {
 	CatalogSource *CatalogSource `json:"catalogSource,omitempty"`
 	// Specifies a target that uses a Glue Data Catalog table.
 	CatalogTarget *BasicCatalogTarget `json:"catalogTarget,omitempty"`
+	// Specifies a source generated with standard connection options.
+	ConnectorDataSource *ConnectorDataSource `json:"connectorDataSource,omitempty"`
+	// Specifies a target generated with standard connection options.
+	ConnectorDataTarget *ConnectorDataTarget `json:"connectorDataTarget,omitempty"`
 	// Specifies a transform that uses custom code you provide to perform the data
 	// transformation. The output is a collection of DynamicFrames.
 	CustomCode *CustomCode `json:"customCode,omitempty"`
@@ -615,6 +634,28 @@ type Connection_SDK struct {
 // +kubebuilder:skipversion
 type ConnectionsList struct {
 	Connections []*string `json:"connections,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ConnectorDataSource struct {
+	ConnectionType *string `json:"connectionType,omitempty"`
+
+	Data map[string]*string `json:"data,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	OutputSchemas []*GlueSchema `json:"outputSchemas,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ConnectorDataTarget struct {
+	ConnectionType *string `json:"connectionType,omitempty"`
+
+	Data map[string]*string `json:"data,omitempty"`
+
+	Inputs []*string `json:"inputs,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2894,6 +2935,11 @@ type TableInput struct {
 	Owner *string `json:"owner,omitempty"`
 
 	Parameters map[string]*string `json:"parameters,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TableOptimizerConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 // +kubebuilder:skipversion

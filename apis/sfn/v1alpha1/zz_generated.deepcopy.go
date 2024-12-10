@@ -301,6 +301,10 @@ func (in *ExecutionListItem) DeepCopyInto(out *ExecutionListItem) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.RedriveDate != nil {
+		in, out := &in.RedriveDate, &out.RedriveDate
+		*out = (*in).DeepCopy()
+	}
 	if in.StartDate != nil {
 		in, out := &in.StartDate, &out.StartDate
 		*out = (*in).DeepCopy()

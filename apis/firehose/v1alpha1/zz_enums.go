@@ -52,11 +52,25 @@ const (
 	CompressionFormat_HADOOP_SNAPPY CompressionFormat = "HADOOP_SNAPPY"
 )
 
+type Connectivity string
+
+const (
+	Connectivity_PUBLIC  Connectivity = "PUBLIC"
+	Connectivity_PRIVATE Connectivity = "PRIVATE"
+)
+
 type ContentEncoding string
 
 const (
 	ContentEncoding_NONE ContentEncoding = "NONE"
 	ContentEncoding_GZIP ContentEncoding = "GZIP"
+)
+
+type DefaultDocumentIDFormat string
+
+const (
+	DefaultDocumentIDFormat_FIREHOSE_DEFAULT DefaultDocumentIDFormat = "FIREHOSE_DEFAULT"
+	DefaultDocumentIDFormat_NO_DOCUMENT_ID   DefaultDocumentIDFormat = "NO_DOCUMENT_ID"
 )
 
 type DeliveryStreamEncryptionStatus string
@@ -105,6 +119,7 @@ type DeliveryStreamType string
 const (
 	DeliveryStreamType_DirectPut             DeliveryStreamType = "DirectPut"
 	DeliveryStreamType_KinesisStreamAsSource DeliveryStreamType = "KinesisStreamAsSource"
+	DeliveryStreamType_MSKAsSource           DeliveryStreamType = "MSKAsSource"
 )
 
 type ElasticsearchIndexRotationPeriod string
@@ -193,12 +208,14 @@ const (
 	ProcessorParameterName_BufferIntervalInSeconds ProcessorParameterName = "BufferIntervalInSeconds"
 	ProcessorParameterName_SubRecordType           ProcessorParameterName = "SubRecordType"
 	ProcessorParameterName_Delimiter               ProcessorParameterName = "Delimiter"
+	ProcessorParameterName_CompressionFormat       ProcessorParameterName = "CompressionFormat"
 )
 
 type ProcessorType string
 
 const (
 	ProcessorType_RecordDeAggregation     ProcessorType = "RecordDeAggregation"
+	ProcessorType_Decompression           ProcessorType = "Decompression"
 	ProcessorType_Lambda                  ProcessorType = "Lambda"
 	ProcessorType_MetadataExtraction      ProcessorType = "MetadataExtraction"
 	ProcessorType_AppendDelimiterToRecord ProcessorType = "AppendDelimiterToRecord"

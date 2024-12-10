@@ -692,6 +692,50 @@ spec:
                             table:
                               type: string
                           type: object
+                        connectorDataSource:
+                          description: Specifies a source generated with standard
+                            connection options.
+                          properties:
+                            connectionType:
+                              type: string
+                            data:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            name:
+                              type: string
+                            outputSchemas:
+                              items:
+                                properties:
+                                  columns:
+                                    items:
+                                      properties:
+                                        name:
+                                          type: string
+                                        type_:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                          type: object
+                        connectorDataTarget:
+                          description: Specifies a target generated with standard
+                            connection options.
+                          properties:
+                            connectionType:
+                              type: string
+                            data:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            inputs:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                          type: object
                         customCode:
                           description: |-
                             Specifies a transform that uses custom code you provide to perform the data

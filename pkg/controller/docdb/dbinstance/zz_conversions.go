@@ -63,9 +63,21 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Status.AtProvider.BackupRetentionPeriod = nil
 		}
 		if elem.CACertificateIdentifier != nil {
-			cr.Status.AtProvider.CACertificateIdentifier = elem.CACertificateIdentifier
+			cr.Spec.ForProvider.CACertificateIdentifier = elem.CACertificateIdentifier
 		} else {
-			cr.Status.AtProvider.CACertificateIdentifier = nil
+			cr.Spec.ForProvider.CACertificateIdentifier = nil
+		}
+		if elem.CertificateDetails != nil {
+			f4 := &svcapitypes.CertificateDetails{}
+			if elem.CertificateDetails.CAIdentifier != nil {
+				f4.CAIdentifier = elem.CertificateDetails.CAIdentifier
+			}
+			if elem.CertificateDetails.ValidTill != nil {
+				f4.ValidTill = &metav1.Time{*elem.CertificateDetails.ValidTill}
+			}
+			cr.Status.AtProvider.CertificateDetails = f4
+		} else {
+			cr.Status.AtProvider.CertificateDetails = nil
 		}
 		if elem.CopyTagsToSnapshot != nil {
 			cr.Spec.ForProvider.CopyTagsToSnapshot = elem.CopyTagsToSnapshot
@@ -98,44 +110,44 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Status.AtProvider.DBInstanceStatus = nil
 		}
 		if elem.DBSubnetGroup != nil {
-			f10 := &svcapitypes.DBSubnetGroup_SDK{}
+			f11 := &svcapitypes.DBSubnetGroup_SDK{}
 			if elem.DBSubnetGroup.DBSubnetGroupArn != nil {
-				f10.DBSubnetGroupARN = elem.DBSubnetGroup.DBSubnetGroupArn
+				f11.DBSubnetGroupARN = elem.DBSubnetGroup.DBSubnetGroupArn
 			}
 			if elem.DBSubnetGroup.DBSubnetGroupDescription != nil {
-				f10.DBSubnetGroupDescription = elem.DBSubnetGroup.DBSubnetGroupDescription
+				f11.DBSubnetGroupDescription = elem.DBSubnetGroup.DBSubnetGroupDescription
 			}
 			if elem.DBSubnetGroup.DBSubnetGroupName != nil {
-				f10.DBSubnetGroupName = elem.DBSubnetGroup.DBSubnetGroupName
+				f11.DBSubnetGroupName = elem.DBSubnetGroup.DBSubnetGroupName
 			}
 			if elem.DBSubnetGroup.SubnetGroupStatus != nil {
-				f10.SubnetGroupStatus = elem.DBSubnetGroup.SubnetGroupStatus
+				f11.SubnetGroupStatus = elem.DBSubnetGroup.SubnetGroupStatus
 			}
 			if elem.DBSubnetGroup.Subnets != nil {
-				f10f4 := []*svcapitypes.Subnet{}
-				for _, f10f4iter := range elem.DBSubnetGroup.Subnets {
-					f10f4elem := &svcapitypes.Subnet{}
-					if f10f4iter.SubnetAvailabilityZone != nil {
-						f10f4elemf0 := &svcapitypes.AvailabilityZone{}
-						if f10f4iter.SubnetAvailabilityZone.Name != nil {
-							f10f4elemf0.Name = f10f4iter.SubnetAvailabilityZone.Name
+				f11f4 := []*svcapitypes.Subnet{}
+				for _, f11f4iter := range elem.DBSubnetGroup.Subnets {
+					f11f4elem := &svcapitypes.Subnet{}
+					if f11f4iter.SubnetAvailabilityZone != nil {
+						f11f4elemf0 := &svcapitypes.AvailabilityZone{}
+						if f11f4iter.SubnetAvailabilityZone.Name != nil {
+							f11f4elemf0.Name = f11f4iter.SubnetAvailabilityZone.Name
 						}
-						f10f4elem.SubnetAvailabilityZone = f10f4elemf0
+						f11f4elem.SubnetAvailabilityZone = f11f4elemf0
 					}
-					if f10f4iter.SubnetIdentifier != nil {
-						f10f4elem.SubnetIdentifier = f10f4iter.SubnetIdentifier
+					if f11f4iter.SubnetIdentifier != nil {
+						f11f4elem.SubnetIdentifier = f11f4iter.SubnetIdentifier
 					}
-					if f10f4iter.SubnetStatus != nil {
-						f10f4elem.SubnetStatus = f10f4iter.SubnetStatus
+					if f11f4iter.SubnetStatus != nil {
+						f11f4elem.SubnetStatus = f11f4iter.SubnetStatus
 					}
-					f10f4 = append(f10f4, f10f4elem)
+					f11f4 = append(f11f4, f11f4elem)
 				}
-				f10.Subnets = f10f4
+				f11.Subnets = f11f4
 			}
 			if elem.DBSubnetGroup.VpcId != nil {
-				f10.VPCID = elem.DBSubnetGroup.VpcId
+				f11.VPCID = elem.DBSubnetGroup.VpcId
 			}
-			cr.Status.AtProvider.DBSubnetGroup = f10
+			cr.Status.AtProvider.DBSubnetGroup = f11
 		} else {
 			cr.Status.AtProvider.DBSubnetGroup = nil
 		}
@@ -145,28 +157,28 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Status.AtProvider.DBIResourceID = nil
 		}
 		if elem.EnabledCloudwatchLogsExports != nil {
-			f12 := []*string{}
-			for _, f12iter := range elem.EnabledCloudwatchLogsExports {
-				var f12elem string
-				f12elem = *f12iter
-				f12 = append(f12, &f12elem)
+			f13 := []*string{}
+			for _, f13iter := range elem.EnabledCloudwatchLogsExports {
+				var f13elem string
+				f13elem = *f13iter
+				f13 = append(f13, &f13elem)
 			}
-			cr.Status.AtProvider.EnabledCloudwatchLogsExports = f12
+			cr.Status.AtProvider.EnabledCloudwatchLogsExports = f13
 		} else {
 			cr.Status.AtProvider.EnabledCloudwatchLogsExports = nil
 		}
 		if elem.Endpoint != nil {
-			f13 := &svcapitypes.Endpoint{}
+			f14 := &svcapitypes.Endpoint{}
 			if elem.Endpoint.Address != nil {
-				f13.Address = elem.Endpoint.Address
+				f14.Address = elem.Endpoint.Address
 			}
 			if elem.Endpoint.HostedZoneId != nil {
-				f13.HostedZoneID = elem.Endpoint.HostedZoneId
+				f14.HostedZoneID = elem.Endpoint.HostedZoneId
 			}
 			if elem.Endpoint.Port != nil {
-				f13.Port = elem.Endpoint.Port
+				f14.Port = elem.Endpoint.Port
 			}
-			cr.Status.AtProvider.Endpoint = f13
+			cr.Status.AtProvider.Endpoint = f14
 		} else {
 			cr.Status.AtProvider.Endpoint = nil
 		}
@@ -196,69 +208,69 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Status.AtProvider.LatestRestorableTime = nil
 		}
 		if elem.PendingModifiedValues != nil {
-			f19 := &svcapitypes.PendingModifiedValues{}
+			f20 := &svcapitypes.PendingModifiedValues{}
 			if elem.PendingModifiedValues.AllocatedStorage != nil {
-				f19.AllocatedStorage = elem.PendingModifiedValues.AllocatedStorage
+				f20.AllocatedStorage = elem.PendingModifiedValues.AllocatedStorage
 			}
 			if elem.PendingModifiedValues.BackupRetentionPeriod != nil {
-				f19.BackupRetentionPeriod = elem.PendingModifiedValues.BackupRetentionPeriod
+				f20.BackupRetentionPeriod = elem.PendingModifiedValues.BackupRetentionPeriod
 			}
 			if elem.PendingModifiedValues.CACertificateIdentifier != nil {
-				f19.CACertificateIdentifier = elem.PendingModifiedValues.CACertificateIdentifier
+				f20.CACertificateIdentifier = elem.PendingModifiedValues.CACertificateIdentifier
 			}
 			if elem.PendingModifiedValues.DBInstanceClass != nil {
-				f19.DBInstanceClass = elem.PendingModifiedValues.DBInstanceClass
+				f20.DBInstanceClass = elem.PendingModifiedValues.DBInstanceClass
 			}
 			if elem.PendingModifiedValues.DBInstanceIdentifier != nil {
-				f19.DBInstanceIdentifier = elem.PendingModifiedValues.DBInstanceIdentifier
+				f20.DBInstanceIdentifier = elem.PendingModifiedValues.DBInstanceIdentifier
 			}
 			if elem.PendingModifiedValues.DBSubnetGroupName != nil {
-				f19.DBSubnetGroupName = elem.PendingModifiedValues.DBSubnetGroupName
+				f20.DBSubnetGroupName = elem.PendingModifiedValues.DBSubnetGroupName
 			}
 			if elem.PendingModifiedValues.EngineVersion != nil {
-				f19.EngineVersion = elem.PendingModifiedValues.EngineVersion
+				f20.EngineVersion = elem.PendingModifiedValues.EngineVersion
 			}
 			if elem.PendingModifiedValues.Iops != nil {
-				f19.IOPS = elem.PendingModifiedValues.Iops
+				f20.IOPS = elem.PendingModifiedValues.Iops
 			}
 			if elem.PendingModifiedValues.LicenseModel != nil {
-				f19.LicenseModel = elem.PendingModifiedValues.LicenseModel
+				f20.LicenseModel = elem.PendingModifiedValues.LicenseModel
 			}
 			if elem.PendingModifiedValues.MasterUserPassword != nil {
-				f19.MasterUserPassword = elem.PendingModifiedValues.MasterUserPassword
+				f20.MasterUserPassword = elem.PendingModifiedValues.MasterUserPassword
 			}
 			if elem.PendingModifiedValues.MultiAZ != nil {
-				f19.MultiAZ = elem.PendingModifiedValues.MultiAZ
+				f20.MultiAZ = elem.PendingModifiedValues.MultiAZ
 			}
 			if elem.PendingModifiedValues.PendingCloudwatchLogsExports != nil {
-				f19f11 := &svcapitypes.PendingCloudwatchLogsExports{}
+				f20f11 := &svcapitypes.PendingCloudwatchLogsExports{}
 				if elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable != nil {
-					f19f11f0 := []*string{}
-					for _, f19f11f0iter := range elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable {
-						var f19f11f0elem string
-						f19f11f0elem = *f19f11f0iter
-						f19f11f0 = append(f19f11f0, &f19f11f0elem)
+					f20f11f0 := []*string{}
+					for _, f20f11f0iter := range elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable {
+						var f20f11f0elem string
+						f20f11f0elem = *f20f11f0iter
+						f20f11f0 = append(f20f11f0, &f20f11f0elem)
 					}
-					f19f11.LogTypesToDisable = f19f11f0
+					f20f11.LogTypesToDisable = f20f11f0
 				}
 				if elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable != nil {
-					f19f11f1 := []*string{}
-					for _, f19f11f1iter := range elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable {
-						var f19f11f1elem string
-						f19f11f1elem = *f19f11f1iter
-						f19f11f1 = append(f19f11f1, &f19f11f1elem)
+					f20f11f1 := []*string{}
+					for _, f20f11f1iter := range elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable {
+						var f20f11f1elem string
+						f20f11f1elem = *f20f11f1iter
+						f20f11f1 = append(f20f11f1, &f20f11f1elem)
 					}
-					f19f11.LogTypesToEnable = f19f11f1
+					f20f11.LogTypesToEnable = f20f11f1
 				}
-				f19.PendingCloudwatchLogsExports = f19f11
+				f20.PendingCloudwatchLogsExports = f20f11
 			}
 			if elem.PendingModifiedValues.Port != nil {
-				f19.Port = elem.PendingModifiedValues.Port
+				f20.Port = elem.PendingModifiedValues.Port
 			}
 			if elem.PendingModifiedValues.StorageType != nil {
-				f19.StorageType = elem.PendingModifiedValues.StorageType
+				f20.StorageType = elem.PendingModifiedValues.StorageType
 			}
-			cr.Status.AtProvider.PendingModifiedValues = f19
+			cr.Status.AtProvider.PendingModifiedValues = f20
 		} else {
 			cr.Status.AtProvider.PendingModifiedValues = nil
 		}
@@ -283,24 +295,24 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Status.AtProvider.PubliclyAccessible = nil
 		}
 		if elem.StatusInfos != nil {
-			f24 := []*svcapitypes.DBInstanceStatusInfo{}
-			for _, f24iter := range elem.StatusInfos {
-				f24elem := &svcapitypes.DBInstanceStatusInfo{}
-				if f24iter.Message != nil {
-					f24elem.Message = f24iter.Message
+			f25 := []*svcapitypes.DBInstanceStatusInfo{}
+			for _, f25iter := range elem.StatusInfos {
+				f25elem := &svcapitypes.DBInstanceStatusInfo{}
+				if f25iter.Message != nil {
+					f25elem.Message = f25iter.Message
 				}
-				if f24iter.Normal != nil {
-					f24elem.Normal = f24iter.Normal
+				if f25iter.Normal != nil {
+					f25elem.Normal = f25iter.Normal
 				}
-				if f24iter.Status != nil {
-					f24elem.Status = f24iter.Status
+				if f25iter.Status != nil {
+					f25elem.Status = f25iter.Status
 				}
-				if f24iter.StatusType != nil {
-					f24elem.StatusType = f24iter.StatusType
+				if f25iter.StatusType != nil {
+					f25elem.StatusType = f25iter.StatusType
 				}
-				f24 = append(f24, f24elem)
+				f25 = append(f25, f25elem)
 			}
-			cr.Status.AtProvider.StatusInfos = f24
+			cr.Status.AtProvider.StatusInfos = f25
 		} else {
 			cr.Status.AtProvider.StatusInfos = nil
 		}
@@ -310,18 +322,18 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Status.AtProvider.StorageEncrypted = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f26 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f26iter := range elem.VpcSecurityGroups {
-				f26elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f26iter.Status != nil {
-					f26elem.Status = f26iter.Status
+			f27 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f27iter := range elem.VpcSecurityGroups {
+				f27elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f27iter.Status != nil {
+					f27elem.Status = f27iter.Status
 				}
-				if f26iter.VpcSecurityGroupId != nil {
-					f26elem.VPCSecurityGroupID = f26iter.VpcSecurityGroupId
+				if f27iter.VpcSecurityGroupId != nil {
+					f27elem.VPCSecurityGroupID = f27iter.VpcSecurityGroupId
 				}
-				f26 = append(f26, f26elem)
+				f27 = append(f27, f27elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f26
+			cr.Status.AtProvider.VPCSecurityGroups = f27
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}
@@ -345,6 +357,9 @@ func GenerateCreateDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.CreateDBI
 	if cr.Spec.ForProvider.AvailabilityZone != nil {
 		res.SetAvailabilityZone(*cr.Spec.ForProvider.AvailabilityZone)
 	}
+	if cr.Spec.ForProvider.CACertificateIdentifier != nil {
+		res.SetCACertificateIdentifier(*cr.Spec.ForProvider.CACertificateIdentifier)
+	}
 	if cr.Spec.ForProvider.CopyTagsToSnapshot != nil {
 		res.SetCopyTagsToSnapshot(*cr.Spec.ForProvider.CopyTagsToSnapshot)
 	}
@@ -367,18 +382,18 @@ func GenerateCreateDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.CreateDBI
 		res.SetPromotionTier(*cr.Spec.ForProvider.PromotionTier)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f9 := []*svcsdk.Tag{}
-		for _, f9iter := range cr.Spec.ForProvider.Tags {
-			f9elem := &svcsdk.Tag{}
-			if f9iter.Key != nil {
-				f9elem.SetKey(*f9iter.Key)
+		f10 := []*svcsdk.Tag{}
+		for _, f10iter := range cr.Spec.ForProvider.Tags {
+			f10elem := &svcsdk.Tag{}
+			if f10iter.Key != nil {
+				f10elem.SetKey(*f10iter.Key)
 			}
-			if f9iter.Value != nil {
-				f9elem.SetValue(*f9iter.Value)
+			if f10iter.Value != nil {
+				f10elem.SetValue(*f10iter.Value)
 			}
-			f9 = append(f9, f9elem)
+			f10 = append(f10, f10elem)
 		}
-		res.SetTags(f9)
+		res.SetTags(f10)
 	}
 
 	return res
@@ -391,8 +406,8 @@ func GenerateModifyDBInstanceInput(cr *svcapitypes.DBInstance) *svcsdk.ModifyDBI
 	if cr.Spec.ForProvider.AutoMinorVersionUpgrade != nil {
 		res.SetAutoMinorVersionUpgrade(*cr.Spec.ForProvider.AutoMinorVersionUpgrade)
 	}
-	if cr.Status.AtProvider.CACertificateIdentifier != nil {
-		res.SetCACertificateIdentifier(*cr.Status.AtProvider.CACertificateIdentifier)
+	if cr.Spec.ForProvider.CACertificateIdentifier != nil {
+		res.SetCACertificateIdentifier(*cr.Spec.ForProvider.CACertificateIdentifier)
 	}
 	if cr.Spec.ForProvider.CopyTagsToSnapshot != nil {
 		res.SetCopyTagsToSnapshot(*cr.Spec.ForProvider.CopyTagsToSnapshot)
