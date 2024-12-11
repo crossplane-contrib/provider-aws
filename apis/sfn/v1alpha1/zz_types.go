@@ -52,6 +52,8 @@ type ExecutionListItem struct {
 
 	Name *string `json:"name,omitempty"`
 
+	RedriveDate *metav1.Time `json:"redriveDate,omitempty"`
+
 	StartDate *metav1.Time `json:"startDate,omitempty"`
 
 	StateMachineAliasARN *string `json:"stateMachineAliasARN,omitempty"`

@@ -253,6 +253,56 @@ func (mr *MockEKSAPIMockRecorder) CreateClusterWithContext(arg0, arg1 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateClusterWithContext", reflect.TypeOf((*MockEKSAPI)(nil).CreateClusterWithContext), varargs...)
 }
 
+// CreateEksAnywhereSubscription mocks base method.
+func (m *MockEKSAPI) CreateEksAnywhereSubscription(arg0 *eks.CreateEksAnywhereSubscriptionInput) (*eks.CreateEksAnywhereSubscriptionOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateEksAnywhereSubscription", arg0)
+	ret0, _ := ret[0].(*eks.CreateEksAnywhereSubscriptionOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateEksAnywhereSubscription indicates an expected call of CreateEksAnywhereSubscription.
+func (mr *MockEKSAPIMockRecorder) CreateEksAnywhereSubscription(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEksAnywhereSubscription", reflect.TypeOf((*MockEKSAPI)(nil).CreateEksAnywhereSubscription), arg0)
+}
+
+// CreateEksAnywhereSubscriptionRequest mocks base method.
+func (m *MockEKSAPI) CreateEksAnywhereSubscriptionRequest(arg0 *eks.CreateEksAnywhereSubscriptionInput) (*request.Request, *eks.CreateEksAnywhereSubscriptionOutput) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateEksAnywhereSubscriptionRequest", arg0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*eks.CreateEksAnywhereSubscriptionOutput)
+	return ret0, ret1
+}
+
+// CreateEksAnywhereSubscriptionRequest indicates an expected call of CreateEksAnywhereSubscriptionRequest.
+func (mr *MockEKSAPIMockRecorder) CreateEksAnywhereSubscriptionRequest(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEksAnywhereSubscriptionRequest", reflect.TypeOf((*MockEKSAPI)(nil).CreateEksAnywhereSubscriptionRequest), arg0)
+}
+
+// CreateEksAnywhereSubscriptionWithContext mocks base method.
+func (m *MockEKSAPI) CreateEksAnywhereSubscriptionWithContext(arg0 context.Context, arg1 *eks.CreateEksAnywhereSubscriptionInput, arg2 ...request.Option) (*eks.CreateEksAnywhereSubscriptionOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateEksAnywhereSubscriptionWithContext", varargs...)
+	ret0, _ := ret[0].(*eks.CreateEksAnywhereSubscriptionOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateEksAnywhereSubscriptionWithContext indicates an expected call of CreateEksAnywhereSubscriptionWithContext.
+func (mr *MockEKSAPIMockRecorder) CreateEksAnywhereSubscriptionWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEksAnywhereSubscriptionWithContext", reflect.TypeOf((*MockEKSAPI)(nil).CreateEksAnywhereSubscriptionWithContext), varargs...)
+}
+
 // CreateFargateProfile mocks base method.
 func (m *MockEKSAPI) CreateFargateProfile(arg0 *eks.CreateFargateProfileInput) (*eks.CreateFargateProfileOutput, error) {
 	m.ctrl.T.Helper()
@@ -451,6 +501,56 @@ func (mr *MockEKSAPIMockRecorder) DeleteClusterWithContext(arg0, arg1 interface{
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteClusterWithContext", reflect.TypeOf((*MockEKSAPI)(nil).DeleteClusterWithContext), varargs...)
+}
+
+// DeleteEksAnywhereSubscription mocks base method.
+func (m *MockEKSAPI) DeleteEksAnywhereSubscription(arg0 *eks.DeleteEksAnywhereSubscriptionInput) (*eks.DeleteEksAnywhereSubscriptionOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteEksAnywhereSubscription", arg0)
+	ret0, _ := ret[0].(*eks.DeleteEksAnywhereSubscriptionOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteEksAnywhereSubscription indicates an expected call of DeleteEksAnywhereSubscription.
+func (mr *MockEKSAPIMockRecorder) DeleteEksAnywhereSubscription(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEksAnywhereSubscription", reflect.TypeOf((*MockEKSAPI)(nil).DeleteEksAnywhereSubscription), arg0)
+}
+
+// DeleteEksAnywhereSubscriptionRequest mocks base method.
+func (m *MockEKSAPI) DeleteEksAnywhereSubscriptionRequest(arg0 *eks.DeleteEksAnywhereSubscriptionInput) (*request.Request, *eks.DeleteEksAnywhereSubscriptionOutput) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteEksAnywhereSubscriptionRequest", arg0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*eks.DeleteEksAnywhereSubscriptionOutput)
+	return ret0, ret1
+}
+
+// DeleteEksAnywhereSubscriptionRequest indicates an expected call of DeleteEksAnywhereSubscriptionRequest.
+func (mr *MockEKSAPIMockRecorder) DeleteEksAnywhereSubscriptionRequest(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEksAnywhereSubscriptionRequest", reflect.TypeOf((*MockEKSAPI)(nil).DeleteEksAnywhereSubscriptionRequest), arg0)
+}
+
+// DeleteEksAnywhereSubscriptionWithContext mocks base method.
+func (m *MockEKSAPI) DeleteEksAnywhereSubscriptionWithContext(arg0 context.Context, arg1 *eks.DeleteEksAnywhereSubscriptionInput, arg2 ...request.Option) (*eks.DeleteEksAnywhereSubscriptionOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteEksAnywhereSubscriptionWithContext", varargs...)
+	ret0, _ := ret[0].(*eks.DeleteEksAnywhereSubscriptionOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteEksAnywhereSubscriptionWithContext indicates an expected call of DeleteEksAnywhereSubscriptionWithContext.
+func (mr *MockEKSAPIMockRecorder) DeleteEksAnywhereSubscriptionWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEksAnywhereSubscriptionWithContext", reflect.TypeOf((*MockEKSAPI)(nil).DeleteEksAnywhereSubscriptionWithContext), varargs...)
 }
 
 // DeleteFargateProfile mocks base method.
@@ -834,6 +934,56 @@ func (mr *MockEKSAPIMockRecorder) DescribeClusterWithContext(arg0, arg1 interfac
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeClusterWithContext", reflect.TypeOf((*MockEKSAPI)(nil).DescribeClusterWithContext), varargs...)
+}
+
+// DescribeEksAnywhereSubscription mocks base method.
+func (m *MockEKSAPI) DescribeEksAnywhereSubscription(arg0 *eks.DescribeEksAnywhereSubscriptionInput) (*eks.DescribeEksAnywhereSubscriptionOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DescribeEksAnywhereSubscription", arg0)
+	ret0, _ := ret[0].(*eks.DescribeEksAnywhereSubscriptionOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DescribeEksAnywhereSubscription indicates an expected call of DescribeEksAnywhereSubscription.
+func (mr *MockEKSAPIMockRecorder) DescribeEksAnywhereSubscription(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeEksAnywhereSubscription", reflect.TypeOf((*MockEKSAPI)(nil).DescribeEksAnywhereSubscription), arg0)
+}
+
+// DescribeEksAnywhereSubscriptionRequest mocks base method.
+func (m *MockEKSAPI) DescribeEksAnywhereSubscriptionRequest(arg0 *eks.DescribeEksAnywhereSubscriptionInput) (*request.Request, *eks.DescribeEksAnywhereSubscriptionOutput) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DescribeEksAnywhereSubscriptionRequest", arg0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*eks.DescribeEksAnywhereSubscriptionOutput)
+	return ret0, ret1
+}
+
+// DescribeEksAnywhereSubscriptionRequest indicates an expected call of DescribeEksAnywhereSubscriptionRequest.
+func (mr *MockEKSAPIMockRecorder) DescribeEksAnywhereSubscriptionRequest(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeEksAnywhereSubscriptionRequest", reflect.TypeOf((*MockEKSAPI)(nil).DescribeEksAnywhereSubscriptionRequest), arg0)
+}
+
+// DescribeEksAnywhereSubscriptionWithContext mocks base method.
+func (m *MockEKSAPI) DescribeEksAnywhereSubscriptionWithContext(arg0 context.Context, arg1 *eks.DescribeEksAnywhereSubscriptionInput, arg2 ...request.Option) (*eks.DescribeEksAnywhereSubscriptionOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DescribeEksAnywhereSubscriptionWithContext", varargs...)
+	ret0, _ := ret[0].(*eks.DescribeEksAnywhereSubscriptionOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DescribeEksAnywhereSubscriptionWithContext indicates an expected call of DescribeEksAnywhereSubscriptionWithContext.
+func (mr *MockEKSAPIMockRecorder) DescribeEksAnywhereSubscriptionWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeEksAnywhereSubscriptionWithContext", reflect.TypeOf((*MockEKSAPI)(nil).DescribeEksAnywhereSubscriptionWithContext), varargs...)
 }
 
 // DescribeFargateProfile mocks base method.
@@ -1250,6 +1400,56 @@ func (mr *MockEKSAPIMockRecorder) ListClustersWithContext(arg0, arg1 interface{}
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListClustersWithContext", reflect.TypeOf((*MockEKSAPI)(nil).ListClustersWithContext), varargs...)
+}
+
+// ListEksAnywhereSubscriptions mocks base method.
+func (m *MockEKSAPI) ListEksAnywhereSubscriptions(arg0 *eks.ListEksAnywhereSubscriptionsInput) (*eks.ListEksAnywhereSubscriptionsOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListEksAnywhereSubscriptions", arg0)
+	ret0, _ := ret[0].(*eks.ListEksAnywhereSubscriptionsOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListEksAnywhereSubscriptions indicates an expected call of ListEksAnywhereSubscriptions.
+func (mr *MockEKSAPIMockRecorder) ListEksAnywhereSubscriptions(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEksAnywhereSubscriptions", reflect.TypeOf((*MockEKSAPI)(nil).ListEksAnywhereSubscriptions), arg0)
+}
+
+// ListEksAnywhereSubscriptionsRequest mocks base method.
+func (m *MockEKSAPI) ListEksAnywhereSubscriptionsRequest(arg0 *eks.ListEksAnywhereSubscriptionsInput) (*request.Request, *eks.ListEksAnywhereSubscriptionsOutput) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListEksAnywhereSubscriptionsRequest", arg0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*eks.ListEksAnywhereSubscriptionsOutput)
+	return ret0, ret1
+}
+
+// ListEksAnywhereSubscriptionsRequest indicates an expected call of ListEksAnywhereSubscriptionsRequest.
+func (mr *MockEKSAPIMockRecorder) ListEksAnywhereSubscriptionsRequest(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEksAnywhereSubscriptionsRequest", reflect.TypeOf((*MockEKSAPI)(nil).ListEksAnywhereSubscriptionsRequest), arg0)
+}
+
+// ListEksAnywhereSubscriptionsWithContext mocks base method.
+func (m *MockEKSAPI) ListEksAnywhereSubscriptionsWithContext(arg0 context.Context, arg1 *eks.ListEksAnywhereSubscriptionsInput, arg2 ...request.Option) (*eks.ListEksAnywhereSubscriptionsOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ListEksAnywhereSubscriptionsWithContext", varargs...)
+	ret0, _ := ret[0].(*eks.ListEksAnywhereSubscriptionsOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListEksAnywhereSubscriptionsWithContext indicates an expected call of ListEksAnywhereSubscriptionsWithContext.
+func (mr *MockEKSAPIMockRecorder) ListEksAnywhereSubscriptionsWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEksAnywhereSubscriptionsWithContext", reflect.TypeOf((*MockEKSAPI)(nil).ListEksAnywhereSubscriptionsWithContext), varargs...)
 }
 
 // ListFargateProfiles mocks base method.
@@ -1932,6 +2132,56 @@ func (mr *MockEKSAPIMockRecorder) UpdateClusterVersionWithContext(arg0, arg1 int
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateClusterVersionWithContext", reflect.TypeOf((*MockEKSAPI)(nil).UpdateClusterVersionWithContext), varargs...)
+}
+
+// UpdateEksAnywhereSubscription mocks base method.
+func (m *MockEKSAPI) UpdateEksAnywhereSubscription(arg0 *eks.UpdateEksAnywhereSubscriptionInput) (*eks.UpdateEksAnywhereSubscriptionOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateEksAnywhereSubscription", arg0)
+	ret0, _ := ret[0].(*eks.UpdateEksAnywhereSubscriptionOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateEksAnywhereSubscription indicates an expected call of UpdateEksAnywhereSubscription.
+func (mr *MockEKSAPIMockRecorder) UpdateEksAnywhereSubscription(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEksAnywhereSubscription", reflect.TypeOf((*MockEKSAPI)(nil).UpdateEksAnywhereSubscription), arg0)
+}
+
+// UpdateEksAnywhereSubscriptionRequest mocks base method.
+func (m *MockEKSAPI) UpdateEksAnywhereSubscriptionRequest(arg0 *eks.UpdateEksAnywhereSubscriptionInput) (*request.Request, *eks.UpdateEksAnywhereSubscriptionOutput) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateEksAnywhereSubscriptionRequest", arg0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*eks.UpdateEksAnywhereSubscriptionOutput)
+	return ret0, ret1
+}
+
+// UpdateEksAnywhereSubscriptionRequest indicates an expected call of UpdateEksAnywhereSubscriptionRequest.
+func (mr *MockEKSAPIMockRecorder) UpdateEksAnywhereSubscriptionRequest(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEksAnywhereSubscriptionRequest", reflect.TypeOf((*MockEKSAPI)(nil).UpdateEksAnywhereSubscriptionRequest), arg0)
+}
+
+// UpdateEksAnywhereSubscriptionWithContext mocks base method.
+func (m *MockEKSAPI) UpdateEksAnywhereSubscriptionWithContext(arg0 context.Context, arg1 *eks.UpdateEksAnywhereSubscriptionInput, arg2 ...request.Option) (*eks.UpdateEksAnywhereSubscriptionOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateEksAnywhereSubscriptionWithContext", varargs...)
+	ret0, _ := ret[0].(*eks.UpdateEksAnywhereSubscriptionOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateEksAnywhereSubscriptionWithContext indicates an expected call of UpdateEksAnywhereSubscriptionWithContext.
+func (mr *MockEKSAPIMockRecorder) UpdateEksAnywhereSubscriptionWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEksAnywhereSubscriptionWithContext", reflect.TypeOf((*MockEKSAPI)(nil).UpdateEksAnywhereSubscriptionWithContext), varargs...)
 }
 
 // UpdateNodegroupConfig mocks base method.

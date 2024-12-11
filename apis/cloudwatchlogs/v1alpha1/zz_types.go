@@ -37,6 +37,34 @@ type AccountPolicy struct {
 }
 
 // +kubebuilder:skipversion
+type Delivery struct {
+	ARN *string `json:"arn,omitempty"`
+
+	DeliveryDestinationARN *string `json:"deliveryDestinationARN,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DeliveryDestination struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DeliveryDestinationConfiguration struct {
+	DestinationResourceARN *string `json:"destinationResourceARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DeliverySource struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Destination struct {
 	ARN *string `json:"arn,omitempty"`
 

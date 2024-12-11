@@ -82,11 +82,31 @@ const (
 	NodeType_BROKER NodeType = "BROKER"
 )
 
+type ReplicatorState string
+
+const (
+	ReplicatorState_RUNNING  ReplicatorState = "RUNNING"
+	ReplicatorState_CREATING ReplicatorState = "CREATING"
+	ReplicatorState_UPDATING ReplicatorState = "UPDATING"
+	ReplicatorState_DELETING ReplicatorState = "DELETING"
+	ReplicatorState_FAILED   ReplicatorState = "FAILED"
+)
+
 type StorageMode string
 
 const (
 	StorageMode_LOCAL  StorageMode = "LOCAL"
 	StorageMode_TIERED StorageMode = "TIERED"
+)
+
+type TargetCompressionType string
+
+const (
+	TargetCompressionType_NONE   TargetCompressionType = "NONE"
+	TargetCompressionType_GZIP   TargetCompressionType = "GZIP"
+	TargetCompressionType_SNAPPY TargetCompressionType = "SNAPPY"
+	TargetCompressionType_LZ4    TargetCompressionType = "LZ4"
+	TargetCompressionType_ZSTD   TargetCompressionType = "ZSTD"
 )
 
 type UserIdentityType string

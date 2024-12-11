@@ -27,6 +27,14 @@ const (
 	DataProtectionStatus_DISABLED  DataProtectionStatus = "DISABLED"
 )
 
+type DeliveryDestinationType string
+
+const (
+	DeliveryDestinationType_S3  DeliveryDestinationType = "S3"
+	DeliveryDestinationType_CWL DeliveryDestinationType = "CWL"
+	DeliveryDestinationType_FH  DeliveryDestinationType = "FH"
+)
+
 type Distribution string
 
 const (
@@ -56,6 +64,16 @@ type OrderBy string
 const (
 	OrderBy_LogStreamName OrderBy = "LogStreamName"
 	OrderBy_LastEventTime OrderBy = "LastEventTime"
+)
+
+type OutputFormat string
+
+const (
+	OutputFormat_json    OutputFormat = "json"
+	OutputFormat_plain   OutputFormat = "plain"
+	OutputFormat_w3c     OutputFormat = "w3c"
+	OutputFormat_raw     OutputFormat = "raw"
+	OutputFormat_parquet OutputFormat = "parquet"
 )
 
 type PolicyType string

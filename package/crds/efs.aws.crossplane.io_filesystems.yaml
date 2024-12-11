@@ -225,6 +225,9 @@ spec:
 
 
                       The maxIO mode is not supported on file systems using One Zone storage classes.
+
+
+                      Default is generalPurpose.
                     type: string
                   provisionedThroughputInMibps:
                     description: |-

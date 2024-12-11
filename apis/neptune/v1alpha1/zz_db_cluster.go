@@ -131,8 +131,8 @@ type DBClusterParameters struct {
 	// backups are enabled using the BackupRetentionPeriod parameter.
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each Amazon Region. To see the time blocks available, see Adjusting
-	// the Preferred Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
+	// of time for each Amazon Region. To see the time blocks available, see Neptune
+	// Maintenance Window (https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-maintaining.html#manage-console-maintaining-window)
 	// in the Amazon Neptune User Guide.
 	//
 	// Constraints:
@@ -152,8 +152,7 @@ type DBClusterParameters struct {
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
 	// of time for each Amazon Region, occurring on a random day of the week. To
-	// see the time blocks available, see Adjusting the Preferred Maintenance Window
-	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
+	// see the time blocks available, see Neptune Maintenance Window (https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-maintaining.html#manage-console-maintaining-window)
 	// in the Amazon Neptune User Guide.
 	//
 	// Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun.
@@ -163,7 +162,10 @@ type DBClusterParameters struct {
 	// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
 	// this DB cluster is created as a Read Replica.
 	ReplicationSourceIdentifier *string `json:"replicationSourceIdentifier,omitempty"`
-
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
 	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `json:"serverlessV2ScalingConfiguration,omitempty"`
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always

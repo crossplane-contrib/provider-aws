@@ -49,6 +49,7 @@ var (
 	testAvailabilityZone                = "test-zone-a"
 	testOtherAvailabilityZone           = "test-zone-b"
 	testCACertificateIdentifier         = "some-certificate"
+	testCACertificateDetails            = docdb.CertificateDetails{CAIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier)}
 	testOtherCACertificateIdentifier    = "some-other-certificate"
 	testDBInstanceClass                 = "some-db-instance-class"
 	testOtherDBInstanceClass            = "some-other-db-instance-class"
@@ -139,7 +140,9 @@ func withCACertificateIdentifier(value string) docDBModifier {
 
 func withStatusCACertificateIdentifier(value string) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
-		o.Status.AtProvider.CACertificateIdentifier = pointer.ToOrNilIfZeroValue(value)
+		o.Status.AtProvider.CertificateDetails = &svcapitypes.CertificateDetails{
+			CAIdentifier: pointer.ToOrNilIfZeroValue(value),
+		}
 	}
 }
 
@@ -372,6 +375,7 @@ func TestObserve(t *testing.T) {
 								DBInstanceArn:           pointer.ToOrNilIfZeroValue(testDBInstanceArn),
 								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 								CACertificateIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
+								CertificateDetails:      pointer.ToOrNilIfZeroValue(testCACertificateDetails),
 							},
 						}}, nil
 					},
@@ -383,6 +387,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
 					withCACertificateIdentifier(testOtherCACertificateIdentifier),
+					withStatusCACertificateIdentifier(testOtherCACertificateIdentifier),
 				),
 			},
 			want: want{
@@ -887,6 +892,7 @@ func TestObserve(t *testing.T) {
 								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
 								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 								CACertificateIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
+								CertificateDetails:      pointer.ToOrNilIfZeroValue(testCACertificateDetails),
 							},
 						}}, nil
 					},
@@ -1399,6 +1405,7 @@ func TestObserve(t *testing.T) {
 								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
 								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 								CACertificateIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
+								CertificateDetails:      pointer.ToOrNilIfZeroValue(testCACertificateDetails),
 							},
 						}}, nil
 					},
@@ -1911,6 +1918,7 @@ func TestObserve(t *testing.T) {
 								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
 								Endpoint:                &docdb.Endpoint{Address: pointer.ToOrNilIfZeroValue(testAddress), Port: pointer.ToIntAsInt64(testPort)},
 								CACertificateIdentifier: pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
+								CertificateDetails:      pointer.ToOrNilIfZeroValue(testCACertificateDetails),
 							},
 						}}, nil
 					},
@@ -2352,6 +2360,8 @@ func TestCreate(t *testing.T) {
 							DBInstance: &docdb.DBInstance{
 								AutoMinorVersionUpgrade: pointer.ToOrNilIfZeroValue(true),
 								AvailabilityZone:        &testAvailabilityZone,
+								CACertificateIdentifier: &testCACertificateIdentifier,
+								CertificateDetails:      pointer.ToOrNilIfZeroValue(testCACertificateDetails),
 								DBInstanceClass:         &testDBInstanceClass,
 								DBInstanceIdentifier:    pointer.ToOrNilIfZeroValue(testDBIdentifier),
 								Endpoint: &docdb.Endpoint{
@@ -2382,6 +2392,7 @@ func TestCreate(t *testing.T) {
 					withAutoMinorVersionUpgrade(true),
 					withAvailabilityZone(testAvailabilityZone),
 					withCACertificateIdentifier(testCACertificateIdentifier),
+					withStatusCACertificateIdentifier(testCACertificateIdentifier),
 					withDBInstanceClass(testDBInstanceClass),
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 					withPromotionTier(testPromotionTier),
@@ -2400,6 +2411,7 @@ func TestCreate(t *testing.T) {
 						{
 							Ctx: context.Background(),
 							I: &docdb.CreateDBInstanceInput{
+								CACertificateIdentifier:    pointer.ToOrNilIfZeroValue(testCACertificateIdentifier),
 								DBInstanceIdentifier:       pointer.ToOrNilIfZeroValue(testDBIdentifier),
 								AutoMinorVersionUpgrade:    pointer.ToOrNilIfZeroValue(true),
 								AvailabilityZone:           pointer.ToOrNilIfZeroValue(testAvailabilityZone),

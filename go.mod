@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/aws-controllers-k8s/code-generator v0.26.1
-	github.com/aws/aws-sdk-go v1.44.334
+	github.com/aws/aws-sdk-go v1.47.11
 	github.com/aws/aws-sdk-go-v2 v1.31.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.39
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.37

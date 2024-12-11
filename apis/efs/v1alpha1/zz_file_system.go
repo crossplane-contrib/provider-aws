@@ -83,6 +83,8 @@ type FileSystemParameters struct {
 	// performance mode can't be changed after the file system has been created.
 	//
 	// The maxIO mode is not supported on file systems using One Zone storage classes.
+	//
+	// Default is generalPurpose.
 	PerformanceMode *string `json:"performanceMode,omitempty"`
 	// Use to create one or more tags associated with the file system. Each tag
 	// is a user-defined key-value pair. Name your file system on creation by including

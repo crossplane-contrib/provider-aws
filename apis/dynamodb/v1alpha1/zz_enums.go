@@ -148,6 +148,20 @@ const (
 	ExportStatus_FAILED      ExportStatus = "FAILED"
 )
 
+type ExportType string
+
+const (
+	ExportType_FULL_EXPORT        ExportType = "FULL_EXPORT"
+	ExportType_INCREMENTAL_EXPORT ExportType = "INCREMENTAL_EXPORT"
+)
+
+type ExportViewType string
+
+const (
+	ExportViewType_NEW_IMAGE          ExportViewType = "NEW_IMAGE"
+	ExportViewType_NEW_AND_OLD_IMAGES ExportViewType = "NEW_AND_OLD_IMAGES"
+)
+
 type GlobalTableStatus_SDK string
 
 const (

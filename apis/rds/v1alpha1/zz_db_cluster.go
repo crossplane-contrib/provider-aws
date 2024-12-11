@@ -38,7 +38,7 @@ type DBClusterParameters struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 	// Specifies whether major version upgrades are allowed.
 	//
-	// Valid for Cluster Type: Aurora DB clusters only
+	// Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
 	//
 	// Constraints:
 	//
@@ -547,6 +547,8 @@ type DBClusterParameters struct {
 	//    * If the subnets are part of a VPC that has an internet gateway attached
 	//    to it, the DB cluster is public.
 	PubliclyAccessible *bool `json:"publiclyAccessible,omitempty"`
+	// Reserved for future use.
+	RdsCustomClusterConfiguration *RdsCustomClusterConfiguration `json:"rdsCustomClusterConfiguration,omitempty"`
 	// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
 	// this DB cluster is created as a read replica.
 	//
@@ -634,6 +636,9 @@ type DBClusterObservation struct {
 	AssociatedRoles []*DBClusterRole `json:"associatedRoles,omitempty"`
 	// The time when a stopped DB cluster is restarted automatically.
 	AutomaticRestartTime *metav1.Time `json:"automaticRestartTime,omitempty"`
+	// The Amazon Resource Name (ARN) of the recovery point in Amazon Web Services
+	// Backup.
+	AWSBackupRecoveryPointARN *string `json:"awsBackupRecoveryPointARN,omitempty"`
 	// The number of change records stored for Backtrack.
 	BacktrackConsumedChangeRecords *int64 `json:"backtrackConsumedChangeRecords,omitempty"`
 	// The current capacity of an Aurora Serverless v1 DB cluster. The capacity
@@ -688,7 +693,7 @@ type DBClusterObservation struct {
 	Endpoint *string `json:"endpoint,omitempty"`
 	// The version of the database engine.
 	EngineVersion *string `json:"engineVersion,omitempty"`
-	// Specifies whether write forwarding is enabled for a secondary cluster in
+	// Indicates whether write forwarding is enabled for a secondary cluster in
 	// an Aurora global database. Because write forwarding takes time to enable,
 	// check the value of GlobalWriteForwardingStatus to confirm that the request
 	// has completed before using the write forwarding feature for this cluster.
@@ -718,7 +723,7 @@ type DBClusterObservation struct {
 	IOOptimizedNextAllowedModificationTime *metav1.Time `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
 	// The latest time to which a database can be restored with point-in-time restore.
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
-	// Specifies whether an Aurora DB cluster has in-cluster write forwarding enabled,
+	// Indicates whether an Aurora DB cluster has in-cluster write forwarding enabled,
 	// not enabled, requested, or is in the process of enabling it.
 	LocalWriteForwardingStatus *string `json:"localWriteForwardingStatus,omitempty"`
 	// The secret managed by RDS in Amazon Web Services Secrets Manager for the

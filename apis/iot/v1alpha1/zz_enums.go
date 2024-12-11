@@ -442,11 +442,13 @@ const (
 type LogTargetType string
 
 const (
-	LogTargetType_DEFAULT      LogTargetType = "DEFAULT"
-	LogTargetType_THING_GROUP  LogTargetType = "THING_GROUP"
-	LogTargetType_CLIENT_ID    LogTargetType = "CLIENT_ID"
-	LogTargetType_SOURCE_IP    LogTargetType = "SOURCE_IP"
-	LogTargetType_PRINCIPAL_ID LogTargetType = "PRINCIPAL_ID"
+	LogTargetType_DEFAULT         LogTargetType = "DEFAULT"
+	LogTargetType_THING_GROUP     LogTargetType = "THING_GROUP"
+	LogTargetType_CLIENT_ID       LogTargetType = "CLIENT_ID"
+	LogTargetType_SOURCE_IP       LogTargetType = "SOURCE_IP"
+	LogTargetType_PRINCIPAL_ID    LogTargetType = "PRINCIPAL_ID"
+	LogTargetType_EVENT_TYPE      LogTargetType = "EVENT_TYPE"
+	LogTargetType_DEVICE_DEFENDER LogTargetType = "DEVICE_DEFENDER"
 )
 
 type MessageFormat string

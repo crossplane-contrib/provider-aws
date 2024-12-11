@@ -2,6 +2,7 @@ ignore:
   resource_names:
     - LogStream
     - ExportTask
+    - Delivery
   field_paths:
     - CreateLogGroupInput.KmsKeyId
     - PutResourcePolicyInput.PolicyName

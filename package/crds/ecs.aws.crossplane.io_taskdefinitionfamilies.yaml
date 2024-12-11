@@ -199,26 +199,72 @@ spec:
                                * UNHEALTHY-The container health check has failed.
 
 
-                               * UNKNOWN-The container health check is being evaluated or there's no
-                               container health check defined.
+                               * UNKNOWN-The container health check is being evaluated, there's no container
+                               health check defined, or Amazon ECS doesn't have the health status of
+                               the container.
 
 
-                            The following describes the possible healthStatus values for a task. The
-                            container health check status of non-essential containers don't have an effect
-                            on the health status of a task.
-
-
-                               * HEALTHY-All essential containers within the task have passed their health
-                               checks.
+                            The following describes the possible healthStatus values based on the container
+                            health checker status of essential containers in the task with the following
+                            priority order (high to low):
 
 
                                * UNHEALTHY-One or more essential containers have failed their health
                                check.
 
 
-                               * UNKNOWN-The essential containers within the task are still having their
-                               health checks evaluated, there are only nonessential containers with health
-                               checks defined, or there are no container health checks defined.
+                               * UNKNOWN-Any essential container running within the task is in an UNKNOWN
+                               state and no other essential containers have an UNHEALTHY state.
+
+
+                               * HEALTHY-All essential containers within the task have passed their health
+                               checks.
+
+
+                            Consider the following task health example with 2 containers.
+
+
+                               * If Container1 is UNHEALTHY and Container2 is UNKNOWN, the task health
+                               is UNHEALTHY.
+
+
+                               * If Container1 is UNHEALTHY and Container2 is HEALTHY, the task health
+                               is UNHEALTHY.
+
+
+                               * If Container1 is HEALTHY and Container2 is UNKNOWN, the task health
+                               is UNKNOWN.
+
+
+                               * If Container1 is HEALTHY and Container2 is HEALTHY, the task health
+                               is HEALTHY.
+
+
+                            Consider the following task health example with 3 containers.
+
+
+                               * If Container1 is UNHEALTHY and Container2 is UNKNOWN, and Container3
+                               is UNKNOWN, the task health is UNHEALTHY.
+
+
+                               * If Container1 is UNHEALTHY and Container2 is UNKNOWN, and Container3
+                               is HEALTHY, the task health is UNHEALTHY.
+
+
+                               * If Container1 is UNHEALTHY and Container2 is HEALTHY, and Container3
+                               is HEALTHY, the task health is UNHEALTHY.
+
+
+                               * If Container1 is HEALTHY and Container2 is UNKNOWN, and Container3 is
+                               HEALTHY, the task health is UNKNOWN.
+
+
+                               * If Container1 is HEALTHY and Container2 is UNKNOWN, and Container3 is
+                               UNKNOWN, the task health is UNKNOWN.
+
+
+                               * If Container1 is HEALTHY and Container2 is HEALTHY, and Container3 is
+                               HEALTHY, the task health is HEALTHY.
 
 
                             If a task is run manually, and not as part of a service, the task will continue
@@ -1602,26 +1648,72 @@ spec:
                                    * UNHEALTHY-The container health check has failed.
 
 
-                                   * UNKNOWN-The container health check is being evaluated or there's no
-                                   container health check defined.
+                                   * UNKNOWN-The container health check is being evaluated, there's no container
+                                   health check defined, or Amazon ECS doesn't have the health status of
+                                   the container.
 
 
-                                The following describes the possible healthStatus values for a task. The
-                                container health check status of non-essential containers don't have an effect
-                                on the health status of a task.
-
-
-                                   * HEALTHY-All essential containers within the task have passed their health
-                                   checks.
+                                The following describes the possible healthStatus values based on the container
+                                health checker status of essential containers in the task with the following
+                                priority order (high to low):
 
 
                                    * UNHEALTHY-One or more essential containers have failed their health
                                    check.
 
 
-                                   * UNKNOWN-The essential containers within the task are still having their
-                                   health checks evaluated, there are only nonessential containers with health
-                                   checks defined, or there are no container health checks defined.
+                                   * UNKNOWN-Any essential container running within the task is in an UNKNOWN
+                                   state and no other essential containers have an UNHEALTHY state.
+
+
+                                   * HEALTHY-All essential containers within the task have passed their health
+                                   checks.
+
+
+                                Consider the following task health example with 2 containers.
+
+
+                                   * If Container1 is UNHEALTHY and Container2 is UNKNOWN, the task health
+                                   is UNHEALTHY.
+
+
+                                   * If Container1 is UNHEALTHY and Container2 is HEALTHY, the task health
+                                   is UNHEALTHY.
+
+
+                                   * If Container1 is HEALTHY and Container2 is UNKNOWN, the task health
+                                   is UNKNOWN.
+
+
+                                   * If Container1 is HEALTHY and Container2 is HEALTHY, the task health
+                                   is HEALTHY.
+
+
+                                Consider the following task health example with 3 containers.
+
+
+                                   * If Container1 is UNHEALTHY and Container2 is UNKNOWN, and Container3
+                                   is UNKNOWN, the task health is UNHEALTHY.
+
+
+                                   * If Container1 is UNHEALTHY and Container2 is UNKNOWN, and Container3
+                                   is HEALTHY, the task health is UNHEALTHY.
+
+
+                                   * If Container1 is UNHEALTHY and Container2 is HEALTHY, and Container3
+                                   is HEALTHY, the task health is UNHEALTHY.
+
+
+                                   * If Container1 is HEALTHY and Container2 is UNKNOWN, and Container3 is
+                                   HEALTHY, the task health is UNKNOWN.
+
+
+                                   * If Container1 is HEALTHY and Container2 is UNKNOWN, and Container3 is
+                                   UNKNOWN, the task health is UNKNOWN.
+
+
+                                   * If Container1 is HEALTHY and Container2 is HEALTHY, and Container3 is
+                                   HEALTHY, the task health is HEALTHY.
 
 
                                 If a task is run manually, and not as part of a service, the task will continue

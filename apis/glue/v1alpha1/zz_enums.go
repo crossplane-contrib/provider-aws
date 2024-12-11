@@ -721,6 +721,8 @@ type SourceControlProvider string
 
 const (
 	SourceControlProvider_GITHUB          SourceControlProvider = "GITHUB"
+	SourceControlProvider_GITLAB          SourceControlProvider = "GITLAB"
+	SourceControlProvider_BITBUCKET       SourceControlProvider = "BITBUCKET"
 	SourceControlProvider_AWS_CODE_COMMIT SourceControlProvider = "AWS_CODE_COMMIT"
 )
 
@@ -742,6 +744,21 @@ const (
 	StatementState_CANCELLING StatementState = "CANCELLING"
 	StatementState_CANCELLED  StatementState = "CANCELLED"
 	StatementState_ERROR      StatementState = "ERROR"
+)
+
+type TableOptimizerEventType string
+
+const (
+	TableOptimizerEventType_starting    TableOptimizerEventType = "starting"
+	TableOptimizerEventType_completed   TableOptimizerEventType = "completed"
+	TableOptimizerEventType_failed      TableOptimizerEventType = "failed"
+	TableOptimizerEventType_in_progress TableOptimizerEventType = "in_progress"
+)
+
+type TableOptimizerType string
+
+const (
+	TableOptimizerType_compaction TableOptimizerType = "compaction"
 )
 
 type TargetFormat string

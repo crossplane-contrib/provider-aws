@@ -21,9 +21,9 @@ package v1alpha1
 type AcceleratorManufacturer string
 
 const (
-	AcceleratorManufacturer_nvidia              AcceleratorManufacturer = "nvidia"
-	AcceleratorManufacturer_amd                 AcceleratorManufacturer = "amd"
 	AcceleratorManufacturer_amazon_web_services AcceleratorManufacturer = "amazon-web-services"
+	AcceleratorManufacturer_amd                 AcceleratorManufacturer = "amd"
+	AcceleratorManufacturer_nvidia              AcceleratorManufacturer = "nvidia"
 	AcceleratorManufacturer_xilinx              AcceleratorManufacturer = "xilinx"
 )
 
@@ -31,14 +31,14 @@ type AcceleratorName string
 
 const (
 	AcceleratorName_a100            AcceleratorName = "a100"
-	AcceleratorName_v100            AcceleratorName = "v100"
-	AcceleratorName_k80             AcceleratorName = "k80"
-	AcceleratorName_t4              AcceleratorName = "t4"
-	AcceleratorName_m60             AcceleratorName = "m60"
-	AcceleratorName_radeon_pro_v520 AcceleratorName = "radeon-pro-v520"
-	AcceleratorName_vu9p            AcceleratorName = "vu9p"
 	AcceleratorName_inferentia      AcceleratorName = "inferentia"
 	AcceleratorName_k520            AcceleratorName = "k520"
+	AcceleratorName_k80             AcceleratorName = "k80"
+	AcceleratorName_m60             AcceleratorName = "m60"
+	AcceleratorName_radeon_pro_v520 AcceleratorName = "radeon-pro-v520"
+	AcceleratorName_t4              AcceleratorName = "t4"
+	AcceleratorName_vu9p            AcceleratorName = "vu9p"
+	AcceleratorName_v100            AcceleratorName = "v100"
 )
 
 type AcceleratorType string
@@ -368,6 +368,7 @@ const (
 	CapacityReservationInstancePlatform_RHEL_with_HA                           CapacityReservationInstancePlatform = "RHEL with HA"
 	CapacityReservationInstancePlatform_RHEL_with_HA_and_SQL_Server_Standard   CapacityReservationInstancePlatform = "RHEL with HA and SQL Server Standard"
 	CapacityReservationInstancePlatform_RHEL_with_HA_and_SQL_Server_Enterprise CapacityReservationInstancePlatform = "RHEL with HA and SQL Server Enterprise"
+	CapacityReservationInstancePlatform_Ubuntu_Pro                             CapacityReservationInstancePlatform = "Ubuntu Pro"
 )
 
 type CapacityReservationPreference string
@@ -380,11 +381,14 @@ const (
 type CapacityReservationState string
 
 const (
-	CapacityReservationState_active    CapacityReservationState = "active"
-	CapacityReservationState_expired   CapacityReservationState = "expired"
-	CapacityReservationState_cancelled CapacityReservationState = "cancelled"
-	CapacityReservationState_pending   CapacityReservationState = "pending"
-	CapacityReservationState_failed    CapacityReservationState = "failed"
+	CapacityReservationState_active          CapacityReservationState = "active"
+	CapacityReservationState_expired         CapacityReservationState = "expired"
+	CapacityReservationState_cancelled       CapacityReservationState = "cancelled"
+	CapacityReservationState_pending         CapacityReservationState = "pending"
+	CapacityReservationState_failed          CapacityReservationState = "failed"
+	CapacityReservationState_scheduled       CapacityReservationState = "scheduled"
+	CapacityReservationState_payment_pending CapacityReservationState = "payment-pending"
+	CapacityReservationState_payment_failed  CapacityReservationState = "payment-failed"
 )
 
 type CapacityReservationTenancy string
@@ -392,6 +396,13 @@ type CapacityReservationTenancy string
 const (
 	CapacityReservationTenancy_default   CapacityReservationTenancy = "default"
 	CapacityReservationTenancy_dedicated CapacityReservationTenancy = "dedicated"
+)
+
+type CapacityReservationType string
+
+const (
+	CapacityReservationType_default        CapacityReservationType = "default"
+	CapacityReservationType_capacity_block CapacityReservationType = "capacity-block"
 )
 
 type CarrierGatewayState string
@@ -556,8 +567,9 @@ const (
 type DefaultTargetCapacityType string
 
 const (
-	DefaultTargetCapacityType_spot      DefaultTargetCapacityType = "spot"
-	DefaultTargetCapacityType_on_demand DefaultTargetCapacityType = "on-demand"
+	DefaultTargetCapacityType_spot           DefaultTargetCapacityType = "spot"
+	DefaultTargetCapacityType_on_demand      DefaultTargetCapacityType = "on-demand"
+	DefaultTargetCapacityType_capacity_block DefaultTargetCapacityType = "capacity-block"
 )
 
 type DeleteFleetErrorCode string
@@ -1175,6 +1187,18 @@ const (
 	ImageAttributeName_imdsSupport        ImageAttributeName = "imdsSupport"
 )
 
+type ImageBlockPublicAccessDisabledState string
+
+const (
+	ImageBlockPublicAccessDisabledState_unblocked ImageBlockPublicAccessDisabledState = "unblocked"
+)
+
+type ImageBlockPublicAccessEnabledState string
+
+const (
+	ImageBlockPublicAccessEnabledState_block_new_sharing ImageBlockPublicAccessEnabledState = "block-new-sharing"
+)
+
 type ImageState string
 
 const (
@@ -1185,6 +1209,7 @@ const (
 	ImageState_transient    ImageState = "transient"
 	ImageState_failed       ImageState = "failed"
 	ImageState_error        ImageState = "error"
+	ImageState_disabled     ImageState = "disabled"
 )
 
 type ImageTypeValues string
@@ -1277,8 +1302,9 @@ const (
 type InstanceLifecycleType string
 
 const (
-	InstanceLifecycleType_spot      InstanceLifecycleType = "spot"
-	InstanceLifecycleType_scheduled InstanceLifecycleType = "scheduled"
+	InstanceLifecycleType_spot           InstanceLifecycleType = "spot"
+	InstanceLifecycleType_scheduled      InstanceLifecycleType = "scheduled"
+	InstanceLifecycleType_capacity_block InstanceLifecycleType = "capacity-block"
 )
 
 type InstanceMatchCriteria string
@@ -2033,6 +2059,81 @@ const (
 	InstanceType_hpc7a_24xlarge    InstanceType = "hpc7a.24xlarge"
 	InstanceType_hpc7a_48xlarge    InstanceType = "hpc7a.48xlarge"
 	InstanceType_hpc7a_96xlarge    InstanceType = "hpc7a.96xlarge"
+	InstanceType_c7gd_medium       InstanceType = "c7gd.medium"
+	InstanceType_c7gd_large        InstanceType = "c7gd.large"
+	InstanceType_c7gd_xlarge       InstanceType = "c7gd.xlarge"
+	InstanceType_c7gd_2xlarge      InstanceType = "c7gd.2xlarge"
+	InstanceType_c7gd_4xlarge      InstanceType = "c7gd.4xlarge"
+	InstanceType_c7gd_8xlarge      InstanceType = "c7gd.8xlarge"
+	InstanceType_c7gd_12xlarge     InstanceType = "c7gd.12xlarge"
+	InstanceType_c7gd_16xlarge     InstanceType = "c7gd.16xlarge"
+	InstanceType_m7gd_medium       InstanceType = "m7gd.medium"
+	InstanceType_m7gd_large        InstanceType = "m7gd.large"
+	InstanceType_m7gd_xlarge       InstanceType = "m7gd.xlarge"
+	InstanceType_m7gd_2xlarge      InstanceType = "m7gd.2xlarge"
+	InstanceType_m7gd_4xlarge      InstanceType = "m7gd.4xlarge"
+	InstanceType_m7gd_8xlarge      InstanceType = "m7gd.8xlarge"
+	InstanceType_m7gd_12xlarge     InstanceType = "m7gd.12xlarge"
+	InstanceType_m7gd_16xlarge     InstanceType = "m7gd.16xlarge"
+	InstanceType_r7gd_medium       InstanceType = "r7gd.medium"
+	InstanceType_r7gd_large        InstanceType = "r7gd.large"
+	InstanceType_r7gd_xlarge       InstanceType = "r7gd.xlarge"
+	InstanceType_r7gd_2xlarge      InstanceType = "r7gd.2xlarge"
+	InstanceType_r7gd_4xlarge      InstanceType = "r7gd.4xlarge"
+	InstanceType_r7gd_8xlarge      InstanceType = "r7gd.8xlarge"
+	InstanceType_r7gd_12xlarge     InstanceType = "r7gd.12xlarge"
+	InstanceType_r7gd_16xlarge     InstanceType = "r7gd.16xlarge"
+	InstanceType_r7a_medium        InstanceType = "r7a.medium"
+	InstanceType_r7a_large         InstanceType = "r7a.large"
+	InstanceType_r7a_xlarge        InstanceType = "r7a.xlarge"
+	InstanceType_r7a_2xlarge       InstanceType = "r7a.2xlarge"
+	InstanceType_r7a_4xlarge       InstanceType = "r7a.4xlarge"
+	InstanceType_r7a_8xlarge       InstanceType = "r7a.8xlarge"
+	InstanceType_r7a_12xlarge      InstanceType = "r7a.12xlarge"
+	InstanceType_r7a_16xlarge      InstanceType = "r7a.16xlarge"
+	InstanceType_r7a_24xlarge      InstanceType = "r7a.24xlarge"
+	InstanceType_r7a_32xlarge      InstanceType = "r7a.32xlarge"
+	InstanceType_r7a_48xlarge      InstanceType = "r7a.48xlarge"
+	InstanceType_c7i_large         InstanceType = "c7i.large"
+	InstanceType_c7i_xlarge        InstanceType = "c7i.xlarge"
+	InstanceType_c7i_2xlarge       InstanceType = "c7i.2xlarge"
+	InstanceType_c7i_4xlarge       InstanceType = "c7i.4xlarge"
+	InstanceType_c7i_8xlarge       InstanceType = "c7i.8xlarge"
+	InstanceType_c7i_12xlarge      InstanceType = "c7i.12xlarge"
+	InstanceType_c7i_16xlarge      InstanceType = "c7i.16xlarge"
+	InstanceType_c7i_24xlarge      InstanceType = "c7i.24xlarge"
+	InstanceType_c7i_48xlarge      InstanceType = "c7i.48xlarge"
+	InstanceType_mac2_m2pro_metal  InstanceType = "mac2-m2pro.metal"
+	InstanceType_r7iz_large        InstanceType = "r7iz.large"
+	InstanceType_r7iz_xlarge       InstanceType = "r7iz.xlarge"
+	InstanceType_r7iz_2xlarge      InstanceType = "r7iz.2xlarge"
+	InstanceType_r7iz_4xlarge      InstanceType = "r7iz.4xlarge"
+	InstanceType_r7iz_8xlarge      InstanceType = "r7iz.8xlarge"
+	InstanceType_r7iz_12xlarge     InstanceType = "r7iz.12xlarge"
+	InstanceType_r7iz_16xlarge     InstanceType = "r7iz.16xlarge"
+	InstanceType_r7iz_32xlarge     InstanceType = "r7iz.32xlarge"
+	InstanceType_c7a_medium        InstanceType = "c7a.medium"
+	InstanceType_c7a_large         InstanceType = "c7a.large"
+	InstanceType_c7a_xlarge        InstanceType = "c7a.xlarge"
+	InstanceType_c7a_2xlarge       InstanceType = "c7a.2xlarge"
+	InstanceType_c7a_4xlarge       InstanceType = "c7a.4xlarge"
+	InstanceType_c7a_8xlarge       InstanceType = "c7a.8xlarge"
+	InstanceType_c7a_12xlarge      InstanceType = "c7a.12xlarge"
+	InstanceType_c7a_16xlarge      InstanceType = "c7a.16xlarge"
+	InstanceType_c7a_24xlarge      InstanceType = "c7a.24xlarge"
+	InstanceType_c7a_32xlarge      InstanceType = "c7a.32xlarge"
+	InstanceType_c7a_48xlarge      InstanceType = "c7a.48xlarge"
+	InstanceType_c7a_metal_48xl    InstanceType = "c7a.metal-48xl"
+	InstanceType_r7a_metal_48xl    InstanceType = "r7a.metal-48xl"
+	InstanceType_r7i_large         InstanceType = "r7i.large"
+	InstanceType_r7i_xlarge        InstanceType = "r7i.xlarge"
+	InstanceType_r7i_2xlarge       InstanceType = "r7i.2xlarge"
+	InstanceType_r7i_4xlarge       InstanceType = "r7i.4xlarge"
+	InstanceType_r7i_8xlarge       InstanceType = "r7i.8xlarge"
+	InstanceType_r7i_12xlarge      InstanceType = "r7i.12xlarge"
+	InstanceType_r7i_16xlarge      InstanceType = "r7i.16xlarge"
+	InstanceType_r7i_24xlarge      InstanceType = "r7i.24xlarge"
+	InstanceType_r7i_48xlarge      InstanceType = "r7i.48xlarge"
 )
 
 type InstanceTypeHypervisor string
@@ -2186,6 +2287,7 @@ const (
 	LocationType_region               LocationType = "region"
 	LocationType_availability_zone    LocationType = "availability-zone"
 	LocationType_availability_zone_id LocationType = "availability-zone-id"
+	LocationType_outpost              LocationType = "outpost"
 )
 
 type LogDestinationType string
@@ -2199,7 +2301,8 @@ const (
 type MarketType string
 
 const (
-	MarketType_spot MarketType = "spot"
+	MarketType_spot           MarketType = "spot"
+	MarketType_capacity_block MarketType = "capacity-block"
 )
 
 type MembershipType string
@@ -2766,6 +2869,14 @@ const (
 	SnapshotAttributeName_createVolumePermission SnapshotAttributeName = "createVolumePermission"
 )
 
+type SnapshotBlockPublicAccessState string
+
+const (
+	SnapshotBlockPublicAccessState_block_all_sharing SnapshotBlockPublicAccessState = "block-all-sharing"
+	SnapshotBlockPublicAccessState_block_new_sharing SnapshotBlockPublicAccessState = "block-new-sharing"
+	SnapshotBlockPublicAccessState_unblocked         SnapshotBlockPublicAccessState = "unblocked"
+)
+
 type SnapshotState string
 
 const (
@@ -3209,8 +3320,9 @@ const (
 type UsageClassType string
 
 const (
-	UsageClassType_spot      UsageClassType = "spot"
-	UsageClassType_on_demand UsageClassType = "on-demand"
+	UsageClassType_spot           UsageClassType = "spot"
+	UsageClassType_on_demand      UsageClassType = "on-demand"
+	UsageClassType_capacity_block UsageClassType = "capacity-block"
 )
 
 type UserTrustProviderType string

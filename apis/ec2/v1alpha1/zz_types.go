@@ -449,6 +449,25 @@ type CapacityAllocation struct {
 }
 
 // +kubebuilder:skipversion
+type CapacityBlockOffering struct {
+	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	CapacityBlockDurationHours *int64 `json:"capacityBlockDurationHours,omitempty"`
+
+	CurrencyCode *string `json:"currencyCode,omitempty"`
+
+	EndDate *metav1.Time `json:"endDate,omitempty"`
+
+	InstanceCount *int64 `json:"instanceCount,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
+
+	StartDate *metav1.Time `json:"startDate,omitempty"`
+
+	UpfrontFee *string `json:"upfrontFee,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CapacityReservation struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
@@ -1180,7 +1199,19 @@ type ENASrdSpecification struct {
 }
 
 // +kubebuilder:skipversion
+type ENASrdSpecificationRequest struct {
+	ENASrdEnabled *bool `json:"enaSrdEnabled,omitempty"`
+	// Configures ENA Express for UDP network traffic from your launch template.
+	ENASrdUDPSpecification *ENASrdUDPSpecificationRequest `json:"enaSrdUDPSpecification,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ENASrdUDPSpecification struct {
+	ENASrdUDPEnabled *bool `json:"enaSrdUDPEnabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ENASrdUDPSpecificationRequest struct {
 	ENASrdUDPEnabled *bool `json:"enaSrdUDPEnabled,omitempty"`
 }
 
@@ -1563,8 +1594,10 @@ type FleetLaunchTemplateOverrides struct {
 	// or with the RunInstances API (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
 	// you can't specify InstanceRequirements.
 	//
-	// For more information, see Attribute-based instance type selection for EC2
-	// Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
+	// For more information, see Create a mixed instances group using attribute-based
+	// instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
+	// in the Amazon EC2 Auto Scaling User Guide, and also Attribute-based instance
+	// type selection for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
 	// Attribute-based instance type selection for Spot Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
 	// and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
 	// in the Amazon EC2 User Guide.
@@ -2141,6 +2174,8 @@ type Image struct {
 
 	RootDeviceName *string `json:"rootDeviceName,omitempty"`
 
+	SourceInstanceID *string `json:"sourceInstanceID,omitempty"`
+
 	SRIOVNetSupport *string `json:"sriovNetSupport,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
@@ -2268,6 +2303,16 @@ type ImportVolumeTaskDetails struct {
 	BytesConverted *int64 `json:"bytesConverted,omitempty"`
 
 	Description *string `json:"description,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InstanceAttachmentENASrdSpecification struct {
+	ENASrdEnabled *bool `json:"enaSrdEnabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InstanceAttachmentENASrdUDPSpecification struct {
+	ENASrdUDPEnabled *bool `json:"enaSrdUDPEnabled,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2446,6 +2491,8 @@ type InstanceNetworkInterfaceSpecification struct {
 	Description *string `json:"description,omitempty"`
 
 	DeviceIndex *int64 `json:"deviceIndex,omitempty"`
+	// Launch instances with ENA Express settings configured from your launch template.
+	ENASrdSpecification *ENASrdSpecificationRequest `json:"enaSrdSpecification,omitempty"`
 
 	Groups []*string `json:"groups,omitempty"`
 
@@ -2697,6 +2744,19 @@ type InstanceTagNotificationAttribute struct {
 }
 
 // +kubebuilder:skipversion
+type InstanceTopology struct {
+	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	GroupName *string `json:"groupName,omitempty"`
+
+	InstanceID *string `json:"instanceID,omitempty"`
+
+	InstanceType *string `json:"instanceType,omitempty"`
+
+	ZoneID *string `json:"zoneID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type InstanceTypeInfo struct {
 	InstanceType *string `json:"instanceType,omitempty"`
 }
@@ -2877,6 +2937,23 @@ type LaunchTemplateEBSBlockDeviceRequest struct {
 }
 
 // +kubebuilder:skipversion
+type LaunchTemplateENASrdSpecification struct {
+	ENASrdEnabled *bool `json:"enaSrdEnabled,omitempty"`
+	// ENA Express is compatible with both TCP and UDP transport protocols. When
+	// it's enabled, TCP traffic automatically uses it. However, some UDP-based
+	// applications are designed to handle network packets that are out of order,
+	// without a need for retransmission, such as live video broadcasting or other
+	// near-real-time applications. For UDP traffic, you can specify whether to
+	// use ENA Express, based on your application environment needs.
+	ENASrdUDPSpecification *LaunchTemplateENASrdUDPSpecification `json:"enaSrdUDPSpecification,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LaunchTemplateENASrdUDPSpecification struct {
+	ENASrdUDPEnabled *bool `json:"enaSrdUDPEnabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LaunchTemplateElasticInferenceAccelerator struct {
 	Count *int64 `json:"count,omitempty"`
 
@@ -2987,6 +3064,19 @@ type LaunchTemplateInstanceNetworkInterfaceSpecification struct {
 	Description *string `json:"description,omitempty"`
 
 	DeviceIndex *int64 `json:"deviceIndex,omitempty"`
+	// ENA Express uses Amazon Web Services Scalable Reliable Datagram (SRD) technology
+	// to increase the maximum bandwidth used per stream and minimize tail latency
+	// of network traffic between EC2 instances. With ENA Express, you can communicate
+	// between two EC2 instances in the same subnet within the same account, or
+	// in different accounts. Both sending and receiving instances must have ENA
+	// Express enabled.
+	//
+	// To improve the reliability of network packet delivery, ENA Express reorders
+	// network packets on the receiving end by default. However, some UDP-based
+	// applications are designed to handle network packets that are out of order
+	// to reduce the overhead for packet delivery at the network layer. When ENA
+	// Express is enabled, you can specify whether UDP network traffic uses it.
+	ENASrdSpecification *LaunchTemplateENASrdSpecification `json:"enaSrdSpecification,omitempty"`
 
 	Groups []*string `json:"groups,omitempty"`
 
@@ -3030,6 +3120,8 @@ type LaunchTemplateInstanceNetworkInterfaceSpecificationRequest struct {
 	Description *string `json:"description,omitempty"`
 
 	DeviceIndex *int64 `json:"deviceIndex,omitempty"`
+	// Launch instances with ENA Express settings configured from your launch template.
+	ENASrdSpecification *ENASrdSpecificationRequest `json:"enaSrdSpecification,omitempty"`
 
 	Groups []*string `json:"groups,omitempty"`
 
@@ -3103,8 +3195,10 @@ type LaunchTemplateOverrides struct {
 	// or with the RunInstances API (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
 	// you can't specify InstanceRequirements.
 	//
-	// For more information, see Attribute-based instance type selection for EC2
-	// Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
+	// For more information, see Create a mixed instances group using attribute-based
+	// instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
+	// in the Amazon EC2 Auto Scaling User Guide, and also Attribute-based instance
+	// type selection for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
 	// Attribute-based instance type selection for Spot Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
 	// and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
 	// in the Amazon EC2 User Guide.
@@ -4606,8 +4700,10 @@ type ResponseLaunchTemplateData struct {
 	// or with the RunInstances API (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
 	// you can't specify InstanceRequirements.
 	//
-	// For more information, see Attribute-based instance type selection for EC2
-	// Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
+	// For more information, see Create a mixed instances group using attribute-based
+	// instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
+	// in the Amazon EC2 Auto Scaling User Guide, and also Attribute-based instance
+	// type selection for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
 	// Attribute-based instance type selection for Spot Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
 	// and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
 	// in the Amazon EC2 User Guide.
@@ -4923,6 +5019,21 @@ type SecurityGroup struct {
 }
 
 // +kubebuilder:skipversion
+type SecurityGroupForVPC struct {
+	Description *string `json:"description,omitempty"`
+
+	GroupID *string `json:"groupID,omitempty"`
+
+	GroupName *string `json:"groupName,omitempty"`
+
+	OwnerID *string `json:"ownerID,omitempty"`
+
+	PrimaryVPCID *string `json:"primaryVPCID,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SecurityGroupIdentifier struct {
 	GroupID *string `json:"groupID,omitempty"`
 
@@ -5202,8 +5313,10 @@ type SpotFleetLaunchSpecification struct {
 	// or with the RunInstances API (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
 	// you can't specify InstanceRequirements.
 	//
-	// For more information, see Attribute-based instance type selection for EC2
-	// Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
+	// For more information, see Create a mixed instances group using attribute-based
+	// instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
+	// in the Amazon EC2 Auto Scaling User Guide, and also Attribute-based instance
+	// type selection for EC2 Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
 	// Attribute-based instance type selection for Spot Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-attribute-based-instance-type-selection.html),
 	// and Spot placement score (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-placement-score.html)
 	// in the Amazon EC2 User Guide.
@@ -6659,6 +6772,8 @@ type VerifiedAccessInstance struct {
 
 	Description *string `json:"description,omitempty"`
 
+	FipsEnabled *bool `json:"fipsEnabled,omitempty"`
+
 	LastUpdatedTime *string `json:"lastUpdatedTime,omitempty"`
 
 	Tags []*Tag `json:"tags,omitempty"`
@@ -6738,6 +6853,16 @@ type VerifiedAccessLogs struct {
 	IncludeTrustContext *bool `json:"includeTrustContext,omitempty"`
 
 	LogVersion *string `json:"logVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VerifiedAccessSSESpecificationRequest struct {
+	CustomerManagedKeyEnabled *bool `json:"customerManagedKeyEnabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VerifiedAccessSSESpecificationResponse struct {
+	CustomerManagedKeyEnabled *bool `json:"customerManagedKeyEnabled,omitempty"`
 }
 
 // +kubebuilder:skipversion

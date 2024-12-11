@@ -229,6 +229,15 @@ type ReputationOptions struct {
 }
 
 // +kubebuilder:skipversion
+type SOARecord struct {
+	AdminEmail *string `json:"adminEmail,omitempty"`
+
+	PrimaryNameServer *string `json:"primaryNameServer,omitempty"`
+
+	SerialNumber *int64 `json:"serialNumber,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SendingOptions struct {
 	SendingEnabled *bool `json:"sendingEnabled,omitempty"`
 }
@@ -306,4 +315,16 @@ type VdmOptions struct {
 	// An object containing additional settings for your VDM configuration as applicable
 	// to the Guardian.
 	GuardianOptions *GuardianOptions `json:"guardianOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type VerificationInfo struct {
+	ErrorType *string `json:"errorType,omitempty"`
+
+	LastCheckedTimestamp *metav1.Time `json:"lastCheckedTimestamp,omitempty"`
+
+	LastSuccessTimestamp *metav1.Time `json:"lastSuccessTimestamp,omitempty"`
+	// An object that contains information about the start of authority (SOA) record
+	// associated with the identity.
+	SOARecord *SOARecord `json:"sOARecord,omitempty"`
 }
