@@ -14,3 +14,5 @@ guidelines and responsibilities for the steering committee and maintainers.
 * Krish Chowdhary <kchowdha@redhat.com> ([krishchow](https://github.com/krishchow))
 * Carl Henrik Lunde <chlunde@gmail.com> ([chlunde](https://github.com/chlunde))
 * Maximilian Blatt ([MisterMX](https://github.com/MisterMX))
+* Ana Garlau ([anagarlau](https://github.com/anagarlau))
+* Christopher Junk ([christopherj](https://github.com/christopherj))
