@@ -15,4 +15,4 @@ guidelines and responsibilities for the steering committee and maintainers.
 * Carl Henrik Lunde <chlunde@gmail.com> ([chlunde](https://github.com/chlunde))
 * Maximilian Blatt ([MisterMX](https://github.com/MisterMX))
 * Ana Garlau ([anagarlau](https://github.com/anagarlau))
-* Christopher Junk ([christopherj](https://github.com/christopherj))
+* Christopher Junk ([christophrj](https://github.com/christophrj))
