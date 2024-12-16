@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/aws-controllers-k8s/code-generator v0.26.1
 	github.com/aws/aws-sdk-go v1.47.11
-	github.com/aws/aws-sdk-go-v2 v1.31.0
+	github.com/aws/aws-sdk-go-v2 v1.32.7
 	github.com/aws/aws-sdk-go-v2/config v1.27.39
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.37
 	github.com/aws/aws-sdk-go-v2/service/acm v1.29.3
@@ -28,7 +28,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sns v1.32.3
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.35.3
 	github.com/aws/aws-sdk-go-v2/service/sts v1.31.3
-	github.com/aws/smithy-go v1.21.0
+	github.com/aws/smithy-go v1.22.1
 	github.com/crossplane/crossplane-runtime v1.18.0
 	github.com/crossplane/crossplane-tools v0.0.0-20230925130601-628280f8bf79
 	github.com/evanphx/json-patch v5.9.0+incompatible
@@ -62,8 +62,8 @@ require (
 	github.com/aws-controllers-k8s/pkg v0.0.4 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.5 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.14 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.18 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.18 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.26 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.26 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.18 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.5 // indirect
