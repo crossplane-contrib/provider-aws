@@ -77,11 +77,13 @@ func isUpToDate(context context.Context, service *svcapitypes.Service, output *s
 
 	tags := func(a, b *svcapitypes.Tag) bool { return aws.StringValue(a.Key) < aws.StringValue(b.Key) }
 	stringpointer := func(a, b *string) bool { return aws.StringValue(a) < aws.StringValue(b) }
+	keyValuePair := func(a, b *svcsdk.KeyValuePair) bool { return aws.StringValue(a.Name) < aws.StringValue(b.Name) }
 
 	diff := cmp.Diff(c, t,
 		cmpopts.EquateEmpty(),
 		cmpopts.SortSlices(tags),
 		cmpopts.SortSlices(stringpointer),
+		cmpopts.SortSlices(keyValuePair),
 		// Not present in DescribeServicesOutput
 		cmpopts.IgnoreFields(svcapitypes.ServiceParameters{}, "Region"),
 		cmpopts.IgnoreFields(svcapitypes.CustomServiceParameters{}, "Cluster"),

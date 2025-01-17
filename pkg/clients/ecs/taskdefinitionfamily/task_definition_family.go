@@ -46,11 +46,13 @@ func LateInitialize(in *ecs.TaskDefinitionFamilyParameters, resp *awsecs.Describ
 			}
 		}
 		if in.Volumes != nil {
-			for voli, vol := range in.Volumes {
-				awsvol := resp.TaskDefinition.Volumes[voli]
-				if vol.Host == nil && awsvol.Host != nil {
-					vol.Host = &ecs.HostVolumeProperties{
-						SourcePath: awsvol.Host.SourcePath,
+			if len(in.Volumes) == len(resp.TaskDefinition.Volumes) {
+				for voli, vol := range in.Volumes {
+					awsvol := resp.TaskDefinition.Volumes[voli]
+					if vol.Host == nil && awsvol.Host != nil {
+						vol.Host = &ecs.HostVolumeProperties{
+							SourcePath: awsvol.Host.SourcePath,
+						}
 					}
 				}
 			}
@@ -752,10 +754,16 @@ func IsUpToDate(target *ecs.TaskDefinitionFamily, out *awsecs.DescribeTaskDefini
 	c := GenerateTaskDefinitionFamilyFromDescribe(out).Spec.ForProvider.DeepCopy()
 
 	tags := func(a, b *ecs.Tag) bool { return aws.StringValue(a.Key) < aws.StringValue(b.Key) }
+	stringpointer := func(a, b *string) bool { return aws.StringValue(a) < aws.StringValue(b) }
+	keyValuePair := func(a, b *ecs.KeyValuePair) bool { return aws.StringValue(a.Name) < aws.StringValue(b.Name) }
+	secret := func(a, b *ecs.Secret) bool { return aws.StringValue(a.Name) < aws.StringValue(b.Name) }
 
 	diff := cmp.Diff(c, t,
 		cmpopts.EquateEmpty(),
 		cmpopts.SortSlices(tags),
+		cmpopts.SortSlices(stringpointer),
+		cmpopts.SortSlices(keyValuePair),
+		cmpopts.SortSlices(secret),
 		// Not present in DescribeTaskDefinitionOutput
 		cmpopts.IgnoreFields(ecs.TaskDefinitionFamilyParameters{}, "Region"),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}))
