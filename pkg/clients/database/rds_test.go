@@ -78,7 +78,6 @@ var (
 	tier                               = 4
 	tier32                             = int32(tier)
 	trueFlag                           = true
-	truncEngine                        = "5.6"
 	username                           = "username"
 	value                              = "testValue"
 	vpc                                = "vpc"
@@ -836,6 +835,7 @@ func TestGenerateObservation(t *testing.T) {
 				DbiResourceId:                         &resourceID,
 				BackupRetentionPeriod:                 &retention32,
 				EnabledCloudwatchLogsExports:          enabledCloudwatchExports,
+				EngineVersion:                         &engine,
 				EnhancedMonitoringResourceArn:         &arn,
 				PerformanceInsightsEnabled:            &trueFlag,
 				ReadReplicaDBClusterIdentifiers:       replicaClusters,
@@ -893,6 +893,7 @@ func TestGenerateObservation(t *testing.T) {
 				InstanceCreateTime:            &metav1.Time{Time: createTime},
 				Endpoint:                      v1beta1.Endpoint{Port: port, HostedZoneID: zone, Address: address},
 				EnabledCloudwatchLogsExports:  enabledCloudwatchExports,
+				EngineVersion:                 &engine,
 				EnhancedMonitoringResourceArn: arn,
 				LatestRestorableTime:          &metav1.Time{Time: lastRestoreTime},
 				OptionGroupMemberships:        []v1beta1.OptionGroupMembership{{OptionGroupName: name, Status: status}},
@@ -1230,7 +1231,7 @@ func TestLateInitialize(t *testing.T) {
 				EngineVersion: &engine,
 			},
 			params: v1beta1.RDSInstanceParameters{
-				EngineVersion: &truncEngine,
+				EngineVersion: &engine,
 			},
 			want: v1beta1.RDSInstanceParameters{
 				EngineVersion: &engine,
