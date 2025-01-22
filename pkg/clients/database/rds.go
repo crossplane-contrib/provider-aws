@@ -887,6 +887,10 @@ func generateCloudWatchExportConfiguration(spec, current []string) *rdstypes.Clo
 		}
 	}
 
+	if len(toEnable) == 0 && len(toDisable) == 0 {
+		return nil
+	}
+
 	return &rdstypes.CloudwatchLogsExportConfiguration{
 		EnableLogTypes:  toEnable,
 		DisableLogTypes: toDisable,

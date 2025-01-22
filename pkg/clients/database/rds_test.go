@@ -1368,10 +1368,6 @@ func TestGenerateModifyDBInstanceInput(t *testing.T) {
 			params: v1beta1.RDSInstanceParameters{},
 			want: rds.ModifyDBInstanceInput{
 				DBInstanceIdentifier: &emptyName,
-				CloudwatchLogsExportConfiguration: &rdstypes.CloudwatchLogsExportConfiguration{
-					DisableLogTypes: []string{},
-					EnableLogTypes:  []string{},
-				},
 			},
 		},
 	}

@@ -857,10 +857,12 @@ func TestUpdate(t *testing.T) {
 						}, nil
 					},
 				},
-				cr: instance(),
+				cr: instance(
+					withEngineVersion(&engineVersion)),
 			},
 			want: want{
-				cr:  instance(),
+				cr: instance(
+					withEngineVersion(&engineVersion)),
 				err: errorutils.Wrap(errBoom, errModifyFailed),
 			},
 		},
