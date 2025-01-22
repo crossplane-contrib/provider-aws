@@ -31,6 +31,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -297,8 +299,20 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		modify.StorageThroughput = nil
 	}
 
-	if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {
-		return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyFailed)
+	// We only want to request a modification if we actually got more than ID and modify flags.
+	// Note: When ApplyImmediately is set to false, AWS rejects those empty calls with
+	// "cannot modify RDS instance: api error InalidParameterCombination: No modifications were requested"
+	// (but when set to true, AWS doesn't block them...)
+	diff := cmp.Diff(&awsrds.ModifyDBInstanceInput{}, modify, cmpopts.EquateEmpty(),
+		cmpopts.IgnoreUnexported(awsrds.ModifyDBInstanceInput{}),
+		cmpopts.IgnoreFields(awsrds.ModifyDBInstanceInput{}, "DBInstanceIdentifier"),
+		cmpopts.IgnoreFields(awsrds.ModifyDBInstanceInput{}, "AllowMajorVersionUpgrade"),
+		cmpopts.IgnoreFields(awsrds.ModifyDBInstanceInput{}, "ApplyImmediately"),
+	)
+	if diff != "" {
+		if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyFailed)
+		}
 	}
 
 	// Update tags if necessary
