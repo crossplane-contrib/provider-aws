@@ -54,6 +54,11 @@ func GenerateServer(resp *svcsdk.DescribeServerOutput) *svcapitypes.Server {
 	} else {
 		cr.Spec.ForProvider.EndpointType = nil
 	}
+	if resp.Server.HostKeyFingerprint != nil {
+		cr.Status.AtProvider.HostKeyFingerprint = resp.Server.HostKeyFingerprint
+	} else {
+		cr.Status.AtProvider.HostKeyFingerprint = nil
+	}
 	if resp.Server.IdentityProviderDetails != nil {
 		f6 := &svcapitypes.IdentityProviderDetails{}
 		if resp.Server.IdentityProviderDetails.DirectoryId != nil {
