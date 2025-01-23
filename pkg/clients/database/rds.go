@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -463,6 +462,7 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 		DBInstancePort:                        int(ptr.Deref(db.DbInstancePort, 0)),
 		DBResourceID:                          aws.ToString(db.DbiResourceId),
 		EnabledCloudwatchLogsExports:          db.EnabledCloudwatchLogsExports,
+		EngineVersion:                         db.EngineVersion,
 		EnhancedMonitoringResourceArn:         aws.ToString(db.EnhancedMonitoringResourceArn),
 		PerformanceInsightsEnabled:            aws.ToBool(db.PerformanceInsightsEnabled),
 		ReadReplicaDBClusterIdentifiers:       db.ReadReplicaDBClusterIdentifiers,
@@ -671,12 +671,6 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 		}
 	}
 	in.EngineVersion = pointer.LateInitialize(in.EngineVersion, db.EngineVersion)
-	// When version 5.6 is chosen, AWS creates 5.6.41 and that's totally valid.
-	// But we detect as if we need to update it all the time. Here, we assign
-	// the actual full version to our spec to avoid unnecessary update signals.
-	if strings.HasPrefix(aws.ToString(db.EngineVersion), aws.ToString(in.EngineVersion)) {
-		in.EngineVersion = db.EngineVersion
-	}
 	if in.DBParameterGroupName == nil {
 		for i := range db.DBParameterGroups {
 			if db.DBParameterGroups[i].DBParameterGroupName != nil {
