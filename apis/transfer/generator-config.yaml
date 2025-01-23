@@ -15,6 +15,12 @@ ignore:
     - Profile
 resources:
   Server:
+    fields:
+      HostKeyFingerprint:
+        is_read_only: true
+        from:
+          operation: DescribeServer
+          path: Server.HostKeyFingerprint
     exceptions:
       errors:
         404:
