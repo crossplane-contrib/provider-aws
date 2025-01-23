@@ -173,6 +173,10 @@ func withStatusAWSBackupRecoveryPointARN(s string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.AWSBackupRecoveryPointARN = s }
 }
 
+func withStatusEngineVersion(s *string) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.EngineVersion = s }
+}
+
 func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 	cr := &v1beta1.RDSInstance{}
 	for _, f := range m {
@@ -421,6 +425,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: instance(
 					withEngineVersion(&engineVersion),
+					withStatusEngineVersion(&engineVersion),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateCreating)),
 					withConditions(xpv1.Creating()),
 				),

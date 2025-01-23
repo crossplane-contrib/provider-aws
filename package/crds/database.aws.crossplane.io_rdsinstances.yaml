@@ -31,7 +31,7 @@ spec:
     - jsonPath: .spec.forProvider.engine
       name: ENGINE
       type: string
-    - jsonPath: .spec.forProvider.engineVersion
+    - jsonPath: .status.atProvider.engineVersion
       name: VERSION
       type: string
     - jsonPath: .metadata.creationTimestamp
