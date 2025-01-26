@@ -98,15 +98,15 @@ func postCreate(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, resp *sv
 	return cre, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, obj *svcsdk.DeleteRuleGroupsNamespaceOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, obj *svcsdk.DeleteRuleGroupsNamespaceOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), svcsdk.ErrCodeConflictException) {
 			// skip: Can't delete rulegroupsnamespace in non-ACTIVE state. Current status is DELETING
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGroupsNamespaceOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

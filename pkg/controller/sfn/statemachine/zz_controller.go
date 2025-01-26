@@ -152,22 +152,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.StateMachine)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteStateMachineInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteStateMachineWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -203,7 +208,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.StateMachine, *svcsdk.CreateStateMachineInput) error
 	postCreate     func(context.Context, *svcapitypes.StateMachine, *svcsdk.CreateStateMachineOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineOutput, error) (managed.ExternalDelete, error)
 	preUpdate      func(context.Context, *svcapitypes.StateMachine, *svcsdk.UpdateStateMachineInput) error
 	postUpdate     func(context.Context, *svcapitypes.StateMachine, *svcsdk.UpdateStateMachineOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -231,8 +236,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.Cre
 func nopPreDelete(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.DeleteStateMachineOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.DeleteStateMachineOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopPreUpdate(context.Context, *svcapitypes.StateMachine, *svcsdk.UpdateStateMachineInput) error {
 	return nil

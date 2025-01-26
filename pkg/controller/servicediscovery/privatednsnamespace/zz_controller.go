@@ -104,14 +104,19 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.PrivateDNSNamespace)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	return e.delete(ctx, mg)
 
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -139,7 +144,7 @@ type external struct {
 	observe    func(context.Context, cpresource.Managed) (managed.ExternalObservation, error)
 	preCreate  func(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.CreatePrivateDnsNamespaceInput) error
 	postCreate func(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.CreatePrivateDnsNamespaceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	delete     func(context.Context, cpresource.Managed) error
+	delete     func(context.Context, cpresource.Managed) (managed.ExternalDelete, error)
 	preUpdate  func(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.UpdatePrivateDnsNamespaceInput) error
 	postUpdate func(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.UpdatePrivateDnsNamespaceOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -154,8 +159,8 @@ func nopPreCreate(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.Cre
 func nopPostCreate(_ context.Context, _ *svcapitypes.PrivateDNSNamespace, _ *svcsdk.CreatePrivateDnsNamespaceOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	return cre, err
 }
-func nopDelete(context.Context, cpresource.Managed) error {
-	return nil
+func nopDelete(context.Context, cpresource.Managed) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, nil
 }
 func nopPreUpdate(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.UpdatePrivateDnsNamespaceInput) error {
 	return nil

@@ -143,22 +143,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.Cluster)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteClusterInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteClusterWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -193,7 +198,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.Cluster, *svcsdk.CreateClusterInput) error
 	postCreate     func(context.Context, *svcapitypes.Cluster, *svcsdk.CreateClusterOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Cluster, *svcsdk.DeleteClusterInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.Cluster, *svcsdk.DeleteClusterOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.Cluster, *svcsdk.DeleteClusterOutput, error) (managed.ExternalDelete, error)
 	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
@@ -220,8 +225,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.Cluster, _ *svcsdk.CreateCl
 func nopPreDelete(context.Context, *svcapitypes.Cluster, *svcsdk.DeleteClusterInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.Cluster, _ *svcsdk.DeleteClusterOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.Cluster, _ *svcsdk.DeleteClusterOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil

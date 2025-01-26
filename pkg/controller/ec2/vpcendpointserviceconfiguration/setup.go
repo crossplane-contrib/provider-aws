@@ -195,11 +195,11 @@ func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServic
 	return nil
 }
 
-func (u *updater) delete(ctx context.Context, mg cpresource.Managed) error {
+func (u *updater) delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 
 	cr, ok := mg.(*svcapitypes.VPCEndpointServiceConfiguration)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 
@@ -207,7 +207,7 @@ func (u *updater) delete(ctx context.Context, mg cpresource.Managed) error {
 	input.ServiceIds = append(input.ServiceIds, pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)))
 
 	_, err := u.client.DeleteVpcEndpointServiceConfigurationsWithContext(ctx, input)
-	return errorutils.Wrap(cpresource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(cpresource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
 }
 
 // DifferenceARN returns the lists of ARNs that need to be removed and added according

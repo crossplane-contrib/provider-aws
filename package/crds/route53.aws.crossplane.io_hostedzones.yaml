@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: hostedzones.route53.aws.crossplane.io
 spec:
   group: route53.aws.crossplane.io
@@ -108,7 +108,6 @@ spec:
                       the domain name is fully qualified. This means that Route 53 treats www.example.com
                       (without a trailing dot) and www.example.com. (with a trailing dot) as identical.
 
-
                       If you're creating a public hosted zone, this is the name you have registered
                       with your DNS registrar. If your domain name is registered with a registrar
                       other than Route 53, change the name servers for your domain to the set of
@@ -123,7 +122,6 @@ spec:
                     description: |-
                       (Private hosted zones only) A complex type that contains information about
                       the Amazon VPC that you're associating with this hosted zone.
-
 
                       You can specify only one Amazon VPC when you create a private hosted zone.
                       To associate additional Amazon VPCs with the hosted zone, use AssociateVPCWithHostedZone

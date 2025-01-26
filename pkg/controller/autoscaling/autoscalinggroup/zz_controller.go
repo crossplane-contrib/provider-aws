@@ -139,22 +139,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.AutoScalingGroup)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteAutoScalingGroupInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteAutoScalingGroupWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -192,7 +197,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.CreateAutoScalingGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.CreateAutoScalingGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.DeleteAutoScalingGroupInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.DeleteAutoScalingGroupOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.DeleteAutoScalingGroupOutput, error) (managed.ExternalDelete, error)
 	preUpdate      func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.UpdateAutoScalingGroupInput) error
 	postUpdate     func(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.UpdateAutoScalingGroupOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -223,8 +228,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.AutoScalingGroup, _ *svcsdk
 func nopPreDelete(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.DeleteAutoScalingGroupInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.AutoScalingGroup, _ *svcsdk.DeleteAutoScalingGroupOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.AutoScalingGroup, _ *svcsdk.DeleteAutoScalingGroupOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopPreUpdate(context.Context, *svcapitypes.AutoScalingGroup, *svcsdk.UpdateAutoScalingGroupInput) error {
 	return nil

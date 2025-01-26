@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: grants.kms.aws.crossplane.io
 spec:
   group: kms.aws.crossplane.io
@@ -77,16 +77,13 @@ spec:
                     description: |-
                       Specifies a grant constraint.
 
-
                       Do not include confidential or sensitive information in this field. This
                       field may be displayed in plaintext in CloudTrail logs and other output.
-
 
                       KMS supports the EncryptionContextEquals and EncryptionContextSubset grant
                       constraints, which allow the permissions in the grant only when the encryption
                       context in the request matches (EncryptionContextEquals) or includes (EncryptionContextSubset)
                       the encryption context specified in the constraint.
-
 
                       The encryption context grant constraints are supported only on grant operations
                       (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#terms-grant-operations)
@@ -97,11 +94,9 @@ spec:
                       operation, the constraint requires that any grants created with the CreateGrant
                       permission have an equally strict or stricter encryption context constraint.
 
-
                       You cannot use an encryption context grant constraint for cryptographic operations
                       with asymmetric KMS keys or HMAC KMS keys. Operations with these keys don't
                       support an encryption context.
-
 
                       Each constraint value can include up to 8 encryption context pairs. The encryption
                       context value in each constraint cannot exceed 384 characters. For information
@@ -123,7 +118,6 @@ spec:
                     description: |-
                       A list of grant tokens.
 
-
                       Use a grant token when your permission to call this operation comes from
                       a new grant that has not yet achieved eventual consistency. For more information,
                       see Grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token)
@@ -136,7 +130,6 @@ spec:
                     description: |-
                       The identity that gets the permissions specified in the grant.
 
-
                       To specify the grantee principal, use the Amazon Resource Name (ARN) of an
                       Amazon Web Services principal. Valid principals include Amazon Web Services
                       accounts, IAM users, IAM roles, federated users, and assumed role users.
@@ -148,22 +141,16 @@ spec:
                       Identifies the KMS key for the grant. The grant gives principals permission
                       to use this KMS key.
 
-
                       Specify the key ID or key ARN of the KMS key. To specify a KMS key in a different
                       Amazon Web Services account, you must use the key ARN.
 
-
                       For example:
-
 
                          * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
 
-
                          * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
 
-
                       To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
-
 
                       KeyID or one of the referencers is a required parameter.
                     type: string
@@ -246,15 +233,12 @@ spec:
                       A friendly name for the grant. Use this value to prevent the unintended creation
                       of duplicate grants when retrying this request.
 
-
                       Do not include confidential or sensitive information in this field. This
                       field may be displayed in plaintext in CloudTrail logs and other output.
-
 
                       When this value is absent, all CreateGrant requests result in a new grant
                       with a unique GrantId even if all the supplied parameters are identical.
                       This can result in unintended duplicates when you retry the CreateGrant request.
-
 
                       When this value is present, you can retry a CreateGrant request with identical
                       parameters; if the grant already exists, the original GrantId is returned
@@ -265,7 +249,6 @@ spec:
                   operations:
                     description: |-
                       A list of operations that the grant permits.
-
 
                       This list must include only operations that are permitted in a grant. Also,
                       the operation must be supported on the KMS key. For example, you cannot create
@@ -285,13 +268,11 @@ spec:
                       The principal that has permission to use the RetireGrant operation to retire
                       the grant.
 
-
                       To specify the principal, use the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
                       of an Amazon Web Services principal. Valid principals include Amazon Web
                       Services accounts, IAM users, IAM roles, federated users, and assumed role
                       users. For help with the ARN syntax for a principal, see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns)
                       in the Identity and Access Management User Guide .
-
 
                       The grant determines the retiring principal. Other principals might have
                       permission to retire the grant or revoke the grant. For details, see RevokeGrant
@@ -480,13 +461,11 @@ spec:
                     description: |-
                       The unique identifier for the grant.
 
-
                       You can use the GrantId in a ListGrants, RetireGrant, or RevokeGrant operation.
                     type: string
                   grantToken:
                     description: |-
                       The grant token.
-
 
                       Use a grant token when your permission to call this operation comes from
                       a new grant that has not yet achieved eventual consistency. For more information,

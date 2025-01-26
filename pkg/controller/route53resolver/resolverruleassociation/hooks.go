@@ -157,17 +157,22 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*manualv1alpha1.ResolverRuleAssociation)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	_, err := e.client.DisassociateResolverRule(ctx, resolverruleassociation.GenerateDeleteAssociateResolverRuleInput(cr))
 
-	return errorutils.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(resolverruleassociation.IsNotFound, err), errDelete)
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

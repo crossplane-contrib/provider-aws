@@ -131,22 +131,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.LogGroup)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteLogGroupInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteLogGroupWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -183,7 +188,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.LogGroup, *svcsdk.CreateLogGroupInput) error
 	postCreate     func(context.Context, *svcapitypes.LogGroup, *svcsdk.CreateLogGroupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.LogGroup, *svcsdk.DeleteLogGroupInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.LogGroup, *svcsdk.DeleteLogGroupOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.LogGroup, *svcsdk.DeleteLogGroupOutput, error) (managed.ExternalDelete, error)
 	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
@@ -213,8 +218,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.LogGroup, _ *svcsdk.CreateL
 func nopPreDelete(context.Context, *svcapitypes.LogGroup, *svcsdk.DeleteLogGroupInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.LogGroup, _ *svcsdk.DeleteLogGroupOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.LogGroup, _ *svcsdk.DeleteLogGroupOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil

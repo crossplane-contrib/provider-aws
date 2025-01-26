@@ -225,15 +225,15 @@ type deleter struct {
 }
 
 // schedule for deletion instead of delete
-func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
+func (d *deleter) delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.Key)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.SetConditions(xpv1.Deleting())
 	// special case: if key is scheduled for deletion, abort early and do not schedule for deletion again
 	if cr.Status.AtProvider.DeletionDate != nil {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
 	req := &svcsdk.ScheduleKeyDeletionInput{
@@ -246,7 +246,7 @@ func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
 
 	_, err := d.client.ScheduleKeyDeletionWithContext(ctx, req)
 
-	return errorutils.Wrap(err, errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(err, errDelete)
 }
 
 type observer struct {

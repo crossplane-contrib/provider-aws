@@ -134,13 +134,13 @@ func postObserve(_ context.Context, cr *svcapitypes.TransitGatewayRouteTable, ob
 	return obs, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.TransitGatewayRouteTable, obj *svcsdk.DeleteTransitGatewayRouteTableOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.TransitGatewayRouteTable, obj *svcsdk.DeleteTransitGatewayRouteTableOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), string("IncorrectState")) {
 			// skip: IncorrectState: tgw-rtb-xxx is in invalid state Error 400
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }

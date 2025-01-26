@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: vpcpeeringconnections.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
@@ -96,14 +96,12 @@ spec:
                     description: |-
                       The Amazon Web Services account ID of the owner of the accepter VPC.
 
-
                       Default: Your Amazon Web Services account ID
                     type: string
                   peerRegion:
                     description: |-
                       The Region code for the accepter VPC, if the accepter VPC is located in a
                       Region other than the Region in which you make the request.
-
 
                       Default: The Region in which you make the request.
                     type: string

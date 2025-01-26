@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: resourceshares.ram.aws.crossplane.io
 spec:
   group: ram.aws.crossplane.io
@@ -91,10 +91,8 @@ spec:
                       value for all other parameters. We recommend that you use a UUID type of
                       value. (https://wikipedia.org/wiki/Universally_unique_identifier).
 
-
                       If you don't provide this value, then Amazon Web Services generates a random
                       one for you.
-
 
                       If you retry the operation with the same ClientToken, but with different
                       parameters, the retry fails with an IdempotentParameterMismatch error.
@@ -117,26 +115,19 @@ spec:
                       Specifies a list of one or more principals to associate with the resource
                       share.
 
-
                       You can include the following values:
 
-
                          * An Amazon Web Services account ID, for example: 123456789012
-
 
                          * An Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
                          of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
 
-
                          * An ARN of an organizational unit (OU) in Organizations, for example:
                          organizations::123456789012:ou/o-exampleorgid/ou-examplerootid-exampleouid123
 
-
                          * An ARN of an IAM role, for example: iam::123456789012:role/rolename
 
-
                          * An ARN of an IAM user, for example: iam::123456789012user/username
-
 
                       Not all resource types can be shared with IAM roles and users. For more information,
                       see Sharing with IAM roles and users (https://docs.aws.amazon.com/ram/latest/userguide/permissions.html#permissions-rbp-supported-resource-types)

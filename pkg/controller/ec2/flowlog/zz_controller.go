@@ -137,14 +137,19 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.FlowLog)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	return e.delete(ctx, mg)
 
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -179,7 +184,7 @@ type external struct {
 	isUpToDate     func(context.Context, *svcapitypes.FlowLog, *svcsdk.DescribeFlowLogsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.FlowLog, *svcsdk.CreateFlowLogsInput) error
 	postCreate     func(context.Context, *svcapitypes.FlowLog, *svcsdk.CreateFlowLogsOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	delete         func(context.Context, cpresource.Managed) error
+	delete         func(context.Context, cpresource.Managed) (managed.ExternalDelete, error)
 	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
@@ -206,8 +211,8 @@ func nopPreCreate(context.Context, *svcapitypes.FlowLog, *svcsdk.CreateFlowLogsI
 func nopPostCreate(_ context.Context, _ *svcapitypes.FlowLog, _ *svcsdk.CreateFlowLogsOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	return cre, err
 }
-func nopDelete(context.Context, cpresource.Managed) error {
-	return nil
+func nopDelete(context.Context, cpresource.Managed) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, nil
 }
 func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil

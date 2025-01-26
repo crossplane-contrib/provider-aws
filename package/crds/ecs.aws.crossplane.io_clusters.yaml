@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: clusters.ecs.aws.crossplane.io
 spec:
   group: ecs.aws.crossplane.io
@@ -82,18 +82,15 @@ spec:
                       or RunTask (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RunTask.html)
                       actions.
 
-
                       If specifying a capacity provider that uses an Auto Scaling group, the capacity
                       provider must be created but not associated with another cluster. New Auto
                       Scaling group capacity providers can be created with the CreateCapacityProvider
                       (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateCapacityProvider.html)
                       API operation.
 
-
                       To use a Fargate capacity provider, specify either the FARGATE or FARGATE_SPOT
                       capacity providers. The Fargate capacity providers are available to all accounts
                       and only need to be associated with a cluster to be used.
-
 
                       The PutCapacityProvider (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PutCapacityProvider.html)
                       API operation is used to update the list of available capacity providers
@@ -144,7 +141,6 @@ spec:
                       APIs with no capacity provider strategy or launch type specified, the default
                       capacity provider strategy for the cluster is used.
 
-
                       If a default capacity provider strategy isn't defined for a cluster when
                       it was created, it can be defined later with the PutClusterCapacityProviders
                       API operation.
@@ -172,7 +168,6 @@ spec:
                       parameter to true in the ServiceConnectConfiguration. You can set the namespace
                       of each service individually in the ServiceConnectConfiguration to override
                       this default parameter.
-
 
                       Tasks that run in a namespace can use short names to connect to services
                       in the namespace. Tasks can connect to services across all of the clusters
@@ -203,31 +198,23 @@ spec:
                       The metadata that you apply to the cluster to help you categorize and organize
                       them. Each tag consists of a key and an optional value. You define both.
 
-
                       The following basic restrictions apply to tags:
 
-
                          * Maximum number of tags per resource - 50
-
 
                          * For each resource, each tag key must be unique, and each tag key can
                          have only one value.
 
-
                          * Maximum key length - 128 Unicode characters in UTF-8
 
-
                          * Maximum value length - 256 Unicode characters in UTF-8
-
 
                          * If your tagging schema is used across multiple services and resources,
                          remember that other services may have restrictions on allowed characters.
                          Generally allowed characters are: letters, numbers, and spaces representable
                          in UTF-8, and the following characters: + - = . _ : / @.
 
-
                          * Tag keys and values are case-sensitive.
-
 
                          * Do not use aws:, AWS:, or any upper or lowercase combination of such
                          as a prefix for either keys or values as it is reserved for Amazon Web
@@ -452,21 +439,15 @@ spec:
                       The status of the capacity providers associated with the cluster. The following
                       are the states that are returned.
 
-
                       UPDATE_IN_PROGRESS
-
 
                       The available capacity providers for the cluster are updating.
 
-
                       UPDATE_COMPLETE
-
 
                       The capacity providers have successfully updated.
 
-
                       UPDATE_FAILED
-
 
                       The capacity provider updates failed.
                     type: string
@@ -497,27 +478,19 @@ spec:
                       Additional information about your clusters that are separated by launch type.
                       They include the following:
 
-
                          * runningEC2TasksCount
-
 
                          * RunningFargateTasksCount
 
-
                          * pendingEC2TasksCount
-
 
                          * pendingFargateTasksCount
 
-
                          * activeEC2ServiceCount
-
 
                          * activeFargateServiceCount
 
-
                          * drainingEC2ServiceCount
-
 
                          * drainingFargateServiceCount
                     items:
@@ -533,37 +506,27 @@ spec:
                       The status of the cluster. The following are the possible states that are
                       returned.
 
-
                       ACTIVE
-
 
                       The cluster is ready to accept tasks and if applicable you can register container
                       instances with the cluster.
 
-
                       PROVISIONING
-
 
                       The cluster has capacity providers that are associated with it and the resources
                       needed for the capacity provider are being created.
 
-
                       DEPROVISIONING
-
 
                       The cluster has capacity providers that are associated with it and the resources
                       needed for the capacity provider are being deleted.
 
-
                       FAILED
-
 
                       The cluster has capacity providers that are associated with it and the resources
                       needed for the capacity provider have failed to create.
 
-
                       INACTIVE
-
 
                       The cluster has been deleted. Clusters with an INACTIVE status may remain
                       discoverable in your account for a period of time. However, this behavior

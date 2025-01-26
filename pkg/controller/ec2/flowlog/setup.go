@@ -313,16 +313,16 @@ func GenerateDeleteFlowLogsInput(cr *svcapitypes.FlowLog) *svcsdk.DeleteFlowLogs
 	return res
 }
 
-func (d *deleter) delete(ctx context.Context, mg cpresource.Managed) error {
+func (d *deleter) delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.FlowLog)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	if meta.GetExternalName(cr) == "" {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	input := GenerateDeleteFlowLogsInput(cr)
 	_, err := d.client.DeleteFlowLogsWithContext(ctx, input)
-	return errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
 }

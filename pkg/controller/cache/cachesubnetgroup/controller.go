@@ -169,10 +169,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifySubnetGroup)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*cachev1alpha1.CacheSubnetGroup)
 	if !ok {
-		return errors.New(errNotSubnetGroup)
+		return managed.ExternalDelete{}, errors.New(errNotSubnetGroup)
 	}
 
 	cr.SetConditions(xpv1.Deleting())
@@ -181,5 +181,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		CacheSubnetGroupName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})
 
-	return errorutils.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteSubnetGroup)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteSubnetGroup)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

@@ -148,22 +148,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.UsagePlanKey)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteUsagePlanKeyInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteUsagePlanKeyWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -198,7 +203,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.CreateUsagePlanKeyInput) error
 	postCreate     func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.UsagePlanKey, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.DeleteUsagePlanKeyInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.DeleteUsagePlanKeyOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.DeleteUsagePlanKeyOutput, error) (managed.ExternalDelete, error)
 	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
@@ -225,8 +230,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.UsagePlanKey, _ *svcsdk.Usa
 func nopPreDelete(context.Context, *svcapitypes.UsagePlanKey, *svcsdk.DeleteUsagePlanKeyInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.UsagePlanKey, _ *svcsdk.DeleteUsagePlanKeyOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.UsagePlanKey, _ *svcsdk.DeleteUsagePlanKeyOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil

@@ -120,16 +120,16 @@ func postCreate(ctx context.Context, cr *svcapitypes.VirtualCluster, resp *svcsd
 	return cre, nil
 }
 
-func postDelete(ctx context.Context, cr *svcapitypes.VirtualCluster, resp *svcsdk.DeleteVirtualClusterOutput, err error) error {
+func postDelete(ctx context.Context, cr *svcapitypes.VirtualCluster, resp *svcsdk.DeleteVirtualClusterOutput, err error) (managed.ExternalDelete, error) {
 	if err == nil {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	// error context is stripped. cannot type assert.
 	cause := errors.Cause(err)
 	if cause.Error() == fmt.Sprintf("%s: %s", svcsdk.ErrCodeValidationException, terminatedMessage) {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }
 
 func isUpToDate(_ context.Context, cr *svcapitypes.VirtualCluster, output *svcsdk.DescribeVirtualClusterOutput) (bool, string, error) {

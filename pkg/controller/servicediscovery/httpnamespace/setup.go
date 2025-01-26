@@ -124,7 +124,6 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.HTTPNamespace, res
 		return cre, err
 	}
 	cr.Status.SetConditions(v1.Available())
-
 	// Update Tags
 	return cre, commonnamespace.UpdateTagsForResource(e.client, cr.Spec.ForProvider.Tags, cr)
 }

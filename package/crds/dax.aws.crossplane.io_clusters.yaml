@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: clusters.dax.aws.crossplane.io
 spec:
   group: dax.aws.crossplane.io
@@ -86,9 +86,7 @@ spec:
                     description: |-
                       The type of encryption the cluster's endpoint should support. Values are:
 
-
                          * NONE for no encryption
-
 
                          * TLS for Transport Layer Security
                     type: string
@@ -184,7 +182,6 @@ spec:
                     description: |-
                       The Amazon Resource Name (ARN) of the Amazon SNS topic to which notifications
                       will be sent.
-
 
                       The Amazon SNS topic owner must be same as the DAX cluster owner.
                     type: string
@@ -352,30 +349,21 @@ spec:
                       (24H Clock UTC). The minimum maintenance window is a 60 minute period. Valid
                       values for ddd are:
 
-
                          * sun
-
 
                          * mon
 
-
                          * tue
-
 
                          * wed
 
-
                          * thu
-
 
                          * fri
 
-
                          * sat
 
-
                       Example: sun:05:00-sun:09:00
-
 
                       If you don't specify a preferred maintenance window when you create or modify
                       a cache cluster, DAX assigns a 60-minute maintenance window on a randomly
@@ -392,7 +380,6 @@ spec:
                       do this, set ReplicationFactor to a number between 3 (one primary and two
                       read replicas) and 10 (one primary and nine read replicas). If the AvailabilityZones
                       parameter is provided, its length must equal the ReplicationFactor.
-
 
                       AWS recommends that you have at least two read replicas per cluster.
                     format: int64

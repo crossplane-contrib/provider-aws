@@ -170,14 +170,19 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.GlobalTable)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	return e.delete(ctx, mg)
 
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -211,7 +216,7 @@ type external struct {
 	isUpToDate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableInput) error
 	postCreate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	delete         func(context.Context, cpresource.Managed) error
+	delete         func(context.Context, cpresource.Managed) (managed.ExternalDelete, error)
 	preUpdate      func(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableInput) error
 	postUpdate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -236,8 +241,8 @@ func nopPreCreate(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGloba
 func nopPostCreate(_ context.Context, _ *svcapitypes.GlobalTable, _ *svcsdk.CreateGlobalTableOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	return cre, err
 }
-func nopDelete(context.Context, cpresource.Managed) error {
-	return nil
+func nopDelete(context.Context, cpresource.Managed) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, nil
 }
 func nopPreUpdate(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableInput) error {
 	return nil

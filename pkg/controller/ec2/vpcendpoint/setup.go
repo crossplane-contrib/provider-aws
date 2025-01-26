@@ -223,10 +223,10 @@ sgCompare:
 	return nil
 }
 
-func (e *custom) delete(_ context.Context, mg cpresource.Managed) error {
+func (e *custom) delete(_ context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.VPCEndpoint)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	// Generate Deletion Input
@@ -236,7 +236,7 @@ func (e *custom) delete(_ context.Context, mg cpresource.Managed) error {
 
 	// Delete
 	_, err := e.client.DeleteVpcEndpoints(deleteInput)
-	return err
+	return managed.ExternalDelete{}, err
 }
 
 func postUpdate(_ context.Context, cr *svcapitypes.VPCEndpoint, resp *svcsdk.ModifyVpcEndpointOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {

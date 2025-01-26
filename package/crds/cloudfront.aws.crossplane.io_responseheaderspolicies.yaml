@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: responseheaderspolicies.cloudfront.aws.crossplane.io
 spec:
   group: cloudfront.aws.crossplane.io
@@ -93,7 +93,6 @@ spec:
                           that it sends for CORS requests that match a cache behavior associated with
                           this response headers policy.
 
-
                           For more information about CORS, see Cross-Origin Resource Sharing (CORS)
                           (https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) in the MDN Web Docs.
                         properties:
@@ -103,7 +102,6 @@ spec:
                             description: |-
                               A list of HTTP header names that CloudFront includes as values for the Access-Control-Allow-Headers
                               HTTP response header.
-
 
                               For more information about the Access-Control-Allow-Headers HTTP response
                               header, see Access-Control-Allow-Headers (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers)
@@ -119,7 +117,6 @@ spec:
                               A list of HTTP methods that CloudFront includes as values for the Access-Control-Allow-Methods
                               HTTP response header.
 
-
                               For more information about the Access-Control-Allow-Methods HTTP response
                               header, see Access-Control-Allow-Methods (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Methods)
                               in the MDN Web Docs.
@@ -134,7 +131,6 @@ spec:
                               A list of origins (domain names) that CloudFront can use as the value for
                               the Access-Control-Allow-Origin HTTP response header.
 
-
                               For more information about the Access-Control-Allow-Origin HTTP response
                               header, see Access-Control-Allow-Origin (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)
                               in the MDN Web Docs.
@@ -148,7 +144,6 @@ spec:
                             description: |-
                               A list of HTTP headers that CloudFront includes as values for the Access-Control-Expose-Headers
                               HTTP response header.
-
 
                               For more information about the Access-Control-Expose-Headers HTTP response
                               header, see Access-Control-Expose-Headers (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers)
@@ -213,7 +208,6 @@ spec:
                               The policy directives and their values that CloudFront includes as values
                               for the Content-Security-Policy HTTP response header.
 
-
                               For more information about the Content-Security-Policy HTTP response header,
                               see Content-Security-Policy (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy)
                               in the MDN Web Docs.
@@ -228,7 +222,6 @@ spec:
                               Determines whether CloudFront includes the X-Content-Type-Options HTTP response
                               header with its value set to nosniff.
 
-
                               For more information about the X-Content-Type-Options HTTP response header,
                               see X-Content-Type-Options (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options)
                               in the MDN Web Docs.
@@ -240,7 +233,6 @@ spec:
                             description: |-
                               Determines whether CloudFront includes the X-Frame-Options HTTP response
                               header and the header's value.
-
 
                               For more information about the X-Frame-Options HTTP response header, see
                               X-Frame-Options (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options)
@@ -256,7 +248,6 @@ spec:
                               Determines whether CloudFront includes the Referrer-Policy HTTP response
                               header and the header's value.
 
-
                               For more information about the Referrer-Policy HTTP response header, see
                               Referrer-Policy (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
                               in the MDN Web Docs.
@@ -270,7 +261,6 @@ spec:
                             description: |-
                               Determines whether CloudFront includes the Strict-Transport-Security HTTP
                               response header and the header's value.
-
 
                               For more information about the Strict-Transport-Security HTTP response header,
                               see Strict-Transport-Security (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
@@ -290,7 +280,6 @@ spec:
                             description: |-
                               Determines whether CloudFront includes the X-XSS-Protection HTTP response
                               header and the header's value.
-
 
                               For more information about the X-XSS-Protection HTTP response header, see
                               X-XSS-Protection (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection)
@@ -312,7 +301,6 @@ spec:
                           from CloudFront. CloudFront adds this header to HTTP responses that it sends
                           in response to requests that match a cache behavior that's associated with
                           this response headers policy.
-
 
                           You can use the Server-Timing header to view metrics that can help you gain
                           insights about the behavior and performance of CloudFront. For example, you
@@ -526,7 +514,6 @@ spec:
                         description: |-
                           A response headers policy configuration.
 
-
                           A response headers policy configuration contains metadata about the response
                           headers policy, and configurations for sets of HTTP response headers.
                         properties:
@@ -539,7 +526,6 @@ spec:
                               that it sends for CORS requests that match a cache behavior associated with
                               this response headers policy.
 
-
                               For more information about CORS, see Cross-Origin Resource Sharing (CORS)
                               (https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) in the MDN Web Docs.
                             properties:
@@ -549,7 +535,6 @@ spec:
                                 description: |-
                                   A list of HTTP header names that CloudFront includes as values for the Access-Control-Allow-Headers
                                   HTTP response header.
-
 
                                   For more information about the Access-Control-Allow-Headers HTTP response
                                   header, see Access-Control-Allow-Headers (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers)
@@ -565,7 +550,6 @@ spec:
                                   A list of HTTP methods that CloudFront includes as values for the Access-Control-Allow-Methods
                                   HTTP response header.
 
-
                                   For more information about the Access-Control-Allow-Methods HTTP response
                                   header, see Access-Control-Allow-Methods (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Methods)
                                   in the MDN Web Docs.
@@ -580,7 +564,6 @@ spec:
                                   A list of origins (domain names) that CloudFront can use as the value for
                                   the Access-Control-Allow-Origin HTTP response header.
 
-
                                   For more information about the Access-Control-Allow-Origin HTTP response
                                   header, see Access-Control-Allow-Origin (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)
                                   in the MDN Web Docs.
@@ -594,7 +577,6 @@ spec:
                                 description: |-
                                   A list of HTTP headers that CloudFront includes as values for the Access-Control-Expose-Headers
                                   HTTP response header.
-
 
                                   For more information about the Access-Control-Expose-Headers HTTP response
                                   header, see Access-Control-Expose-Headers (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers)
@@ -659,7 +641,6 @@ spec:
                                   The policy directives and their values that CloudFront includes as values
                                   for the Content-Security-Policy HTTP response header.
 
-
                                   For more information about the Content-Security-Policy HTTP response header,
                                   see Content-Security-Policy (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy)
                                   in the MDN Web Docs.
@@ -674,7 +655,6 @@ spec:
                                   Determines whether CloudFront includes the X-Content-Type-Options HTTP response
                                   header with its value set to nosniff.
 
-
                                   For more information about the X-Content-Type-Options HTTP response header,
                                   see X-Content-Type-Options (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options)
                                   in the MDN Web Docs.
@@ -686,7 +666,6 @@ spec:
                                 description: |-
                                   Determines whether CloudFront includes the X-Frame-Options HTTP response
                                   header and the header's value.
-
 
                                   For more information about the X-Frame-Options HTTP response header, see
                                   X-Frame-Options (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options)
@@ -702,7 +681,6 @@ spec:
                                   Determines whether CloudFront includes the Referrer-Policy HTTP response
                                   header and the header's value.
 
-
                                   For more information about the Referrer-Policy HTTP response header, see
                                   Referrer-Policy (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
                                   in the MDN Web Docs.
@@ -716,7 +694,6 @@ spec:
                                 description: |-
                                   Determines whether CloudFront includes the Strict-Transport-Security HTTP
                                   response header and the header's value.
-
 
                                   For more information about the Strict-Transport-Security HTTP response header,
                                   see Strict-Transport-Security (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
@@ -736,7 +713,6 @@ spec:
                                 description: |-
                                   Determines whether CloudFront includes the X-XSS-Protection HTTP response
                                   header and the header's value.
-
 
                                   For more information about the X-XSS-Protection HTTP response header, see
                                   X-XSS-Protection (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection)
@@ -758,7 +734,6 @@ spec:
                               from CloudFront. CloudFront adds this header to HTTP responses that it sends
                               in response to requests that match a cache behavior that's associated with
                               this response headers policy.
-
 
                               You can use the Server-Timing header to view metrics that can help you gain
                               insights about the behavior and performance of CloudFront. For example, you

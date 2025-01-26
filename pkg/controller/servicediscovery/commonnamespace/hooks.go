@@ -183,7 +183,7 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 }
 
 // Delete deletes any of HTTPNamespace, PrivateDNSNamespace or PublicDNSNamespace types.
-func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	var cr namespace
 	switch i := mg.(type) {
 	case *v1alpha1.HTTPNamespace:
@@ -193,17 +193,17 @@ func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) error {
 	case *v1alpha1.PublicDNSNamespace:
 		cr = i
 	default:
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	input := &svcsdk.DeleteNamespaceInput{
 		Id: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}
 	op, err := h.client.DeleteNamespaceWithContext(ctx, input)
 	if cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest) != nil {
-		return errorutils.Wrap(err, errDeleteNamespace)
+		return managed.ExternalDelete{}, errorutils.Wrap(err, errDeleteNamespace)
 	}
 	cr.SetOperationID(op.OperationId)
-	return nil
+	return managed.ExternalDelete{}, nil
 }
 
 // ActualIsNotFound reimplements IsNotFound which doesn't do it's job

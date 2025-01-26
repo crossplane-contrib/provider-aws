@@ -95,14 +95,14 @@ func postObserve(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, obj *
 	return obs, nil
 }
 
-func (e *external) deleter(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) deleter(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, _ := mg.(*svcapitypes.LaunchTemplateVersion)
 	input := GenerateDeleteLaunchTemplateVersionInput(cr)
 	_, err := e.client.DeleteLaunchTemplateVersionsWithContext(ctx, input)
 	if err != nil {
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return nil
+	return managed.ExternalDelete{}, nil
 }
 
 // GenerateDeleteLaunchTemplateVersionInput returns a deletion input.

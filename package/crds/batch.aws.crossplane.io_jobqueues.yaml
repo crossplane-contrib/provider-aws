@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: jobqueues.batch.aws.crossplane.io
 spec:
   group: batch.aws.crossplane.io
@@ -83,11 +83,9 @@ spec:
                       must be either EC2 (EC2 or SPOT) or Fargate (FARGATE or FARGATE_SPOT); EC2
                       and Fargate compute environments can't be mixed.
 
-
                       All compute environments that are associated with a job queue must share
                       the same architecture. Batch doesn't support mixing compute environment architecture
                       types in a single job queue.
-
 
                       ComputeEnvironmentOrder is a required field
                     items:
@@ -97,7 +95,6 @@ spec:
                         computeEnvironment:
                           description: |-
                             The Amazon Resource Name (ARN) of the compute environment.
-
 
                             ComputeEnvironment is a required field
                           type: string
@@ -186,7 +183,6 @@ spec:
                             queue, the compute environment with a lower order integer value is tried
                             for job placement first.
 
-
                             Order is a required field
                           format: int64
                           type: integer
@@ -197,7 +193,6 @@ spec:
                   desiredState:
                     description: |-
                       Custom parameter to control the state of the job queue. The valid values are ENABLED or DISABLED.
-
 
                       The state of the job queue. If the job queue state is ENABLED, it is able to accept jobs.
                       If the job queue state is DISABLED, new jobs can't be added to the queue, but jobs already in the queue can finish.

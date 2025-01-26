@@ -95,15 +95,15 @@ func postCreate(_ context.Context, cr *svcapitypes.AlertManagerDefinition, resp 
 	return cre, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.AlertManagerDefinition, obj *svcsdk.DeleteAlertManagerDefinitionOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.AlertManagerDefinition, obj *svcsdk.DeleteAlertManagerDefinitionOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), svcsdk.ErrCodeConflictException) {
 			// skip: Can't delete alertmanagerdefinition in non-ACTIVE state. Current status is DELETING
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.AlertManagerDefinition, resp *svcsdk.DescribeAlertManagerDefinitionOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

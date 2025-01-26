@@ -164,10 +164,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*route53v1alpha1.ResourceRecordSet)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -177,5 +177,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	// There is no way to confirm 404 (from response) when deleting a recordset
 	// which isn't present using ChangeResourceRecordSetRequest.
-	return errorutils.Wrap(resource.Ignore(resourcerecordset.IsNotFound, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(resourcerecordset.IsNotFound, err), errDelete)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

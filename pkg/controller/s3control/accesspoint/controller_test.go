@@ -529,7 +529,7 @@ func TestDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := newExternal(tt.args.kube, tt.args.client, createOptions())
-			err := e.Delete(context.Background(), tt.args.cr)
+			_, err := e.Delete(context.Background(), tt.args.cr)
 			if diff := cmp.Diff(tt.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

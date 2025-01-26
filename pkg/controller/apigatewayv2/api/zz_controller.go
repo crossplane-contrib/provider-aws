@@ -278,22 +278,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.API)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteApiInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteApiWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -329,7 +334,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.API, *svcsdk.CreateApiInput) error
 	postCreate     func(context.Context, *svcapitypes.API, *svcsdk.CreateApiOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.API, *svcsdk.DeleteApiInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.API, *svcsdk.DeleteApiOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.API, *svcsdk.DeleteApiOutput, error) (managed.ExternalDelete, error)
 	preUpdate      func(context.Context, *svcapitypes.API, *svcsdk.UpdateApiInput) error
 	postUpdate     func(context.Context, *svcapitypes.API, *svcsdk.UpdateApiOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -357,8 +362,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.API, _ *svcsdk.CreateApiOut
 func nopPreDelete(context.Context, *svcapitypes.API, *svcsdk.DeleteApiInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.API, _ *svcsdk.DeleteApiOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.API, _ *svcsdk.DeleteApiOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopPreUpdate(context.Context, *svcapitypes.API, *svcsdk.UpdateApiInput) error {
 	return nil

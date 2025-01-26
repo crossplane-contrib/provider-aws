@@ -338,12 +338,12 @@ func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	return false, nil
 }
 
-func (e *custom) postDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceOutput, err error) error {
+func (e *custom) postDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
-		return err
+		return managed.ExternalDelete{}, err
 	}
 
-	return dbinstance.DeleteCache(ctx, e.kube, cr)
+	return managed.ExternalDelete{}, dbinstance.DeleteCache(ctx, e.kube, cr)
 }
 
 func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBInstancesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

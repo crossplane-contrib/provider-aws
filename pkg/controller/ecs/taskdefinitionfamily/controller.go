@@ -201,10 +201,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*ecs.TaskDefinitionFamily)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -213,7 +213,12 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	input.SetTaskDefinition(*cr.Status.AtProvider.TaskDefinition.TaskDefinitionARN)
 	_, err := e.client.DeregisterTaskDefinitionWithContext(ctx, input)
 
-	return errorutils.Wrap(resource.Ignore(taskdefinition.IsNotFound, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(taskdefinition.IsNotFound, err), errDelete)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 // Strips the revision of a TaskDefinition ARN.

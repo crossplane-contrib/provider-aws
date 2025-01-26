@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: dbinstances.docdb.aws.crossplane.io
 spec:
   group: docdb.aws.crossplane.io
@@ -79,11 +79,9 @@ spec:
                       are asynchronously applied as soon as possible, regardless of the PreferredMaintenanceWindow
                       setting for the instance.
 
-
                       If this parameter is set to false, changes to the instance are applied during
                       the next maintenance window. Some parameter changes can cause an outage and
                       are applied on the next reboot.
-
 
                       Default: false
                     type: boolean
@@ -92,17 +90,14 @@ spec:
                       This parameter does not apply to Amazon DocumentDB. Amazon DocumentDB does
                       not perform minor version upgrades regardless of the value set.
 
-
                       Default: false
                     type: boolean
                   availabilityZone:
                     description: |-
                       The Amazon EC2 Availability Zone that the instance is created in.
 
-
                       Default: A random, system-chosen Availability Zone in the endpoint's Amazon
                       Web Services Region.
-
 
                       Example: us-east-1d
                     type: string
@@ -206,17 +201,14 @@ spec:
                     description: |-
                       The name of the database engine to be used for this instance.
 
-
                       Valid value: docdb
                     type: string
                   performanceInsightsKMSKeyID:
                     description: |-
                       The KMS key identifier for encryption of Performance Insights data.
 
-
                       The KMS key identifier is the key ARN, key ID, alias ARN, or alias name for
                       the KMS key.
-
 
                       If you do not specify a value for PerformanceInsightsKMSKeyId, then Amazon
                       DocumentDB uses your default KMS key. There is a default KMS key for your
@@ -228,17 +220,13 @@ spec:
                       The time range each week during which system maintenance can occur, in Universal
                       Coordinated Time (UTC).
 
-
                       Format: ddd:hh24:mi-ddd:hh24:mi
-
 
                       The default is a 30-minute window selected at random from an 8-hour block
                       of time for each Amazon Web Services Region, occurring on a random day of
                       the week.
 
-
                       Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
-
 
                       Constraints: Minimum 30-minute window.
                     type: string
@@ -248,9 +236,7 @@ spec:
                       promoted to the primary instance after a failure of the existing primary
                       instance.
 
-
                       Default: 1
-
 
                       Valid values: 0-15
                     format: int64

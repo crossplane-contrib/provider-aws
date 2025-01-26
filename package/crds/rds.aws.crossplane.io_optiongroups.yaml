@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: optiongroups.rds.aws.crossplane.io
 spec:
   group: rds.aws.crossplane.io
@@ -84,39 +84,27 @@ spec:
                       Specifies the name of the engine that this option group should be associated
                       with.
 
-
                       Valid Values:
-
 
                          * mariadb
 
-
                          * mysql
-
 
                          * oracle-ee
 
-
                          * oracle-ee-cdb
-
 
                          * oracle-se2
 
-
                          * oracle-se2-cdb
-
 
                          * postgres
 
-
                          * sqlserver-ee
-
 
                          * sqlserver-se
 
-
                          * sqlserver-ex
-
 
                          * sqlserver-web
                     type: string

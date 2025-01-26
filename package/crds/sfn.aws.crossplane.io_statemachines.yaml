@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: statemachines.sfn.aws.crossplane.io
 spec:
   group: sfn.aws.crossplane.io
@@ -82,7 +82,6 @@ spec:
                     description: |-
                       Defines what execution history events are logged and where they are logged.
 
-
                       By default, the level is set to OFF. For more information see Log Levels
                       (https://docs.aws.amazon.com/step-functions/latest/dg/cloudwatch-log-level.html)
                       in the Step Functions User Guide.
@@ -106,24 +105,17 @@ spec:
                     description: |-
                       The name of the state machine.
 
-
                       A name must not contain:
-
 
                          * white space
 
-
                          * brackets < > { } [ ]
-
 
                          * wildcard characters ? *
 
-
                          * special characters " # % \ ^ | ~ ` $ & , ; : /
 
-
                          * control characters (U+0000-001F, U+007F-009F)
-
 
                       To enable logging with CloudWatch Logs, the name should only contain 0-9,
                       A-Z, a-z, - and _.
@@ -223,12 +215,10 @@ spec:
                     description: |-
                       Tags to be added when creating a state machine.
 
-
                       An array of key-value pairs. For more information, see Using Cost Allocation
                       Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
                       in the Amazon Web Services Billing and Cost Management User Guide, and Controlling
                       Access Using IAM Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
-
 
                       Tags may only contain Unicode letters, digits, white space, or these symbols:
                       _ . : / = + - @.

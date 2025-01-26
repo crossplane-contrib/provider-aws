@@ -169,18 +169,18 @@ func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTable
 	return false, nil
 }
 
-func postDelete(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.DeleteTableOutput, err error) error {
+func postDelete(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.DeleteTableOutput, err error) (managed.ExternalDelete, error) {
 	if err == nil {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	// The DynamoDB API returns this error when you try to delete a table
 	// that is already being deleted. Unfortunately we're passed a v1 SDK
 	// error that has been munged by aws.Wrap, so we can't use errors.As to
 	// identify it and must fall back to string matching.
 	if strings.Contains(err.Error(), "ResourceInUseException") {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

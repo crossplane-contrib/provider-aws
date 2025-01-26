@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: functionurlconfigs.lambda.aws.crossplane.io
 spec:
   group: lambda.aws.crossplane.io
@@ -192,11 +192,9 @@ spec:
                     description: |-
                       Use one of the following options:
 
-
                          * BUFFERED – This is the default option. Lambda invokes your function
                          using the Invoke API operation. Invocation results are available when
                          the payload is complete. The maximum payload size is 6 MB.
-
 
                          * RESPONSE_STREAM – Your function streams payload results as they become
                          available. Lambda invokes your function using the InvokeWithResponseStream

@@ -233,10 +233,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalUpdate{}, errorutils.Wrap(err, errCertificateAuthority)
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mgd.(*v1beta1.CertificateAuthority)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -246,7 +246,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	})
 
 	if err != nil {
-		return errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+		return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 	}
 
 	if response != nil {
@@ -257,7 +257,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 			})
 
 			if err != nil {
-				return errorutils.Wrap(err, errDelete)
+				return managed.ExternalDelete{}, errorutils.Wrap(err, errDelete)
 			}
 		}
 	}
@@ -267,5 +267,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		PermanentDeletionTimeInDays: cr.Spec.ForProvider.PermanentDeletionTimeInDays,
 	})
 
-	return errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

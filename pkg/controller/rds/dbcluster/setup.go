@@ -856,12 +856,12 @@ func preDelete(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteD
 	return false, nil
 }
 
-func (e *custom) postDelete(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterOutput, err error) error {
+func (e *custom) postDelete(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
-		return err
+		return managed.ExternalDelete{}, err
 	}
 
-	return dbinstance.DeleteCache(ctx, e.kube, cr)
+	return managed.ExternalDelete{}, dbinstance.DeleteCache(ctx, e.kube, cr)
 }
 
 func filterList(cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersOutput) *svcsdk.DescribeDBClustersOutput {

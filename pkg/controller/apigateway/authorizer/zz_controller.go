@@ -192,22 +192,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.Authorizer)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteAuthorizerInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteAuthorizerWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -243,7 +248,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.Authorizer, *svcsdk.CreateAuthorizerInput) error
 	postCreate     func(context.Context, *svcapitypes.Authorizer, *svcsdk.Authorizer, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Authorizer, *svcsdk.DeleteAuthorizerInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.Authorizer, *svcsdk.DeleteAuthorizerOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.Authorizer, *svcsdk.DeleteAuthorizerOutput, error) (managed.ExternalDelete, error)
 	preUpdate      func(context.Context, *svcapitypes.Authorizer, *svcsdk.UpdateAuthorizerInput) error
 	postUpdate     func(context.Context, *svcapitypes.Authorizer, *svcsdk.Authorizer, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -271,8 +276,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.Authorizer, _ *svcsdk.Autho
 func nopPreDelete(context.Context, *svcapitypes.Authorizer, *svcsdk.DeleteAuthorizerInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.Authorizer, _ *svcsdk.DeleteAuthorizerOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.Authorizer, _ *svcsdk.DeleteAuthorizerOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopPreUpdate(context.Context, *svcapitypes.Authorizer, *svcsdk.UpdateAuthorizerInput) error {
 	return nil

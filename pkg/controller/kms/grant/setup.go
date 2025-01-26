@@ -120,10 +120,10 @@ func postCreate(_ context.Context, cr *svcapitypes.Grant, obj *svcsdk.CreateGran
 
 // NOTE: KMS Grants do not support updates.
 
-func (h *hooks) delete(ctx context.Context, mg resource.Managed) error {
+func (h *hooks) delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.Grant)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.SetConditions(xpv1.Deleting())
 
@@ -131,5 +131,5 @@ func (h *hooks) delete(ctx context.Context, mg resource.Managed) error {
 		GrantId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		KeyId:   cr.Spec.ForProvider.KeyID,
 	})
-	return errors.Wrap(err, errRevokeGrant)
+	return managed.ExternalDelete{}, errors.Wrap(err, errRevokeGrant)
 }

@@ -857,22 +857,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.TaskDefinition)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeregisterTaskDefinitionInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeregisterTaskDefinitionWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -907,7 +912,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.TaskDefinition, *svcsdk.RegisterTaskDefinitionInput) error
 	postCreate     func(context.Context, *svcapitypes.TaskDefinition, *svcsdk.RegisterTaskDefinitionOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.TaskDefinition, *svcsdk.DeregisterTaskDefinitionInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.TaskDefinition, *svcsdk.DeregisterTaskDefinitionOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.TaskDefinition, *svcsdk.DeregisterTaskDefinitionOutput, error) (managed.ExternalDelete, error)
 	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
@@ -934,8 +939,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.TaskDefinition, _ *svcsdk.R
 func nopPreDelete(context.Context, *svcapitypes.TaskDefinition, *svcsdk.DeregisterTaskDefinitionInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.TaskDefinition, _ *svcsdk.DeregisterTaskDefinitionOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.TaskDefinition, _ *svcsdk.DeregisterTaskDefinitionOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil

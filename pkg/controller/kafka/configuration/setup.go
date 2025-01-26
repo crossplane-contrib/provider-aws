@@ -118,15 +118,15 @@ func preDelete(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.Del
 	return false, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DeleteConfigurationOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.Configuration, obj *svcsdk.DeleteConfigurationOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), svcsdk.ErrCodeBadRequestException) {
 			// skip: failed to delete Configuration: BadRequestException:
 			// This operation is only valid for resources that are in one of
 			// the following states :[ACTIVE, DELETE_FAILED]
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }

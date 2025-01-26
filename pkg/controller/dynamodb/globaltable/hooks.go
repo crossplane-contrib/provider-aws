@@ -169,10 +169,10 @@ type deleter struct {
 	client svcsdkapi.DynamoDBAPI
 }
 
-func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
+func (d *deleter) delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.GlobalTable)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	u := &svcsdk.UpdateGlobalTableInput{
 		GlobalTableName: aws.String(meta.GetExternalName(mg)),
@@ -181,7 +181,7 @@ func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
 		u.ReplicaUpdates = append(u.ReplicaUpdates, &svcsdk.ReplicaUpdate{Delete: &svcsdk.DeleteReplicaAction{RegionName: region.RegionName}})
 	}
 	if _, err := d.client.UpdateGlobalTableWithContext(ctx, u); err != nil {
-		return errorutils.Wrap(err, "update call for deletion failed")
+		return managed.ExternalDelete{}, errorutils.Wrap(err, "update call for deletion failed")
 	}
-	return nil
+	return managed.ExternalDelete{}, nil
 }

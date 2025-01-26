@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: clusters.eks.aws.crossplane.io
 spec:
   group: eks.aws.crossplane.io
@@ -148,18 +148,14 @@ spec:
                           networks that are peered or connected to your VPC. The block must meet the
                           following requirements:
 
-
                           * Within one of the following private IP address
                           blocks: 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16.
-
 
                           * Doesn't overlap with
                           any CIDR block assigned to the VPC that you selected for VPC.
 
-
                           * Between /24 and
                           /12.
-
 
                           You can only specify a custom CIDR block when you create a cluster and
                           can't change this value once the cluster is created.
@@ -174,7 +170,6 @@ spec:
                       to CloudWatch Logs. For more information, see Amazon EKS Cluster Control
                       Plane Logs (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html)
                       in the Amazon EKS User Guide .
-
 
                       CloudWatch Logs ingestion, archive storage, and data scanning rates apply
                       to exported control plane logs. For more information, see Amazon CloudWatch
@@ -223,24 +218,19 @@ spec:
                           cluster creation. Choose an instance type based on the number of nodes that your
                           cluster will have. If your cluster will have:
 
-
                           * 1–20 nodes, then we recommend
                           specifying a large instance type.
-
 
                           * 21–100 nodes, then we recommend specifying
                           an xlarge instance type.
 
-
                           * 101–250 nodes, then we recommend specifying a
                           2xlarge instance type.
-
 
                           For a list of the available Amazon EC2 instance types,
                           see Compute and storage in Outposts rack features
                           (http://aws.amazon.com/outposts/rack/features/). The control plane is not
                           automatically scaled by Amazon EKS.
-
 
                           This member is required.
                         type: string
@@ -248,7 +238,6 @@ spec:
                         description: |-
                           The ARN of the Outpost that you want to use for your local Amazon EKS cluster on
                           Outposts. Only a single Outpost ARN is supported.
-
 
                           This member is required.
                         items:
@@ -271,7 +260,6 @@ spec:
                       in the Amazon EKS User Guide. You must specify at least two subnets. You
                       can specify up to five security groups, but we recommend that you use a dedicated
                       security group for your cluster control plane.
-
 
                       ResourcesVpcConfig is a required field
                     properties:
@@ -494,7 +482,6 @@ spec:
                       for Amazon EKS to make calls to other AWS API operations on your behalf.
                       For more information, see Amazon EKS Service IAM Role (https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html)
                       in the Amazon EKS User Guide .
-
 
                       RoleArn is a required field
                     type: string
@@ -841,14 +828,12 @@ spec:
                           The Amazon EC2 instance type used for the control plane. The instance type is
                           the same for all control plane instances.
 
-
                           This member is required.
                         type: string
                       outpostArns:
                         description: |-
                           The ARN of the Outpost that you specified for use with your local Amazon EKS
                           cluster on Outposts.
-
 
                           This member is required.
                         items:

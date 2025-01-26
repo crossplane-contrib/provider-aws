@@ -175,22 +175,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.RouteResponse)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteRouteResponseInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteRouteResponseWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -226,7 +231,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.RouteResponse, *svcsdk.CreateRouteResponseInput) error
 	postCreate     func(context.Context, *svcapitypes.RouteResponse, *svcsdk.CreateRouteResponseOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.RouteResponse, *svcsdk.DeleteRouteResponseInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.RouteResponse, *svcsdk.DeleteRouteResponseOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.RouteResponse, *svcsdk.DeleteRouteResponseOutput, error) (managed.ExternalDelete, error)
 	preUpdate      func(context.Context, *svcapitypes.RouteResponse, *svcsdk.UpdateRouteResponseInput) error
 	postUpdate     func(context.Context, *svcapitypes.RouteResponse, *svcsdk.UpdateRouteResponseOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -254,8 +259,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.RouteResponse, _ *svcsdk.Cr
 func nopPreDelete(context.Context, *svcapitypes.RouteResponse, *svcsdk.DeleteRouteResponseInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.RouteResponse, _ *svcsdk.DeleteRouteResponseOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.RouteResponse, _ *svcsdk.DeleteRouteResponseOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopPreUpdate(context.Context, *svcapitypes.RouteResponse, *svcsdk.UpdateRouteResponseInput) error {
 	return nil

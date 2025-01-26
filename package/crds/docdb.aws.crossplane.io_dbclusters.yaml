@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: dbclusters.docdb.aws.crossplane.io
 spec:
   group: docdb.aws.crossplane.io
@@ -77,7 +77,6 @@ spec:
                     description: |-
                       A value that indicates whether major version upgrades are allowed.
 
-
                       Constraints: You must allow major version upgrades when specifying a value
                       for the EngineVersion parameter that is a different major version than the
                       DB cluster's current version.
@@ -90,13 +89,11 @@ spec:
                       set to false, changes to the cluster are applied during the next maintenance
                       window.
 
-
                       The ApplyImmediately parameter affects only the NewDBClusterIdentifier and
                       MasterUserPassword values. If you set this parameter value to false, the
                       changes to the NewDBClusterIdentifier and MasterUserPassword values are applied
                       during the next maintenance window. All other changes are applied immediately,
                       regardless of the value of the ApplyImmediately parameter.
-
 
                       Default: false
                     type: boolean
@@ -105,7 +102,6 @@ spec:
                       AutogeneratePassword indicates whether the controller should generate
                       a random password for the master user if one is not provided via
                       MasterUserPasswordSecretRef.
-
 
                       If a password is generated, it will
                       be stored as a secret at the location specified by MasterUserPasswordSecretRef.
@@ -122,12 +118,9 @@ spec:
                       The number of days for which automated backups are retained. You must specify
                       a minimum value of 1.
 
-
                       Default: 1
 
-
                       Constraints:
-
 
                          * Must be a value from 1 to 35.
                     format: int64
@@ -214,10 +207,8 @@ spec:
                     description: |-
                       A subnet group to associate with this cluster.
 
-
                       Constraints: Must match the name of an existing DBSubnetGroup. Must not be
                       default.
-
 
                       Example: mySubnetgroup
                     type: string
@@ -319,7 +310,6 @@ spec:
                     description: |-
                       The name of the database engine to be used for this cluster.
 
-
                       Valid values: docdb
                     type: string
                   engineVersion:
@@ -334,19 +324,14 @@ spec:
                       The cluster snapshot identifier of the new cluster snapshot created when
                       SkipFinalSnapshot is set to false.
 
-
                       Specifying this parameter and also setting the SkipFinalShapshot parameter
                       to true results in an error.
 
-
                       Constraints:
-
 
                          * Must be from 1 to 255 letters, numbers, or hyphens.
 
-
                          * The first character must be a letter.
-
 
                          * Cannot end with a hyphen or contain two consecutive hyphens.
                     type: string
@@ -357,27 +342,22 @@ spec:
                     description: |-
                       The KMS key identifier for an encrypted cluster.
 
-
                       The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
                       key. If you are creating a cluster using the same Amazon Web Services account
                       that owns the KMS encryption key that is used to encrypt the new cluster,
                       you can use the KMS key alias instead of the ARN for the KMS encryption key.
 
-
                       If an encryption key is not specified in KmsKeyId:
-
 
                          * If the StorageEncrypted parameter is true, Amazon DocumentDB uses your
                          default encryption key.
-
 
                       KMS creates the default encryption key for your Amazon Web Services account.
                       Your Amazon Web Services account has a different default encryption key for
                       each Amazon Web Services Regions.
                     type: string
                   kmsKeyIDRef:
-                    description: 'TODO(haarchri): when resource is bumped to beta
-                      we will convert this field to kmsKeyIdRef'
+                    description: A Reference to a named object.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -411,8 +391,7 @@ spec:
                     - name
                     type: object
                   kmsKeyIDSelector:
-                    description: 'TODO(haarchri): when resource is bumped to beta
-                      we will convert this field to kmsKeyIdSelector'
+                    description: A Selector selects an object.
                     properties:
                       matchControllerRef:
                         description: |-
@@ -457,7 +436,6 @@ spec:
                       printable ASCII character except forward slash (/), double quote ("), or
                       the "at" symbol (@).
 
-
                       Constraints: Must contain from 8 to 100 characters.
                     properties:
                       key:
@@ -478,15 +456,11 @@ spec:
                     description: |-
                       The name of the master user for the cluster.
 
-
                       Constraints:
-
 
                          * Must be from 1 to 63 letters or numbers.
 
-
                          * The first character must be a letter.
-
 
                          * Cannot be a reserved word for the chosen database engine.
                     type: string
@@ -503,22 +477,16 @@ spec:
                       The daily time range during which automated backups are created if automated
                       backups are enabled using the BackupRetentionPeriod parameter.
 
-
                       The default is a 30-minute window selected at random from an 8-hour block
                       of time for each Amazon Web Services Region.
 
-
                       Constraints:
-
 
                          * Must be in the format hh24:mi-hh24:mi.
 
-
                          * Must be in Universal Coordinated Time (UTC).
 
-
                          * Must not conflict with the preferred maintenance window.
-
 
                          * Must be at least 30 minutes.
                     type: string
@@ -527,17 +495,13 @@ spec:
                       The weekly time range during which system maintenance can occur, in Universal
                       Coordinated Time (UTC).
 
-
                       Format: ddd:hh24:mi-ddd:hh24:mi
-
 
                       The default is a 30-minute window selected at random from an 8-hour block
                       of time for each Amazon Web Services Region, occurring on a random day of
                       the week.
 
-
                       Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
-
 
                       Constraints: Minimum 30-minute window.
                     type: string
@@ -565,22 +529,17 @@ spec:
                               The type of restore to be performed. You can specify one of the following
                               values:
 
-
                                  * full-copy - The new DB cluster is restored as a full copy of the source
                                  DB cluster.
-
 
                                  * copy-on-write - The new DB cluster is restored as a clone of the source
                                  DB cluster.
 
-
                               Constraints: You can't specify copy-on-write if the engine version of the
                               source DB cluster is earlier than 1.11.
 
-
                               If you don't specify a RestoreType value, then the new DB cluster is restored
                               as a full copy of the source DB cluster.
-
 
                               Valid for: Aurora DB clusters and Multi-AZ DB clusters
                             enum:
@@ -626,10 +585,8 @@ spec:
                       is deleted. If true is specified, no cluster snapshot is created. If false
                       is specified, a cluster snapshot is created before the DB cluster is deleted.
 
-
                       If SkipFinalSnapshot is false, you must specify a FinalDBSnapshotIdentifier
                       parameter.
-
 
                       Default: false
                     type: boolean
@@ -659,8 +616,6 @@ spec:
                       type: string
                     type: array
                   vpcSecurityGroupIDsRefs:
-                    description: 'TODO(haarchri): when resource is bumped to beta
-                      we will convert this field to vpcSecurityGroupIdRefs'
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -697,8 +652,7 @@ spec:
                       type: object
                     type: array
                   vpcSecurityGroupIDsSelector:
-                    description: 'TODO(haarchri): when resource is bumped to beta
-                      we will convert this field to vpcSecurityGroupIdSelector'
+                    description: A Selector selects an object.
                     properties:
                       matchControllerRef:
                         description: |-
@@ -1028,7 +982,6 @@ spec:
                       Amazon DocumentDB distributes the connection requests among the Amazon DocumentDB
                       replicas in the cluster. This functionality can help balance your read workload
                       across multiple Amazon DocumentDB replicas in your cluster.
-
 
                       If a failover occurs, and the Amazon DocumentDB replica that you are connected
                       to is promoted to be the primary instance, your connection is dropped. To

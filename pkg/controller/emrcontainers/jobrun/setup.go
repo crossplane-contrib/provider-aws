@@ -132,9 +132,9 @@ func preDelete(_ context.Context, cr *svcapitypes.JobRun, input *svcsdk.CancelJo
 	return input.VirtualClusterId == nil, nil
 }
 
-func (e *external) postDeleter(ctx context.Context, cr *svcapitypes.JobRun, resp *svcsdk.CancelJobRunOutput, err error) error {
+func (e *external) postDeleter(ctx context.Context, cr *svcapitypes.JobRun, resp *svcsdk.CancelJobRunOutput, err error) (managed.ExternalDelete, error) {
 	if err == nil {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
 	// error context is stripped. cannot type assert.
@@ -145,12 +145,12 @@ func (e *external) postDeleter(ctx context.Context, cr *svcapitypes.JobRun, resp
 			VirtualClusterId: resp.VirtualClusterId,
 		})
 		if jobErr != nil {
-			return errors.Wrap(jobErr, cause.Error())
+			return managed.ExternalDelete{}, errors.Wrap(jobErr, cause.Error())
 		}
 		state := *res.JobRun.State
 		if state == svcsdk.JobRunStateCompleted || state == svcsdk.JobRunStateCancelled || state == svcsdk.JobRunStateFailed {
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }

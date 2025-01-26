@@ -273,14 +273,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mgd.(*v1beta1.Policy)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	if err := e.deleteNonDefaultVersions(ctx, meta.GetExternalName(cr)); err != nil {
-		return errorutils.Wrap(err, errDelete)
+		return managed.ExternalDelete{}, errorutils.Wrap(err, errDelete)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -289,7 +289,12 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		PolicyArn: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 func (e *external) getCallerIdentityArn(ctx context.Context) (arn.ARN, error) {

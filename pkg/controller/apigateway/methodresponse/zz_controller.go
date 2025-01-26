@@ -163,22 +163,27 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.MethodResponse)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteMethodResponseInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteMethodResponseWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -214,7 +219,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.MethodResponse, *svcsdk.PutMethodResponseInput) error
 	postCreate     func(context.Context, *svcapitypes.MethodResponse, *svcsdk.MethodResponse, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.MethodResponse, *svcsdk.DeleteMethodResponseInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.MethodResponse, *svcsdk.DeleteMethodResponseOutput, error) error
+	postDelete     func(context.Context, *svcapitypes.MethodResponse, *svcsdk.DeleteMethodResponseOutput, error) (managed.ExternalDelete, error)
 	preUpdate      func(context.Context, *svcapitypes.MethodResponse, *svcsdk.UpdateMethodResponseInput) error
 	postUpdate     func(context.Context, *svcapitypes.MethodResponse, *svcsdk.MethodResponse, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -242,8 +247,8 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.MethodResponse, _ *svcsdk.M
 func nopPreDelete(context.Context, *svcapitypes.MethodResponse, *svcsdk.DeleteMethodResponseInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.MethodResponse, _ *svcsdk.DeleteMethodResponseOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.MethodResponse, _ *svcsdk.DeleteMethodResponseOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
 func nopPreUpdate(context.Context, *svcapitypes.MethodResponse, *svcsdk.UpdateMethodResponseInput) error {
 	return nil

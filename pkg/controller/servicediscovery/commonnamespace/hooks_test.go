@@ -1075,7 +1075,7 @@ func TestDelete(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			e := NewHooks(tc.kube, tc.client)
 
-			err := e.Delete(context.Background(), tc.args.cr)
+			_, err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)

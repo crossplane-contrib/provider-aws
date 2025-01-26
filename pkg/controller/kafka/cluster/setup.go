@@ -135,15 +135,15 @@ func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClu
 	return false, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), svcsdk.ErrCodeBadRequestException) {
 			// skip: failed to delete Cluster: BadRequestException: You can't delete cluster in DELETING state.
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterInput) error {
