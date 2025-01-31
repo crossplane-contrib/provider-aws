@@ -58,6 +58,17 @@ func TestUnmarshalPolicyPrincipal(t *testing.T) {
 				err: nil,
 			},
 		},
+		"PrincipalObjectAWS": {
+			args: args{
+				rawPolicy: `{"AWS":"aws:arn:iam:::role/test"}`,
+			},
+			want: want{
+				result: policyPrincipal{
+					AWS: stringPtr("aws:arn:iam:::role/test"),
+				},
+				err: nil,
+			},
+		},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -210,6 +221,58 @@ func TestUnmarshalPolicy(t *testing.T) {
 							Resource: "resource",
 							Principal: policyPrincipal{
 								Service: stringPtr("service"),
+							},
+							Condition: policyCondition{
+								ArnLike: map[string]string{
+									"like2": "bar",
+								},
+								StringEquals: map[string]string{
+									"equals1": "foo",
+								},
+							},
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		"UnmarshalPolicyWithAWSObjectAsPrincipal": {
+			args: args{
+				rawPolicy: `{
+					"Version":"version",
+					"Id":"default",
+					"Statement":[
+						{
+							"Sid": "sid",
+							"Effect": "effect",
+							"Principal": {
+								"AWS": "arn"
+							},
+							"Action": "action",
+							"Resource": "resource",
+							"Condition": {
+								"StringEquals": {
+									"equals1": "foo"
+								},
+								"ArnLike": {
+									"like2": "bar"
+								}
+							}
+						}
+					]
+				}`,
+			},
+			want: want{
+				result: &policyDocument{
+					Version: "version",
+					Statement: []policyStatement{
+						{
+							Sid:      "sid",
+							Effect:   "effect",
+							Action:   "action",
+							Resource: "resource",
+							Principal: policyPrincipal{
+								AWS: stringPtr("arn"),
 							},
 							Condition: policyCondition{
 								ArnLike: map[string]string{

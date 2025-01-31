@@ -35,6 +35,7 @@ func (p *policyPrincipal) UnmarshalJSON(data []byte) error {
 	}
 
 	p.Service = pp.Service
+	p.AWS = pp.AWS
 	return nil
 }
 
@@ -45,6 +46,7 @@ type policyCondition struct {
 
 type policyPrincipal struct {
 	Service *string `json:"Service,omitempty"`
+	AWS     *string `json:"AWS,omitempty"`
 }
 
 type _policyPrincipal policyPrincipal
@@ -61,6 +63,9 @@ type policyStatement struct {
 func (p *policyStatement) GetPrincipal() string {
 	if p.Principal.Service != nil {
 		return *p.Principal.Service
+	}
+	if p.Principal.AWS != nil {
+		return *p.Principal.AWS
 	}
 	return ""
 }
