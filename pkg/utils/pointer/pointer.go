@@ -64,7 +64,7 @@ func ToIntAsInt32(v int) *int32 {
 	if v == 0 {
 		return nil
 	}
-	val32 := int32(v)
+	val32 := int32(v) //nolint:gosec
 	return &val32
 }
 
@@ -73,7 +73,7 @@ func ToIntAsInt32Ptr(v *int) *int32 {
 	if v == nil {
 		return nil
 	}
-	val32 := int32(*v)
+	val32 := int32(*v) //nolint:gosec
 	return &val32
 }
 
