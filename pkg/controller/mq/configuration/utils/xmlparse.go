@@ -8,7 +8,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-//nolint:musttag
 type Node struct {
 	XMLName xml.Name
 	Attr    []xml.Attr `xml:",any,attr"`
@@ -17,9 +16,8 @@ type Node struct {
 }
 
 func (n *Node) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	//nolint:musttag
 	type node Node
-	return d.DecodeElement((*node)(n), &start)
+	return d.DecodeElement((*node)(n), &start) //nolint:musttag
 }
 
 func DiffXMLConfigs(c1, c2 string) (string, error) {

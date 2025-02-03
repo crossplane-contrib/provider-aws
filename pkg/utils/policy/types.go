@@ -212,7 +212,7 @@ func (s *StringOrArray) UnmarshalJSON(data []byte) error {
 // StringOrSet is a string array that supports parsing from a single string
 // as a single entry array. Order of elements is not respected when comparing
 // two StringOrSet objects.
-type StringOrSet map[string]struct{}
+type StringOrSet map[string]struct{} //nolint:recvcheck
 
 func NewStringOrSet(values ...string) StringOrSet {
 	set := make(StringOrSet, len(values))
