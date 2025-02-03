@@ -46,7 +46,7 @@ func getKey(perm ec2types.IpPermission) ruleKey {
 	}
 }
 
-type ipPermissionMap struct {
+type ipPermissionMap struct { //nolint:recvcheck
 	FromPort   *int32
 	ToPort     *int32
 	IPProtocol *string
@@ -146,7 +146,7 @@ func (i ipPermissionMap) diffPrefixListIDs(other ipPermissionMap) []ec2types.Pre
 	return ret
 }
 
-func (i ipPermissionMap) diffUserIDGroupPair(other ipPermissionMap) []ec2types.UserIdGroupPair {
+func (i *ipPermissionMap) diffUserIDGroupPair(other ipPermissionMap) []ec2types.UserIdGroupPair {
 	var ret []ec2types.UserIdGroupPair
 	for key, r := range i.groups {
 		r2, ok := other.groups[key]
