@@ -117,6 +117,8 @@ type UserObservation struct {
 	SshPublicKeys []*SshPublicKey `json:"sshPublicKeys,omitempty"`
 	// A unique string that identifies a Transfer Family user.
 	UserName *string `json:"userName,omitempty"`
+
+	CustomUserObservation `json:",inline"`
 }
 
 // UserStatus defines the observed state of User.

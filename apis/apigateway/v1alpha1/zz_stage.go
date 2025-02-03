@@ -84,6 +84,8 @@ type StageObservation struct {
 	MethodSettings map[string]*MethodSetting `json:"methodSettings,omitempty"`
 	// The ARN of the WebAcl associated with the Stage.
 	WebACLARN *string `json:"webACLARN,omitempty"`
+
+	CustomStageObservation `json:",inline"`
 }
 
 // StageStatus defines the observed state of Stage.

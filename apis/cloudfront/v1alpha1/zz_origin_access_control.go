@@ -49,6 +49,8 @@ type OriginAccessControlObservation struct {
 	Location *string `json:"location,omitempty"`
 	// Contains an origin access control.
 	OriginAccessControl *OriginAccessControl_SDK `json:"originAccessControl,omitempty"`
+
+	CustomOriginAccessControlObservation `json:",inline"`
 }
 
 // OriginAccessControlStatus defines the observed state of OriginAccessControl.

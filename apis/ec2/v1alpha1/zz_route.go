@@ -67,6 +67,8 @@ type RouteSpec struct {
 type RouteObservation struct {
 	// Returns true if the request succeeds; otherwise, it returns an error.
 	Return *bool `json:"return_,omitempty"`
+
+	CustomRouteObservation `json:",inline"`
 }
 
 // RouteStatus defines the observed state of Route.

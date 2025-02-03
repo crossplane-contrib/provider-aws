@@ -98,6 +98,8 @@ type DeliveryStreamObservation struct {
 	// again on it. However, you can invoke the DeleteDeliveryStream operation to
 	// delete it.
 	DeliveryStreamStatus *string `json:"deliveryStreamStatus,omitempty"`
+
+	CustomDeliveryStreamObservation `json:",inline"`
 }
 
 // DeliveryStreamStatus defines the observed state of DeliveryStream.

@@ -61,6 +61,8 @@ type EmailIdentityObservation struct {
 	// from verified email addresses or domains. For more information about verifying
 	// identities, see the Amazon Pinpoint User Guide (https://docs.aws.amazon.com/pinpoint/latest/userguide/channels-email-manage-verify.html).
 	VerifiedForSendingStatus *bool `json:"verifiedForSendingStatus,omitempty"`
+
+	CustomEmailIdentityObservation `json:",inline"`
 }
 
 // EmailIdentityStatus defines the observed state of EmailIdentity.

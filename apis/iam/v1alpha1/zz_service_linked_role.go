@@ -102,6 +102,8 @@ type ServiceLinkedRoleObservation struct {
 	// tagging, see Tagging IAM resources (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
 	// in the IAM User Guide.
 	Tags []*Tag `json:"tags,omitempty"`
+
+	CustomServiceLinkedRoleObservation `json:",inline"`
 }
 
 // ServiceLinkedRoleStatus defines the observed state of ServiceLinkedRole.

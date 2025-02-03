@@ -52,6 +52,8 @@ type IntegrationResponseSpec struct {
 // IntegrationResponseObservation defines the observed state of IntegrationResponse
 type IntegrationResponseObservation struct {
 	IntegrationResponseID *string `json:"integrationResponseID,omitempty"`
+
+	CustomIntegrationResponseObservation `json:",inline"`
 }
 
 // IntegrationResponseStatus defines the observed state of IntegrationResponse.

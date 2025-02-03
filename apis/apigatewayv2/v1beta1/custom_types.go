@@ -52,3 +52,6 @@ type CustomVPCLinkParameters struct {
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 }
+
+// CustomVPCLinkObservation includes the custom fields.
+type CustomVPCLinkObservation struct{}

@@ -100,6 +100,8 @@ type OptionGroupObservation struct {
 	// field contains a value, then this option group can only be applied to instances
 	// that are in the VPC indicated by this field.
 	VPCID *string `json:"vpcID,omitempty"`
+
+	CustomOptionGroupObservation `json:",inline"`
 }
 
 // OptionGroupStatus defines the observed state of OptionGroup.

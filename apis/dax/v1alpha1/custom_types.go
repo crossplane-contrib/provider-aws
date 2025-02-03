@@ -85,6 +85,9 @@ type CustomClusterParameters struct {
 	NotificationTopicARNSelector *xpv1.Selector `json:"notificationTopicArnSelector,omitempty"`
 }
 
+// CustomClusterParameters includes the custom status fields of Cluster.
+type CustomClusterObservation struct{}
+
 // CustomParameterGroupParameters includes the custom fields of ParameterGroup
 type CustomParameterGroupParameters struct {
 	// An array of name-value pairs for the parameters in the group. Each element
@@ -94,6 +97,9 @@ type CustomParameterGroupParameters struct {
 	// For more details, see Configuring TTL Settings (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DAX.cluster-management.html#DAX.cluster-management.custom-settings.ttl).
 	ParameterNameValues []*ParameterNameValue `json:"parameterNameValues,omitempty"`
 }
+
+// CustomClusterParameters includes the custom status fields of ParameterGroup.
+type CustomParameterGroupObservation struct{}
 
 // CustomSubnetGroupParameters includes the custom fields of SubnetGroup
 type CustomSubnetGroupParameters struct {
@@ -113,3 +119,6 @@ type CustomSubnetGroupParameters struct {
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`
 }
+
+// CustomSubnetGroupObservation includes the custom status fields of SubnetGroup.
+type CustomSubnetGroupObservation struct{}

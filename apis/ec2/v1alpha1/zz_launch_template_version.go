@@ -64,6 +64,8 @@ type LaunchTemplateVersionObservation struct {
 	// combinations that are not valid, an error code and an error message are returned
 	// for each issue that's found.
 	Warning *ValidationWarning `json:"warning,omitempty"`
+
+	CustomLaunchTemplateVersionObservation `json:",inline"`
 }
 
 // LaunchTemplateVersionStatus defines the observed state of LaunchTemplateVersion.

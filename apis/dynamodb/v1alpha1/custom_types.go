@@ -31,8 +31,17 @@ type CustomBackupParameters struct {
 	TableNameSelector *xpv1.Selector `json:"tableNameSelector,omitempty"`
 }
 
+// CustomBackupObservation are custom obervations for Backup.
+type CustomBackupObservation struct{}
+
 // CustomTableParameters are custom parameters for Table.
 type CustomTableParameters struct{}
 
+// CustomBackupObservation are custom obervations for Table.
+type CustomTableObservation struct{}
+
 // CustomGlobalTableParameters are custom parameters for GlobalTable.
 type CustomGlobalTableParameters struct{}
+
+// CustomGlobalTableObservation are custom obervations for GlobalTable.
+type CustomGlobalTableObservation struct{}

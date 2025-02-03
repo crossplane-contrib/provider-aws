@@ -300,6 +300,8 @@ type AutoScalingGroupObservation struct {
 	WarmPoolConfiguration *WarmPoolConfiguration `json:"warmPoolConfiguration,omitempty"`
 	// The current size of the warm pool.
 	WarmPoolSize *int64 `json:"warmPoolSize,omitempty"`
+
+	CustomAutoScalingGroupObservation `json:",inline"`
 }
 
 // AutoScalingGroupStatus defines the observed state of AutoScalingGroup.

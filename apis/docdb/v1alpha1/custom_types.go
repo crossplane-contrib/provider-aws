@@ -61,6 +61,9 @@ type CustomDBInstanceParameters struct {
 	DBClusterIdentifierSelector *xpv1.Selector  `json:"dbClusterIdentifierSelector,omitempty"`
 }
 
+// CustomDBInstanceObservation for DBInstance
+type CustomDBInstanceObservation struct{}
+
 // CustomDBSubnetGroupParameters for DBSubnetGroupParameters
 type CustomDBSubnetGroupParameters struct {
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
@@ -72,6 +75,9 @@ type CustomDBSubnetGroupParameters struct {
 	SUbnetIDsSelector *xpv1.Selector `json:"subnetIDsSelector,omitempty"`
 }
 
+// CustomDBSubnetGroupObservation for DBSubnetGroupParameters
+type CustomDBSubnetGroupObservation struct{}
+
 // CustomDBClusterParameterGroupParameters for DBClusterParameterGroup
 type CustomDBClusterParameterGroupParameters struct {
 	// A list of parameters to associate with this DB parameter group.
@@ -82,6 +88,9 @@ type CustomDBClusterParameterGroupParameters struct {
 	// +optional
 	Parameters []*CustomParameter `json:"parameters,omitempty"`
 }
+
+// CustomDBClusterParameterGroupObservation for DBClusterParameterGroup
+type CustomDBClusterParameterGroupObservation struct{}
 
 // CustomDBClusterParameters for DBCluster
 type CustomDBClusterParameters struct {
@@ -164,6 +173,9 @@ type CustomDBClusterParameters struct {
 	// +optional
 	RestoreFrom *RestoreDBClusterBackupConfiguration `json:"restoreFrom,omitempty"`
 }
+
+// CustomDBClusterObservation for DBCluster
+type CustomDBClusterObservation struct{}
 
 // RestoreSnapshotConfiguration defines the details of the snapshot to restore from.
 type RestoreSnapshotConfiguration struct {

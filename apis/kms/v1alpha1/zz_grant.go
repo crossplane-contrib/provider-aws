@@ -140,6 +140,8 @@ type GrantObservation struct {
 	// and Using a grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token)
 	// in the Key Management Service Developer Guide.
 	GrantToken *string `json:"grantToken,omitempty"`
+
+	CustomGrantObservation `json:",inline"`
 }
 
 // GrantStatus defines the observed state of Grant.

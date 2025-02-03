@@ -284,6 +284,8 @@ type TaskDefinitionSpec struct {
 type TaskDefinitionObservation struct {
 	// The full description of the registered task definition.
 	TaskDefinition *TaskDefinition_SDK `json:"taskDefinition,omitempty"`
+
+	CustomTaskDefinitionObservation `json:",inline"`
 }
 
 // TaskDefinitionStatus defines the observed state of TaskDefinition.

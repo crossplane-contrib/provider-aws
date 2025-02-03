@@ -70,6 +70,8 @@ type JobRunObservation struct {
 	StateDetails *string `json:"stateDetails,omitempty"`
 	// This output displays the virtual cluster ID for which the job run was submitted.
 	VirtualClusterID *string `json:"virtualClusterID,omitempty"`
+
+	CustomJobRunObservation `json:",inline"`
 }
 
 // JobRunStatus defines the observed state of JobRun.

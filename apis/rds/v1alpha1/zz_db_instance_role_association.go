@@ -44,6 +44,7 @@ type DBInstanceRoleAssociationSpec struct {
 
 // DBInstanceRoleAssociationObservation defines the observed state of DBInstanceRoleAssociation
 type DBInstanceRoleAssociationObservation struct {
+	CustomDBInstanceRoleAssociationObservation `json:",inline"`
 }
 
 // DBInstanceRoleAssociationStatus defines the observed state of DBInstanceRoleAssociation.

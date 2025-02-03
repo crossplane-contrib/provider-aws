@@ -53,6 +53,8 @@ type DeploymentObservation struct {
 	DeploymentStatus *string `json:"deploymentStatus,omitempty"`
 
 	DeploymentStatusMessage *string `json:"deploymentStatusMessage,omitempty"`
+
+	CustomDeploymentObservation `json:",inline"`
 }
 
 // DeploymentStatus defines the observed state of Deployment.

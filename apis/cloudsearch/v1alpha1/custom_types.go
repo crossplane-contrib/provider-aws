@@ -35,3 +35,6 @@ type CustomDomainParameters struct {
 	// +optional
 	AccessPolicies *string `json:"accessPolicies,omitempty"`
 }
+
+// CustomDomainParameters includes the custom status fields of a CloudSearch Domain.
+type CustomDomainObservation struct{}

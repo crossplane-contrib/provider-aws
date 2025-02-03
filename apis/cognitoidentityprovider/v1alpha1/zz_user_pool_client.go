@@ -275,6 +275,8 @@ type UserPoolClientObservation struct {
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The user pool ID for the user pool client.
 	UserPoolID *string `json:"userPoolID,omitempty"`
+
+	CustomUserPoolClientObservation `json:",inline"`
 }
 
 // UserPoolClientStatus defines the observed state of UserPoolClient.

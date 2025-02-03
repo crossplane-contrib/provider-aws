@@ -131,6 +131,8 @@ type ClusterObservation struct {
 	SubnetGroup *string `json:"subnetGroup,omitempty"`
 	// The total number of nodes in the cluster.
 	TotalNodes *int64 `json:"totalNodes,omitempty"`
+
+	CustomClusterObservation `json:",inline"`
 }
 
 // ClusterStatus defines the observed state of Cluster.

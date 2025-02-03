@@ -52,6 +52,8 @@ type DBClusterParameterGroupObservation struct {
 	DBClusterParameterGroupARN *string `json:"dbClusterParameterGroupARN,omitempty"`
 	// Provides the name of the cluster parameter group.
 	DBClusterParameterGroupName *string `json:"dbClusterParameterGroupName,omitempty"`
+
+	CustomDBClusterParameterGroupObservation `json:",inline"`
 }
 
 // DBClusterParameterGroupStatus defines the observed state of DBClusterParameterGroup.

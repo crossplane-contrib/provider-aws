@@ -21,6 +21,9 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 // CustomAPIParameters includes the custom fields.
 type CustomAPIParameters struct{}
 
+// CustomAPIObservation includes the custom fields.
+type CustomAPIObservation struct{}
+
 // CustomAPIMappingParameters includes the custom fields.
 type CustomAPIMappingParameters struct {
 	// APIID is the ID for the API.
@@ -69,6 +72,9 @@ type CustomAPIMappingParameters struct {
 	DomainNameSelector *xpv1.Selector `json:"domainNameSelector,omitempty"`
 }
 
+// CustomAPIMappingObservation includes the custom fields.
+type CustomAPIMappingObservation struct{}
+
 // CustomAuthorizerParameters includes the custom fields.
 type CustomAuthorizerParameters struct {
 	// APIID is the ID for the API.
@@ -85,6 +91,9 @@ type CustomAuthorizerParameters struct {
 	// +optional
 	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 }
+
+// CustomAuthorizerObservation includes the custom fields.
+type CustomAuthorizerObservation struct{}
 
 // CustomDeploymentParameters includes the custom fields.
 type CustomDeploymentParameters struct {
@@ -113,8 +122,14 @@ type CustomDeploymentParameters struct {
 	StageNameSelector *xpv1.Selector `json:"stageNameSelector,omitempty"`
 }
 
+// CustomDeploymentObservation includes the custom fields.
+type CustomDeploymentObservation struct{}
+
 // CustomDomainNameParameters includes the custom fields.
 type CustomDomainNameParameters struct{}
+
+// CustomDomainNameObservation includes the custom fields.
+type CustomDomainNameObservation struct{}
 
 // ResponseParameters is a map of status codes and transform operations on each
 // of them.
@@ -173,6 +188,9 @@ type CustomIntegrationParameters struct {
 	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 }
 
+// CustomIntegrationObservation includes the custom fields.
+type CustomIntegrationObservation struct{}
+
 // CustomIntegrationResponseParameters includes the custom fields.
 type CustomIntegrationResponseParameters struct {
 	// APIID is the ID for the API.
@@ -204,6 +222,9 @@ type CustomIntegrationResponseParameters struct {
 	IntegrationIDSelector *xpv1.Selector `json:"integrationIdSelector,omitempty"`
 }
 
+// CustomIntegrationResponseObservation includes the custom fields.
+type CustomIntegrationResponseObservation struct{}
+
 // CustomModelParameters includes the custom fields.
 type CustomModelParameters struct {
 	// APIID is the ID for the API.
@@ -220,6 +241,9 @@ type CustomModelParameters struct {
 	// +optional
 	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 }
+
+// CustomModelObservation includes the custom fields.
+type CustomModelObservation struct{}
 
 // CustomRouteParameters includes the custom fields.
 type CustomRouteParameters struct {
@@ -263,6 +287,9 @@ type CustomRouteParameters struct {
 	TargetSelector *xpv1.Selector `json:"targetSelector,omitempty"`
 }
 
+// CustomRouteObservation includes the custom fields.
+type CustomRouteObservation struct{}
+
 // CustomRouteResponseParameters includes the custom fields.
 type CustomRouteResponseParameters struct {
 	// APIID is the ID for the API.
@@ -294,6 +321,9 @@ type CustomRouteResponseParameters struct {
 	RouteIDSelector *xpv1.Selector `json:"routeIdSelector,omitempty"`
 }
 
+// CustomRouteResponseObservation includes the custom fields.
+type CustomRouteResponseObservation struct{}
+
 // CustomVPCLinkParameters includes the custom fields.
 type CustomVPCLinkParameters struct {
 	// SecurityGroupIDs is the list of IDs for the SecurityGroups.
@@ -323,6 +353,9 @@ type CustomVPCLinkParameters struct {
 	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
+// CustomVPCLinkObservation includes the custom fields.
+type CustomVPCLinkObservation struct{}
+
 // CustomStageParameters includes the custom fields.
 type CustomStageParameters struct {
 	// APIID is the ID for the API.
@@ -339,3 +372,6 @@ type CustomStageParameters struct {
 	// +optional
 	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 }
+
+// CustomStageObservation includes the custom fields.
+type CustomStageObservation struct{}

@@ -50,6 +50,9 @@ type CustomGroupParameters struct {
 	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
 }
 
+// CustomGroupObservation contains the additional status fields for GroupParameters.
+type CustomGroupObservation struct{}
+
 // CustomIdentityProviderParameters includes custom additional fields for IdentityProviderParameters.
 type CustomIdentityProviderParameters struct {
 	// The user pool ID.
@@ -87,8 +90,14 @@ type CustomIdentityProviderParameters struct {
 	ProviderDetailsSecretRef xpv1.SecretReference `json:"providerDetailsSecretRef,omitempty"`
 }
 
+// CustomIdentityProviderObservation contains the additional status fields for IdentityProviderParameters.
+type CustomIdentityProviderObservation struct{}
+
 // CustomUserPoolParameters includes custom additional fields for UserPoolParameters.
 type CustomUserPoolParameters struct{}
+
+// CustomUserPoolObservation contains the additional status fields for UserPoolParameters.
+type CustomUserPoolObservation struct{}
 
 // CustomUserPoolDomainParameters includes custom additional fields for UserPoolDomainParameters.
 type CustomUserPoolDomainParameters struct {
@@ -106,6 +115,9 @@ type CustomUserPoolDomainParameters struct {
 	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
 }
 
+// CustomUserPoolDomainObservation contains the additional status fields for UserPoolDomainObservation.
+type CustomUserPoolDomainObservation struct{}
+
 // CustomUserPoolClientParameters includes custom additional fields for UserPoolClientParameters.
 type CustomUserPoolClientParameters struct {
 	// The user pool ID.
@@ -122,6 +134,9 @@ type CustomUserPoolClientParameters struct {
 	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
 }
 
+// CustomUserPoolClientObservation contains the additional status fields for UserPoolClientObservation.
+type CustomUserPoolClientObservation struct{}
+
 // CustomResourceServerParameters includes the custom fields of ResourceServerParameters.
 type CustomResourceServerParameters struct {
 	// The user pool ID.
@@ -137,3 +152,6 @@ type CustomResourceServerParameters struct {
 	// +optional
 	UserPoolIDSelector *xpv1.Selector `json:"userPoolIdSelector,omitempty"`
 }
+
+// CustomResourceServerObservation contains the additional status fields for ResourceServerObservation.
+type CustomResourceServerObservation struct{}

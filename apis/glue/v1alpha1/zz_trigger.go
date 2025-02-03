@@ -78,6 +78,8 @@ type TriggerObservation struct {
 	Name *string `json:"name,omitempty"`
 	// The current state of the trigger.
 	State *string `json:"state,omitempty"`
+
+	CustomTriggerObservation `json:",inline"`
 }
 
 // TriggerStatus defines the observed state of Trigger.

@@ -21,6 +21,9 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 // CustomActivityParameters includes custom additional fields for ActivityParameters.
 type CustomActivityParameters struct{}
 
+// CustomActivityObservation includes the custom status fields of Activity.
+type CustomActivityObservation struct{}
+
 // CustomStateMachineParameters includes custom additional fields for StateMachineParameters.
 type CustomStateMachineParameters struct {
 	// RoleARN is the ARN for the IAMRole.
@@ -46,3 +49,6 @@ type CustomStateMachineParameters struct {
 	// +kubebuilder:validation:Enum=STANDARD;EXPRESS
 	Type StateMachineType `json:"type,omitempty"`
 }
+
+// CustomStateMachineObservation includes the custom status fields of StateMachine.
+type CustomStateMachineObservation struct{}

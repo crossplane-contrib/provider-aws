@@ -31,3 +31,6 @@ type CustomDeliveryStreamParameters struct {
 
 	KMSKeyARNSelector *xpv1.Selector `json:"kmsKeyARNSelector,omitempty"`
 }
+
+// CustomDeliveryStreamObservation includes the custom status fields of DeliveryStreamParameters.
+type CustomDeliveryStreamObservation struct{}

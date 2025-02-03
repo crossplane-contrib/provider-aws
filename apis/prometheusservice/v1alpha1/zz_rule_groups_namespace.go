@@ -52,6 +52,8 @@ type RuleGroupsNamespaceObservation struct {
 	ARN *string `json:"arn,omitempty"`
 	// The status of rule groups namespace.
 	Status *RuleGroupsNamespaceStatus_SDK `json:"status,omitempty"`
+
+	CustomRuleGroupsNamespaceObservation `json:",inline"`
 }
 
 // RuleGroupsNamespaceStatus defines the observed state of RuleGroupsNamespace.

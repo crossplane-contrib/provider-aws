@@ -20,6 +20,12 @@ package v1alpha1
 type CustomThingParameters struct {
 }
 
+// CustomThingObservation includes the custom status fields of Thing.
+type CustomThingObservation struct{}
+
 // CustomPolicyParameters includes the custom fields of Policy.
 type CustomPolicyParameters struct {
 }
+
+// CustomPolicyObservation includes the custom status fields of Policy.
+type CustomPolicyObservation struct{}

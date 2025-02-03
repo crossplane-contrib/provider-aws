@@ -132,6 +132,9 @@ type CustomListenerParameters struct {
 	LoadBalancerARNSelector *xpv1.Selector `json:"loadBalancerArnSelector,omitempty"`
 }
 
+// CustomListenerObservation includes the custom status fields of Listener.
+type CustomListenerObservation struct{}
+
 // CustomLoadBalancerParameters includes the custom fields of LoadBalancer.
 type CustomLoadBalancerParameters struct {
 	// The type of load balancer. The default is application.
@@ -154,6 +157,9 @@ type CustomLoadBalancerParameters struct {
 	SubnetSelector *xpv1.Selector `json:"subnetSelector,omitempty"`
 }
 
+// CustomLoadBalancerObservation includes the custom status fields of LoadBalancer.
+type CustomLoadBalancerObservation struct{}
+
 // CustomTargetGroupParameters includes the custom fields of TargetGroup.
 type CustomTargetGroupParameters struct {
 	// Reference to VPC for VPCID
@@ -164,3 +170,6 @@ type CustomTargetGroupParameters struct {
 	// +optional
 	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 }
+
+// CustomTargetGroupObservation includes the custom status fields of TargetGroup.
+type CustomTargetGroupObservation struct{}

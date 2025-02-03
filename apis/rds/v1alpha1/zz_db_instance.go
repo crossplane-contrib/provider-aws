@@ -1091,6 +1091,8 @@ type DBInstanceObservation struct {
 	TagList []*Tag `json:"tagList,omitempty"`
 	// The list of Amazon EC2 VPC security groups that the DB instance belongs to.
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
+
+	CustomDBInstanceObservation `json:",inline"`
 }
 
 // DBInstanceStatus defines the observed state of DBInstance.

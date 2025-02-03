@@ -53,6 +53,8 @@ type WorkspaceObservation struct {
 	Status *WorkspaceStatus_SDK `json:"status,omitempty"`
 	// The generated ID of the workspace that was just created.
 	WorkspaceID *string `json:"workspaceID,omitempty"`
+
+	CustomWorkspaceObservation `json:",inline"`
 }
 
 // WorkspaceStatus defines the observed state of Workspace.

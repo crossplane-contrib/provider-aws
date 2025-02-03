@@ -55,6 +55,8 @@ type VPCEndpointServiceConfigurationObservation struct {
 	ClientToken *string `json:"clientToken,omitempty"`
 	// Information about the service configuration.
 	ServiceConfiguration *ServiceConfiguration `json:"serviceConfiguration,omitempty"`
+
+	CustomVPCEndpointServiceConfigurationObservation `json:",inline"`
 }
 
 // VPCEndpointServiceConfigurationStatus defines the observed state of VPCEndpointServiceConfiguration.

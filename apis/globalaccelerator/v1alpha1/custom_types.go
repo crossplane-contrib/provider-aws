@@ -21,6 +21,9 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 // CustomAcceleratorParameters contains the additional fields for AcceleratorParameters
 type CustomAcceleratorParameters struct{}
 
+// CustomAcceleratorObservation includes the custom status fields of Accelerator.
+type CustomAcceleratorObservation struct{}
+
 // CustomEndpointGroupParameters contains the additional fields for EndpointGroupParameters
 type CustomEndpointGroupParameters struct {
 	// ListenerArn is the ARN for the Listener.
@@ -42,6 +45,9 @@ type CustomEndpointGroupParameters struct {
 	ListenerArnSelector *xpv1.Selector `json:"listenerArnSelector,omitempty"`
 }
 
+// CustomEndpointGroupObservation includes the custom status fields of EndpointGroup.
+type CustomEndpointGroupObservation struct{}
+
 // CustomListenerParameters contains the additional fields for ListenerParameters
 type CustomListenerParameters struct {
 	// AcceleratorArn is the ARN for the Accelerator.
@@ -62,3 +68,6 @@ type CustomListenerParameters struct {
 	// +optional
 	AcceleratorArnSelector *xpv1.Selector `json:"acceleratorArnSelector,omitempty"`
 }
+
+// CustomListenerObservation includes the custom status fields of Listener.
+type CustomListenerObservation struct{}

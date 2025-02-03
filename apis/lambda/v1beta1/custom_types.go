@@ -58,6 +58,9 @@ type CustomFunctionParameters struct {
 	CustomFunctionCodeParameters CustomFunctionCodeParameters `json:"code"`
 }
 
+// CustomFunctionObservation includes the custom status fields of Function.
+type CustomFunctionObservation struct{}
+
 // CustomFunctionCodeParameters includes custom fields for FunctionCode struct.
 type CustomFunctionCodeParameters struct {
 	ImageURI *string `json:"imageURI,omitempty"`

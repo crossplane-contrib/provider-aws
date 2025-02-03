@@ -23,6 +23,9 @@ import (
 // CustomWorkspaceParameters includes custom fields about WorkspaceParameters.
 type CustomWorkspaceParameters struct{}
 
+// CustomWorkspaceObservation includes the custom status fields of Workspace.
+type CustomWorkspaceObservation struct{}
+
 // CustomRuleGroupsNamespaceParameters includes custom fields about RuleGroupsNamespaceParameters.
 // workspaceID is actually required but since it's reference-able, it's not marked as required.
 type CustomRuleGroupsNamespaceParameters struct {
@@ -42,6 +45,9 @@ type CustomRuleGroupsNamespaceParameters struct {
 	WorkspaceIDSelector *xpv1.Selector `json:"workspaceIdSelector,omitempty"`
 }
 
+// CustomWorkspaceObservation includes the custom status fields of RuleGroupsNamespace.
+type CustomRuleGroupsNamespaceObservation struct{}
+
 // CustomAlertManagerDefinitionParameters includes custom fields about AlertManagerDefinitionParameters.
 // workspaceID is actually required but since it's reference-able, it's not marked as required.
 type CustomAlertManagerDefinitionParameters struct {
@@ -60,3 +66,6 @@ type CustomAlertManagerDefinitionParameters struct {
 	// +optional
 	WorkspaceIDSelector *xpv1.Selector `json:"workspaceIdSelector,omitempty"`
 }
+
+// CustomAlertManagerDefinitionObservation includes the custom status fields of AlertManagerDefinition.
+type CustomAlertManagerDefinitionObservation struct{}

@@ -122,6 +122,8 @@ type ServiceObservation struct {
 	// included in the count. The count might not reflect pending registrations
 	// and deregistrations.
 	InstanceCount *int64 `json:"instanceCount,omitempty"`
+
+	CustomServiceObservation `json:",inline"`
 }
 
 // ServiceStatus defines the observed state of Service.

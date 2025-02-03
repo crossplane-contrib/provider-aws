@@ -274,6 +274,8 @@ type ServiceObservation struct {
 	// desired number of tasks, how many tasks are running, and whether the task
 	// set serves production traffic.
 	TaskSets []*TaskSet `json:"taskSets,omitempty"`
+
+	CustomServiceObservation `json:",inline"`
 }
 
 // ServiceStatus defines the observed state of Service.

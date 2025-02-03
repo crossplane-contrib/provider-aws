@@ -22,3 +22,6 @@ type CustomCacheParameterGroupParameters struct {
 	// +optional
 	ParameterNameValues []ParameterNameValue `json:"parameters,omitempty"`
 }
+
+// CustomCacheParameterGroupObservation includes the custom status fields of CacheParameterGroupObservation.
+type CustomCacheParameterGroupObservation struct{}

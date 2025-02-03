@@ -58,6 +58,8 @@ type VPCLinkObservation struct {
 	VPCLinkStatusMessage *string `json:"vpcLinkStatusMessage,omitempty"`
 
 	VPCLinkVersion *string `json:"vpcLinkVersion,omitempty"`
+
+	CustomVPCLinkObservation `json:",inline"`
 }
 
 // VPCLinkStatus defines the observed state of VPCLink.

@@ -59,6 +59,8 @@ type GlobalTableObservation struct {
 	//
 	//    * ACTIVE - The global table is ready for use.
 	GlobalTableStatus *string `json:"globalTableStatus,omitempty"`
+
+	CustomGlobalTableObservation `json:",inline"`
 }
 
 // GlobalTableStatus defines the observed state of GlobalTable.

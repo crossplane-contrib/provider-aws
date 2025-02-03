@@ -68,6 +68,7 @@ type IntegrationResponseSpec struct {
 
 // IntegrationResponseObservation defines the observed state of IntegrationResponse
 type IntegrationResponseObservation struct {
+	CustomIntegrationResponseObservation `json:",inline"`
 }
 
 // IntegrationResponseStatus defines the observed state of IntegrationResponse.

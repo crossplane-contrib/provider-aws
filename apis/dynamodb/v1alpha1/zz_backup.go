@@ -66,6 +66,8 @@ type BackupObservation struct {
 	//
 	//    * AWS_BACKUP - On-demand backup created by you from Backup service.
 	BackupType *string `json:"backupType,omitempty"`
+
+	CustomBackupObservation `json:",inline"`
 }
 
 // BackupStatus defines the observed state of Backup.

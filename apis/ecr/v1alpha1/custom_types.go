@@ -17,3 +17,6 @@ type CustomLifecyclePolicyParameters struct {
 	// +optional
 	RepositoryNameSelector *xpv1.Selector `json:"repositoryNameSelector,omitempty"`
 }
+
+// CustomLifecyclePolicyObservation includes the custom status fields of LifecyclePolicy.
+type CustomLifecyclePolicyObservation struct{}

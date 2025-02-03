@@ -157,6 +157,8 @@ type FunctionObservation struct {
 	Version *string `json:"version,omitempty"`
 	// The function's networking configuration.
 	VPCConfig *VPCConfigResponse `json:"vpcConfig,omitempty"`
+
+	CustomFunctionObservation `json:",inline"`
 }
 
 // FunctionStatus defines the observed state of Function.

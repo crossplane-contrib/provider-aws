@@ -44,6 +44,8 @@ type SecurityConfigurationObservation struct {
 	CreatedTimestamp *metav1.Time `json:"createdTimestamp,omitempty"`
 	// The name assigned to the new security configuration.
 	Name *string `json:"name,omitempty"`
+
+	CustomSecurityConfigurationObservation `json:",inline"`
 }
 
 // SecurityConfigurationStatus defines the observed state of SecurityConfiguration.

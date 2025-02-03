@@ -34,5 +34,11 @@ type CustomInstanceProfileParameters struct {
 	RoleSelector *xpv1.Selector `json:"roleSelector,omitempty"`
 }
 
+// CustomInstanceProfileObservation includes the custom status fields of InstanceProfileObservation.
+type CustomInstanceProfileObservation struct{}
+
 // CustomServiceLinkedRoleParameters includes the custom fields of ServiceLinkedRole.
 type CustomServiceLinkedRoleParameters struct{}
+
+// CustomServiceLinkedRoleObservation includes the custom status fields of ServiceLinkedRole.
+type CustomServiceLinkedRoleObservation struct{}

@@ -49,6 +49,8 @@ type CachePolicyObservation struct {
 	ETag *string `json:"eTag,omitempty"`
 	// The fully qualified URI of the cache policy just created.
 	Location *string `json:"location,omitempty"`
+
+	CustomCachePolicyObservation `json:",inline"`
 }
 
 // CachePolicyStatus defines the observed state of CachePolicy.

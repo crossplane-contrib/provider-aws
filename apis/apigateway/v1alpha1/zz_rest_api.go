@@ -88,6 +88,8 @@ type RestAPIObservation struct {
 	// The warning messages reported when failonwarnings is turned on during API
 	// import.
 	Warnings []*string `json:"warnings,omitempty"`
+
+	CustomRestAPIObservation `json:",inline"`
 }
 
 // RestAPIStatus defines the observed state of RestAPI.

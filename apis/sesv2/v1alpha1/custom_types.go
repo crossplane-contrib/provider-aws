@@ -41,8 +41,14 @@ const (
 // CustomConfigurationSetEventDestinationParameters are parameters for
 type CustomConfigurationSetEventDestinationParameters struct{}
 
+// CustomConfigurationSetEventDestinationObservation includes the custom status fields of ConfigurationSetEventDestination.
+type CustomConfigurationSetEventDestinationObservation struct{}
+
 // CustomConfigurationSetParameters are parameters for
 type CustomConfigurationSetParameters struct{}
+
+// CustomConfigurationSetObservation includes the custom status fields of ConfigurationSet.
+type CustomConfigurationSetObservation struct{}
 
 // CustomEmailIdentityParameters are parameters for
 type CustomEmailIdentityParameters struct {
@@ -72,5 +78,11 @@ type CustomEmailIdentityParameters struct {
 	ConfigurationSetNameSelector *xpv1.Selector `json:"configurationSetNameSelector,omitempty"`
 }
 
+// CustomEmailIdentityObservation includes the custom status fields of EmailIdentity.
+type CustomEmailIdentityObservation struct{}
+
 // CustomEmailTemplateParameters are parameters for
 type CustomEmailTemplateParameters struct{}
+
+// CustomEmailTemplateObservation includes the custom status fields of EmailTemplate.
+type CustomEmailTemplateObservation struct{}

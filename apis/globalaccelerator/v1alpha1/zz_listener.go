@@ -68,6 +68,8 @@ type ListenerSpec struct {
 type ListenerObservation struct {
 	// The Amazon Resource Name (ARN) of the listener.
 	ListenerARN *string `json:"listenerARN,omitempty"`
+
+	CustomListenerObservation `json:",inline"`
 }
 
 // ListenerStatus defines the observed state of Listener.

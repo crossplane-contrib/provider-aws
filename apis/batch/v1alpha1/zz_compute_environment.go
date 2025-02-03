@@ -101,6 +101,8 @@ type ComputeEnvironmentObservation struct {
 	State *string `json:"state,omitempty"`
 	// The current status of the compute environment (for example, CREATING or VALID).
 	Status *string `json:"status,omitempty"`
+
+	CustomComputeEnvironmentObservation `json:",inline"`
 }
 
 // ComputeEnvironmentStatus defines the observed state of ComputeEnvironment.

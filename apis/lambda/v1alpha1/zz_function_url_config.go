@@ -69,6 +69,8 @@ type FunctionURLConfigObservation struct {
 	FunctionARN *string `json:"functionARN,omitempty"`
 	// The HTTP URL endpoint for your function.
 	FunctionURL *string `json:"functionURL,omitempty"`
+
+	CustomFunctionURLConfigObservation `json:",inline"`
 }
 
 // FunctionURLConfigStatus defines the observed state of FunctionURLConfig.

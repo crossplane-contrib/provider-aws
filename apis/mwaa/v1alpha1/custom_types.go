@@ -79,6 +79,9 @@ type CustomEnvironmentParameters struct {
 	NetworkConfiguration CustomNetworkConfiguration `json:"networkConfiguration"`
 }
 
+// CustomEnvironmentObservation includes the custom status fields of Environment.
+type CustomEnvironmentObservation struct{}
+
 // CustomNetworkConfiguration for an Environment.
 type CustomNetworkConfiguration struct {
 	// SecurityGroupIDs is the list of IDs for the SecurityGroups.

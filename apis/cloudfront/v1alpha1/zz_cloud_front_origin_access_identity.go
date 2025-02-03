@@ -49,6 +49,8 @@ type CloudFrontOriginAccessIdentityObservation struct {
 	ETag *string `json:"eTag,omitempty"`
 	// The fully qualified URI of the new origin access identity just created.
 	Location *string `json:"location,omitempty"`
+
+	CustomCloudFrontOriginAccessIdentityObservation `json:",inline"`
 }
 
 // CloudFrontOriginAccessIdentityStatus defines the observed state of CloudFrontOriginAccessIdentity.

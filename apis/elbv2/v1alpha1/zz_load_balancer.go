@@ -133,6 +133,8 @@ type LoadBalancerObservation struct {
 	Type *string `json:"type_,omitempty"`
 	// The ID of the VPC for the load balancer.
 	VPCID *string `json:"vpcID,omitempty"`
+
+	CustomLoadBalancerObservation `json:",inline"`
 }
 
 // LoadBalancerStatus defines the observed state of LoadBalancer.

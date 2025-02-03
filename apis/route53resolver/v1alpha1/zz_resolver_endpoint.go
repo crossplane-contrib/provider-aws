@@ -123,6 +123,8 @@ type ResolverEndpointObservation struct {
 	Status *string `json:"status,omitempty"`
 	// A detailed description of the status of the Resolver endpoint.
 	StatusMessage *string `json:"statusMessage,omitempty"`
+
+	CustomResolverEndpointObservation `json:",inline"`
 }
 
 // ResolverEndpointStatus defines the observed state of ResolverEndpoint.

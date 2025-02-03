@@ -51,6 +51,8 @@ type ConnectionObservation struct {
 	LastUpdatedBy *string `json:"lastUpdatedBy,omitempty"`
 	// The last time that this connection definition was updated.
 	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
+
+	CustomConnectionObservation `json:",inline"`
 }
 
 // ConnectionStatus defines the observed state of Connection.

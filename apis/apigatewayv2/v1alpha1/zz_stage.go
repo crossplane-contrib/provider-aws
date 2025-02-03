@@ -67,6 +67,8 @@ type StageObservation struct {
 	LastUpdatedDate *metav1.Time `json:"lastUpdatedDate,omitempty"`
 
 	StageName *string `json:"stageName,omitempty"`
+
+	CustomStageObservation `json:",inline"`
 }
 
 // StageStatus defines the observed state of Stage.

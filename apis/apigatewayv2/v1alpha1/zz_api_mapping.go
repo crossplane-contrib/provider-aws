@@ -47,6 +47,8 @@ type APIMappingObservation struct {
 	APIMappingID *string `json:"apiMappingID,omitempty"`
 
 	Stage *string `json:"stage,omitempty"`
+
+	CustomAPIMappingObservation `json:",inline"`
 }
 
 // APIMappingStatus defines the observed state of APIMapping.

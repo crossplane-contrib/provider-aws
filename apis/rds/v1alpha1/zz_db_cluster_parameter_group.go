@@ -52,6 +52,8 @@ type DBClusterParameterGroupObservation struct {
 	// The name of the DB parameter group family that this DB cluster parameter
 	// group is compatible with.
 	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
+
+	CustomDBClusterParameterGroupObservation `json:",inline"`
 }
 
 // DBClusterParameterGroupStatus defines the observed state of DBClusterParameterGroup.

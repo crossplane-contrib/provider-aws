@@ -75,6 +75,8 @@ type AccessPointObservation struct {
 	Name *string `json:"name,omitempty"`
 	// Identifies the Amazon Web Services account that owns the access point resource.
 	OwnerID *string `json:"ownerID,omitempty"`
+
+	CustomAccessPointObservation `json:",inline"`
 }
 
 // AccessPointStatus defines the observed state of AccessPoint.

@@ -118,6 +118,8 @@ type DomainNameObservation struct {
 	// For more information, see Set up a Regional Custom Domain Name and AWS Regions
 	// and Endpoints for API Gateway.
 	RegionalHostedZoneID *string `json:"regionalHostedZoneID,omitempty"`
+
+	CustomDomainNameObservation `json:",inline"`
 }
 
 // DomainNameStatus defines the observed state of DomainName.

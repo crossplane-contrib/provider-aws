@@ -57,6 +57,8 @@ type IdentityProviderObservation struct {
 	ProviderName *string `json:"providerName,omitempty"`
 	// The user pool ID.
 	UserPoolID *string `json:"userPoolID,omitempty"`
+
+	CustomIdentityProviderObservation `json:",inline"`
 }
 
 // IdentityProviderStatus defines the observed state of IdentityProvider.

@@ -48,6 +48,8 @@ type {{ .CRD.Kind }}Observation struct {
 	{{- end }}
 	{{ $field.Names.Camel }} {{ $field.GoType }} `json:"{{ $field.Names.CamelLower }},omitempty"`
 {{- end }}
+
+	Custom{{ .CRD.Kind }}Observation `json:",inline"`
 }
 
 // {{ .CRD.Kind }}Status defines the observed state of {{ .CRD.Kind }}.

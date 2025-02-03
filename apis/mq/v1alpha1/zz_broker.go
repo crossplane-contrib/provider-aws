@@ -105,6 +105,8 @@ type BrokerObservation struct {
 	PendingSecurityGroups []*string `json:"pendingSecurityGroups,omitempty"`
 
 	Users []*UserSummary `json:"users,omitempty"`
+
+	CustomBrokerObservation `json:",inline"`
 }
 
 // BrokerStatus defines the observed state of Broker.

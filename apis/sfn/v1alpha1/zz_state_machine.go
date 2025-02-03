@@ -95,6 +95,8 @@ type StateMachineObservation struct {
 	// version. If you do not set the publish parameter to true, this field returns
 	// null value.
 	StateMachineVersionARN *string `json:"stateMachineVersionARN,omitempty"`
+
+	CustomStateMachineObservation `json:",inline"`
 }
 
 // StateMachineStatus defines the observed state of StateMachine.

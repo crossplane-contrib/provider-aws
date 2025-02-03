@@ -44,6 +44,7 @@ type EmailTemplateSpec struct {
 
 // EmailTemplateObservation defines the observed state of EmailTemplate
 type EmailTemplateObservation struct {
+	CustomEmailTemplateObservation `json:",inline"`
 }
 
 // EmailTemplateStatus defines the observed state of EmailTemplate.

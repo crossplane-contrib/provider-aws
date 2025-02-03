@@ -74,6 +74,8 @@ type InstanceProfileObservation struct {
 	InstanceProfileName *string `json:"instanceProfileName,omitempty"`
 	// The role associated with the instance profile.
 	Roles []*Role `json:"roles,omitempty"`
+
+	CustomInstanceProfileObservation `json:",inline"`
 }
 
 // InstanceProfileStatus defines the observed state of InstanceProfile.

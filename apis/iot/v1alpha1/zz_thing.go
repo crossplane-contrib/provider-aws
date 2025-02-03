@@ -53,6 +53,8 @@ type ThingObservation struct {
 	ThingARN *string `json:"thingARN,omitempty"`
 	// The thing ID.
 	ThingID *string `json:"thingID,omitempty"`
+
+	CustomThingObservation `json:",inline"`
 }
 
 // ThingStatus defines the observed state of Thing.

@@ -71,6 +71,8 @@ type JobQueueObservation struct {
 	State *string `json:"state,omitempty"`
 	// The status of the job queue (for example, CREATING or VALID).
 	Status *string `json:"status,omitempty"`
+
+	CustomJobQueueObservation `json:",inline"`
 }
 
 // JobQueueStatus defines the observed state of JobQueue.

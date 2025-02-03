@@ -122,6 +122,8 @@ type AcceleratorObservation struct {
 	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 	// Describes the deployment status of the accelerator.
 	Status *string `json:"status,omitempty"`
+
+	CustomAcceleratorObservation `json:",inline"`
 }
 
 // AcceleratorStatus defines the observed state of Accelerator.

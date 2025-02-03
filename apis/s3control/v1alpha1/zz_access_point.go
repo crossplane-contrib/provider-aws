@@ -61,6 +61,8 @@ type AccessPointObservation struct {
 	AccessPointARN *string `json:"accessPointARN,omitempty"`
 	// The name or alias of the access point.
 	Alias *string `json:"alias,omitempty"`
+
+	CustomAccessPointObservation `json:",inline"`
 }
 
 // AccessPointStatus defines the observed state of AccessPoint.

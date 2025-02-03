@@ -169,6 +169,8 @@ type DomainObservation struct {
 	UpgradeProcessing *bool `json:"upgradeProcessing,omitempty"`
 	// The VPC configuration for the domain.
 	VPCOptions *VPCDerivedInfo `json:"vpcOptions,omitempty"`
+
+	CustomDomainObservation `json:",inline"`
 }
 
 // DomainStatus defines the observed state of Domain.

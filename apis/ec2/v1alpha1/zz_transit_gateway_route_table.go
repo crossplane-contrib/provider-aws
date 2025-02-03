@@ -58,6 +58,8 @@ type TransitGatewayRouteTableObservation struct {
 	TransitGatewayID *string `json:"transitGatewayID,omitempty"`
 	// The ID of the transit gateway route table.
 	TransitGatewayRouteTableID *string `json:"transitGatewayRouteTableID,omitempty"`
+
+	CustomTransitGatewayRouteTableObservation `json:",inline"`
 }
 
 // TransitGatewayRouteTableStatus defines the observed state of TransitGatewayRouteTable.

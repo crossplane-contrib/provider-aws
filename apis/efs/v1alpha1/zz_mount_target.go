@@ -67,6 +67,8 @@ type MountTargetObservation struct {
 	SubnetID *string `json:"subnetID,omitempty"`
 	// The virtual private cloud (VPC) ID that the mount target is configured in.
 	VPCID *string `json:"vpcID,omitempty"`
+
+	CustomMountTargetObservation `json:",inline"`
 }
 
 // MountTargetStatus defines the observed state of MountTarget.

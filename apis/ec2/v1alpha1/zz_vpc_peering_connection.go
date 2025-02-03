@@ -65,6 +65,8 @@ type VPCPeeringConnectionObservation struct {
 	Tags []*Tag `json:"tags,omitempty"`
 	// The ID of the VPC peering connection.
 	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionID,omitempty"`
+
+	CustomVPCPeeringConnectionObservation `json:",inline"`
 }
 
 // VPCPeeringConnectionStatus defines the observed state of VPCPeeringConnection.
