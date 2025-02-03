@@ -46,6 +46,9 @@ type CustomAccessPointParameters struct {
 	FileSystemIDSelector *xpv1.Selector `json:"fileSystemIDSelector,omitempty"`
 }
 
+// CustomAccessPointObservation includes the custom status fields of AccessPoint.
+type CustomAccessPointObservation struct{}
+
 // CustomFileSystemParameters contains the additional fields for FileSystemParameters.
 type CustomFileSystemParameters struct {
 
@@ -68,6 +71,9 @@ type CustomFileSystemParameters struct {
 	// +optional
 	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIdSelector,omitempty"`
 }
+
+// CustomFileSystemObservation includes the custom status fields of FileSystem.
+type CustomFileSystemObservation struct{}
 
 // CustomMountTargetParameters contains the additional fields for MountTargetParameters.
 type CustomMountTargetParameters struct {
@@ -124,3 +130,6 @@ type CustomMountTargetParameters struct {
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`
 }
+
+// CustomMountTargetObservation includes the custom status fields of MountTarget.
+type CustomMountTargetObservation struct{}

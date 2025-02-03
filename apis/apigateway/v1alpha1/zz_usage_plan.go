@@ -60,6 +60,8 @@ type UsagePlanObservation struct {
 	// The Amazon Web Services Marketplace product identifier to associate with
 	// the usage plan as a SaaS product on the Amazon Web Services Marketplace.
 	ProductCode *string `json:"productCode,omitempty"`
+
+	CustomUsagePlanObservation `json:",inline"`
 }
 
 // UsagePlanStatus defines the observed state of UsagePlan.

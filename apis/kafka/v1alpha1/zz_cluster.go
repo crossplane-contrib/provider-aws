@@ -73,6 +73,8 @@ type ClusterObservation struct {
 	// The state of the cluster. The possible states are ACTIVE, CREATING, DELETING,
 	// FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER, and UPDATING.
 	State *string `json:"state,omitempty"`
+
+	CustomClusterObservation `json:",inline"`
 }
 
 // ClusterStatus defines the observed state of Cluster.

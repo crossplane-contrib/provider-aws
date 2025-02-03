@@ -75,6 +75,8 @@ type ActivityObservation struct {
 	ActivityARN *string `json:"activityARN,omitempty"`
 	// The date the activity is created.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
+
+	CustomActivityObservation `json:",inline"`
 }
 
 // ActivityStatus defines the observed state of Activity.

@@ -68,6 +68,9 @@ type CustomStreamParameters struct {
 	EnforceConsumerDeletion *bool `json:"enforceConsumerDeletion,omitempty"`
 }
 
+// CustomStreamObservation includes the custom status fields of Stream.
+type CustomStreamObservation struct{}
+
 // CustomTag contains the additional fields for Tag.
 type CustomTag struct {
 	// A unique identifier for the tag.

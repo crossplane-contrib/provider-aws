@@ -242,6 +242,8 @@ type TableObservation struct {
 	//    * ARCHIVED - The table has been archived. See the ArchivalReason for more
 	//    information.
 	TableStatus *string `json:"tableStatus,omitempty"`
+
+	CustomTableObservation `json:",inline"`
 }
 
 // TableStatus defines the observed state of Table.

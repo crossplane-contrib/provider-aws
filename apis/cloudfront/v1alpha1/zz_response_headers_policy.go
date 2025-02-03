@@ -50,6 +50,8 @@ type ResponseHeadersPolicyObservation struct {
 	Location *string `json:"location,omitempty"`
 	// Contains a response headers policy.
 	ResponseHeadersPolicy *ResponseHeadersPolicy_SDK `json:"responseHeadersPolicy,omitempty"`
+
+	CustomResponseHeadersPolicyObservation `json:",inline"`
 }
 
 // ResponseHeadersPolicyStatus defines the observed state of ResponseHeadersPolicy.

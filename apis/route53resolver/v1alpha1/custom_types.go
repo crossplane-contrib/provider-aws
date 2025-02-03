@@ -27,6 +27,9 @@ type CustomResolverEndpointParameters struct {
 	IPAddresses []*IPAddressRequest `json:"ipAddresses"`
 }
 
+// CustomResolverEndpointObservation includes the custom status fields of ResolverEndpoint.
+type CustomResolverEndpointObservation struct{}
+
 // CustomResolverRuleParameters are custom parameters for CustomResolverRule
 type CustomResolverRuleParameters struct {
 	// ResolverEndpointIDRef is the reference to the ResolverEndpoint used
@@ -38,6 +41,9 @@ type CustomResolverRuleParameters struct {
 	// +optional
 	ResolverEndpointIDSelector *xpv1.Selector `json:"resolverEndpointIdSelector,omitempty"`
 }
+
+// CustomResolverRuleObservation includes the custom status fields of ResolverRule.
+type CustomResolverRuleObservation struct{}
 
 // CustomResolverQueryLogConfigParameters are custom parameters for CustomResolverQueryLogConfig
 type CustomResolverQueryLogConfigParameters struct {

@@ -44,6 +44,8 @@ type ParameterGroupSpec struct {
 type ParameterGroupObservation struct {
 	// The name of the parameter group.
 	ParameterGroupName *string `json:"parameterGroupName,omitempty"`
+
+	CustomParameterGroupObservation `json:",inline"`
 }
 
 // ParameterGroupStatus defines the observed state of ParameterGroup.

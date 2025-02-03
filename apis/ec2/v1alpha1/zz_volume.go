@@ -146,6 +146,8 @@ type VolumeObservation struct {
 	Tags []*Tag `json:"tags,omitempty"`
 	// The ID of the volume.
 	VolumeID *string `json:"volumeID,omitempty"`
+
+	CustomVolumeObservation `json:",inline"`
 }
 
 // VolumeStatus defines the observed state of Volume.

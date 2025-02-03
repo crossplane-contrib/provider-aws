@@ -62,6 +62,8 @@ type LaunchTemplateObservation struct {
 	// are not valid, an error code and an error message are returned for each issue
 	// that's found.
 	Warning *ValidationWarning `json:"warning,omitempty"`
+
+	CustomLaunchTemplateObservation `json:",inline"`
 }
 
 // LaunchTemplateStatus defines the observed state of LaunchTemplate.

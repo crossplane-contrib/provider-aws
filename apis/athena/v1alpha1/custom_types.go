@@ -15,3 +15,6 @@ package v1alpha1
 
 // CustomWorkGroupParameters contains the additional fields for WorkGroupParameters.
 type CustomWorkGroupParameters struct{}
+
+// CustomWorkGroupObservation contains the additional fields for WorkGroupObservation.
+type CustomWorkGroupObservation struct{}

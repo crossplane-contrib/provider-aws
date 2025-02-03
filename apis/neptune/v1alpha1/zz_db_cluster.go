@@ -265,6 +265,8 @@ type DBClusterObservation struct {
 	Status *string `json:"status,omitempty"`
 	// Provides a list of VPC security groups that the DB cluster belongs to.
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
+
+	CustomDBClusterObservation `json:",inline"`
 }
 
 // DBClusterStatus defines the observed state of DBCluster.

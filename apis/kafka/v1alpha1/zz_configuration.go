@@ -56,6 +56,8 @@ type ConfigurationObservation struct {
 	// The state of the configuration. The possible states are ACTIVE, DELETING
 	// and DELETE_FAILED.
 	State *string `json:"state,omitempty"`
+
+	CustomConfigurationObservation `json:",inline"`
 }
 
 // ConfigurationStatus defines the observed state of Configuration.

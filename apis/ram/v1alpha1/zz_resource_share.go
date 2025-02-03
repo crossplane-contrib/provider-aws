@@ -100,6 +100,8 @@ type ResourceShareSpec struct {
 type ResourceShareObservation struct {
 	// An object with information about the new resource share.
 	ResourceShare *ResourceShare_SDK `json:"resourceShare,omitempty"`
+
+	CustomResourceShareObservation `json:",inline"`
 }
 
 // ResourceShareStatus defines the observed state of ResourceShare.

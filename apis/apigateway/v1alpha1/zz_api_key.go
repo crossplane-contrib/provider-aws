@@ -67,6 +67,8 @@ type APIKeyObservation struct {
 	LastUpdatedDate *metav1.Time `json:"lastUpdatedDate,omitempty"`
 	// A list of Stage resources that are associated with the ApiKey resource.
 	StageKeys []*string `json:"stageKeys,omitempty"`
+
+	CustomAPIKeyObservation `json:",inline"`
 }
 
 // APIKeyStatus defines the observed state of APIKey.

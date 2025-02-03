@@ -107,6 +107,8 @@ type AddonObservation struct {
 	Publisher *string `json:"publisher,omitempty"`
 	// The status of the add-on.
 	Status *string `json:"status,omitempty"`
+
+	CustomAddonObservation `json:",inline"`
 }
 
 // AddonStatus defines the observed state of Addon.

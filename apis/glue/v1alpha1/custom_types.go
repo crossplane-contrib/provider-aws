@@ -75,11 +75,17 @@ type CustomJobParameters struct {
 	SecurityConfigurationSelector *xpv1.Selector `json:"securityConfigurationSelector,omitempty"`
 }
 
+// CustomJobObservation includes the custom status fields of Job.
+type CustomJobObservation struct{}
+
 // CustomSecurityConfigurationParameters contains the additional fields for SecurityConfigurationParameters
 type CustomSecurityConfigurationParameters struct {
 	// The encryption configuration for the new security configuration.
 	CustomEncryptionConfiguration *CustomEncryptionConfiguration `json:"encryptionConfiguration"`
 }
+
+// CustomJobObservation includes the custom status fields of SecurityConfiguration.
+type CustomSecurityConfigurationObservation struct{}
 
 // CustomEncryptionConfiguration contains the additional fields for EncryptionConfiguration
 type CustomEncryptionConfiguration struct {
@@ -168,6 +174,9 @@ type CustomConnectionParameters struct {
 	// A ConnectionInput object defining the connection to create.
 	CustomConnectionInput *CustomConnectionInput `json:"connectionInput"`
 }
+
+// CustomConnectionObservation includes the custom status fields of Connection.
+type CustomConnectionObservation struct{}
 
 // CustomConnectionInput contains the additional fields for ConnectionInput
 type CustomConnectionInput struct {
@@ -271,6 +280,9 @@ type CustomDatabaseParameters struct {
 	// The metadata for the database.
 	CustomDatabaseInput *CustomDatabaseInput `json:"databaseInput,omitempty"`
 }
+
+// CustomDatabaseObservation includes the custom status fields of DatabaseParameters.
+type CustomDatabaseObservation struct{}
 
 // CustomDatabaseInput contains the fields for DatabaseInput.
 type CustomDatabaseInput struct {
@@ -376,6 +388,9 @@ type CustomCrawlerParameters struct {
 	// +kubebuilder:validation:Required
 	Targets CustomCrawlerTargets `json:"targets"`
 }
+
+// CustomCrawlerObservation includes the custom status fields of Crawler.
+type CustomCrawlerObservation struct{}
 
 // CustomCrawlerTargets contains the additional fields for CrawlerTargets
 type CustomCrawlerTargets struct {
@@ -560,6 +575,9 @@ type CustomClassifierParameters struct {
 	CustomJSONClassifier *CustomCreateJSONClassifierRequest `json:"jsonClassifier,omitempty"`
 }
 
+// CustomClassifierObservation includes the custom status fields of Classifier.
+type CustomClassifierObservation struct{}
+
 // CustomCreateGrokClassifierRequest contains the fields for CreateGrokClassifierRequest.
 type CustomCreateGrokClassifierRequest struct {
 	// An identifier of the data format that the classifier matches, such as Twitter,
@@ -634,3 +652,6 @@ type CustomCreateCSVClassifierRequest struct {
 }
 
 type CustomTriggerParameters struct{}
+
+// CustomTriggerObservation includes the custom status fields of Trigger.
+type CustomTriggerObservation struct{}

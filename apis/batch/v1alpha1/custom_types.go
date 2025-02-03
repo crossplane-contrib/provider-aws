@@ -193,6 +193,9 @@ type CustomComputeEnvironmentParameters struct {
 	UpdateToLatestImageVersion *bool `json:"updateToLatestImageVersion,omitempty"`
 }
 
+// CustomComputeEnvironmentObservation includes custom additional status fields for ComputeEnvironment
+type CustomComputeEnvironmentObservation struct{}
+
 // CustomJobQueueParameters includes custom additional fields for JobQueue
 type CustomJobQueueParameters struct {
 	// Custom parameter to control the state of the job queue. The valid values are ENABLED or DISABLED.
@@ -219,6 +222,9 @@ type CustomJobQueueParameters struct {
 	// +kubebuilder:validation:Required
 	ComputeEnvironmentOrder []CustomComputeEnvironmentOrder `json:"computeEnvironmentOrder"`
 }
+
+// CustomJobQueueObservation includes custom additional status fields for JobQueue
+type CustomJobQueueObservation struct{}
 
 // CustomComputeEnvironmentOrder includes custom additional fields for ComputeEnvironmentOrder
 type CustomComputeEnvironmentOrder struct {

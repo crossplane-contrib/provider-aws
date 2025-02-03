@@ -101,6 +101,8 @@ type ResolverRuleObservation struct {
 	Status *string `json:"status,omitempty"`
 	// A detailed description of the status of a Resolver rule.
 	StatusMessage *string `json:"statusMessage,omitempty"`
+
+	CustomResolverRuleObservation `json:",inline"`
 }
 
 // ResolverRuleStatus defines the observed state of ResolverRule.

@@ -62,6 +62,7 @@ type MethodResponseSpec struct {
 
 // MethodResponseObservation defines the observed state of MethodResponse
 type MethodResponseObservation struct {
+	CustomMethodResponseObservation `json:",inline"`
 }
 
 // MethodResponseStatus defines the observed state of MethodResponse.

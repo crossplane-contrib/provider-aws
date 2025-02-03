@@ -53,6 +53,7 @@ type WorkGroupSpec struct {
 
 // WorkGroupObservation defines the observed state of WorkGroup
 type WorkGroupObservation struct {
+	CustomWorkGroupObservation `json:",inline"`
 }
 
 // WorkGroupStatus defines the observed state of WorkGroup.

@@ -48,6 +48,8 @@ type SubnetGroupObservation struct {
 	Subnets []*Subnet `json:"subnets,omitempty"`
 	// The Amazon Virtual Private Cloud identifier (VPC ID) of the subnet group.
 	VPCID *string `json:"vpcID,omitempty"`
+
+	CustomSubnetGroupObservation `json:",inline"`
 }
 
 // SubnetGroupStatus defines the observed state of SubnetGroup.

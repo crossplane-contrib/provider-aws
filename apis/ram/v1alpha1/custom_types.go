@@ -18,3 +18,6 @@ package v1alpha1
 
 // CustomResourceShareParameters includes custom fields for ResourceShareParameters.
 type CustomResourceShareParameters struct{}
+
+// CustomResourceShareObservation includes the custom status fields of ResourceShare.
+type CustomResourceShareObservation struct{}

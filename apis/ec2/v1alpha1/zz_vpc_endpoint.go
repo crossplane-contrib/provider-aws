@@ -101,6 +101,8 @@ type VPCEndpointObservation struct {
 	VPCEndpointID *string `json:"vpcEndpointID,omitempty"`
 	// The ID of the VPC to which the endpoint is associated.
 	VPCID *string `json:"vpcID,omitempty"`
+
+	CustomVPCEndpointObservation `json:",inline"`
 }
 
 // VPCEndpointStatus defines the observed state of VPCEndpoint.

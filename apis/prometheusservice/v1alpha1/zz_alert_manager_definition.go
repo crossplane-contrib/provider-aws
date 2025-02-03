@@ -47,6 +47,8 @@ type AlertManagerDefinitionObservation struct {
 	StatusCode *string `json:"statusCode,omitempty"`
 	// The reason for failure if any.
 	StatusReason *string `json:"statusReason,omitempty"`
+
+	CustomAlertManagerDefinitionObservation `json:",inline"`
 }
 
 // AlertManagerDefinitionStatus defines the observed state of AlertManagerDefinition.

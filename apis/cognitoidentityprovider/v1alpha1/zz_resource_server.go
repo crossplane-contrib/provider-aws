@@ -52,6 +52,7 @@ type ResourceServerSpec struct {
 
 // ResourceServerObservation defines the observed state of ResourceServer
 type ResourceServerObservation struct {
+	CustomResourceServerObservation `json:",inline"`
 }
 
 // ResourceServerStatus defines the observed state of ResourceServer.

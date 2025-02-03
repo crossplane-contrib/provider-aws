@@ -78,6 +78,8 @@ type IntegrationObservation struct {
 	IntegrationID *string `json:"integrationID,omitempty"`
 
 	IntegrationResponseSelectionExpression *string `json:"integrationResponseSelectionExpression,omitempty"`
+
+	CustomIntegrationObservation `json:",inline"`
 }
 
 // IntegrationStatus defines the observed state of Integration.

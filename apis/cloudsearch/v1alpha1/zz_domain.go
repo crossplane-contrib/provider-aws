@@ -75,6 +75,8 @@ type DomainObservation struct {
 	SearchPartitionCount *int64 `json:"searchPartitionCount,omitempty"`
 	// The service endpoint for requesting search results from a search domain.
 	SearchService *ServiceEndpoint `json:"searchService,omitempty"`
+
+	CustomDomainObservation `json:",inline"`
 }
 
 // DomainStatus defines the observed state of Domain.

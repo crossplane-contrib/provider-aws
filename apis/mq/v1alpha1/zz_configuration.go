@@ -64,6 +64,8 @@ type ConfigurationObservation struct {
 	LatestRevisionData *string `json:"latestRevisionData,omitempty"`
 
 	Tags map[string]*string `json:"tags,omitempty"`
+
+	CustomConfigurationObservation `json:",inline"`
 }
 
 // ConfigurationStatus defines the observed state of Configuration.

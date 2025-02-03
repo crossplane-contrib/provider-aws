@@ -31,6 +31,9 @@ type CustomDomainParameters struct {
 	SnapshotOptions *SnapshotOptions `json:"snapshotOptions,omitempty"`
 }
 
+// CustomDomainObservation includes the custom status fields of Domain.
+type CustomDomainObservation struct{}
+
 // CustomEncryptionAtRestOptions includes the custom fields of EncryptionAtRestOptions
 type CustomEncryptionAtRestOptions struct {
 	Enabled *bool `json:"enabled,omitempty"`

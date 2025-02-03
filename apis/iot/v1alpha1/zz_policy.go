@@ -56,6 +56,8 @@ type PolicyObservation struct {
 	PolicyARN *string `json:"policyARN,omitempty"`
 	// The policy version ID.
 	PolicyVersionID *string `json:"policyVersionID,omitempty"`
+
+	CustomPolicyObservation `json:",inline"`
 }
 
 // PolicyStatus defines the observed state of Policy.

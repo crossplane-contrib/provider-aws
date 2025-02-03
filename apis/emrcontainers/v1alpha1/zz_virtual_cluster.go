@@ -51,6 +51,8 @@ type VirtualClusterObservation struct {
 	ID *string `json:"id,omitempty"`
 	// This output contains the name of the virtual cluster.
 	Name *string `json:"name,omitempty"`
+
+	CustomVirtualClusterObservation `json:",inline"`
 }
 
 // VirtualClusterStatus defines the observed state of VirtualCluster.

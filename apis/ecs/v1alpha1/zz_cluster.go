@@ -206,6 +206,8 @@ type ClusterObservation struct {
 	// is subject to change in the future. We don't recommend that you rely on INACTIVE
 	// clusters persisting.
 	Status *string `json:"status,omitempty"`
+
+	CustomClusterObservation `json:",inline"`
 }
 
 // ClusterStatus defines the observed state of Cluster.

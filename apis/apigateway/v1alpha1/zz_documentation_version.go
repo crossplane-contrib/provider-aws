@@ -51,6 +51,8 @@ type DocumentationVersionObservation struct {
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
 	// The version identifier of the API documentation snapshot.
 	Version *string `json:"version,omitempty"`
+
+	CustomDocumentationVersionObservation `json:",inline"`
 }
 
 // DocumentationVersionStatus defines the observed state of DocumentationVersion.

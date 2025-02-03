@@ -28,6 +28,9 @@ type CustomConfigurationParameters struct {
 	Properties []string `json:"properties"`
 }
 
+// CustomConfigurationObservation includes the custom status fields of Configuration.
+type CustomConfigurationObservation struct{}
+
 // CustomClusterParameters contains the additional fields for ClusterParameters.
 type CustomClusterParameters struct {
 	// Information about the brokers
@@ -39,6 +42,9 @@ type CustomClusterParameters struct {
 	// Represents the configuration that you want MSK to use for the cluster.
 	CustomConfigurationInfo *CustomConfigurationInfo `json:"configurationInfo,omitempty"`
 }
+
+// CustomClusterObservation includes the custom status fields of Cluster.
+type CustomClusterObservation struct{}
 
 // CustomConfigurationInfo contains the additional fields for ConfigurationInfo.
 type CustomConfigurationInfo struct {

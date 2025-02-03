@@ -168,6 +168,8 @@ type EnvironmentObservation struct {
 	// and their solutions. For more information, see Amazon MWAA troubleshooting
 	// (https://docs.aws.amazon.com/mwaa/latest/userguide/troubleshooting.html).
 	Status *string `json:"status,omitempty"`
+
+	CustomEnvironmentObservation `json:",inline"`
 }
 
 // EnvironmentStatus defines the observed state of Environment.

@@ -146,6 +146,8 @@ type ProvisionedProductObservation struct {
 	StatusMessage *string `json:"statusMessage,omitempty"`
 	// The time when the record was last updated.
 	UpdatedTime *metav1.Time `json:"updatedTime,omitempty"`
+
+	CustomProvisionedProductObservation `json:",inline"`
 }
 
 // ProvisionedProductStatus defines the observed state of ProvisionedProduct.

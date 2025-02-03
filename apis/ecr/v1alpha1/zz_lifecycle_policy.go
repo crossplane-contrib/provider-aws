@@ -49,6 +49,8 @@ type LifecyclePolicySpec struct {
 type LifecyclePolicyObservation struct {
 	// The repository name associated with the request.
 	RepositoryName *string `json:"repositoryName,omitempty"`
+
+	CustomLifecyclePolicyObservation `json:",inline"`
 }
 
 // LifecyclePolicyStatus defines the observed state of LifecyclePolicy.

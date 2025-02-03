@@ -38,3 +38,6 @@ type CustomDBClusterParameters struct {
 	// Default: false
 	SkipFinalSnapshot *bool `json:"skipFinalSnapshot,omitempty"`
 }
+
+// CustomDBClusterObservation includes the custom status fields of DB Cluster.
+type CustomDBClusterObservation struct{}

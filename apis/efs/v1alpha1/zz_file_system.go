@@ -148,6 +148,8 @@ type FileSystemObservation struct {
 	// a couple of hours. Otherwise, the value is not the exact size that the file
 	// system was at any point in time.
 	SizeInBytes *FileSystemSize `json:"sizeInBytes,omitempty"`
+
+	CustomFileSystemObservation `json:",inline"`
 }
 
 // FileSystemStatus defines the observed state of FileSystem.

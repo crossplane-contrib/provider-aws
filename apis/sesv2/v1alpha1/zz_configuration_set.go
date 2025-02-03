@@ -60,6 +60,7 @@ type ConfigurationSetSpec struct {
 
 // ConfigurationSetObservation defines the observed state of ConfigurationSet
 type ConfigurationSetObservation struct {
+	CustomConfigurationSetObservation `json:",inline"`
 }
 
 // ConfigurationSetStatus defines the observed state of ConfigurationSet.

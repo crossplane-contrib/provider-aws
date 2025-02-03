@@ -95,6 +95,9 @@ type CustomDBParameterGroupParameters struct {
 	DBParameterGroupFamilySelector *DBParameterGroupFamilyNameSelector `json:"dbParameterGroupFamilySelector,omitempty"`
 }
 
+// CustomDBParameterGroupObservation includes the custom status fields of DBParameterGroup.
+type CustomDBParameterGroupObservation struct{}
+
 // CustomDBClusterParameterGroupParameters are custom parameters for DBClusterParameterGroup
 type CustomDBClusterParameterGroupParameters struct {
 	// A list of parameters to associate with this DB cluster parameter group.
@@ -154,6 +157,9 @@ type CustomDBClusterParameterGroupParameters struct {
 	// +optional
 	DBParameterGroupFamilySelector *DBParameterGroupFamilyNameSelector `json:"dbParameterGroupFamilySelector,omitempty"`
 }
+
+// CustomDBClusterParameterGroupObservation includes the custom status fields of DBClusterParameterGroup.
+type CustomDBClusterParameterGroupObservation struct{}
 
 // DBParameterGroupFamilyNameSelector allows determining the family name from the
 // database engine and engine version.
@@ -351,6 +357,9 @@ type CustomDBClusterParameters struct {
 	RestoreFrom *RestoreDBClusterBackupConfiguration `json:"restoreFrom,omitempty"`
 }
 
+// CustomDBClusterObservation includes the custom status fields of DBCluster.
+type CustomDBClusterObservation struct{}
+
 // S3RestoreBackupConfiguration defines the details of the S3 backup to restore from.
 type S3RestoreBackupConfiguration struct {
 	// BucketName is the name of the S3 bucket containing the backup to restore.
@@ -510,6 +519,9 @@ type CustomGlobalClusterParameters struct {
 	// +optional
 	SourceDBClusterIdentifierSelector *xpv1.Selector `json:"sourceDBClusterIdentifierSelector,omitempty"`
 }
+
+// CustomGlobalClusterObservation includes the custom status fields of GlobalCluster.
+type CustomGlobalClusterObservation struct{}
 
 // CustomDBInstanceParameters are custom parameters for the DBInstance
 type CustomDBInstanceParameters struct {
@@ -731,6 +743,9 @@ type CustomDBInstanceParameters struct {
 	DeleteAutomatedBackups *bool `json:"deleteAutomatedBackups,omitempty"`
 }
 
+// CustomDBInstanceObservation includes the custom status fields of DBInstance.
+type CustomDBInstanceObservation struct{}
+
 // CustomDBInstanceRoleAssociationParameters are custom parameters for the DBInstanceRoleAssociation
 type CustomDBInstanceRoleAssociationParameters struct {
 	// The name of the DB instance to associate the IAM role with.
@@ -766,6 +781,9 @@ type CustomDBInstanceRoleAssociationParameters struct {
 	RoleARNSelector *xpv1.Selector `json:"roleArnSelector,omitempty"`
 }
 
+// CustomDBInstanceRoleAssociationObservation includes the custom status fields of DBInstanceRoleAssociation.
+type CustomDBInstanceRoleAssociationObservation struct{}
+
 // CustomOptionGroupParameters are custom parameters for the OptionGroup
 type CustomOptionGroupParameters struct {
 	// Option in this list are added to the option group or, if already present,
@@ -777,6 +795,9 @@ type CustomOptionGroupParameters struct {
 	// group.
 	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
 }
+
+// CustomOptionGroupObservation includes the custom status fields of OptionGroup.
+type CustomOptionGroupObservation struct{}
 
 // CustomOptionConfiguration are custom parameters for the OptionConfiguration
 type CustomOptionConfiguration struct {

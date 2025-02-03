@@ -46,6 +46,8 @@ type ClassifierObservation struct {
 	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
 	// The version of this classifier.
 	Version *int64 `json:"version,omitempty"`
+
+	CustomClassifierObservation `json:",inline"`
 }
 
 // ClassifierStatus defines the observed state of Classifier.

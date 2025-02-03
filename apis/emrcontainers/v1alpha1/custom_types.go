@@ -18,5 +18,11 @@ type CustomJobRunParameters struct {
 	VirtualClusterIDSelector *xpv1.Selector `json:"virtualClusterIdSelector,omitempty"`
 }
 
+// CustomJobRunObservation includes the custom status fields of JobRun.
+type CustomJobRunObservation struct{}
+
 // CustomVirtualClusterParameters includes the custom fields of VirtualCluster.
 type CustomVirtualClusterParameters struct{}
+
+// CustomVirtualClusterObservation includes the custom status fields of VirtualCluster.
+type CustomVirtualClusterObservation struct{}

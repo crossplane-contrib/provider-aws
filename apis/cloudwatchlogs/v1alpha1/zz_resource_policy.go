@@ -69,6 +69,8 @@ type ResourcePolicyObservation struct {
 	LastUpdatedTime *int64 `json:"lastUpdatedTime,omitempty"`
 	// The name of the resource policy.
 	PolicyName *string `json:"policyName,omitempty"`
+
+	CustomResourcePolicyObservation `json:",inline"`
 }
 
 // ResourcePolicyStatus defines the observed state of ResourcePolicy.

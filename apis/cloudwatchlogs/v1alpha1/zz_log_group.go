@@ -70,6 +70,8 @@ type LogGroupObservation struct {
 	RetentionInDays *int64 `json:"retentionInDays,omitempty"`
 	// The number of bytes stored.
 	StoredBytes *int64 `json:"storedBytes,omitempty"`
+
+	CustomLogGroupObservation `json:",inline"`
 }
 
 // LogGroupStatus defines the observed state of LogGroup.

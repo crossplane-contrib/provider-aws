@@ -79,6 +79,9 @@ type CustomSecretParameters struct {
 	ResourcePolicy *string `json:"resourcePolicy,omitempty"`
 }
 
+// CustomSecretObservation includes the custom status fields of Secret.
+type CustomSecretObservation struct{}
+
 // A SecretReference is a reference to a secret in an arbitrary namespace.
 type SecretReference struct {
 	// Name of the secret.

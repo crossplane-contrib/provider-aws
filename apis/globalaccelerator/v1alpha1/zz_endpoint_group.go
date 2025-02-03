@@ -86,6 +86,8 @@ type EndpointGroupObservation struct {
 	EndpointDescriptions []*EndpointDescription `json:"endpointDescriptions,omitempty"`
 	// The Amazon Resource Name (ARN) of the endpoint group.
 	EndpointGroupARN *string `json:"endpointGroupARN,omitempty"`
+
+	CustomEndpointGroupObservation `json:",inline"`
 }
 
 // EndpointGroupStatus defines the observed state of EndpointGroup.

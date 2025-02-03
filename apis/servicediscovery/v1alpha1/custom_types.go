@@ -30,6 +30,9 @@ type CustomServiceParameters struct {
 	ServiceNameSelector *xpv1.Selector `json:"serviceNameSelector,omitempty"`
 }
 
+// CustomServiceObservation includes the custom status fields of Services.
+type CustomServiceObservation struct{}
+
 // CustomPrivateDNSNamespaceParameters are custom parameters for PrivateDNSNamespaces.
 type CustomPrivateDNSNamespaceParameters struct {
 
@@ -44,11 +47,20 @@ type CustomPrivateDNSNamespaceParameters struct {
 	VPCSelector *xpv1.Selector `json:"vpcSelector,omitempty"`
 }
 
+// CustomPrivateDNSNamespaceObservation includes the custom status fields of PrivateDNSNamespaces.
+type CustomPrivateDNSNamespaceObservation struct{}
+
 // CustomHTTPNamespaceParameters are custom parameters for HTTPNamespaces.
 type CustomHTTPNamespaceParameters struct{}
 
+// CustomHTTPNamespaceObservation includes the custom status fields of HTTPNamespaces.
+type CustomHTTPNamespaceObservation struct{}
+
 // CustomPublicDNSNamespaceParameters are custom parameters for PublicDNSNamespaces.
 type CustomPublicDNSNamespaceParameters struct{}
+
+// CustomPublicDNSNamespaceObservation includes the custom status fields of PublicDNSNamespaces.
+type CustomPublicDNSNamespaceObservation struct{}
 
 // GetOperationID returns the last operation id.
 func (in *HTTPNamespace) GetOperationID() *string {

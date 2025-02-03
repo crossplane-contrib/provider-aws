@@ -202,6 +202,8 @@ type JobObservation struct {
 	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
 	// The unique name that was provided for this job definition.
 	Name *string `json:"name,omitempty"`
+
+	CustomJobObservation `json:",inline"`
 }
 
 // JobStatus defines the observed state of Job.

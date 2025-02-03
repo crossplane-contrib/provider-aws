@@ -46,6 +46,7 @@ type UserSpec struct {
 
 // UserObservation defines the observed state of User
 type UserObservation struct {
+	CustomUserObservation `json:",inline"`
 }
 
 // UserStatus defines the observed state of User.

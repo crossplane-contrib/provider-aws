@@ -44,3 +44,6 @@ type CustomAccessPointParameters struct {
 	// +optional
 	Policy *common.BucketPolicyBody `json:"policy"`
 }
+
+// CustomAccessPointObservation includes the custom status fields of AccessPoint.
+type CustomAccessPointObservation struct{}

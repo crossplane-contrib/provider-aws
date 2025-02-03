@@ -53,6 +53,8 @@ type ModelSpec struct {
 type ModelObservation struct {
 	// The identifier for the model resource.
 	ID *string `json:"id,omitempty"`
+
+	CustomModelObservation `json:",inline"`
 }
 
 // ModelStatus defines the observed state of Model.

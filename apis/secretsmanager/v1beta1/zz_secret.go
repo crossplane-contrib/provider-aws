@@ -100,6 +100,8 @@ type SecretObservation struct {
 	//
 	//    * InSync, which indicates that the replica was created.
 	ReplicationStatus []*ReplicationStatusType `json:"replicationStatus,omitempty"`
+
+	CustomSecretObservation `json:",inline"`
 }
 
 // SecretStatus defines the observed state of Secret.

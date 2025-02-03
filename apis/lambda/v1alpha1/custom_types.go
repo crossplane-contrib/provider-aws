@@ -123,3 +123,6 @@ type CustomFunctionURLConfigParameters struct {
 	// +optional
 	FunctionNameSelector *xpv1.Selector `json:"functionNameSelector,omitempty"`
 }
+
+// CustomFunctionURLConfigObservation includes the custom status fields of FunctionURLConfig.
+type CustomFunctionURLConfigObservation struct{}

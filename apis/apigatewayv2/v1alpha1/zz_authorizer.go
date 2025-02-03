@@ -64,6 +64,8 @@ type AuthorizerSpec struct {
 // AuthorizerObservation defines the observed state of Authorizer
 type AuthorizerObservation struct {
 	AuthorizerID *string `json:"authorizerID,omitempty"`
+
+	CustomAuthorizerObservation `json:",inline"`
 }
 
 // AuthorizerStatus defines the observed state of Authorizer.

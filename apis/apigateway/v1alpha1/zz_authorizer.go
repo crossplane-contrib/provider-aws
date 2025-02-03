@@ -103,6 +103,8 @@ type AuthorizerObservation struct {
 	// Each element is of this format: arn:aws:cognito-idp:{region}:{account_id}:userpool/{user_pool_id}.
 	// For a TOKEN or REQUEST authorizer, this is not defined.
 	ProviderARNs []*string `json:"providerARNs,omitempty"`
+
+	CustomAuthorizerObservation `json:",inline"`
 }
 
 // AuthorizerStatus defines the observed state of Authorizer.

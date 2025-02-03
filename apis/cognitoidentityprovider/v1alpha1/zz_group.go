@@ -70,6 +70,8 @@ type GroupObservation struct {
 	RoleARN *string `json:"roleARN,omitempty"`
 	// The user pool ID for the user pool.
 	UserPoolID *string `json:"userPoolID,omitempty"`
+
+	CustomGroupObservation `json:",inline"`
 }
 
 // GroupStatus defines the observed state of Group.

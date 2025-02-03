@@ -108,6 +108,8 @@ type FlowLogObservation struct {
 	ResourceID *string `json:"resourceID,omitempty"`
 	// The tags for the flow log.
 	Tags []*Tag `json:"tags,omitempty"`
+
+	CustomFlowLogObservation `json:",inline"`
 }
 
 // FlowLogStatus defines the observed state of FlowLog.

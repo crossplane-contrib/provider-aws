@@ -111,6 +111,8 @@ type GlobalClusterObservation struct {
 	GlobalClusterResourceID *string `json:"globalClusterResourceID,omitempty"`
 	// Specifies the current state of this global database cluster.
 	Status *string `json:"status,omitempty"`
+
+	CustomGlobalClusterObservation `json:",inline"`
 }
 
 // GlobalClusterStatus defines the observed state of GlobalCluster.

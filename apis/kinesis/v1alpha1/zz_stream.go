@@ -100,6 +100,8 @@ type StreamObservation struct {
 	//    write operations continue to work while the stream is in the UPDATING
 	//    state.
 	StreamStatus *string `json:"streamStatus,omitempty"`
+
+	CustomStreamObservation `json:",inline"`
 }
 
 // StreamStatus defines the observed state of Stream.

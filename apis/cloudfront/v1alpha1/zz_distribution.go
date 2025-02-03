@@ -49,6 +49,8 @@ type DistributionObservation struct {
 	ETag *string `json:"eTag,omitempty"`
 	// The fully qualified URI of the new distribution resource just created.
 	Location *string `json:"location,omitempty"`
+
+	CustomDistributionObservation `json:",inline"`
 }
 
 // DistributionStatus defines the observed state of Distribution.

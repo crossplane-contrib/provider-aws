@@ -49,6 +49,8 @@ type ResourceObservation struct {
 	ParentID *string `json:"parentID,omitempty"`
 	// The full path for this resource.
 	Path *string `json:"path,omitempty"`
+
+	CustomResourceObservation `json:",inline"`
 }
 
 // ResourceStatus defines the observed state of Resource.

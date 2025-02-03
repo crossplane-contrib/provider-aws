@@ -77,6 +77,9 @@ type CustomUserParameters struct {
 	SSHPublicKeys []SSHPublicKeySpec `json:"sshPublicKeys,omitempty"`
 }
 
+// CustomUserObservation includes the custom status fields of User.
+type CustomUserObservation struct{}
+
 type SSHPublicKeySpec struct {
 	// Body is the public portion of the Secure Shell (SSH) key used to authenticate the
 	// user to the server.
@@ -158,6 +161,9 @@ type CustomServerParameters struct {
 	// +optional
 	LoggingRoleSelector *xpv1.Selector `json:"loggingRoleSelector,omitempty"`
 }
+
+// CustomServerObservation includes the custom status fields of Server.
+type CustomServerObservation struct{}
 
 // CustomEndpointDetails includes custom additional fields for UserParameters.
 type CustomEndpointDetails struct {

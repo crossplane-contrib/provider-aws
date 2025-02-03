@@ -49,6 +49,8 @@ type DomainNameObservation struct {
 	APIMappingSelectionExpression *string `json:"apiMappingSelectionExpression,omitempty"`
 
 	DomainName *string `json:"domainName,omitempty"`
+
+	CustomDomainNameObservation `json:",inline"`
 }
 
 // DomainNameStatus defines the observed state of DomainName.

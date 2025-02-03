@@ -159,6 +159,8 @@ type DBInstanceObservation struct {
 	// Provides a list of VPC security group elements that the instance belongs
 	// to.
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
+
+	CustomDBInstanceObservation `json:",inline"`
 }
 
 // DBInstanceStatus defines the observed state of DBInstance.

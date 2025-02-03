@@ -83,6 +83,8 @@ type CrawlerObservation struct {
 	State *string `json:"state,omitempty"`
 	// The version of the crawler.
 	Version *int64 `json:"version,omitempty"`
+
+	CustomCrawlerObservation `json:",inline"`
 }
 
 // CrawlerStatus defines the observed state of Crawler.

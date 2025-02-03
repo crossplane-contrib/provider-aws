@@ -82,6 +82,8 @@ type ListenerObservation struct {
 	ListenerARN *string `json:"listenerARN,omitempty"`
 	// The Amazon Resource Name (ARN) of the load balancer.
 	LoadBalancerARN *string `json:"loadBalancerARN,omitempty"`
+
+	CustomListenerObservation `json:",inline"`
 }
 
 // ListenerStatus defines the observed state of Listener.

@@ -50,6 +50,8 @@ type RequestValidatorSpec struct {
 type RequestValidatorObservation struct {
 	// The identifier of this RequestValidator.
 	ID *string `json:"id,omitempty"`
+
+	CustomRequestValidatorObservation `json:",inline"`
 }
 
 // RequestValidatorStatus defines the observed state of RequestValidator.

@@ -42,3 +42,6 @@ type CustomAddonParameters struct {
 	// +optional
 	ClusterNameSelector *xpv1.Selector `json:"clusterNameSelector,omitempty"`
 }
+
+// CustomAddonObservation includes the custom status fields of Addon.
+type CustomAddonObservation struct{}

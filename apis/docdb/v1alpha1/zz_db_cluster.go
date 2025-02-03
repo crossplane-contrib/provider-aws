@@ -228,6 +228,8 @@ type DBClusterObservation struct {
 	// Provides a list of virtual private cloud (VPC) security groups that the cluster
 	// belongs to.
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
+
+	CustomDBClusterObservation `json:",inline"`
 }
 
 // DBClusterStatus defines the observed state of DBCluster.

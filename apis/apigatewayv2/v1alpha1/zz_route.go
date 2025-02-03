@@ -66,6 +66,8 @@ type RouteObservation struct {
 	RouteID *string `json:"routeID,omitempty"`
 
 	Target *string `json:"target,omitempty"`
+
+	CustomRouteObservation `json:",inline"`
 }
 
 // RouteStatus defines the observed state of Route.

@@ -355,6 +355,8 @@ type KeyObservation struct {
 	// For more information, see External key (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-external-key)
 	// in the Key Management Service Developer Guide.
 	XksKeyConfiguration *XksKeyConfigurationType `json:"xksKeyConfiguration,omitempty"`
+
+	CustomKeyObservation `json:",inline"`
 }
 
 // KeyStatus defines the observed state of Key.

@@ -204,6 +204,8 @@ type UserPoolObservation struct {
 	SmsConfigurationFailure *string `json:"smsConfigurationFailure,omitempty"`
 	// The status of a user pool.
 	Status *string `json:"status,omitempty"`
+
+	CustomUserPoolObservation `json:",inline"`
 }
 
 // UserPoolStatus defines the observed state of UserPool.

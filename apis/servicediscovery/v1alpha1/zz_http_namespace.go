@@ -52,6 +52,8 @@ type HTTPNamespaceObservation struct {
 	// A value that you can use to determine whether the request completed successfully.
 	// To get the status of the operation, see GetOperation (https://docs.aws.amazon.com/cloud-map/latest/api/API_GetOperation.html).
 	OperationID *string `json:"operationID,omitempty"`
+
+	CustomHTTPNamespaceObservation `json:",inline"`
 }
 
 // HTTPNamespaceStatus defines the observed state of HTTPNamespace.

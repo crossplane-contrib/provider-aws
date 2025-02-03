@@ -59,6 +59,8 @@ type CacheParameterGroupObservation struct {
 	CacheParameterGroupName *string `json:"cacheParameterGroupName,omitempty"`
 	// Indicates whether the parameter group is associated with a Global datastore
 	IsGlobal *bool `json:"isGlobal,omitempty"`
+
+	CustomCacheParameterGroupObservation `json:",inline"`
 }
 
 // CacheParameterGroupStatus defines the observed state of CacheParameterGroup.

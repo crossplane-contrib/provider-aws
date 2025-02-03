@@ -50,6 +50,8 @@ type RouteResponseSpec struct {
 // RouteResponseObservation defines the observed state of RouteResponse
 type RouteResponseObservation struct {
 	RouteResponseID *string `json:"routeResponseID,omitempty"`
+
+	CustomRouteResponseObservation `json:",inline"`
 }
 
 // RouteResponseStatus defines the observed state of RouteResponse.

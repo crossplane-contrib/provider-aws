@@ -5,6 +5,9 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 // CustomClusterParameters provides custom parameters for the Cluster type
 type CustomClusterParameters struct{}
 
+// CustomClusterObservation includes the custom status fields of Cluster.
+type CustomClusterObservation struct{}
+
 // CustomAWSVPCConfiguration provides custom parameters for the
 // AWSVPCConfiguration type
 type CustomAWSVPCConfiguration struct {
@@ -169,6 +172,9 @@ type CustomServiceParameters struct {
 	TaskDefinitionSelector *xpv1.Selector  `json:"taskDefinitionSelector,omitempty"`
 }
 
+// CustomServiceObservation includes the custom status fields of Service.
+type CustomServiceObservation struct{}
+
 // CustomEFSAuthorizationConfig provides custom parameters for the
 // EFSAuthorizationConfig type
 type CustomEFSAuthorizationConfig struct {
@@ -266,3 +272,6 @@ type CustomTaskDefinitionParameters struct {
 
 	Volumes []*CustomVolume `json:"volumes,omitempty"`
 }
+
+// CustomTaskDefinitionObservation includes the custom status fields of TaskDefinition.
+type CustomTaskDefinitionObservation struct{}

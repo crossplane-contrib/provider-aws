@@ -143,6 +143,8 @@ type TargetGroupSpec struct {
 type TargetGroupObservation struct {
 	// Information about the target group.
 	TargetGroups []*TargetGroup_SDK `json:"targetGroups,omitempty"`
+
+	CustomTargetGroupObservation `json:",inline"`
 }
 
 // TargetGroupStatus defines the observed state of TargetGroup.

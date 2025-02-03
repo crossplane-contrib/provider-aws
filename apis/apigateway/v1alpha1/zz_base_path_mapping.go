@@ -54,6 +54,8 @@ type BasePathMappingSpec struct {
 type BasePathMappingObservation struct {
 	// The string identifier of the associated RestApi.
 	RestAPIID *string `json:"restAPIID,omitempty"`
+
+	CustomBasePathMappingObservation `json:",inline"`
 }
 
 // BasePathMappingStatus defines the observed state of BasePathMapping.

@@ -52,6 +52,8 @@ type DBParameterGroupObservation struct {
 	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
 	// The name of the DB parameter group.
 	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
+
+	CustomDBParameterGroupObservation `json:",inline"`
 }
 
 // DBParameterGroupStatus defines the observed state of DBParameterGroup.

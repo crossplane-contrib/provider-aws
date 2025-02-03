@@ -16,6 +16,9 @@ type CustomKeyParameters struct {
 	EnableKeyRotation *bool `json:"enableKeyRotation,omitempty"`
 }
 
+// CustomKeyObservation includes the custom status fields of Key.
+type CustomKeyObservation struct{}
+
 // CustomGrantParameters are custom parameters for Grant.
 type CustomGrantParameters struct {
 	// Identifies the KMS key for the grant. The grant gives principals permission
@@ -45,3 +48,6 @@ type CustomGrantParameters struct {
 	// +optional
 	KeyIDSelector *xpv1.Selector `json:"keyIdSelector,omitempty"`
 }
+
+// CustomKeyObservation includes the custom status fields of Grant.
+type CustomGrantObservation struct{}

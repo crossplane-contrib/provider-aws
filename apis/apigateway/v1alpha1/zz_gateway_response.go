@@ -55,6 +55,8 @@ type GatewayResponseObservation struct {
 	// response (true) or not (false). A default gateway response is one generated
 	// by API Gateway without any customization by an API developer.
 	DefaultResponse *bool `json:"defaultResponse,omitempty"`
+
+	CustomGatewayResponseObservation `json:",inline"`
 }
 
 // GatewayResponseStatus defines the observed state of GatewayResponse.

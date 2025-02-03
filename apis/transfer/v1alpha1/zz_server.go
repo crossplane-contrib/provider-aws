@@ -218,6 +218,8 @@ type ServerSpec struct {
 type ServerObservation struct {
 	// The service-assigned identifier of the server that is created.
 	ServerID *string `json:"serverID,omitempty"`
+
+	CustomServerObservation `json:",inline"`
 }
 
 // ServerStatus defines the observed state of Server.

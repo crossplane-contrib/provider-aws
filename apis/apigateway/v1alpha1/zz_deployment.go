@@ -67,6 +67,8 @@ type DeploymentObservation struct {
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
 	// The identifier for the deployment resource.
 	ID *string `json:"id,omitempty"`
+
+	CustomDeploymentObservation `json:",inline"`
 }
 
 // DeploymentStatus defines the observed state of Deployment.

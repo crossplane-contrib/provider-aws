@@ -54,6 +54,8 @@ type UsagePlanKeyObservation struct {
 	Type *string `json:"type_,omitempty"`
 	// The value of a usage plan key.
 	Value *string `json:"value,omitempty"`
+
+	CustomUsagePlanKeyObservation `json:",inline"`
 }
 
 // UsagePlanKeyStatus defines the observed state of UsagePlanKey.
