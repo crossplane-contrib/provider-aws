@@ -27,15 +27,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: true
 
       - name: Setup Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version: ${{ env.GO_VERSION }}
-          
+
       - name: Install goimports
         run: go install golang.org/x/tools/cmd/goimports
 
@@ -44,14 +44,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-check-diff-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-check-diff-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -70,7 +70,7 @@ jobs:
     steps:
       - name: Detect No-op Changes
         id: noop
-        uses: fkirc/skip-duplicate-actions@12aca0a884f6137d619d6a8a09fcc3406ced5281 # v5.3.0
+        uses: fkirc/skip-duplicate-actions@f75f66ce1886f00957d99748a42c724f4330bdcf # v5.3.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           paths_ignore: '["**.md", "**.png", "**.jpg"]'
@@ -83,13 +83,13 @@ jobs:
     if: needs.detect-noop.outputs.noop != 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: true
 
       - name: Get modified CRDs
         id: modified-crds
-        uses: tj-actions/changed-files@v41
+        uses: tj-actions/changed-files@d6e91a2266cdb9d62096cebf1e8546899c6aa18f # v45.0.6
         with:
           files: |
             package/crds/**
@@ -107,12 +107,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: true
 
       - name: Setup Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -121,14 +121,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-lint-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-lint-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -146,73 +146,6 @@ jobs:
           version: ${{ env.GOLANGCI_VERSION }}
           skip-cache: true # We do our own caching.
 
-  # Disabled for now because it takes a very long time to run and we are not
-  # using the results anywhere.
-  # codeql:
-  #   runs-on: ubuntu-22.04
-  #   needs: detect-noop
-  #   if: needs.detect-noop.outputs.noop != 'true'
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
-  #       with:
-  #         submodules: true
-
-  #     - name: Setup Go
-  #       uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
-  #       with:
-  #         go-version: ${{ env.GO_VERSION }}
-
-  #     - name: Find the Go Build Cache
-  #       id: go
-  #       run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
-
-  #     - name: Cache the Go Build Cache
-  #       uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
-  #       with:
-  #         path: ${{ steps.go.outputs.cache }}
-  #         key: ${{ runner.os }}-build-check-diff-${{ hashFiles('**/go.sum') }}
-  #         restore-keys: ${{ runner.os }}-build-check-diff-
-
-  #     - name: Cache Go Dependencies
-  #       uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
-  #       with:
-  #         path: .work/pkg
-  #         key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
-  #         restore-keys: ${{ runner.os }}-pkg-
-
-  #     - name: Vendor Dependencies
-  #       run: make vendor vendor.check
-
-  #     - name: Initialize CodeQL
-  #       uses: github/codeql-action/init@ddccb873888234080b77e9bc2d4764d5ccaaccf9 # v2
-  #       with:
-  #         languages: go
-
-  #     - name: Perform CodeQL Analysis
-  #       uses: github/codeql-action/analyze@ddccb873888234080b77e9bc2d4764d5ccaaccf9 # v2
-
-  trivy-scan-fs:
-    runs-on: ubuntu-22.04
-    needs: detect-noop
-    if: needs.detect-noop.outputs.noop != 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
-        with:
-          submodules: true
-
-      - name: Run Trivy vulnerability scanner in fs mode
-        uses: aquasecurity/trivy-action@fbd16365eb88e12433951383f5e99bd901fc618f # 0.12.0
-        with:
-          scan-type: 'fs'
-          ignore-unfixed: true
-          skip-dirs: design
-          scan-ref: '.'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
-
   unit-tests:
     runs-on: ubuntu-22.04
     needs: detect-noop
@@ -220,7 +153,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: true
 
@@ -228,7 +161,7 @@ jobs:
         run: git fetch --prune --unshallow
 
       - name: Setup Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -237,14 +170,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-unit-tests-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-unit-tests-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -268,18 +201,18 @@ jobs:
     if: needs.detect-noop.outputs.noop != 'true'
     steps:
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
+        uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v3.3.0
         with:
           platforms: all
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
+        uses: docker/setup-buildx-action@04eaa7c789c15c7207d36583e7d86cd37d837034 # v3.8.0
         with:
           version: ${{ env.DOCKER_BUILDX_VERSION }}
           install: true
 
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: true
 
@@ -287,7 +220,7 @@ jobs:
         run: git fetch --prune --unshallow
 
       - name: Setup Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -296,14 +229,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-e2e-tests-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-e2e-tests-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -330,7 +263,7 @@ jobs:
 
     steps:
       - name: Cleanup Disk
-        uses: jlumbroso/free-disk-space@d5af243ce7bacb67384aa6c5b1fc5f169e30903e
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be #v1.3.1
         with:
           android: true
           dotnet: true
@@ -340,18 +273,18 @@ jobs:
           swap-storage: false
 
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
+        uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v3.3.0
         with:
           platforms: all
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
+        uses: docker/setup-buildx-action@04eaa7c789c15c7207d36583e7d86cd37d837034 # v3.8.0
         with:
           version: ${{ env.DOCKER_BUILDX_VERSION }}
           install: true
 
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: true
 
@@ -359,7 +292,7 @@ jobs:
         run: git fetch --prune --unshallow
 
       - name: Setup Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -368,14 +301,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-publish-artifacts-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-publish-artifacts-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -392,20 +325,20 @@ jobs:
           BUILD_ARGS: "--load"
 
       - name: Publish Artifacts to GitHub
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: output
           path: _output/**
 
       - name: Login to DockerHub
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         if: env.CONTRIB_DOCKER_USR != ''
         with:
           username: ${{ secrets.CONTRIB_DOCKER_USR }}
           password: ${{ secrets.CONTRIB_DOCKER_PSW }}
 
       - name: Login to Upbound
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         if: env.XPKG_ACCESS_ID != ''
         with:
           registry: xpkg.upbound.io
