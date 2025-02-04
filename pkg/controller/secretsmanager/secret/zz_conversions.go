@@ -97,6 +97,21 @@ func GenerateSecret(resp *svcsdk.DescribeSecretOutput) *svcapitypes.Secret {
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
+	if resp.VersionIdsToStages != nil {
+		f16 := map[string][]*string{}
+		for f16key, f16valiter := range resp.VersionIdsToStages {
+			f16val := []*string{}
+			for _, f16valiter := range f16valiter {
+				var f16valelem string
+				f16valelem = *f16valiter
+				f16val = append(f16val, &f16valelem)
+			}
+			f16[f16key] = f16val
+		}
+		cr.Status.AtProvider.VersionIDsToStages = f16
+	} else {
+		cr.Status.AtProvider.VersionIDsToStages = nil
+	}
 
 	return cr
 }
