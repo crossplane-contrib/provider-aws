@@ -73,6 +73,16 @@ spec:
               forProvider:
                 description: WebACLParameters defines the desired state of WebACL
                 properties:
+                  associatedAWSResources:
+                    description: |-
+                      A list of the Amazon Resource Name (ARN) of the resources to associate with the web ACL.
+                      The association is implemented only for REGIONAL scope yet. The resources will be ignored if the scope is CLOUDFRONT
+                    items:
+                      properties:
+                        resourceARN:
+                          type: string
+                      type: object
+                    type: array
                   associationConfig:
                     description: |-
                       Specifies custom configurations for the associations between the web ACL
@@ -232,6 +242,25 @@ spec:
                   region:
                     description: Region is which region the WebACL will be created.
                     type: string
+                  regionalResourceTypeAssociation:
+                    description: |-
+                      Used for regional scoped configuration. Specifies the types of resources which the provider checks while in the reconciliation loop
+                      Each type requires additional request to aws api and appropriate permissions
+                      Only enableApplicationLoadBalancer is enabled by default
+                    properties:
+                      enableApiGateway:
+                        type: boolean
+                      enableApplicationLoadBalancer:
+                        type: boolean
+                      enableAppsync:
+                        type: boolean
+                      enableCognitoUserPool:
+                        type: boolean
+                      enableVerifiedAccessInstance:
+                        type: boolean
+                      enabledAppRunnerService:
+                        type: boolean
+                    type: object
                   rules:
                     description: |-
                       The Rule statements used to identify the web requests that you want to manage.

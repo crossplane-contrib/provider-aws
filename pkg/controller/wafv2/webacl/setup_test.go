@@ -166,6 +166,11 @@ func TestIsUpToDate(t *testing.T) {
 							}},
 						}, nil
 					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: nil,
+						}, nil
+					},
 				},
 				desired: &svcapitypes.WebACL{
 					ObjectMeta: metav1.ObjectMeta{
@@ -285,6 +290,11 @@ func TestIsUpToDate(t *testing.T) {
 							}},
 						}, nil
 					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: nil,
+						}, nil
+					},
 				},
 				desired: &svcapitypes.WebACL{
 					ObjectMeta: metav1.ObjectMeta{
@@ -402,6 +412,11 @@ func TestIsUpToDate(t *testing.T) {
 							TagInfoForResource: &svcsdk.TagInfoForResource{TagList: []*svcsdk.Tag{}},
 						}, nil
 					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: nil,
+						}, nil
+					},
 				},
 				desired: &svcapitypes.WebACL{
 					ObjectMeta: metav1.ObjectMeta{
@@ -507,6 +522,11 @@ func TestIsUpToDate(t *testing.T) {
 					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
 						return &svcsdk.ListTagsForResourceOutput{
 							TagInfoForResource: &svcsdk.TagInfoForResource{TagList: []*svcsdk.Tag{}},
+						}, nil
+					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: nil,
 						}, nil
 					},
 				},
@@ -620,6 +640,11 @@ func TestIsUpToDate(t *testing.T) {
 							}},
 						}, nil
 					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: nil,
+						}, nil
+					},
 				},
 				desired: &svcapitypes.WebACL{
 					ObjectMeta: metav1.ObjectMeta{
@@ -642,6 +667,72 @@ func TestIsUpToDate(t *testing.T) {
 							Scope: &scope,
 							Tags: []*svcapitypes.Tag{
 								{Key: &tag1Key, Value: &tag1NewValue},
+							},
+						},
+					},
+				},
+				observed: &svcsdk.GetWebACLOutput{
+					WebACL: &svcsdk.WebACL{
+						Name: &webAclName,
+						Id:   &webAclId,
+						VisibilityConfig: &svcsdk.VisibilityConfig{
+							MetricName:               &visibilityConfigMetricName,
+							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+							CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+						},
+						DefaultAction: &svcsdk.DefaultAction{
+							Allow: &svcsdk.AllowAction{},
+						},
+					},
+				},
+			},
+			want: want{
+				result: false,
+				err:    nil,
+			},
+		},
+		"AssociatedResourceWasChanged": {
+			args: args{
+				client: &fake.MockWAFV2Client{
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							TagInfoForResource: &svcsdk.TagInfoForResource{TagList: []*svcsdk.Tag{
+								{Key: &tag1Key, Value: &tag1Value},
+							}},
+						}, nil
+					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: []*string{aws.String("arn:aws:elasticloadbalancing:eu-central-1:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188")},
+						}, nil
+					},
+				},
+				desired: &svcapitypes.WebACL{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: webAclName,
+						Annotations: map[string]string{
+							meta.AnnotationKeyExternalName: webAclName,
+						},
+					},
+					Spec: svcapitypes.WebACLSpec{
+						ForProvider: svcapitypes.WebACLParameters{
+							Region: "eu-central-1",
+							VisibilityConfig: &svcapitypes.VisibilityConfig{
+								MetricName:               &visibilityConfigMetricName,
+								SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+								CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+							},
+							DefaultAction: &svcapitypes.DefaultAction{
+								Allow: &svcapitypes.AllowAction{},
+							},
+							Scope: &scope,
+							CustomWebACLParameters: svcapitypes.CustomWebACLParameters{
+								AssociatedAWSResources: []*svcapitypes.AssociatedResource{
+									{ResourceARN: aws.String("arn:aws:elasticloadbalancing:eu-central-1:123456789012:loadbalancer/app/new-load-balancer/60dc6c495c0c9188")},
+								},
+							},
+							Tags: []*svcapitypes.Tag{
+								{Key: &tag1Key, Value: &tag1Value},
 							},
 						},
 					},

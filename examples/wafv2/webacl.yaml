@@ -83,6 +83,8 @@ spec:
     defaultAction:
       allow: { }
     scope: REGIONAL
+    associatedAWSResources:
+      - resourceARN: arn:aws:elasticloadbalancing:eu-central-1:123456789012:loadbalancer/app/k8s-ingress-50f128f9c3/51af477f49da2d20
     tags:
       - key: "crossplane:managed"
         value: "true"

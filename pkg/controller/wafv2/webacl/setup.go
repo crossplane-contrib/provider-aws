@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -26,6 +27,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -59,7 +61,7 @@ func SetupWebACL(mgr ctrl.Manager, o controller.Options) error {
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&customConnector{kube: mgr.GetClient()}),
+		managed.WithExternalConnecter(&customConnector{kube: mgr.GetClient(), logger: o.Logger.WithValues("controller", name)}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -88,7 +90,8 @@ type statementWithInfiniteRecursion interface {
 
 // customConnector is external connector with overridden Observe method due to ACK v0.38.1 doesn't correctly generate it.
 type customConnector struct {
-	kube client.Client
+	kube   client.Client
+	logger logging.Logger
 }
 
 type customExternal struct {
@@ -99,14 +102,16 @@ type customExternal struct {
 type shared struct {
 	cache  *cache
 	client svcsdkapi.WAFV2API
+	logger logging.Logger
 }
 
 type cache struct {
-	tagListOutput []*svcsdk.Tag
+	tagListOutput               []*svcsdk.Tag
+	observedAssociatedResources []*string
 }
 
-func newCustomExternal(kube client.Client, client svcsdkapi.WAFV2API) *customExternal {
-	shared := &shared{client: client, cache: &cache{}}
+func newCustomExternal(kube client.Client, client svcsdkapi.WAFV2API, logger logging.Logger) *customExternal {
+	shared := &shared{client: client, cache: &cache{}, logger: logger}
 	e := &customExternal{
 		external{
 			kube:           kube,
@@ -116,7 +121,7 @@ func newCustomExternal(kube client.Client, client svcsdkapi.WAFV2API) *customExt
 			lateInitialize: nopLateInitialize,
 			postObserve:    nopPostObserve,
 			preCreate:      preCreate,
-			postCreate:     nopPostCreate,
+			postCreate:     shared.postCreate,
 			preUpdate:      shared.preUpdate,
 			postUpdate:     nopPostUpdate,
 			preDelete:      preDelete,
@@ -136,7 +141,7 @@ func (c *customConnector) Connect(ctx context.Context, mg cpresource.Managed) (m
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
-	return newCustomExternal(c.kube, svcsdk.New(sess)), nil
+	return newCustomExternal(c.kube, svcsdk.New(sess), c.logger), nil
 }
 
 func (e *customExternal) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) { //nolint:gocyclo
@@ -209,7 +214,15 @@ func (s *shared) isUpToDate(_ context.Context, cr *svcapitypes.WebACL, resp *svc
 		return false, "", err
 	}
 	s.cache.tagListOutput = listTagOutput.TagInfoForResource.TagList
-	patch, err := createPatch(&cr.Spec.ForProvider, resp, listTagOutput.TagInfoForResource.TagList)
+
+	observedAssotiatedResources := make([]*string, 0)
+
+	if *cr.Spec.ForProvider.Scope == "REGIONAL" {
+		observedAssotiatedResources = append(observedAssotiatedResources, s.getExternalRegionalAssociatedResources(cr)...)
+	}
+	s.cache.observedAssociatedResources = observedAssotiatedResources
+
+	patch, err := createPatch(&cr.Spec.ForProvider, resp, listTagOutput.TagInfoForResource.TagList, observedAssotiatedResources)
 	if err != nil {
 		return false, "", err
 	}
@@ -235,7 +248,21 @@ func preCreate(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.CreateWe
 	return nil
 }
 
-func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.UpdateWebACLInput) error {
+func (s *shared) postCreate(_ context.Context, cr *svcapitypes.WebACL, output *svcsdk.CreateWebACLOutput, extCreation managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	for _, associatedResource := range cr.Spec.ForProvider.AssociatedAWSResources {
+		associateWebACLInput := svcsdk.AssociateWebACLInput{
+			ResourceArn: associatedResource.ResourceARN,
+			WebACLArn:   output.Summary.ARN,
+		}
+		_, err = s.client.AssociateWebACL(&associateWebACLInput)
+		if err != nil {
+			return extCreation, err
+		}
+	}
+	return extCreation, err
+}
+
+func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.UpdateWebACLInput) error { //nolint:gocyclo
 	input.Name = aws.String(meta.GetExternalName(cr))
 	err := setInputRuleStatementsFromJSON(cr, input.Rules)
 	if err != nil {
@@ -272,6 +299,35 @@ func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.WebACL, input *svc
 		_, err = s.client.UntagResource(&svcsdk.UntagResourceInput{ResourceARN: cr.Status.AtProvider.ARN, TagKeys: tagsToRemove})
 		if err != nil {
 			return err
+		}
+	}
+
+	// Associate and disassociate of resources is implemented only for REGIONAL scope yet
+	if *cr.Spec.ForProvider.Scope == "REGIONAL" {
+		desiredAssotiatedResources := make([]*string, 0)
+		for _, associatedResource := range cr.Spec.ForProvider.AssociatedAWSResources {
+			desiredAssotiatedResources = append(desiredAssotiatedResources, associatedResource.ResourceARN)
+		}
+		resourcesToAssociate, resourcesToDisassociate := diffAssociatedResources(desiredAssotiatedResources, s.cache.observedAssociatedResources)
+		for _, res := range resourcesToAssociate {
+			associateWebACLInput := svcsdk.AssociateWebACLInput{
+				ResourceArn: res,
+				WebACLArn:   cr.Status.AtProvider.ARN,
+			}
+			_, err = s.client.AssociateWebACL(&associateWebACLInput)
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, res := range resourcesToDisassociate {
+			disassociateWebACLInput := svcsdk.DisassociateWebACLInput{
+				ResourceArn: res,
+			}
+			_, err = s.client.DisassociateWebACL(&disassociateWebACLInput)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -436,7 +492,7 @@ func traverseStruct(field reflect.StructField, v reflect.Value) {
 }
 
 // GenerateWebACL returns WebACLParameters with a diff between the current and external configuration
-func createPatch(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.GetWebACLOutput, respTagList []*svcsdk.Tag) (*svcapitypes.WebACLParameters, error) { //nolint:gocyclo
+func createPatch(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.GetWebACLOutput, respTagList []*svcsdk.Tag, observedAssociatedResources []*string) (*svcapitypes.WebACLParameters, error) { //nolint:gocyclo
 	targetConfig := currentParams.DeepCopy()
 	changeCaseInsensitiveFields(targetConfig)
 	externalConfig := GenerateWebACL(resp).Spec.ForProvider
@@ -507,9 +563,20 @@ func createPatch(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.GetWe
 			}
 		}
 	}
+
 	for _, v := range respTagList {
 		externalConfig.Tags = append(externalConfig.Tags, &svcapitypes.Tag{Key: v.Key, Value: v.Value})
 	}
+
+	if *targetConfig.Scope == "REGIONAL" {
+		for _, v := range observedAssociatedResources {
+			externalConfig.AssociatedAWSResources = append(externalConfig.AssociatedAWSResources, &svcapitypes.AssociatedResource{ResourceARN: v})
+		}
+		// Associate and disassociate of resources is implemented only for REGIONAL, so we don't need to compare if the scope is CLOUDFRONT
+	} else {
+		targetConfig.AssociatedAWSResources = []*svcapitypes.AssociatedResource{}
+	}
+
 	jsonPatch, err := jsonpatch.CreateJSONPatch(externalConfig, targetConfig)
 	if err != nil {
 		return patch, err
@@ -560,4 +627,55 @@ func addJsonifiedRuleStatements(resp []*svcsdk.Rule, externalConfig svcapitypes.
 		}
 	}
 	return nil
+}
+
+func diffAssociatedResources(desired, observed []*string) ([]*string, []*string) {
+	toAssociate := make([]*string, 0)
+	toDisassociate := make([]*string, 0)
+	for _, res := range desired {
+		if !slices.Contains(observed, res) {
+			toAssociate = append(toAssociate, res)
+		}
+	}
+	for _, res := range observed {
+		if !slices.Contains(desired, res) {
+			toDisassociate = append(toDisassociate, res)
+		}
+	}
+	return toAssociate, toDisassociate
+}
+
+// getExternalRegionalAssociatedResources returns the list of associated resources for the regional scope
+func (s *shared) getExternalRegionalAssociatedResources(cr *svcapitypes.WebACL) []*string {
+	regionalResourceTypeAssociationList := []*string{aws.String(svcsdk.ResourceTypeApplicationLoadBalancer)}
+	observedAssotiatedResources := []*string{}
+	if cr.Spec.ForProvider.RegionalResourceTypeAssociation != nil {
+		if !ptr.Deref(cr.Spec.ForProvider.RegionalResourceTypeAssociation.EnableApplicationLoadBalancer, true) {
+			regionalResourceTypeAssociationList = []*string{}
+		}
+		if ptr.Deref(cr.Spec.ForProvider.RegionalResourceTypeAssociation.EnableApiGateway, false) {
+			regionalResourceTypeAssociationList = append(regionalResourceTypeAssociationList, aws.String(svcsdk.ResourceTypeApiGateway))
+		}
+		if ptr.Deref(cr.Spec.ForProvider.RegionalResourceTypeAssociation.EnableAppsync, false) {
+			regionalResourceTypeAssociationList = append(regionalResourceTypeAssociationList, aws.String(svcsdk.ResourceTypeAppsync))
+		}
+		if ptr.Deref(cr.Spec.ForProvider.RegionalResourceTypeAssociation.EnableCognitoUserPool, false) {
+			regionalResourceTypeAssociationList = append(regionalResourceTypeAssociationList, aws.String(svcsdk.ResourceTypeCognitoUserPool))
+		}
+		if ptr.Deref(cr.Spec.ForProvider.RegionalResourceTypeAssociation.EnableAppRunnerService, false) {
+			regionalResourceTypeAssociationList = append(regionalResourceTypeAssociationList, aws.String(svcsdk.ResourceTypeAppRunnerService))
+		}
+		if ptr.Deref(cr.Spec.ForProvider.RegionalResourceTypeAssociation.EnableVerifiedAccessInstance, false) {
+			regionalResourceTypeAssociationList = append(regionalResourceTypeAssociationList, aws.String(svcsdk.ResourceTypeVerifiedAccessInstance))
+		}
+	}
+
+	for _, resType := range regionalResourceTypeAssociationList {
+		listResourcesForWebACLOutput, err := s.client.ListResourcesForWebACL(&svcsdk.ListResourcesForWebACLInput{WebACLArn: cr.Status.AtProvider.ARN, ResourceType: resType})
+		if err != nil {
+			s.logger.Info("Error of associated resources listing(ListResourcesForWebACL)", "webArn", *cr.Status.AtProvider.ARN, "errMsg", err.Error())
+		}
+		observedAssotiatedResources = append(observedAssotiatedResources, listResourcesForWebACLOutput.ResourceArns...)
+	}
+	return observedAssotiatedResources
 }
