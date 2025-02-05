@@ -13,6 +13,8 @@ ignore:
     - Agreement
     - Connector
     - Profile
+  operations:
+    - UpdateServer
 resources:
   Server:
     fields:
@@ -21,6 +23,16 @@ resources:
         from:
           operation: DescribeServer
           path: Server.HostKeyFingerprint
+      Tags:
+        is_read_only: true
+        from:
+          operation: DescribeServer
+          path: Server.Tags
+      ARN:
+        is_read_only: true
+        from:
+          operation: DescribeServer
+          path: Server.Arn
     exceptions:
       errors:
         404:
