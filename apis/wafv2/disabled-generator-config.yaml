@@ -1,8 +1,8 @@
 # NOTE(teeverr): this config file was used for generation of types WAFV2 API(make services SERVICES=wafv2) via ack-code-generator v0.38.1,
-# then these types where backported to v0.28.1(current version in January 2025), and then the controller code was generated(make generate) by ack-code-generator v0.28.1.
-# The reason is that ack-code-generator support specific options(which are needed) like empty shapes and set[].ignore only since version v0.38.0, but this version
+# then these types were backported to v0.28.1(current version in January 2025), and then the controller code was generated(make generate) by ack-code-generator v0.28.1.
+# The reason is that ack-code-generator supports empty shapes(https://github.com/aws-controllers-k8s/code-generator/pull/536) only since version v0.38.0, but this version
 # requires rigs.k8s.io/controller-runtime v0.18.4(current version is v0.17.0) and controller-runtime in turn requires
-# crossplane-runtime(>=1.17). But newer versions of crossplane-runtime bring a new additinal method `Disconnect()` to `external`
+# crossplane-runtime(>=1.17). But newer versions of crossplane-runtime bring a new additional method `Disconnect()` to `external`
 # object, Delete method also has been changed(probably something else). But ack-code-generator doesn't generate it for crossplane.
 # It means ack-code-generator should be enhanced to generate relevant controller code for newer versions of crossplane-runtime
 # In addition, it is required that all manually written controllers be updated to accommodate these new methods.
@@ -39,30 +39,6 @@ operations:
     output_wrapper_field_path: WebACL
 resources:
   WebACL:
-    fields:
-      # The statements below have infinite recursion(e.g. Statement.AndStatement.Statements contains list of Statement), so it's ignored and replaced with a string. The controller expects json string for these fields.
-      Rules.Statement.AndStatement:
-        type: string
-        set:
-          - ignore: "all"
-      Rules.Statement.OrStatement:
-        type: string
-        set:
-          - ignore: "all"
-      Rules.Statement.NotStatement:
-        type: string
-        set:
-          - ignore: "all"
-      Rules.Statement.ManagedRuleGroupStatement.ScopeDownStatement:
-        type: string
-        set:
-          - ignore: "all"
-      Rules.Statement.RateBasedStatement.ScopeDownStatement:
-        type: string
-        set:
-          - ignore: "all"
-      Rules.Statement.ByteMatchStatement.TextTransformations.Type:
-        go_tag: json:"type,omitempty"
     exceptions:
       errors:
         404:
