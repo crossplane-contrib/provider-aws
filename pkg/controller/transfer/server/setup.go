@@ -30,7 +30,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -137,46 +136,10 @@ func (c *custom) postObserve(_ context.Context, cr *svcapitypes.Server, obj *svc
 		}
 	}
 
+	cr.Status.AtProvider.ARN = obj.Server.Arn
+	cr.Status.AtProvider.Tags = utils.ConvertTagsFromDescribeServer(obj.Server.Tags)
+
 	return obs, nil
-}
-
-func (h *custom) postUpdate(ctx context.Context, cr *svcapitypes.Server, resp *svcsdk.UpdateServerOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	if err != nil {
-		return managed.ExternalUpdate{}, err
-	}
-
-	// Tag update needs to separate because UpdateAddon does not include tags (for unknown reason).
-
-	desc, err := h.client.DescribeServerWithContext(ctx, &svcsdk.DescribeServerInput{
-		ServerId: resp.ServerId,
-	})
-	if err != nil || desc.Server == nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribe)
-	}
-
-	isUpToDate, add, remove := utils.DiffTags(cr.Spec.ForProvider.Tags, desc.Server.Tags)
-	if isUpToDate {
-		return managed.ExternalUpdate{}, nil
-	}
-	if len(add) > 0 {
-		_, err := h.client.TagResourceWithContext(ctx, &svcsdk.TagResourceInput{
-			Arn:  desc.Server.Arn,
-			Tags: add,
-		})
-		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot tag resource")
-		}
-	}
-	if len(remove) > 0 {
-		_, err := h.client.UntagResourceWithContext(ctx, &svcsdk.UntagResourceInput{
-			Arn:     desc.Server.Arn,
-			TagKeys: remove,
-		})
-		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot tag resource")
-		}
-	}
-	return managed.ExternalUpdate{}, nil
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateServerOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {

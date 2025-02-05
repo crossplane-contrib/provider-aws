@@ -70,6 +70,6 @@ func (c *customConnector) Connect(ctx context.Context, mg cpresource.Managed) (m
 	external.preCreate = preCreate
 	external.isUpToDate = isUpToDate
 	external.lateInitialize = lateInitialize
-	external.postUpdate = custom.postUpdate
+	external.update = external.UpdateServer
 	return external, nil
 }

@@ -216,12 +216,17 @@ type ServerSpec struct {
 
 // ServerObservation defines the observed state of Server
 type ServerObservation struct {
+	// Specifies the unique Amazon Resource Name (ARN) of the server.
+	ARN *string `json:"arn,omitempty"`
 	// Specifies the Base64-encoded SHA256 fingerprint of the server's host key.
 	// This value is equivalent to the output of the ssh-keygen -l -f my-new-server-key
 	// command.
 	HostKeyFingerprint *string `json:"hostKeyFingerprint,omitempty"`
 	// The service-assigned identifier of the server that is created.
 	ServerID *string `json:"serverID,omitempty"`
+	// Specifies the key-value pairs that you can use to search for and group servers
+	// that were assigned to the server that was described.
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // ServerStatus defines the observed state of Server.
