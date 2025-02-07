@@ -100,6 +100,27 @@ type SecretObservation struct {
 	//
 	//    * InSync, which indicates that the replica was created.
 	ReplicationStatus []*ReplicationStatusType `json:"replicationStatus,omitempty"`
+	// A list of the versions of the secret that have staging labels attached. Versions
+	// that don't have staging labels are considered deprecated and Secrets Manager
+	// can delete them.
+	//
+	// Secrets Manager uses staging labels to indicate the status of a secret version
+	// during rotation. The three staging labels for rotation are:
+	//
+	//    * AWSCURRENT, which indicates the current version of the secret.
+	//
+	//    * AWSPENDING, which indicates the version of the secret that contains
+	//    new secret information that will become the next current version when
+	//    rotation finishes. During rotation, Secrets Manager creates an AWSPENDING
+	//    version ID before creating the new secret version. To check if a secret
+	//    version exists, call GetSecretValue.
+	//
+	//    * AWSPREVIOUS, which indicates the previous current version of the secret.
+	//    You can use this as the last known good version.
+	//
+	// For more information about rotation and staging labels, see How rotation
+	// works (https://docs.aws.amazon.com/secretsmanager/latest/userguide/rotate-secrets_how.html).
+	VersionIDsToStages map[string][]*string `json:"versionIDsToStages,omitempty"`
 
 	CustomSecretObservation `json:",inline"`
 }
