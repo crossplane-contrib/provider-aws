@@ -25,6 +25,11 @@ resources:
     fields:
       KmsKeyId:
         referenced_type: "kms/v1alpha1.Key"
+      VersionIdsToStages:
+        is_read_only: true
+        from:
+          operation: DescribeSecret
+          path: VersionIdsToStages
     exceptions:
       errors:
         404:
