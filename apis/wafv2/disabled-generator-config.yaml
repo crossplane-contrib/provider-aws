@@ -1,0 +1,45 @@
+# NOTE(teeverr): this config file was used for generation of types WAFV2 API(make services SERVICES=wafv2) via ack-code-generator v0.38.1,
+# then these types were backported to v0.28.1(current version in January 2025), and then the controller code was generated(make generate) by ack-code-generator v0.28.1.
+# The reason is that ack-code-generator supports empty shapes(https://github.com/aws-controllers-k8s/code-generator/pull/536) only since version v0.38.0, but this version
+# requires rigs.k8s.io/controller-runtime v0.18.4(current version is v0.17.0) and controller-runtime in turn requires
+# crossplane-runtime(>=1.17). But newer versions of crossplane-runtime bring a new additional method `Disconnect()` to `external`
+# object, Delete method also has been changed(probably something else). But ack-code-generator doesn't generate it for crossplane.
+# It means ack-code-generator should be enhanced to generate relevant controller code for newer versions of crossplane-runtime
+# In addition, it is required that all manually written controllers be updated to accommodate these new methods.
+# This far away from my current story - add support for wafv2 webacl.
+---
+ignore:
+  resource_names:
+    - APIKey
+    - IPSet
+    - RegexPatternSet
+    - RuleGroup
+  field_paths:
+    - CreateWebACLInput.Name
+    - UpdateWebACLInput.Name
+    - DeleteWebACLInput.Name
+    - GetWebACLInput.Name
+    - WebACL.Rules.Statement.AndStatement
+    - WebACL.Rules.Statement.OrStatement
+    - WebACL.Rules.Statement.NotStatement
+    - WebACL.Rules.Statement.ManagedRuleGroupStatement.ScopeDownStatement
+    - WebACL.Rules.Statement.RateBasedStatement.ScopeDownStatement
+empty_shapes:
+  - All
+  - Method
+  - UriPath
+  - QueryString
+  - AllQueryArguments
+  - RateLimitIP
+  - RateLimitForwardedIP
+  - RateLimitHTTPMethod
+  - NoneAction
+operations:
+  GetWebACL:
+    output_wrapper_field_path: WebACL
+resources:
+  WebACL:
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
