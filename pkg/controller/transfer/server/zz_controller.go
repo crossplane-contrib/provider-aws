@@ -129,16 +129,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.Server)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-	input := GenerateUpdateServerInput(cr)
-	if err := e.preUpdate(ctx, cr, input); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
-	}
-	resp, err := e.client.UpdateServerWithContext(ctx, input)
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
+	return e.update(ctx, mg)
+
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -173,8 +165,7 @@ func newExternal(kube client.Client, client svcsdkapi.TransferAPI, opts []option
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
 		postDelete:     nopPostDelete,
-		preUpdate:      nopPreUpdate,
-		postUpdate:     nopPostUpdate,
+		update:         nopUpdate,
 	}
 	for _, f := range opts {
 		f(e)
@@ -193,8 +184,7 @@ type external struct {
 	postCreate     func(context.Context, *svcapitypes.Server, *svcsdk.CreateServerOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Server, *svcsdk.DeleteServerInput) (bool, error)
 	postDelete     func(context.Context, *svcapitypes.Server, *svcsdk.DeleteServerOutput, error) error
-	preUpdate      func(context.Context, *svcapitypes.Server, *svcsdk.UpdateServerInput) error
-	postUpdate     func(context.Context, *svcapitypes.Server, *svcsdk.UpdateServerOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
+	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.Server, *svcsdk.DescribeServerInput) error {
@@ -223,9 +213,6 @@ func nopPreDelete(context.Context, *svcapitypes.Server, *svcsdk.DeleteServerInpu
 func nopPostDelete(_ context.Context, _ *svcapitypes.Server, _ *svcsdk.DeleteServerOutput, err error) error {
 	return err
 }
-func nopPreUpdate(context.Context, *svcapitypes.Server, *svcsdk.UpdateServerInput) error {
-	return nil
-}
-func nopPostUpdate(_ context.Context, _ *svcapitypes.Server, _ *svcsdk.UpdateServerOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
+func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+	return managed.ExternalUpdate{}, nil
 }

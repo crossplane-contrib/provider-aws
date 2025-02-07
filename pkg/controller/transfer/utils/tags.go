@@ -48,3 +48,25 @@ func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (isUpToDate bool, 
 	isUpToDate = len(add) == 0 && len(remove) == 0
 	return
 }
+
+func DiffTagsFromStatus(spec []*svcapitypes.Tag, status []*svcapitypes.Tag) (isUpToDate bool, add []*svcsdk.Tag, remove []*string) {
+	convertedTags := make([]*svcsdk.Tag, len(status))
+	for k, v := range status {
+		convertedTags[k] = &svcsdk.Tag{
+			Key:   v.Key,
+			Value: v.Value,
+		}
+	}
+	return DiffTags(spec, convertedTags)
+}
+
+func ConvertTagsFromDescribeServer(in []*svcsdk.Tag) (out []*svcapitypes.Tag) {
+	out = make([]*svcapitypes.Tag, len(in))
+	for k, v := range in {
+		out[k] = &svcapitypes.Tag{
+			Key:   v.Key,
+			Value: v.Value,
+		}
+	}
+	return
+}
