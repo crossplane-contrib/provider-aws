@@ -20,7 +20,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	svcsdk "github.com/aws/aws-sdk-go/service/transfer"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/transfer/v1alpha1"
@@ -41,12 +40,8 @@ type customConnector struct {
 	newClientFn func(config *session.Session) vpcEndpointClient
 }
 
-func (c *customConnector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.Server)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+func (c *customConnector) Connect(ctx context.Context, cr *svcapitypes.Server) (managed.TypedExternalClient[*svcapitypes.Server], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}

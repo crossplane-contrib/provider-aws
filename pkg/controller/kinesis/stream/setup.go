@@ -25,7 +25,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/kinesis/v1alpha1"
@@ -59,7 +58,7 @@ func SetupStream(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithPollInterval(o.PollInterval),
@@ -184,12 +183,7 @@ func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.Stream, obj *svc
 	return true, "", nil
 }
 
-func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
-	cr, ok := mg.(*svcapitypes.Stream)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-
+func (u *updater) update(ctx context.Context, cr *svcapitypes.Stream) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	// we need information from stream for decisions
 	obj, err := u.client.DescribeStreamWithContext(ctx, &svcsdk.DescribeStreamInput{
 		StreamName: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),

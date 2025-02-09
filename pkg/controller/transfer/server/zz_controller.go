@@ -53,23 +53,15 @@ type connector struct {
 	opts []option
 }
 
-func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.Server)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+func (c *connector) Connect(ctx context.Context, cr *svcapitypes.Server) (managed.TypedExternalClient[*svcapitypes.Server], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
 	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.Server)
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Observe(ctx context.Context, cr *svcapitypes.Server) (managed.ExternalObservation, error) {
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
@@ -104,11 +96,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}, nil)
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.Server)
-	if !ok {
-		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Create(ctx context.Context, cr *svcapitypes.Server) (managed.ExternalCreation, error) {
 	cr.Status.SetConditions(xpv1.Creating())
 	input := GenerateCreateServerInput(cr)
 	if err := e.preCreate(ctx, cr, input); err != nil {
@@ -128,15 +116,12 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	return e.update(ctx, mg)
+func (e *external) Update(ctx context.Context, cr *svcapitypes.Server) (managed.ExternalUpdate, error) {
+	return e.update(ctx, cr)
+
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
-	cr, ok := mg.(*svcapitypes.Server)
-	if !ok {
-		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Delete(ctx context.Context, cr *svcapitypes.Server) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteServerInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
@@ -188,7 +173,7 @@ type external struct {
 	postCreate     func(context.Context, *svcapitypes.Server, *svcsdk.CreateServerOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Server, *svcsdk.DeleteServerInput) (bool, error)
 	postDelete     func(context.Context, *svcapitypes.Server, *svcsdk.DeleteServerOutput, error) (managed.ExternalDelete, error)
-	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+	update         func(context.Context, *svcapitypes.Server) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.Server, *svcsdk.DescribeServerInput) error {
@@ -217,7 +202,6 @@ func nopPreDelete(context.Context, *svcapitypes.Server, *svcsdk.DeleteServerInpu
 func nopPostDelete(_ context.Context, _ *svcapitypes.Server, _ *svcsdk.DeleteServerOutput, err error) (managed.ExternalDelete, error) {
 	return managed.ExternalDelete{}, err
 }
-
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+func nopUpdate(context.Context, *svcapitypes.Server) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }

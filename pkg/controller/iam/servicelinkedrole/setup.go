@@ -67,7 +67,7 @@ func SetupServiceLinkedRole(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ServiceLinkedRoleGroupVersionKind),
 			managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -79,12 +79,7 @@ type hooks struct {
 	client svcsdkapi.IAMAPI
 }
 
-func (e *hooks) observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.ServiceLinkedRole)
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
-
+func (e *hooks) observe(ctx context.Context, cr *svcapitypes.ServiceLinkedRole) (managed.ExternalObservation, error) {
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{}, nil
 	}

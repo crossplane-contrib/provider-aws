@@ -48,7 +48,7 @@ func SetupCloudFrontOriginAccessIdentity(mgr ctrl.Manager, o controller.Options)
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{
+		managed.WithTypedExternalConnector(&connector{
 			kube: mgr.GetClient(),
 			opts: []option{
 				func(e *external) {

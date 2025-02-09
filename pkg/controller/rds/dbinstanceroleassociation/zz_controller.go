@@ -51,27 +51,19 @@ type connector struct {
 	opts []option
 }
 
-func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.DBInstanceRoleAssociation)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+func (c *connector) Connect(ctx context.Context, cr *svcapitypes.DBInstanceRoleAssociation) (managed.TypedExternalClient[*svcapitypes.DBInstanceRoleAssociation], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
 	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	return e.observe(ctx, mg)
+func (e *external) Observe(ctx context.Context, cr *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalObservation, error) {
+	return e.observe(ctx, cr)
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.DBInstanceRoleAssociation)
-	if !ok {
-		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Create(ctx context.Context, cr *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalCreation, error) {
 	cr.Status.SetConditions(xpv1.Creating())
 	input := GenerateAddRoleToDBInstanceInput(cr)
 	if err := e.preCreate(ctx, cr, input); err != nil {
@@ -85,16 +77,12 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	return e.update(ctx, mg)
+func (e *external) Update(ctx context.Context, cr *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalUpdate, error) {
+	return e.update(ctx, cr)
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
-	cr, ok := mg.(*svcapitypes.DBInstanceRoleAssociation)
-	if !ok {
-		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Delete(ctx context.Context, cr *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateRemoveRoleFromDBInstanceInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
@@ -135,15 +123,15 @@ func newExternal(kube client.Client, client svcsdkapi.RDSAPI, opts []option) *ex
 type external struct {
 	kube       client.Client
 	client     svcsdkapi.RDSAPI
-	observe    func(context.Context, cpresource.Managed) (managed.ExternalObservation, error)
+	observe    func(context.Context, *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalObservation, error)
 	preCreate  func(context.Context, *svcapitypes.DBInstanceRoleAssociation, *svcsdk.AddRoleToDBInstanceInput) error
 	postCreate func(context.Context, *svcapitypes.DBInstanceRoleAssociation, *svcsdk.AddRoleToDBInstanceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete  func(context.Context, *svcapitypes.DBInstanceRoleAssociation, *svcsdk.RemoveRoleFromDBInstanceInput) (bool, error)
 	postDelete func(context.Context, *svcapitypes.DBInstanceRoleAssociation, *svcsdk.RemoveRoleFromDBInstanceOutput, error) (managed.ExternalDelete, error)
-	update     func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+	update     func(context.Context, *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalUpdate, error)
 }
 
-func nopObserve(context.Context, cpresource.Managed) (managed.ExternalObservation, error) {
+func nopObserve(context.Context, *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalObservation, error) {
 	return managed.ExternalObservation{}, nil
 }
 
@@ -159,6 +147,6 @@ func nopPreDelete(context.Context, *svcapitypes.DBInstanceRoleAssociation, *svcs
 func nopPostDelete(_ context.Context, _ *svcapitypes.DBInstanceRoleAssociation, _ *svcsdk.RemoveRoleFromDBInstanceOutput, err error) (managed.ExternalDelete, error) {
 	return managed.ExternalDelete{}, err
 }
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+func nopUpdate(context.Context, *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }

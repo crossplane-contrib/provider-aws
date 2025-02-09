@@ -62,8 +62,8 @@ func Resource(m ...apiModifier) *v1alpha1.Resource {
 	return cr
 }
 
-var _ managed.ExternalClient = &external{}
-var _ managed.ExternalConnecter = &connector{}
+var _ managed.TypedExternalClient[*v1alpha1.Resource] = &external{}
+var _ managed.TypedExternalConnecter[*v1alpha1.Resource] = &connector{}
 
 func TestPreCreate(t *testing.T) {
 	type want struct {

@@ -40,15 +40,11 @@ type connector struct {
 	opts []option
 }
 
-func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
+func (c *connector) Connect(ctx context.Context, cr *svcapitypes.{{ .CRD.Names.Camel }}) (managed.TypedExternalClient[*svcapitypes.{{ .CRD.Names.Camel }}], error) {
 	{{- if ne .APIGroup "iam.aws.crossplane.io"}}
-	cr, ok := mg.(*svcapitypes.{{ .CRD.Names.Camel }})
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	{{- else}}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, connectaws.GlobalRegion)
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, connectaws.GlobalRegion)
 	{{- end}}
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
@@ -56,12 +52,8 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, cr *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalObservation, error) {
 {{- if or .CRD.Ops.ReadOne .CRD.Ops.GetAttributes .CRD.Ops.ReadMany }}
-	cr, ok := mg.(*svcapitypes.{{ .CRD.Names.Camel }})
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
@@ -119,15 +111,11 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 {{- else }}
-	return e.observe(ctx, mg)
+	return e.observe(ctx, cr)
 {{- end }}
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.{{ .CRD.Names.Camel }})
-	if !ok {
-		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Create(ctx context.Context, cr *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalCreation, error) {
 	cr.Status.SetConditions(xpv1.Creating())
 	input := Generate{{ .CRD.Ops.Create.InputRef.Shape.ShapeName }}(cr)
 	if err := e.preCreate(ctx, cr, input); err != nil {
@@ -141,12 +129,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, cr *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalUpdate, error) {
 	{{- if .CRD.Ops.Update }}
-	cr, ok := mg.(*svcapitypes.{{ .CRD.Names.Camel }})
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
 	input := Generate{{ .CRD.Ops.Update.InputRef.Shape.ShapeName }}(cr)
 	if err := e.preUpdate(ctx, cr, input); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
@@ -154,15 +138,11 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	resp, err := e.client.{{ .CRD.Ops.Update.ExportedName }}WithContext(ctx, input)
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 	{{- else }}
-	return e.update(ctx, mg)
+	return e.update(ctx, cr)
 	{{ end }}
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
-	cr, ok := mg.(*svcapitypes.{{ .CRD.Names.Camel }})
-	if !ok {
-		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Delete(ctx context.Context, cr *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
 	{{- if .CRD.Ops.Delete }}
 	input := Generate{{ .CRD.Ops.Delete.InputRef.Shape.ShapeName }}(cr)
@@ -176,7 +156,7 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.E
 	resp, err := e.client.{{ .CRD.Ops.Delete.ExportedName }}WithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 	{{- else }}
-	return e.delete(ctx, mg)
+	return e.delete(ctx, cr)
 	{{ end }}
 }
 
@@ -251,7 +231,7 @@ type external struct {
 	lateInitialize func(*svcapitypes.{{ .CRD.Names.Camel }}Parameters, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}) error
 	isUpToDate     func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.ReadMany.OutputRef.Shape.ShapeName }}) (bool, string, error)
 	{{- else }}
-	observe     func(context.Context, cpresource.Managed) (managed.ExternalObservation, error)
+	observe     func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalObservation, error)
 	{{- end }}
 	preCreate   func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.Create.InputRef.Shape.ShapeName }}) error
 	postCreate  func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.Create.OutputRef.Shape.ShapeName }}, managed.ExternalCreation, error) (managed.ExternalCreation, error)
@@ -259,13 +239,13 @@ type external struct {
 	preDelete   func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.Delete.InputRef.Shape.ShapeName }}) (bool, error)
 	postDelete  func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.Delete.OutputRef.Shape.ShapeName }}, error) (managed.ExternalDelete, error)
 	{{- else }}
-	delete      func(context.Context, cpresource.Managed) (managed.ExternalDelete, error)
+	delete      func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalDelete, error)
 	{{- end }}
 	{{- if .CRD.Ops.Update }}
 	preUpdate   func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.Update.InputRef.Shape.ShapeName }}) error
 	postUpdate  func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsdk.{{ .CRD.Ops.Update.OutputRef.Shape.ShapeName }}, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 	{{- else }}
-	update      func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+	update      func(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalUpdate, error)
 	{{ end }}
 }
 
@@ -315,7 +295,7 @@ func alwaysUpToDate(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}, *svcsd
 	return true, "", nil
 }
 {{ else }}
-func nopObserve(context.Context, cpresource.Managed) (managed.ExternalObservation, error) {
+func nopObserve(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalObservation, error) {
 	return managed.ExternalObservation{}, nil
 }
 {{ end }}
@@ -334,7 +314,7 @@ func nopPostDelete(_ context.Context, _ *svcapitypes.{{ .CRD.Names.Camel }}, _ *
 	return managed.ExternalDelete{}, err
 }
 {{- else }}
-func nopDelete(context.Context, cpresource.Managed) (managed.ExternalDelete, error) {
+func nopDelete(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalDelete, error) {
 	return managed.ExternalDelete{}, nil
 }
 {{- end }}
@@ -346,7 +326,7 @@ func nopPostUpdate(_ context.Context, _ *svcapitypes.{{ .CRD.Names.Camel }}, _ *
 	return upd, err
 }
 {{- else }}
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+func nopUpdate(context.Context, *svcapitypes.{{ .CRD.Names.Camel }}) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }
 {{- end }}

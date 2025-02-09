@@ -56,7 +56,7 @@ func SetupOriginAccessControl(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{
+		managed.WithTypedExternalConnector(&connector{
 			kube: mgr.GetClient(),
 			opts: []option{
 				func(e *external) {

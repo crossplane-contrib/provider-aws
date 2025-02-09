@@ -32,8 +32,8 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 )
 
-var _ managed.ExternalClient = &external{}
-var _ managed.ExternalConnecter = &connector{}
+var _ managed.TypedExternalClient[*svcapitypes.Domain] = &external{}
+var _ managed.TypedExternalConnecter[*svcapitypes.Domain] = &connector{}
 
 var domainName string = "test-domain-name"
 

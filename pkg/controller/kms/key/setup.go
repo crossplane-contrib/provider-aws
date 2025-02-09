@@ -49,7 +49,7 @@ func SetupKey(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithInitializers(),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -113,12 +113,7 @@ type updater struct {
 	client svcsdkapi.KMSAPI
 }
 
-func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.Key)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-
+func (u *updater) update(ctx context.Context, cr *svcapitypes.Key) (managed.ExternalUpdate, error) {
 	if cr.Spec.ForProvider.Description != nil {
 		if _, err := u.client.UpdateKeyDescriptionWithContext(ctx, &svcsdk.UpdateKeyDescriptionInput{
 			KeyId:       pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
@@ -225,11 +220,7 @@ type deleter struct {
 }
 
 // schedule for deletion instead of delete
-func (d *deleter) delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
-	cr, ok := mg.(*svcapitypes.Key)
-	if !ok {
-		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
-	}
+func (d *deleter) delete(ctx context.Context, cr *svcapitypes.Key) (managed.ExternalDelete, error) {
 	cr.SetConditions(xpv1.Deleting())
 	// special case: if key is scheduled for deletion, abort early and do not schedule for deletion again
 	if cr.Status.AtProvider.DeletionDate != nil {

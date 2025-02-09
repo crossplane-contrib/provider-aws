@@ -60,7 +60,7 @@ func SetupDomain(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -213,12 +213,7 @@ func (h *hooks) postObserve(ctx context.Context, cr *svcapitypes.Domain, obj *sv
 	return obs, nil
 }
 
-func (h *hooks) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.Domain)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-
+func (h *hooks) update(ctx context.Context, cr *svcapitypes.Domain) (managed.ExternalUpdate, error) {
 	isUpToDateAccessPolicies, err := h.isUpToDateAccessPolicies(ctx, cr, cr.Spec.ForProvider.DomainName)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateServiceAccessPolicies)
