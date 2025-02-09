@@ -49,7 +49,7 @@ func SetupDomain(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -811,11 +811,7 @@ type updateDomain struct {
 	client svcsdkapi.OpenSearchServiceAPI
 }
 
-func (e *updateDomain) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
-	cr, ok := mg.(*svcapitypes.Domain)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *updateDomain) update(ctx context.Context, cr *svcapitypes.Domain) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	domainName := meta.GetExternalName(cr)
 	stateInput := GenerateDescribeDomainInput(cr)
 	stateInput.DomainName = &domainName

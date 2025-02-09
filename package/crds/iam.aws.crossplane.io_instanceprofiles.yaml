@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: instanceprofiles.iam.aws.crossplane.io
 spec:
   group: iam.aws.crossplane.io
@@ -80,10 +80,8 @@ spec:
                       Identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
                       in the IAM User Guide.
 
-
                       This parameter is optional. If it is not included, it defaults to a slash
                       (/).
-
 
                       This parameter allows (through its regex pattern (http://wikipedia.org/wiki/regex))
                       a string of characters consisting of either a forward slash (/) by itself
@@ -175,7 +173,6 @@ spec:
                       profile. Each tag consists of a key name and an associated value. For more
                       information about tagging, see Tagging IAM resources (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
                       in the IAM User Guide.
-
 
                       If any one of the tags is invalid or if you exceed the allowed maximum number
                       of tags, then the entire request fails and the resource is not created.
@@ -391,7 +388,6 @@ spec:
                             The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
                             Services resources.
 
-
                             For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
                             in the Amazon Web Services General Reference.
                           type: string
@@ -411,10 +407,8 @@ spec:
                           description: |-
                             Contains information about an attached permissions boundary.
 
-
                             An attached permissions boundary is a managed policy that has been attached
                             to a user or role to set the permissions boundary.
-
 
                             For more information about permissions boundaries, see Permissions boundaries
                             for IAM identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html)
@@ -424,7 +418,6 @@ spec:
                               description: |-
                                 The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
                                 Services resources.
-
 
                                 For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
                                 in the Amazon Web Services General Reference.
@@ -443,7 +436,6 @@ spec:
                             role might have been used more than 400 days ago. For more information, see
                             Regions where data is tracked (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period)
                             in the IAM user Guide.
-
 
                             This data type is returned as a response element in the GetRole and GetAccountAuthorizationDetails
                             operations.

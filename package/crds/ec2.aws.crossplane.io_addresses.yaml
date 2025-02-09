@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: addresses.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
@@ -102,15 +102,12 @@ spec:
                       The location from which the IP address is advertised. Use this parameter
                       to limit the address to this location.
 
-
                       A network border group is a unique set of Availability Zones or Local Zones
                       from where AWS advertises IP addresses and limits the addresses to the group.
                       IP addresses cannot move between network border groups.
 
-
                       Use DescribeAvailabilityZones (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html)
                       to view the network border groups.
-
 
                       You cannot use a network border group with EC2 Classic. If you attempt this
                       operation on EC2 classic, you will receive an InvalidParameterCombination

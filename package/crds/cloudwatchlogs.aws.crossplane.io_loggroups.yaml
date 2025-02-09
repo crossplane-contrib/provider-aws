@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: loggroups.cloudwatchlogs.aws.crossplane.io
 spec:
   group: cloudwatchlogs.aws.crossplane.io
@@ -191,7 +191,6 @@ spec:
                       type: string
                     description: |-
                       The key-value pairs to use for the tags.
-
 
                       You can grant users access to certain log groups while preventing them from
                       accessing other log groups. To do so, tag your groups and use IAM policies

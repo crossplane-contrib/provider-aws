@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: streams.kinesis.aws.crossplane.io
 spec:
   group: kinesis.aws.crossplane.io
@@ -82,34 +82,24 @@ spec:
                     description: |-
                       List of shard-level metrics.
 
-
                       The following are the valid shard-level metrics. The value "ALL" enhances
                       every metric.
 
-
                          * IncomingBytes
-
 
                          * IncomingRecords
 
-
                          * OutgoingBytes
-
 
                          * OutgoingRecords
 
-
                          * WriteProvisionedThroughputExceeded
-
 
                          * ReadProvisionedThroughputExceeded
 
-
                          * IteratorAgeMilliseconds
 
-
                          * ALL
-
 
                       For more information, see Monitoring the Amazon Kinesis Data Streams Service
                       with Amazon CloudWatch (https://docs.aws.amazon.com/kinesis/latest/dev/monitoring-with-cloudwatch.html)
@@ -419,9 +409,7 @@ spec:
                       The server-side encryption type used on the stream. This parameter can be
                       one of the following values:
 
-
                          * NONE: Do not encrypt the records in the stream.
-
 
                          * KMS: Use server-side encryption on the records in the stream using a
                          customer-managed Amazon Web Services KMS key.
@@ -449,18 +437,13 @@ spec:
                       can also use a master key owned by Kinesis Data Streams by specifying the
                       alias aws/kinesis.
 
-
                          * Key ARN example: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
-
 
                          * Alias ARN example: arn:aws:kms:us-east-1:123456789012:alias/MyAliasName
 
-
                          * Globally unique key ID example: 12345678-1234-1234-1234-123456789012
 
-
                          * Alias name example: alias/MyAliasName
-
 
                          * Master key owned by Kinesis Data Streams: alias/aws/kinesis
                     type: string
@@ -510,19 +493,15 @@ spec:
                       The current status of the stream being described. The stream status is one
                       of the following states:
 
-
                          * CREATING - The stream is being created. Kinesis Data Streams immediately
                          returns and sets StreamStatus to CREATING.
-
 
                          * DELETING - The stream is being deleted. The specified stream is in the
                          DELETING state until Kinesis Data Streams completes the deletion.
 
-
                          * ACTIVE - The stream exists and is ready for read and write operations
                          or deletion. You should perform read and write operations only on an ACTIVE
                          stream.
-
 
                          * UPDATING - Shards in the stream are being merged or split. Read and
                          write operations continue to work while the stream is in the UPDATING

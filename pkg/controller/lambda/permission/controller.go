@@ -186,13 +186,18 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, errors.Wrap(err, errAddPermission)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.Permission)
 	if !ok {
-		return errors.New(errNotLambdaPermission)
+		return managed.ExternalDelete{}, errors.New(errNotLambdaPermission)
 	}
 	_, err := e.client.RemovePermission(ctx, generateRemovePermissionInput(cr))
-	return errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errRemovePermission)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errRemovePermission)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.PermissionParameters) {

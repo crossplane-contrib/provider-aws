@@ -42,7 +42,7 @@ func SetupLaunchTemplateVersion(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -95,14 +95,13 @@ func postObserve(_ context.Context, cr *svcapitypes.LaunchTemplateVersion, obj *
 	return obs, nil
 }
 
-func (e *external) deleter(ctx context.Context, mg cpresource.Managed) error {
-	cr, _ := mg.(*svcapitypes.LaunchTemplateVersion)
+func (e *external) deleter(ctx context.Context, cr *svcapitypes.LaunchTemplateVersion) (managed.ExternalDelete, error) {
 	input := GenerateDeleteLaunchTemplateVersionInput(cr)
 	_, err := e.client.DeleteLaunchTemplateVersionsWithContext(ctx, input)
 	if err != nil {
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return nil
+	return managed.ExternalDelete{}, nil
 }
 
 // GenerateDeleteLaunchTemplateVersionInput returns a deletion input.

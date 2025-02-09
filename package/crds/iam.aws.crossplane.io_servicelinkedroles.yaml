@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: servicelinkedroles.iam.aws.crossplane.io
 spec:
   group: iam.aws.crossplane.io
@@ -80,7 +80,6 @@ spec:
                       is attached. You use a string similar to a URL but without the http:// in
                       front. For example: elasticbeanstalk.amazonaws.com.
 
-
                       Service principals are unique and case-sensitive. To find the exact service
                       principal for your service-linked role, see Amazon Web Services services
                       that work with IAM (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-services-that-work-with-iam.html)
@@ -95,7 +94,6 @@ spec:
                       service, then you must supply a different CustomSuffix for each request.
                       Otherwise the request fails with a duplicate role name error. For example,
                       you could add -1 or -debug to the suffix.
-
 
                       Some services do not support the CustomSuffix parameter. If you provide an
                       optional suffix and the operation fails, try the operation again without
@@ -314,7 +312,6 @@ spec:
                     description: |-
                       The ARN of the policy used to set the permissions boundary for the role.
 
-
                       For more information about permissions boundaries, see Permissions boundaries
                       for IAM identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html)
                       in the IAM User Guide.
@@ -323,7 +320,6 @@ spec:
                         description: |-
                           The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
                           Services resources.
-
 
                           For more information about ARNs, go to Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
                           in the Amazon Web Services General Reference.

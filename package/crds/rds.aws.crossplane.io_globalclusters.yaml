@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: globalclusters.rds.aws.crossplane.io
 spec:
   group: rds.aws.crossplane.io
@@ -80,9 +80,7 @@ spec:
                       specify a name, Amazon Aurora doesn't create a database in the global database
                       cluster.
 
-
                       Constraints:
-
 
                          * Can't be specified if SourceDBClusterIdentifier is specified. In this
                          case, Amazon Aurora uses the database name from the source DB cluster.
@@ -97,12 +95,9 @@ spec:
                     description: |-
                       The database engine to use for this global database cluster.
 
-
                       Valid Values: aurora-mysql | aurora-postgresql
 
-
                       Constraints:
-
 
                          * Can't be specified if SourceDBClusterIdentifier is specified. In this
                          case, Amazon Aurora uses the engine of the source DB cluster.
@@ -111,9 +106,7 @@ spec:
                     description: |-
                       The engine version to use for this global database cluster.
 
-
                       Constraints:
-
 
                          * Can't be specified if SourceDBClusterIdentifier is specified. In this
                          case, Amazon Aurora uses the engine version of the source DB cluster.
@@ -127,20 +120,15 @@ spec:
                       The Amazon Resource Name (ARN) to use as the primary cluster of the global
                       database.
 
-
                       If you provide a value for this parameter, don't specify values for the following
                       settings because Amazon Aurora uses the values from the specified source
                       DB cluster:
 
-
                          * DatabaseName
-
 
                          * Engine
 
-
                          * EngineVersion
-
 
                          * StorageEncrypted
                     type: string
@@ -227,9 +215,7 @@ spec:
                       Specifies whether to enable storage encryption for the new global database
                       cluster.
 
-
                       Constraints:
-
 
                          * Can't be specified if SourceDBClusterIdentifier is specified. In this
                          case, Amazon Aurora uses the setting from the source DB cluster.

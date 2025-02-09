@@ -173,15 +173,15 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*manualv1alpha1.Target)
 	if !ok {
-		return errors.New(errNotElasticloadbalancingv2Target)
+		return managed.ExternalDelete{}, errors.New(errNotElasticloadbalancingv2Target)
 	}
 	cr.SetConditions(xpv1.Deleting())
 	// Check if the target is already unregistered.
 	if cr.Status.AtProvider.TargetHealth != nil && pointer.StringValue(cr.Status.AtProvider.TargetHealth.State) == manualv1alpha1.TargetStatusDraining {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	_, err := e.client.DeregisterTargets(ctx, &awselasticloadbalancingv2.DeregisterTargetsInput{
 		TargetGroupArn: cr.Spec.ForProvider.TargetGroupARN,
@@ -193,7 +193,12 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 			},
 		},
 	})
-	return errorutils.Wrap(err, errDeregisterTargetFailed)
+	return managed.ExternalDelete{}, errorutils.Wrap(err, errDeregisterTargetFailed)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 func generateTargetObservation(i *awselasticloadbalancingv2.DescribeTargetHealthOutput) manualv1alpha1.TargetObservation {

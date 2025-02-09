@@ -227,15 +227,20 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, errorutils.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1beta1.Cluster)
 	if !ok {
-		return errors.New(errNotEKSCluster)
+		return managed.ExternalDelete{}, errors.New(errNotEKSCluster)
 	}
 	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.Status == v1beta1.ClusterStatusDeleting {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	_, err := e.client.DeleteCluster(ctx, &awseks.DeleteClusterInput{Name: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))})
-	return errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

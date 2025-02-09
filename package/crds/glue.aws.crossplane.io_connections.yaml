@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: connections.glue.aws.crossplane.io
 spec:
   group: glue.aws.crossplane.io
@@ -98,40 +98,31 @@ spec:
                           "ENCRYPTED_KAFKA_CLIENT_KEYSTORE_PASSWORD"|"ENCRYPTED_KAFKA_CLIENT_KEY_PASSWORD"
                           "SECRET_ID"|"CONNECTOR_URL"|"CONNECTOR_TYPE"|"CONNECTOR_CLASS_NAME"
 
-
                           ConnectionProperties is a required field
                         type: object
                       connectionType:
                         description: |-
                           The type of the connection. Currently, these types are supported:
 
-
                              * JDBC - Designates a connection to a database through Java Database Connectivity
                              (JDBC).
 
-
                              * KAFKA - Designates a connection to an Apache Kafka streaming platform.
-
 
                              * MONGODB - Designates a connection to a MongoDB document database.
 
-
                              * NETWORK - Designates a network connection to a data source within an
                              Amazon Virtual Private Cloud environment (Amazon VPC).
-
 
                              * MARKETPLACE - Uses configuration settings contained in a connector purchased
                              from Amazon Web Services Marketplace to read from and write to data stores
                              that are not natively supported by Glue.
 
-
                              * CUSTOM - Uses configuration settings contained in a custom connector
                              to read from and write to data stores that are not natively supported
                              by Glue.
 
-
                           SFTP is not supported.
-
 
                           ConnectionType is a required field
                         enum:

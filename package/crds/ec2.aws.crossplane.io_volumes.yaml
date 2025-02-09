@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: volumes.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
@@ -86,7 +86,6 @@ spec:
                       enabled. For more information, see Encryption by default (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default)
                       in the Amazon Elastic Compute Cloud User Guide.
 
-
                       Encrypted Amazon EBS volumes must be attached to instances that support Amazon
                       EBS encryption. For more information, see Supported instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances).
                     type: boolean
@@ -97,23 +96,17 @@ spec:
                       gp2 volumes, this represents the baseline performance of the volume and the
                       rate at which the volume accumulates I/O credits for bursting.
 
-
                       The following are the supported values for each volume type:
-
 
                          * gp3: 3,000-16,000 IOPS
 
-
                          * io1: 100-64,000 IOPS
 
-
                          * io2: 100-64,000 IOPS
-
 
                       io1 and io2 volumes support up to 64,000 IOPS only on Instances built on
                       the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
                       Other instance families support performance up to 32,000 IOPS.
-
 
                       This parameter is required for io1 and io2 volumes. The default for gp3 volumes
                       is 3,000 IOPS. This parameter is not supported for gp2, st1, sc1, or standard
@@ -127,21 +120,15 @@ spec:
                       your AWS managed CMK for EBS is used. If KmsKeyId is specified, the encrypted
                       state must be true.
 
-
                       You can specify the CMK using any of the following:
-
 
                          * Key ID. For example, 1234abcd-12ab-34cd-56ef-1234567890ab.
 
-
                          * Key alias. For example, alias/ExampleAlias.
-
 
                          * Key ARN. For example, arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab.
 
-
                          * Alias ARN. For example, arn:aws:kms:us-east-1:012345678910:alias/ExampleAlias.
-
 
                       AWS authenticates the CMK asynchronously. Therefore, if you specify an ID,
                       alias, or ARN that is not valid, the action can appear to complete, but eventually
@@ -245,18 +232,13 @@ spec:
                       You can specify a volume size that is equal to or larger than the snapshot
                       size.
 
-
                       The following are the supported volumes sizes for each volume type:
-
 
                          * gp2 and gp3: 1-16,384
 
-
                          * io1 and io2: 4-16,384
 
-
                          * st1 and sc1: 125-16,384
-
 
                          * standard: 1-1,024
                     format: int64
@@ -292,9 +274,7 @@ spec:
                     description: |-
                       The throughput to provision for a volume, with a maximum of 1,000 MiB/s.
 
-
                       This parameter is valid only for gp3 volumes.
-
 
                       Valid Range: Minimum value of 125. Maximum value of 1000.
                     format: int64
@@ -303,29 +283,21 @@ spec:
                     description: |-
                       The volume type. This parameter can be one of the following values:
 
-
                          * General Purpose SSD: gp2 | gp3
-
 
                          * Provisioned IOPS SSD: io1 | io2
 
-
                          * Throughput Optimized HDD: st1
-
 
                          * Cold HDD: sc1
 
-
                          * Magnetic: standard
-
 
                       Throughput Optimized HDD (st1) and Cold HDD (sc1) volumes can't be used as
                       boot volumes.
 
-
                       For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
                       in the Amazon Elastic Compute Cloud User Guide.
-
 
                       Default: gp2
                     type: string

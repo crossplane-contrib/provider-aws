@@ -28,7 +28,7 @@ import (
 
 // SetupTransitGatewayRoute adds a controller that reconciles TransitGatewayRoutes.
 func SetupTransitGatewayRoute(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+	name := managed.ControllerName(svcapitypes.TransitGatewayRouteKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}
@@ -45,7 +45,7 @@ func SetupTransitGatewayRoute(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -92,12 +92,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.TransitGatewayRo
 	return nil
 }
 
-func (e *external) observer(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.TransitGatewayRoute)
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
-
+func (e *external) observer(ctx context.Context, cr *svcapitypes.TransitGatewayRoute) (managed.ExternalObservation, error) {
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,

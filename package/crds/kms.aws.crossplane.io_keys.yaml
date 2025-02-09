@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: keys.kms.aws.crossplane.io
 spec:
   group: kms.aws.crossplane.io
@@ -78,14 +78,11 @@ spec:
                       Skips ("bypasses") the key policy lockout safety check. The default value
                       is false.
 
-
                       Setting this value to true increases the risk that the KMS key becomes unmanageable.
                       Do not set this value to true indiscriminately.
 
-
                       For more information, see Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
                       in the Key Management Service Developer Guide.
-
 
                       Use this parameter only when you intend to prevent the principal that is
                       making the request from making a subsequent PutKeyPolicy request on the KMS
@@ -97,10 +94,8 @@ spec:
                       The ConnectionState of the custom key store must be CONNECTED. To find the
                       CustomKeyStoreID and ConnectionState use the DescribeCustomKeyStores operation.
 
-
                       This parameter is valid only for symmetric encryption KMS keys in a single
                       Region. You cannot create any other type of KMS key in a custom key store.
-
 
                       When you create a KMS key in an CloudHSM key store, KMS generates a non-exportable
                       256-bit symmetric key in its associated CloudHSM cluster and associates it
@@ -112,7 +107,6 @@ spec:
                     description: |-
                       Instead, use the KeySpec parameter.
 
-
                       The KeySpec and CustomerMasterKeySpec parameters work the same way. Only
                       the names differ. We recommend that you use KeySpec parameter in your code.
                       However, to avoid breaking changes, KMS supports both parameters.
@@ -123,10 +117,8 @@ spec:
                       the KMS key is appropriate for a task. The default value is an empty string
                       (no description).
 
-
                       Do not include confidential or sensitive information in this field. This
                       field may be displayed in plaintext in CloudTrail logs and other output.
-
 
                       To set or change the description after the key is created, use UpdateKeyDescription.
                     type: string
@@ -146,7 +138,6 @@ spec:
                       see Choosing a KMS key type (https://docs.aws.amazon.com/kms/latest/developerguide/key-types.html#symm-asymm-choose)
                       in the Key Management Service Developer Guide .
 
-
                       The KeySpec determines whether the KMS key contains a symmetric key or an
                       asymmetric key pair. It also determines the algorithms that the KMS key supports.
                       You can't change the KeySpec after the KMS key is created. To further restrict
@@ -157,31 +148,23 @@ spec:
                       or kms:Signing Algorithm (https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-signing-algorithm)
                       in the Key Management Service Developer Guide .
 
-
                       Amazon Web Services services that are integrated with KMS (http://aws.amazon.com/kms/features/#AWS_Service_Integration)
                       use symmetric encryption KMS keys to protect your data. These services do
                       not support asymmetric KMS keys or HMAC KMS keys.
 
-
                       KMS supports the following key specs for KMS keys:
-
 
                          * Symmetric encryption key (default) SYMMETRIC_DEFAULT
 
-
                          * HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
 
-
                          * Asymmetric RSA key pairs RSA_2048 RSA_3072 RSA_4096
-
 
                          * Asymmetric NIST-recommended elliptic curve key pairs ECC_NIST_P256 (secp256r1)
                          ECC_NIST_P384 (secp384r1) ECC_NIST_P521 (secp521r1)
 
-
                          * Other asymmetric elliptic curve key pairs ECC_SECG_P256K1 (secp256k1),
                          commonly used for cryptocurrencies.
-
 
                          * SM2 key pairs (China Regions only) SM2
                     type: string
@@ -193,22 +176,16 @@ spec:
                       key; otherwise, it is required. You can't change the KeyUsage value after
                       the KMS key is created.
 
-
                       Select only one valid value.
-
 
                          * For symmetric encryption KMS keys, omit the parameter or specify ENCRYPT_DECRYPT.
 
-
                          * For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
-
 
                          * For asymmetric KMS keys with RSA key material, specify ENCRYPT_DECRYPT
                          or SIGN_VERIFY.
 
-
                          * For asymmetric KMS keys with ECC key material, specify SIGN_VERIFY.
-
 
                          * For asymmetric KMS keys with SM2 key material (China Regions only),
                          specify ENCRYPT_DECRYPT or SIGN_VERIFY.
@@ -219,10 +196,8 @@ spec:
                       Web Services Regions. You cannot change this value after you create the KMS
                       key.
 
-
                       For a multi-Region key, set this parameter to True. For a single-Region KMS
                       key, omit this parameter or set it to False. The default value is False.
-
 
                       This operation supports multi-Region keys, an KMS feature that lets you create
                       multiple interoperable KMS keys in different Amazon Web Services Regions.
@@ -233,10 +208,8 @@ spec:
                       keys, see Multi-Region keys in KMS (https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html)
                       in the Key Management Service Developer Guide.
 
-
                       This value creates a primary key, not a replica. To create a replica key,
                       use the ReplicateKey operation.
-
 
                       You can create a symmetric or asymmetric multi-Region key, and you can create
                       a multi-Region key with imported key material. However, you cannot create
@@ -248,19 +221,16 @@ spec:
                       after you create the KMS key. The default is AWS_KMS, which means that KMS
                       creates the key material.
 
-
                       To create a KMS key with no key material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-create-cmk.html)
                       (for imported key material), set this value to EXTERNAL. For more information
                       about importing key material into KMS, see Importing Key Material (https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html)
                       in the Key Management Service Developer Guide. The EXTERNAL origin value
                       is valid only for symmetric KMS keys.
 
-
                       To create a KMS key in an CloudHSM key store (https://docs.aws.amazon.com/kms/latest/developerguide/create-cmk-keystore.html)
                       and create its key material in the associated CloudHSM cluster, set this
                       value to AWS_CLOUDHSM. You must also use the CustomKeyStoreId parameter to
                       identify the CloudHSM key store. The KeySpec value must be SYMMETRIC_DEFAULT.
-
 
                       To create a KMS key in an external key store (https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keys.html),
                       set this value to EXTERNAL_KEY_STORE. You must also use the CustomKeyStoreId
@@ -276,9 +246,7 @@ spec:
                     description: |-
                       The key policy to attach to the KMS key.
 
-
                       If you provide a key policy, it must meet the following criteria:
-
 
                          * The key policy must allow the calling principal to make a subsequent
                          PutKeyPolicy request on the KMS key. This reduces the risk that the KMS
@@ -286,7 +254,6 @@ spec:
                          (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key)
                          in the Key Management Service Developer Guide. (To omit this condition,
                          set BypassPolicyLockoutSafetyCheck to true.)
-
 
                          * Each statement in the key policy must contain one or more principals.
                          The principals in the key policy must exist and be visible to KMS. When
@@ -296,14 +263,11 @@ spec:
                          see Changes that I make are not always immediately visible (https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency)
                          in the Amazon Web Services Identity and Access Management User Guide.
 
-
                       If you do not provide a key policy, KMS attaches a default key policy to
                       the KMS key. For more information, see Default key policy (https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default)
                       in the Key Management Service Developer Guide.
 
-
                       The key policy size quota is 32 kilobytes (32768 bytes).
-
 
                       For help writing and formatting a JSON policy document, see the IAM JSON
                       Policy Reference (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html)
@@ -317,26 +281,21 @@ spec:
                       Assigns one or more tags to the KMS key. Use this parameter to tag the KMS
                       key when it is created. To tag an existing KMS key, use the TagResource operation.
 
-
                       Do not include confidential or sensitive information in this field. This
                       field may be displayed in plaintext in CloudTrail logs and other output.
-
 
                       Tagging or untagging a KMS key can allow or deny permission to the KMS key.
                       For details, see ABAC for KMS (https://docs.aws.amazon.com/kms/latest/developerguide/abac.html)
                       in the Key Management Service Developer Guide.
 
-
                       To use this parameter, you must have kms:TagResource (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
                       permission in an IAM policy.
-
 
                       Each tag consists of a tag key and a tag value. Both the tag key and the
                       tag value are required, but the tag value can be an empty (null) string.
                       You cannot have more than one tag on a KMS key with the same tag key. If
                       you specify an existing tag key with a different tag value, KMS replaces
                       the current tag value with the specified one.
-
 
                       When you add tags to an Amazon Web Services resource, Amazon Web Services
                       generates a cost allocation report with usage and costs aggregated by tags.
@@ -358,10 +317,8 @@ spec:
                       uses to refer to the external key. For help, see the documentation for your
                       external key store proxy.
 
-
                       This parameter is required for a KMS key with an Origin value of EXTERNAL_KEY_STORE.
                       It is not valid for KMS keys with any other Origin value.
-
 
                       The external key must be an existing 256-bit AES symmetric encryption key
                       hosted outside of Amazon Web Services in an external key manager associated
@@ -370,7 +327,6 @@ spec:
                       Each KMS key in an external key store must use a different external key.
                       For details, see Requirements for a KMS key in an external key store (https://docs.aws.amazon.com/create-xks-keys.html#xks-key-requirements)
                       in the Key Management Service Developer Guide.
-
 
                       Each KMS key in an external key store is associated two backing keys. One
                       is key material that KMS generates. The other is the external key specified
@@ -586,7 +542,6 @@ spec:
                       only when the KMS key is scheduled for deletion, that is, when its KeyState
                       is PendingDeletion.
 
-
                       When the primary key in a multi-Region key is scheduled for deletion but
                       still has replica keys, its key state is PendingReplicaDeletion and the length
                       of its waiting period is displayed in the PendingDeletionWindowInDays field.
@@ -601,7 +556,6 @@ spec:
                     description: |-
                       The encryption algorithms that the KMS key supports. You cannot use the KMS
                       key with other encryption algorithms within KMS.
-
 
                       This value is present only when the KeyUsage of the KMS key is ENCRYPT_DECRYPT.
                     items:
@@ -626,7 +580,6 @@ spec:
                     description: |-
                       The current status of the KMS key.
 
-
                       For more information about how key state affects the use of a KMS key, see
                       Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
                       in the Key Management Service Developer Guide.
@@ -634,7 +587,6 @@ spec:
                   macAlgorithms:
                     description: |-
                       The message authentication code (MAC) algorithm that the HMAC KMS key supports.
-
 
                       This value is present only when the KeyUsage of the KMS key is GENERATE_VERIFY_MAC.
                     items:
@@ -645,17 +597,13 @@ spec:
                       Lists the primary and replica keys in same multi-Region key. This field is
                       present only when the value of the MultiRegion field is True.
 
-
                       For more information about any listed KMS key, use the DescribeKey operation.
-
 
                          * MultiRegionKeyType indicates whether the KMS key is a PRIMARY or REPLICA
                          key.
 
-
                          * PrimaryKey displays the key ARN and Region of the primary key. This
                          field displays the current KMS key if it is the primary key.
-
 
                          * ReplicaKeys displays the key ARNs and Regions of all replica keys. This
                          field includes the current KMS key if it is a replica key.
@@ -689,7 +637,6 @@ spec:
                       That indicates that the KMS key is the primary key in a multi-Region key,
                       it is scheduled for deletion, and it still has existing replica keys.
 
-
                       When a single-Region KMS key or a multi-Region replica key is scheduled for
                       deletion, its deletion date is displayed in the DeletionDate field. However,
                       when the primary key in a multi-Region key is scheduled for deletion, its
@@ -703,7 +650,6 @@ spec:
                     description: |-
                       The signing algorithms that the KMS key supports. You cannot use the KMS
                       key with other signing algorithms within KMS.
-
 
                       This field appears only when the KeyUsage of the KMS key is SIGN_VERIFY.
                     items:
@@ -721,7 +667,6 @@ spec:
                     description: |-
                       Information about the external key that is associated with a KMS key in an
                       external key store.
-
 
                       For more information, see External key (https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-external-key)
                       in the Key Management Service Developer Guide.

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: userpooldomains.cognitoidentityprovider.aws.crossplane.io
 spec:
   group: cognitoidentityprovider.aws.crossplane.io
@@ -79,11 +79,9 @@ spec:
                       The configuration for a custom domain that hosts the sign-up and sign-in
                       webpages for your application.
 
-
                       Provide this parameter only if you want to use a custom domain for your user
                       pool. Otherwise, you can exclude this parameter and use the Amazon Cognito
                       hosted domain instead.
-
 
                       For more information about the hosted domain and custom domains, see Configuring
                       a User Pool Domain (https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-assign-domain.html).

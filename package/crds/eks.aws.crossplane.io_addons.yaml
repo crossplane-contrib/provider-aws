@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: addons.eks.aws.crossplane.io
 spec:
   group: eks.aws.crossplane.io
@@ -179,24 +179,20 @@ spec:
                       How to resolve field value conflicts for an Amazon EKS add-on. Conflicts
                       are handled based on the value you choose:
 
-
                          * None – If the self-managed version of the add-on is installed on your
                          cluster, Amazon EKS doesn't change the value. Creation of the add-on might
                          fail.
-
 
                          * Overwrite – If the self-managed version of the add-on is installed
                          on your cluster and the Amazon EKS default value is different than the
                          existing value, Amazon EKS changes the value to the Amazon EKS default
                          value.
 
-
                          * Preserve – This is similar to the NONE option. If the self-managed
                          version of the add-on is installed on your cluster Amazon EKS doesn't
                          change the add-on resource properties. Creation of the add-on might fail
                          if conflicts are detected. This option works differently during the update
                          operation. For more information, see UpdateAddon (https://docs.aws.amazon.com/eks/latest/APIReference/API_UpdateAddon.html).
-
 
                       If you don't currently have the self-managed version of the add-on installed
                       on your cluster, the Amazon EKS add-on is installed. Amazon EKS sets all
@@ -210,7 +206,6 @@ spec:
                       the permissions assigned to the node IAM role. For more information, see
                       Amazon EKS node IAM role (https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html)
                       in the Amazon EKS User Guide.
-
 
                       To specify an existing IAM role, you must have an IAM OpenID Connect (OIDC)
                       provider created for your cluster. For more information, see Enabling IAM

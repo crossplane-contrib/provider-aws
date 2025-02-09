@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: rdsinstances.database.aws.crossplane.io
 spec:
   group: database.aws.crossplane.io
@@ -545,7 +545,6 @@ spec:
                       See Supported PostgreSQL Database Versions (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.DBVersions)
                       in the Amazon RDS User Guide.
 
-
                       Note: Downgrades are not allowed by AWS and attempts to set a lower version
                       will be ignored.
                     type: string
@@ -573,10 +572,8 @@ spec:
                       the size of your DB instance is 500 GiB, then your IOPS value can be 2000,
                       3000, 4000, or 5000.
 
-
                       For valid IOPS values on DB instances with storage type "gp3",
                       see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#gp3-storage.
-
 
                       Note: controller considers 0 and null as equivalent
                     type: integer
@@ -627,15 +624,11 @@ spec:
                       Not applicable. The name for the master user is managed by the DB cluster.
                       For more information, see CreateDBCluster.
 
-
                       Constraints:
-
 
                          * Must be 1 to 16 letters or numbers.
 
-
                          * First character must be a letter.
-
 
                          * Can't be a reserved word for the chosen database engine.
                     type: string
@@ -643,7 +636,6 @@ spec:
                     description: |-
                       The upper limit to which Amazon RDS can automatically scale the storage of
                       the DB instance.
-
 
                       For more information about this setting, including limitations that apply
                       to it, see Managing capacity automatically with Amazon RDS storage autoscaling
@@ -1190,12 +1182,9 @@ spec:
                     description: |-
                       The storage throughput value for the DB instance.
 
-
                       This setting applies only to the gp3 storage type.
 
-
                       This setting doesn't apply to Amazon Aurora or RDS Custom DB instances.
-
 
                       Note: controller considers 0 and null as equivalent
                     type: integer
@@ -1550,7 +1539,6 @@ spec:
                           - RebootDBInstance
                           - RestoreDBInstanceFromDBSnapshot
 
-
                         Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBParameterGroupStatus
                       properties:
                         dbParameterGroupName:
@@ -1580,7 +1568,6 @@ spec:
                           - RebootDBInstance
                           - RestoreDBInstanceFromDBSnapshot
                           - RestoreDBInstanceToPointInTime
-
 
                         Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBSecurityGroupMembership
                       properties:

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: permissions.lambda.aws.crossplane.io
 spec:
   group: lambda.aws.crossplane.io
@@ -80,7 +80,6 @@ spec:
                       The action that the principal can use on the function. For example,
                       lambda:InvokeFunction or lambda:GetFunction.
 
-
                       This member is required.
                     type: string
                   eventSourceToken:
@@ -91,23 +90,18 @@ spec:
                     description: |-
                       The name of the Lambda function, version, or alias. Name formats
 
-
                       * Function
                       name - my-function (name-only), my-function:v1 (with alias).
-
 
                       * Function ARN -
                       arn:aws:lambda:us-west-2:123456789012:function:my-function.
 
-
                       * Partial ARN -
                       123456789012:function:my-function.
-
 
                       You can append a version number or alias to
                       any of the formats. The length constraint applies only to the full ARN. If you
                       specify only the function name, it is limited to 64 characters in length.
-
 
                       This member is required.
                     type: string
@@ -194,7 +188,6 @@ spec:
                       The Amazon Web Services service or account that invokes the function. If you
                       specify a service, use SourceArn or SourceAccount to limit who can invoke the
                       function through that service.
-
 
                       This member is required.
                     type: string

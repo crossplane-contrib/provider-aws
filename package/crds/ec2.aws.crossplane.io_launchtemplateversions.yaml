@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: launchtemplateversions.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
@@ -233,31 +233,24 @@ spec:
                           The attributes for the instance types. When you specify instance attributes,
                           Amazon EC2 will identify instance types with these attributes.
 
-
                           You must specify VCpuCount and MemoryMiB. All other attributes are optional.
                           Any unspecified optional attribute is set to its default.
-
 
                           When you specify multiple attributes, you get instance types that satisfy
                           all of the specified attributes. If you specify multiple values for an attribute,
                           you get instance types that satisfy any of the specified values.
 
-
                           To limit the list of instance types from which Amazon EC2 can identify matching
                           instance types, you can use one of the following parameters, but not both
                           in the same request:
 
-
                              * AllowedInstanceTypes - The instance types to include in the list. All
                              other instance types are ignored, even if they match your specified attributes.
-
 
                              * ExcludedInstanceTypes - The instance types to exclude from the list,
                              even if they match your specified attributes.
 
-
                           If you specify InstanceRequirements, you can't specify InstanceType.
-
 
                           Attribute-based instance type selection is only supported when using Auto
                           Scaling groups, EC2 Fleet, and Spot Fleet to launch instances. If you plan
@@ -265,7 +258,6 @@ spec:
                           or with the RunInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html)
                           API or AWS::EC2::Instance (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-instance.html)
                           Amazon Web Services CloudFormation resource, you can't specify InstanceRequirements.
-
 
                           For more information, see Attribute-based instance type selection for EC2
                           Fleet (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html),
@@ -372,7 +364,6 @@ spec:
                             description: |-
                               The minimum and maximum amount of network bandwidth, in gigabits per second
                               (Gbps).
-
 
                               Setting the minimum bandwidth does not guarantee that your instance will
                               achieve the minimum bandwidth. Amazon EC2 will identify instance types that
@@ -794,7 +785,6 @@ spec:
                       Use a Systems Manager parameter instead of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
                       in the Amazon Elastic Compute Cloud User Guide.
 
-
                       Default: false
                     type: boolean
                   sourceVersion:
@@ -1146,38 +1136,30 @@ spec:
                               The attributes for the instance types. When you specify instance attributes,
                               Amazon EC2 will identify instance types with these attributes.
 
-
                               You must specify VCpuCount and MemoryMiB. All other attributes are optional.
                               Any unspecified optional attribute is set to its default.
-
 
                               When you specify multiple attributes, you get instance types that satisfy
                               all of the specified attributes. If you specify multiple values for an attribute,
                               you get instance types that satisfy any of the specified values.
 
-
                               To limit the list of instance types from which Amazon EC2 can identify matching
                               instance types, you can use one of the following parameters, but not both
                               in the same request:
 
-
                                  * AllowedInstanceTypes - The instance types to include in the list. All
                                  other instance types are ignored, even if they match your specified attributes.
-
 
                                  * ExcludedInstanceTypes - The instance types to exclude from the list,
                                  even if they match your specified attributes.
 
-
                               If you specify InstanceRequirements, you can't specify InstanceType.
-
 
                               Attribute-based instance type selection is only supported when using Auto
                               Scaling groups, EC2 Fleet, and Spot Fleet to launch instances. If you plan
                               to use the launch template in the launch instance wizard (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-instance-wizard.html)
                               or with the RunInstances API (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
                               you can't specify InstanceRequirements.
-
 
                               For more information, see Create a mixed instances group using attribute-based
                               instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
@@ -1285,7 +1267,6 @@ spec:
                                 description: |-
                                   The minimum and maximum amount of network bandwidth, in gigabits per second
                                   (Gbps).
-
 
                                   Setting the minimum bandwidth does not guarantee that your instance will
                                   achieve the minimum bandwidth. Amazon EC2 will identify instance types that
@@ -1405,7 +1386,6 @@ spec:
                                     between two EC2 instances in the same subnet within the same account, or
                                     in different accounts. Both sending and receiving instances must have ENA
                                     Express enabled.
-
 
                                     To improve the reliability of network packet delivery, ENA Express reorders
                                     network packets on the receiving end by default. However, some UDP-based

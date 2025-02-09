@@ -24,8 +24,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/s3control/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
@@ -47,11 +45,7 @@ func (h *hooks) isUpToDate(_ context.Context, point *svcapitypes.AccessPoint, _ 
 	return obs == updated, "", nil
 }
 
-func (h *hooks) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.AccessPoint)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (h *hooks) update(ctx context.Context, cr *svcapitypes.AccessPoint) (managed.ExternalUpdate, error) {
 	obs, err := h.policyClient.observe(cr)
 	if err != nil {
 		cr.Status.SetConditions(xpv1.ReconcileError(err))

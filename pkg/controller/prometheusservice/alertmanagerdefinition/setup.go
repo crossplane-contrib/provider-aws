@@ -48,7 +48,7 @@ func SetupAlertManagerDefinition(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -95,15 +95,15 @@ func postCreate(_ context.Context, cr *svcapitypes.AlertManagerDefinition, resp 
 	return cre, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.AlertManagerDefinition, obj *svcsdk.DeleteAlertManagerDefinitionOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.AlertManagerDefinition, obj *svcsdk.DeleteAlertManagerDefinitionOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), svcsdk.ErrCodeConflictException) {
 			// skip: Can't delete alertmanagerdefinition in non-ACTIVE state. Current status is DELETING
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.AlertManagerDefinition, resp *svcsdk.DescribeAlertManagerDefinitionOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
@@ -159,11 +159,7 @@ func GeneratePutAlertManagerDefinitionInput(cr *svcapitypes.AlertManagerDefiniti
 	return res
 }
 
-func (e *updateClient) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.AlertManagerDefinition)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *updateClient) update(ctx context.Context, cr *svcapitypes.AlertManagerDefinition) (managed.ExternalUpdate, error) {
 	input := GeneratePutAlertManagerDefinitionInput(cr)
 	_, err := e.client.PutAlertManagerDefinitionWithContext(ctx, input)
 	if err != nil {

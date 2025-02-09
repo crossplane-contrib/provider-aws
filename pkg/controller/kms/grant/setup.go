@@ -63,7 +63,7 @@ func SetupGrant(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithInitializers(),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -120,16 +120,12 @@ func postCreate(_ context.Context, cr *svcapitypes.Grant, obj *svcsdk.CreateGran
 
 // NOTE: KMS Grants do not support updates.
 
-func (h *hooks) delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*svcapitypes.Grant)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
+func (h *hooks) delete(ctx context.Context, cr *svcapitypes.Grant) (managed.ExternalDelete, error) {
 	cr.SetConditions(xpv1.Deleting())
 
 	_, err := h.client.RevokeGrantWithContext(ctx, &svcsdk.RevokeGrantInput{
 		GrantId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		KeyId:   cr.Spec.ForProvider.KeyID,
 	})
-	return errors.Wrap(err, errRevokeGrant)
+	return managed.ExternalDelete{}, errors.Wrap(err, errRevokeGrant)
 }

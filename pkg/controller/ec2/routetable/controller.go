@@ -263,28 +263,33 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mgd.(*v1beta1.RouteTable)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	if err := ec2.ValidateRoutes(cr.Spec.ForProvider.Routes); err != nil {
-		return errors.Wrap(err, errInvalidRoutes)
+		return managed.ExternalDelete{}, errors.Wrap(err, errInvalidRoutes)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	// the subnet associations have to be deleted before deleting the route table.
 	if err := e.deleteAssociations(ctx, cr.Status.AtProvider.Associations); err != nil {
-		return err
+		return managed.ExternalDelete{}, err
 	}
 
 	_, err := e.client.DeleteRouteTable(ctx, &awsec2.DeleteRouteTableInput{
 		RouteTableId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return errorutils.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v1beta1.RouteBeta, observed []v1beta1.RouteState) error { //nolint:gocyclo

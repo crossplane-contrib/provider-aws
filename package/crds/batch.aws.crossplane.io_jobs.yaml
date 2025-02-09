@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: jobs.batch.aws.crossplane.io
 spec:
   group: batch.aws.crossplane.io
@@ -108,7 +108,6 @@ spec:
                           variables, which are added to the container at launch, or you can override
                           the existing environment variables from the Docker image or the job definition.
 
-
                           Environment variables must not start with AWS_BATCH; this naming convention
                           is reserved for variables that are set by the Batch service.
                         items:
@@ -130,7 +129,6 @@ spec:
                         description: |-
                           The instance type to use for a multi-node parallel job.
 
-
                           This parameter isn't applicable to single-node container jobs or jobs that
                           run on Fargate resources, and shouldn't be provided.
                         type: string
@@ -149,7 +147,6 @@ spec:
                                 The type of resource to assign to a container. The supported resources include
                                 GPU, MEMORY, and VCPU.
 
-
                                 Type is a required field
                               enum:
                               - GPU
@@ -161,20 +158,15 @@ spec:
                                 The quantity of the specified resource to reserve for the container. The
                                 values vary based on the type specified.
 
-
                                 type="GPU"
-
 
                                 The number of physical GPUs to reserve for the container. The number of GPUs
                                 reserved for all containers in a job shouldn't exceed the number of available
                                 GPUs on the compute resource that the job is launched on.
 
-
                                 GPUs are not available for jobs that are running on Fargate resources.
 
-
                                 type="MEMORY"
-
 
                                 The memory hard limit (in MiB) present to the container. This parameter is
                                 supported for jobs that are running on EC2 resources. If your container attempts
@@ -189,75 +181,53 @@ spec:
                                 section of the Docker Remote API (https://docs.docker.com/engine/api/v1.23/)
                                 and the --memory option to docker run (https://docs.docker.com/engine/reference/run/).
 
-
                                 If you're trying to maximize your resource utilization by providing your
                                 jobs as much memory as possible for a particular instance type, see Memory
                                 Management (https://docs.aws.amazon.com/batch/latest/userguide/memory-management.html)
                                 in the Batch User Guide.
 
-
                                 For jobs that are running on Fargate resources, then value is the hard limit
                                 (in MiB), and must match one of the supported values and the VCPU values
                                 must be one of the values supported for that memory value.
 
-
                                 value = 512
-
 
                                 VCPU = 0.25
 
-
                                 value = 1024
-
 
                                 VCPU = 0.25 or 0.5
 
-
                                 value = 2048
-
 
                                 VCPU = 0.25, 0.5, or 1
 
-
                                 value = 3072
-
 
                                 VCPU = 0.5, or 1
 
-
                                 value = 4096
-
 
                                 VCPU = 0.5, 1, or 2
 
-
                                 value = 5120, 6144, or 7168
-
 
                                 VCPU = 1 or 2
 
-
                                 value = 8192
-
 
                                 VCPU = 1, 2, or 4
 
-
                                 value = 9216, 10240, 11264, 12288, 13312, 14336, 15360, or 16384
 
-
                                 VCPU = 2 or 4
-
 
                                 value = 17408, 18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624,
                                 27648, 28672, 29696, or 30720
 
-
                                 VCPU = 4
 
-
                                 type="VCPU"
-
 
                                 The number of vCPUs reserved for the container. This parameter maps to CpuShares
                                 in the Create a container (https://docs.docker.com/engine/api/v1.23/#create-a-container)
@@ -267,44 +237,32 @@ spec:
                                 specify at least one vCPU. This is required but can be specified in several
                                 places; it must be specified for each node at least once.
 
-
                                 For jobs that are running on Fargate resources, then value must match one
                                 of the supported values and the MEMORY values must be one of the values supported
                                 for that VCPU value. The supported values are 0.25, 0.5, 1, 2, and 4
 
-
                                 value = 0.25
-
 
                                 MEMORY = 512, 1024, or 2048
 
-
                                 value = 0.5
-
 
                                 MEMORY = 1024, 2048, 3072, or 4096
 
-
                                 value = 1
-
 
                                 MEMORY = 2048, 3072, 4096, 5120, 6144, 7168, or 8192
 
-
                                 value = 2
-
 
                                 MEMORY = 4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312,
                                 14336, 15360, or 16384
 
-
                                 value = 4
-
 
                                 MEMORY = 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 17408,
                                 18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672,
                                 29696, or 30720
-
 
                                 Value is a required field
                               type: string
@@ -418,7 +376,6 @@ spec:
                       or the Amazon Resource Name (ARN) for the job definition. If name is specified
                       without a revision then the latest active revision is used.
 
-
                       JobDefinition is a required field
                     type: string
                   jobDefinitionRef:
@@ -499,7 +456,6 @@ spec:
                     description: |-
                       The job queue where the job is submitted. You can specify either the name
                       or the Amazon Resource Name (ARN) of the queue.
-
 
                       JobQueue is a required field
                     type: string
@@ -582,7 +538,6 @@ spec:
                       A list of node overrides in JSON format that specify the node range to target
                       and the container overrides for that node range.
 
-
                       This parameter isn't applicable to jobs that are running on Fargate resources;
                       use containerOverrides instead.
                     properties:
@@ -610,7 +565,6 @@ spec:
                                     variables, which are added to the container at launch, or you can override
                                     the existing environment variables from the Docker image or the job definition.
 
-
                                     Environment variables must not start with AWS_BATCH; this naming convention
                                     is reserved for variables that are set by the Batch service.
                                   items:
@@ -633,7 +587,6 @@ spec:
                                   description: |-
                                     The instance type to use for a multi-node parallel job.
 
-
                                     This parameter isn't applicable to single-node container jobs or jobs that
                                     run on Fargate resources, and shouldn't be provided.
                                   type: string
@@ -652,7 +605,6 @@ spec:
                                           The type of resource to assign to a container. The supported resources include
                                           GPU, MEMORY, and VCPU.
 
-
                                           Type is a required field
                                         enum:
                                         - GPU
@@ -664,20 +616,15 @@ spec:
                                           The quantity of the specified resource to reserve for the container. The
                                           values vary based on the type specified.
 
-
                                           type="GPU"
-
 
                                           The number of physical GPUs to reserve for the container. The number of GPUs
                                           reserved for all containers in a job shouldn't exceed the number of available
                                           GPUs on the compute resource that the job is launched on.
 
-
                                           GPUs are not available for jobs that are running on Fargate resources.
 
-
                                           type="MEMORY"
-
 
                                           The memory hard limit (in MiB) present to the container. This parameter is
                                           supported for jobs that are running on EC2 resources. If your container attempts
@@ -692,75 +639,53 @@ spec:
                                           section of the Docker Remote API (https://docs.docker.com/engine/api/v1.23/)
                                           and the --memory option to docker run (https://docs.docker.com/engine/reference/run/).
 
-
                                           If you're trying to maximize your resource utilization by providing your
                                           jobs as much memory as possible for a particular instance type, see Memory
                                           Management (https://docs.aws.amazon.com/batch/latest/userguide/memory-management.html)
                                           in the Batch User Guide.
 
-
                                           For jobs that are running on Fargate resources, then value is the hard limit
                                           (in MiB), and must match one of the supported values and the VCPU values
                                           must be one of the values supported for that memory value.
 
-
                                           value = 512
-
 
                                           VCPU = 0.25
 
-
                                           value = 1024
-
 
                                           VCPU = 0.25 or 0.5
 
-
                                           value = 2048
-
 
                                           VCPU = 0.25, 0.5, or 1
 
-
                                           value = 3072
-
 
                                           VCPU = 0.5, or 1
 
-
                                           value = 4096
-
 
                                           VCPU = 0.5, 1, or 2
 
-
                                           value = 5120, 6144, or 7168
-
 
                                           VCPU = 1 or 2
 
-
                                           value = 8192
-
 
                                           VCPU = 1, 2, or 4
 
-
                                           value = 9216, 10240, 11264, 12288, 13312, 14336, 15360, or 16384
 
-
                                           VCPU = 2 or 4
-
 
                                           value = 17408, 18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624,
                                           27648, 28672, 29696, or 30720
 
-
                                           VCPU = 4
 
-
                                           type="VCPU"
-
 
                                           The number of vCPUs reserved for the container. This parameter maps to CpuShares
                                           in the Create a container (https://docs.docker.com/engine/api/v1.23/#create-a-container)
@@ -770,44 +695,32 @@ spec:
                                           specify at least one vCPU. This is required but can be specified in several
                                           places; it must be specified for each node at least once.
 
-
                                           For jobs that are running on Fargate resources, then value must match one
                                           of the supported values and the MEMORY values must be one of the values supported
                                           for that VCPU value. The supported values are 0.25, 0.5, 1, 2, and 4
 
-
                                           value = 0.25
-
 
                                           MEMORY = 512, 1024, or 2048
 
-
                                           value = 0.5
-
 
                                           MEMORY = 1024, 2048, 3072, or 4096
 
-
                                           value = 1
-
 
                                           MEMORY = 2048, 3072, 4096, 5120, 6144, 7168, or 8192
 
-
                                           value = 2
-
 
                                           MEMORY = 4096, 5120, 6144, 7168, 8192, 9216, 10240, 11264, 12288, 13312,
                                           14336, 15360, or 16384
 
-
                                           value = 4
-
 
                                           MEMORY = 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 17408,
                                           18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672,
                                           29696, or 30720
-
 
                                           Value is a required field
                                         type: string
@@ -825,7 +738,6 @@ spec:
                                 range value is omitted (n:), then the highest possible node index is used
                                 to end the range.
 
-
                                 TargetNodes is a required field
                               type: string
                           required:
@@ -838,14 +750,11 @@ spec:
                           the number of nodes that are specified in the job definition. To use this
                           override:
 
-
                              * There must be at least one node range in your job definition that has
                              an open upper boundary (such as : or n:).
 
-
                              * The lower boundary of the node range specified in the job definition
                              must be fewer than the number of nodes specified in the override.
-
 
                              * The main node index specified in the job definition must be fewer than
                              the number of nodes specified in the override.
@@ -1265,7 +1174,6 @@ spec:
                   status:
                     description: |-
                       The current status for the job.
-
 
                       If your jobs don't progress to STARTING, see Jobs Stuck in RUNNABLE Status
                       (https://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html#job_stuck_in_runnable)

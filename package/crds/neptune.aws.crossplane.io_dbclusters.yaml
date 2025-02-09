@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: dbclusters.neptune.aws.crossplane.io
 spec:
   group: neptune.aws.crossplane.io
@@ -82,7 +82,6 @@ spec:
                       are applied immediately, regardless of the value of the ApplyImmediately
                       parameter.
 
-
                       Default: false
                     type: boolean
                   availabilityZones:
@@ -97,12 +96,9 @@ spec:
                       The number of days for which automated backups are retained. You must specify
                       a minimum value of 1.
 
-
                       Default: 1
 
-
                       Constraints:
-
 
                          * Must be a value from 1 to 35
                     format: int64
@@ -126,9 +122,7 @@ spec:
                       The name of the DB cluster parameter group to associate with this DB cluster.
                       If this argument is omitted, the default is used.
 
-
                       Constraints:
-
 
                          * If supplied, must match the name of an existing DBClusterParameterGroup.
                     type: string
@@ -136,10 +130,8 @@ spec:
                     description: |-
                       A DB subnet group to associate with this DB cluster.
 
-
                       Constraints: Must match the name of an existing DBSubnetGroup. Must not be
                       default.
-
 
                       Example: mySubnetgroup
                     type: string
@@ -165,20 +157,17 @@ spec:
                       If set to true, enables Amazon Identity and Access Management (IAM) authentication
                       for the entire DB cluster (this cannot be set at an instance level).
 
-
                       Default: false.
                     type: boolean
                   engine:
                     description: |-
                       The name of the database engine to be used for this DB cluster.
 
-
                       Valid Values: neptune
                     type: string
                   engineVersion:
                     description: |-
                       The version number of the database engine to use for the new DB cluster.
-
 
                       Example: 1.0.2.1
                     type: string
@@ -191,29 +180,23 @@ spec:
                     description: |-
                       The Amazon KMS key identifier for an encrypted DB cluster.
 
-
                       The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
                       key. If you are creating a DB cluster with the same Amazon account that owns
                       the KMS encryption key used to encrypt the new DB cluster, then you can use
                       the KMS key alias instead of the ARN for the KMS encryption key.
 
-
                       If an encryption key is not specified in KmsKeyId:
-
 
                          * If ReplicationSourceIdentifier identifies an encrypted source, then
                          Amazon Neptune will use the encryption key used to encrypt the source.
                          Otherwise, Amazon Neptune will use your default encryption key.
 
-
                          * If the StorageEncrypted parameter is true and ReplicationSourceIdentifier
                          is not specified, then Amazon Neptune will use your default encryption
                          key.
 
-
                       Amazon KMS creates the default encryption key for your Amazon account. Your
                       Amazon account has a different default encryption key for each Amazon Region.
-
 
                       If you create a Read Replica of an encrypted DB cluster in another Amazon
                       Region, you must set KmsKeyId to a KMS key ID that is valid in the destination
@@ -233,7 +216,6 @@ spec:
                     description: |-
                       The port number on which the instances in the DB cluster accept connections.
 
-
                       Default: 8182
                     format: int64
                     type: integer
@@ -245,24 +227,18 @@ spec:
                       The daily time range during which automated backups are created if automated
                       backups are enabled using the BackupRetentionPeriod parameter.
 
-
                       The default is a 30-minute window selected at random from an 8-hour block
                       of time for each Amazon Region. To see the time blocks available, see Neptune
                       Maintenance Window (https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-maintaining.html#manage-console-maintaining-window)
                       in the Amazon Neptune User Guide.
 
-
                       Constraints:
-
 
                          * Must be in the format hh24:mi-hh24:mi.
 
-
                          * Must be in Universal Coordinated Time (UTC).
 
-
                          * Must not conflict with the preferred maintenance window.
-
 
                          * Must be at least 30 minutes.
                     type: string
@@ -271,18 +247,14 @@ spec:
                       The weekly time range during which system maintenance can occur, in Universal
                       Coordinated Time (UTC).
 
-
                       Format: ddd:hh24:mi-ddd:hh24:mi
-
 
                       The default is a 30-minute window selected at random from an 8-hour block
                       of time for each Amazon Region, occurring on a random day of the week. To
                       see the time blocks available, see Neptune Maintenance Window (https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-maintaining.html#manage-console-maintaining-window)
                       in the Amazon Neptune User Guide.
 
-
                       Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun.
-
 
                       Constraints: Minimum 30-minute window.
                     type: string
@@ -298,7 +270,6 @@ spec:
                     description: |-
                       Contains the scaling configuration of a Neptune Serverless DB cluster.
 
-
                       For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
                       in the Amazon Neptune User Guide.
                     properties:
@@ -313,10 +284,8 @@ spec:
                       is deleted. If true is specified, no DB cluster snapshot is created. If false
                       is specified, a DB cluster snapshot is created before the DB cluster is deleted.
 
-
                       You must specify a FinalDBSnapshotIdentifier parameter if SkipFinalSnapshot
                       is false.
-
 
                       Default: false
                     type: boolean
@@ -701,7 +670,6 @@ spec:
                       Neptune distributes the connection requests among the Read Replicas in the
                       DB cluster. This functionality can help balance your read workload across
                       multiple Read Replicas in your DB cluster.
-
 
                       If a failover occurs, and the Read Replica that you are connected to is promoted
                       to be the primary instance, your connection is dropped. To continue sending

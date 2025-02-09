@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: policies.iam.aws.crossplane.io
 spec:
   group: iam.aws.crossplane.io
@@ -111,7 +111,6 @@ spec:
                             Tags with a key name of Cost Center might have values that consist of the
                             number associated with the different cost centers in your company. Typically,
                             many resources have tags with the same key name but with different values.
-
 
                             AWS always interprets the tag Value as a single string. If you need to store
                             an array, you can store comma-separated values in the string. However, you

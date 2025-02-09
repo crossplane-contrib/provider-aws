@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: securitygroups.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
@@ -102,7 +102,6 @@ spec:
                             The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
                             (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
 
-
                             [VPC only] Use -1 to specify all protocols. When authorizing security group
                             rules, specifying -1 or a protocol number other than tcp, udp, icmp, or icmpv6
                             allows traffic on all ports, regardless of any port range you specify. For
@@ -125,7 +124,6 @@ spec:
                                   A description for the security group rule that references this IPv4 address
                                   range.
 
-
                                   Constraints: Up to 255 characters in length. Allowed characters are a-z,
                                   A-Z, 0-9, spaces, and ._-:/()#,@[]+=&;{}!$*
                                 type: string
@@ -136,7 +134,6 @@ spec:
                         ipv6Ranges:
                           description: |-
                             The IPv6 ranges.
-
 
                             [VPC only]
                           items:
@@ -152,7 +149,6 @@ spec:
                                   A description for the security group rule that references this IPv6 address
                                   range.
 
-
                                   Constraints: Up to 255 characters in length. Allowed characters are a-z,
                                   A-Z, 0-9, spaces, and ._-:/()#,@[]+=&;{}!$*
                                 type: string
@@ -166,7 +162,6 @@ spec:
                             is the AWS service to access through a VPC endpoint from instances associated
                             with the security group.
 
-
                             [VPC only]
                           items:
                             description: PrefixListID describes a prefix list ID.
@@ -175,7 +170,6 @@ spec:
                                 description: |-
                                   A description for the security group rule that references this prefix list
                                   ID.
-
 
                                   Constraints: Up to 255 characters in length. Allowed characters are a-z,
                                   A-Z, 0-9, spaces, and ._-:/()#,@[]+=;{}!$*
@@ -207,7 +201,6 @@ spec:
                                 description: |-
                                   A description for the security group rule that references this user ID group
                                   pair.
-
 
                                   Constraints: Up to 255 characters in length. Allowed characters are a-z,
                                   A-Z, 0-9, spaces, and ._-:/()#,@[]+=;{}!$*
@@ -297,7 +290,6 @@ spec:
                                   group in EC2-Classic or a default VPC only. For a security group in a nondefault
                                   VPC, use the security group ID.
 
-
                                   For a referenced security group in another VPC, this value is not returned
                                   if the referenced security group is deleted.
                                 type: string
@@ -305,11 +297,9 @@ spec:
                                 description: |-
                                   The ID of an AWS account.
 
-
                                   For a referenced security group in another VPC, the account ID of the referenced
                                   security group is returned in the response. If the referenced security group
                                   is deleted, this value is not returned.
-
 
                                   [EC2-Classic] Required when adding or removing rules that reference a security
                                   group in another AWS account.
@@ -433,7 +423,6 @@ spec:
                             The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
                             (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
 
-
                             [VPC only] Use -1 to specify all protocols. When authorizing security group
                             rules, specifying -1 or a protocol number other than tcp, udp, icmp, or icmpv6
                             allows traffic on all ports, regardless of any port range you specify. For
@@ -456,7 +445,6 @@ spec:
                                   A description for the security group rule that references this IPv4 address
                                   range.
 
-
                                   Constraints: Up to 255 characters in length. Allowed characters are a-z,
                                   A-Z, 0-9, spaces, and ._-:/()#,@[]+=&;{}!$*
                                 type: string
@@ -467,7 +455,6 @@ spec:
                         ipv6Ranges:
                           description: |-
                             The IPv6 ranges.
-
 
                             [VPC only]
                           items:
@@ -483,7 +470,6 @@ spec:
                                   A description for the security group rule that references this IPv6 address
                                   range.
 
-
                                   Constraints: Up to 255 characters in length. Allowed characters are a-z,
                                   A-Z, 0-9, spaces, and ._-:/()#,@[]+=&;{}!$*
                                 type: string
@@ -497,7 +483,6 @@ spec:
                             is the AWS service to access through a VPC endpoint from instances associated
                             with the security group.
 
-
                             [VPC only]
                           items:
                             description: PrefixListID describes a prefix list ID.
@@ -506,7 +491,6 @@ spec:
                                 description: |-
                                   A description for the security group rule that references this prefix list
                                   ID.
-
 
                                   Constraints: Up to 255 characters in length. Allowed characters are a-z,
                                   A-Z, 0-9, spaces, and ._-:/()#,@[]+=;{}!$*
@@ -538,7 +522,6 @@ spec:
                                 description: |-
                                   A description for the security group rule that references this user ID group
                                   pair.
-
 
                                   Constraints: Up to 255 characters in length. Allowed characters are a-z,
                                   A-Z, 0-9, spaces, and ._-:/()#,@[]+=;{}!$*
@@ -628,7 +611,6 @@ spec:
                                   group in EC2-Classic or a default VPC only. For a security group in a nondefault
                                   VPC, use the security group ID.
 
-
                                   For a referenced security group in another VPC, this value is not returned
                                   if the referenced security group is deleted.
                                 type: string
@@ -636,11 +618,9 @@ spec:
                                 description: |-
                                   The ID of an AWS account.
 
-
                                   For a referenced security group in another VPC, the account ID of the referenced
                                   security group is returned in the response. If the referenced security group
                                   is deleted, this value is not returned.
-
 
                                   [EC2-Classic] Required when adding or removing rules that reference a security
                                   group in another AWS account.

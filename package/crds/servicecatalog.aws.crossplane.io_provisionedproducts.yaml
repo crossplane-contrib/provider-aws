@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: provisionedproducts.servicecatalog.aws.crossplane.io
 spec:
   group: servicecatalog.aws.crossplane.io
@@ -79,9 +79,7 @@ spec:
                     description: |-
                       The language code.
 
-
                          * jp - Japanese
-
 
                          * zh - Chinese
                     type: string
@@ -378,15 +376,11 @@ spec:
                       The record identifier of the last request performed on this provisioned product
                       of the following types:
 
-
                          * ProvisionProduct
-
 
                          * UpdateProvisionedProduct
 
-
                          * ExecuteProvisionedProductPlan
-
 
                          * TerminateProvisionedProduct
                     type: string
@@ -443,12 +437,9 @@ spec:
                     description: |-
                       The record type.
 
-
                          * PROVISION_PRODUCT
 
-
                          * UPDATE_PROVISIONED_PRODUCT
-
 
                          * TERMINATE_PROVISIONED_PRODUCT
                     type: string
@@ -456,25 +447,20 @@ spec:
                     description: |-
                       The current status of the provisioned product.
 
-
                          * AVAILABLE - Stable state, ready to perform any operation. The most recent
                          operation succeeded and completed.
 
-
                          * UNDER_CHANGE - Transitive state. Operations performed might not have
                          valid results. Wait for an AVAILABLE status before performing operations.
-
 
                          * TAINTED - Stable state, ready to perform any operation. The stack has
                          completed the requested operation but is not exactly what was requested.
                          For example, a request to update to a new version failed and the stack
                          rolled back to the current version.
 
-
                          * ERROR - An unexpected error occurred. The provisioned product exists
                          but the stack is not running. For example, CloudFormation received a parameter
                          value that was not valid and could not launch the stack.
-
 
                          * PLAN_IN_PROGRESS - Transitive state. The plan operations were performed
                          to provision a new product, but resources have not yet been created. After

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: environments.mwaa.aws.crossplane.io
 spec:
   group: mwaa.aws.crossplane.io
@@ -87,7 +87,6 @@ spec:
                       it defaults to the latest version. For more information, see Apache Airflow
                       versions on Amazon Managed Workflows for Apache Airflow (MWAA) (https://docs.aws.amazon.com/mwaa/latest/userguide/airflow-versions.html).
 
-
                       Valid values: 1.10.12, 2.0.2, 2.2.2, 2.4.3, 2.5.1, 2.6.3, 2.7.2.
                     type: string
                   dagS3Path:
@@ -107,7 +106,6 @@ spec:
                       grants MWAA permission to access AWS services and resources used by your
                       environment. For example, arn:aws:iam::123456789:role/my-execution-role.
                       To learn more, see Amazon MWAA Execution role (https://docs.aws.amazon.com/mwaa/latest/userguide/mwaa-create-role.html).
-
 
                       This field or SourceBucketARNRef or SourceBucketARNSelector is required.
                     type: string
@@ -193,7 +191,6 @@ spec:
                       The AWS Key Management Service (KMS) key to encrypt the data in your environment.
                       You can use an AWS owned CMK, or a Customer managed CMK (advanced). To learn
                       more, see Get started with Amazon Managed Workflows for Apache Airflow (https://docs.aws.amazon.com/mwaa/latest/userguide/get-started.html).
-
 
                       This field or KMSKeyRef or KMSKeySelector is required.
                     type: string
@@ -558,9 +555,7 @@ spec:
                       The number of Apache Airflow schedulers to run in your environment. Valid
                       values:
 
-
                          * v2 - Accepts between 2 to 5. Defaults to 2.
-
 
                          * v1 - Accepts 1.
                     format: int64
@@ -570,7 +565,6 @@ spec:
                       The Amazon Resource Name (ARN) of the Amazon S3 bucket where your DAG code
                       and supporting files are stored. For example, arn:aws:s3:::my-airflow-bucket-unique-name.
                       To learn more, see Create an Amazon S3 bucket for Amazon MWAA (https://docs.aws.amazon.com/mwaa/latest/userguide/mwaa-s3-bucket.html).
-
 
                       This field or SourceBucketARNRef or SourceBucketARNSelector is required.
                     type: string
@@ -657,13 +651,10 @@ spec:
                       specify the version ID (https://docs.aws.amazon.com/AmazonS3/latest/userguide/versioning-workflows.html)
                       that Amazon S3 assigns to the file every time you update the script.
 
-
                       Version IDs are Unicode, UTF-8 encoded, URL-ready, opaque strings that are
                       no more than 1,024 bytes long. The following is an example:
 
-
                       3sL4kqtJlcpXroDTDmJ+rmSpXd3dIbrHY+MTRCxf3vjVBH40Nr8X8gdRQBpUMLUo
-
 
                       For more information, see Using a startup script (https://docs.aws.amazon.com/mwaa/latest/userguide/using-startup-script.html).
                     type: string
@@ -671,7 +662,6 @@ spec:
                     description: |-
                       The relative path to the startup shell script in your Amazon S3 bucket. For
                       example, s3://mwaa-environment/startup.sh.
-
 
                       Amazon MWAA runs the script as your environment starts, and before running
                       the Apache Airflow process. You can use this script to install dependencies,
@@ -902,9 +892,7 @@ spec:
                     description: |-
                       The status of the Amazon MWAA environment. Valid values:
 
-
                          * CREATING - Indicates the request to create the environment is in progress.
-
 
                          * CREATING_SNAPSHOT - Indicates the request to update environment details,
                          or upgrade the environment version, is in progress and Amazon MWAA is
@@ -913,37 +901,28 @@ spec:
                          at a specific point in time. Amazon MWAA uses snapshots to recover environment
                          metadata if the process to update or upgrade an environment fails.
 
-
                          * CREATE_FAILED - Indicates the request to create the environment failed,
                          and the environment could not be created.
-
 
                          * AVAILABLE - Indicates the request was successful and the environment
                          is ready to use.
 
-
                          * UPDATING - Indicates the request to update the environment is in progress.
-
 
                          * ROLLING_BACK - Indicates the request to update environment details,
                          or upgrade the environment version, failed and Amazon MWAA is restoring
                          the environment using the latest storage volume snapshot.
 
-
                          * DELETING - Indicates the request to delete the environment is in progress.
-
 
                          * DELETED - Indicates the request to delete the environment is complete,
                          and the environment has been deleted.
 
-
                          * UNAVAILABLE - Indicates the request failed, but the environment was
                          unable to rollback and is not in a stable state.
 
-
                          * UPDATE_FAILED - Indicates the request to update the environment failed,
                          and the environment has rolled back successfully and is ready to use.
-
 
                       We recommend reviewing our troubleshooting guide for a list of common errors
                       and their solutions. For more information, see Amazon MWAA troubleshooting

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: userpoolclients.cognitoidentityprovider.aws.crossplane.io
 spec:
   group: cognitoidentityprovider.aws.crossplane.io
@@ -80,14 +80,11 @@ spec:
                       their access token. To specify the time unit for AccessTokenValidity as seconds,
                       minutes, hours, or days, set a TokenValidityUnits value in your API request.
 
-
                       For example, when you set AccessTokenValidity to 10 and TokenValidityUnits
                       to hours, your user can authorize access with their access token for 10 hours.
 
-
                       The default time unit for AccessTokenValidity in an API request is hours.
                       Valid range is displayed below in seconds.
-
 
                       If you don't specify otherwise in the configuration of your app client, your
                       access tokens are valid for one hour.
@@ -97,23 +94,17 @@ spec:
                     description: |-
                       The allowed OAuth flows.
 
-
                       code
-
 
                       Use a code grant flow, which provides an authorization code as the response.
                       This code can be exchanged for access tokens with the /oauth2/token endpoint.
 
-
                       implicit
-
 
                       Issue the access token (and, optionally, ID token, based on scopes) directly
                       to your user.
 
-
                       client_credentials
-
 
                       Issue the access token from the /oauth2/token endpoint directly to a non-person
                       user using a combination of the client ID and client secret.
@@ -124,23 +115,17 @@ spec:
                     description: |-
                       Set to true to use OAuth 2.0 features in your user pool app client.
 
-
                       AllowedOAuthFlowsUserPoolClient must be true before you can configure the
                       following features in your app client.
 
-
                          * CallBackURLs: Callback URLs.
-
 
                          * LogoutURLs: Sign-out redirect URLs.
 
-
                          * AllowedOAuthScopes: OAuth 2.0 scopes.
-
 
                          * AllowedOAuthFlows: Support for authorization code, implicit, and client
                          credentials OAuth 2.0 grants.
-
 
                       To use OAuth 2.0 features, configure one of these features in the Amazon
                       Cognito console or set AllowedOAuthFlowsUserPoolClient to true in a CreateUserPoolClient
@@ -160,7 +145,6 @@ spec:
                     description: |-
                       The user pool analytics configuration for collecting metrics and sending
                       them to your Amazon Pinpoint campaign.
-
 
                       In Amazon Web Services Regions where Amazon Pinpoint isn't available, user
                       pools only support sending events to Amazon Pinpoint projects in Amazon Web
@@ -191,25 +175,18 @@ spec:
                     description: |-
                       A list of allowed redirect (callback) URLs for the IdPs.
 
-
                       A redirect URI must:
-
 
                          * Be an absolute URI.
 
-
                          * Be registered with the authorization server.
-
 
                          * Not include a fragment component.
 
-
                       See OAuth 2.0 - Redirection Endpoint (https://tools.ietf.org/html/rfc6749#section-3.1.2).
-
 
                       Amazon Cognito requires HTTPS over HTTP except for http://localhost for testing
                       purposes only.
-
 
                       App callback URLs such as myapp://example are also supported.
                     items:
@@ -223,25 +200,18 @@ spec:
                     description: |-
                       The default redirect URI. Must be in the CallbackURLs list.
 
-
                       A redirect URI must:
-
 
                          * Be an absolute URI.
 
-
                          * Be registered with the authorization server.
-
 
                          * Not include a fragment component.
 
-
                       See OAuth 2.0 - Redirection Endpoint (https://tools.ietf.org/html/rfc6749#section-3.1.2).
-
 
                       Amazon Cognito requires HTTPS over HTTP except for http://localhost for testing
                       purposes only.
-
 
                       App callback URLs such as myapp://example are also supported.
                     type: string
@@ -260,7 +230,6 @@ spec:
                       Activates or deactivates token revocation. For more information about revoking
                       tokens, see RevokeToken (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_RevokeToken.html).
 
-
                       If you don't include this parameter, token revocation is automatically activated
                       for the new user pool client.
                     type: boolean
@@ -272,13 +241,10 @@ spec:
                       Password (SRP), a user name and password, or a custom authentication process
                       that you define with Lambda functions.
 
-
                       If you don't specify a value for ExplicitAuthFlows, your user client supports
                       ALLOW_REFRESH_TOKEN_AUTH, ALLOW_USER_SRP_AUTH, and ALLOW_CUSTOM_AUTH.
 
-
                       Valid values include:
-
 
                          * ALLOW_ADMIN_USER_PASSWORD_AUTH: Enable admin based user password authentication
                          flow ADMIN_USER_PASSWORD_AUTH. This setting replaces the ADMIN_NO_SRP_AUTH
@@ -286,20 +252,15 @@ spec:
                          password to Amazon Cognito in the request, instead of using the Secure
                          Remote Password (SRP) protocol to securely transmit the password.
 
-
                          * ALLOW_CUSTOM_AUTH: Enable Lambda trigger based authentication.
-
 
                          * ALLOW_USER_PASSWORD_AUTH: Enable user password-based authentication.
                          In this flow, Amazon Cognito receives the password in the request instead
                          of using the SRP protocol to verify passwords.
 
-
                          * ALLOW_USER_SRP_AUTH: Enable SRP-based authentication.
 
-
                          * ALLOW_REFRESH_TOKEN_AUTH: Enable authflow to refresh tokens.
-
 
                       In some environments, you will see the values ADMIN_NO_SRP_AUTH, CUSTOM_AUTH_FLOW_ONLY,
                       or USER_PASSWORD_AUTH. You can't assign these legacy ExplicitAuthFlows values
@@ -319,15 +280,12 @@ spec:
                       ID token. To specify the time unit for IdTokenValidity as seconds, minutes,
                       hours, or days, set a TokenValidityUnits value in your API request.
 
-
                       For example, when you set IdTokenValidity as 10 and TokenValidityUnits as
                       hours, your user can authenticate their session with their ID token for 10
                       hours.
 
-
                       The default time unit for IdTokenValidity in an API request is hours. Valid
                       range is displayed below in seconds.
-
 
                       If you don't specify otherwise in the configuration of your app client, your
                       ID tokens are valid for one hour.
@@ -349,12 +307,9 @@ spec:
                       return a UserNotFoundException exception if the user doesn't exist in the
                       user pool.
 
-
                       Valid values include:
 
-
                          * ENABLED - This prevents user existence-related errors.
-
 
                          * LEGACY - This represents the early behavior of Amazon Cognito where
                          user existence related errors aren't prevented.
@@ -371,17 +326,14 @@ spec:
                       seconds, minutes, hours, or days, set a TokenValidityUnits value in your
                       API request.
 
-
                       For example, when you set RefreshTokenValidity as 10 and TokenValidityUnits
                       as days, your user can refresh their session and retrieve new access and
                       ID tokens for 10 days.
-
 
                       The default time unit for RefreshTokenValidity in an API request is days.
                       You can't set RefreshTokenValidity to 0. If you do, Amazon Cognito overrides
                       the value with the default value of 30 days. Valid range is displayed below
                       in seconds.
-
 
                       If you don't specify otherwise in the configuration of your app client, your
                       refresh tokens are valid for 30 days.
@@ -493,7 +445,6 @@ spec:
                   writeAttributes:
                     description: |-
                       The user pool attributes that the app client can write to.
-
 
                       If your app client allows users to sign in through an IdP, this array must
                       include all attributes that you have mapped to IdP attributes. Amazon Cognito

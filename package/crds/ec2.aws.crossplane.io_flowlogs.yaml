@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: flowlogs.ec2.aws.crossplane.io
 spec:
   group: ec2.aws.crossplane.io
@@ -265,16 +265,13 @@ spec:
                       The destination for the flow log data. The meaning of this parameter depends
                       on the destination type.
 
-
                          * If the destination type is cloud-watch-logs, specify the ARN of a CloudWatch
                          Logs log group. For example: arn:aws:logs:region:account_id:log-group:my_group
                          Alternatively, use the LogGroupName parameter.
 
-
                          * If the destination type is s3, specify the ARN of an S3 bucket. For
                          example: arn:aws:s3:::my_bucket/my_subfolder/ The subfolder is optional.
                          Note that you can't use AWSLogs as a subfolder name.
-
 
                          * If the destination type is kinesis-data-firehose, specify the ARN of
                          a Kinesis Data Firehose delivery stream. For example: arn:aws:firehose:region:account_id:deliverystream:my_stream
@@ -282,7 +279,6 @@ spec:
                   logDestinationType:
                     description: |-
                       The type of destination for the flow log data.
-
 
                       Default: cloud-watch-logs
                     type: string
@@ -296,14 +292,12 @@ spec:
                       in the Amazon VPC User Guide or Transit Gateway Flow Log records (https://docs.aws.amazon.com/vpc/latest/tgw/tgw-flow-logs.html#flow-log-records)
                       in the Amazon Web Services Transit Gateway Guide.
 
-
                       Specify the fields using the ${field-id} format, separated by spaces.
                     type: string
                   logGroupName:
                     description: |-
                       The name of a new or existing CloudWatch Logs log group where Amazon EC2
                       publishes your flow logs.
-
 
                       This parameter is valid only if the destination type is cloud-watch-logs.
                     type: string
@@ -314,11 +308,9 @@ spec:
                       minute) or 600 seconds (10 minutes). This parameter must be 60 seconds for
                       transit gateway resource types.
 
-
                       When a network interface is attached to a Nitro-based instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances),
                       the aggregation interval is always 60 seconds or less, regardless of the
                       value that you specify.
-
 
                       Default: 600
                     format: int64
@@ -334,7 +326,6 @@ spec:
                     description: |-
                       The ID of the subnet, network interface, or VPC for which you want to create
                       a flow log.
-
 
                       Constraints: Maximum of 1000 resources
                     items:

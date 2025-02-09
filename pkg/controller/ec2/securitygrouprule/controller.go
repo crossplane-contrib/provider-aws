@@ -273,15 +273,21 @@ func (e *external) createSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGr
 	return nil
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mgd.(*manualv1alpha1.SecurityGroupRule)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
-	return e.deleteSgr(ctx, cr)
+	return managed.ExternalDelete{}, e.deleteSgr(ctx, cr)
 }
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
+}
+
 func (e *external) deleteSgr(ctx context.Context, sgr *manualv1alpha1.SecurityGroupRule) error {
 	return e.deleteSgrForType(ctx, sgr, *sgr.Spec.ForProvider.Type)
 }

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: fargateprofiles.eks.aws.crossplane.io
 spec:
   group: eks.aws.crossplane.io
@@ -86,7 +86,6 @@ spec:
                   clusterName:
                     description: |-
                       The name of the Amazon EKS cluster to apply the Fargate profile to.
-
 
                       ClusterName is a required field
                     type: string
@@ -176,7 +175,6 @@ spec:
                       read access to Amazon ECR image repositories. For more information, see Pod
                       Execution Role (https://docs.aws.amazon.com/eks/latest/userguide/pod-execution-role.html)
                       in the Amazon EKS User Guide.
-
 
                       At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
                     type: string
@@ -701,7 +699,6 @@ spec:
                     description: |-
                       The name of the Amazon EKS cluster to apply the Fargate profile to.
 
-
                       ClusterName is a required field
                     type: string
                   clusterNameRef:
@@ -790,7 +787,6 @@ spec:
                       read access to Amazon ECR image repositories. For more information, see Pod
                       Execution Role (https://docs.aws.amazon.com/eks/latest/userguide/pod-execution-role.html)
                       in the Amazon EKS User Guide.
-
 
                       At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
                     type: string

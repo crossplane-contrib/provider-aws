@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: repositorypolicies.ecr.aws.crossplane.io
 spec:
   group: ecr.aws.crossplane.io
@@ -622,7 +622,6 @@ spec:
                   repositoryName:
                     description: |-
                       The name of the repository to receive the policy.
-
 
                       One of RepositoryName, RepositoryNameRef, or RepositoryNameSelector is required.
                     type: string
@@ -1543,7 +1542,6 @@ spec:
                   repositoryName:
                     description: |-
                       The name of the repository to receive the policy.
-
 
                       One of RepositoryName, RepositoryNameRef, or RepositoryNameSelector is required.
                     type: string

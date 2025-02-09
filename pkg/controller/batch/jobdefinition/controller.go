@@ -182,19 +182,24 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, svcutils.UpdateTagsForResource(ctx, e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.JobDefinitionArn)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.JobDefinition)
 	if !ok {
-		return errors.New(errNotBatchJobDefinition)
+		return managed.ExternalDelete{}, errors.New(errNotBatchJobDefinition)
 	}
 
 	if cr.Status.AtProvider.Status == pointer.ToOrNilIfZeroValue("INACTIVE") {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeregisterJobDefinitionWithContext(ctx, generateDeregisterJobDefinitionInput(cr))
-	return errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDeregisterJobDefinition)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errDeregisterJobDefinition)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.JobDefinitionParameters) {

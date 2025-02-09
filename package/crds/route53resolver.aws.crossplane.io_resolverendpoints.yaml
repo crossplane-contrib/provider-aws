@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: resolverendpoints.route53resolver.aws.crossplane.io
 spec:
   group: route53resolver.aws.crossplane.io
@@ -78,10 +78,8 @@ spec:
                     description: |-
                       Specify the applicable value:
 
-
                          * INBOUND: Resolver forwards DNS queries to the DNS service for a VPC
                          from your network
-
 
                          * OUTBOUND: Resolver forwards DNS queries from the DNS service for a VPC
                          to your network
@@ -534,26 +532,21 @@ spec:
                       A code that specifies the current status of the Resolver endpoint. Valid
                       values include the following:
 
-
                          * CREATING: Resolver is creating and configuring one or more Amazon VPC
                          network interfaces for this endpoint.
-
 
                          * OPERATIONAL: The Amazon VPC network interfaces for this endpoint are
                          correctly configured and able to pass inbound or outbound DNS queries
                          between your network and Resolver.
 
-
                          * UPDATING: Resolver is associating or disassociating one or more network
                          interfaces with this endpoint.
-
 
                          * AUTO_RECOVERING: Resolver is trying to recover one or more of the network
                          interfaces that are associated with this endpoint. During the recovery
                          process, the endpoint functions with limited capacity because of the limit
                          on the number of DNS queries per IP address (per network interface). For
                          the current limit, see Limits on Route 53 Resolver (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html#limits-api-entities-resolver).
-
 
                          * ACTION_NEEDED: This endpoint is unhealthy, and Resolver can't automatically
                          recover it. To resolve the problem, we recommend that you check each IP
@@ -565,7 +558,6 @@ spec:
                          associated with the endpoint were deleted using Amazon VPC. The network
                          interface couldn't be created for some reason that's outside the control
                          of Resolver.
-
 
                          * DELETING: Resolver is deleting this endpoint and the associated network
                          interfaces.

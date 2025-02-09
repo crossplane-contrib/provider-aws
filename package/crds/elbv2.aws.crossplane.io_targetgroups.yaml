@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: targetgroups.elbv2.aws.crossplane.io
 spec:
   group: elbv2.aws.crossplane.io
@@ -92,9 +92,7 @@ spec:
                     description: |-
                       [HTTP/HTTPS health checks] The destination for health checks on the targets.
 
-
                       [HTTP1 or HTTP2 protocol version] The ping path. The default is /.
-
 
                       [GRPC protocol version] The path of a custom health check method with the
                       format /package.service/method. The default is /Amazon Web Services.ALB/healthcheck.
@@ -156,7 +154,6 @@ spec:
                     description: |-
                       The name of the target group.
 
-
                       This name must be unique per region per account, can have a maximum of 32
                       characters, must contain only alphanumeric characters or hyphens, and must
                       not begin or end with a hyphen.
@@ -203,9 +200,7 @@ spec:
                       target group. You can't specify targets for a target group using more than
                       one target type.
 
-
                          * instance - Register targets by instance ID. This is the default value.
-
 
                          * ip - Register targets by IP address. You can specify IP addresses from
                          the subnets of the virtual private cloud (VPC) for the target group, the
@@ -213,9 +208,7 @@ spec:
                          RFC 6598 range (100.64.0.0/10). You can't specify publicly routable IP
                          addresses.
 
-
                          * lambda - Register a single Lambda function as a target.
-
 
                          * alb - Register a single Application Load Balancer as a target.
                     type: string

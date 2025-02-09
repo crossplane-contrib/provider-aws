@@ -12,7 +12,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cloudwatchlogs/v1alpha1"
@@ -51,7 +50,7 @@ func SetupResourcePolicy(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.ResourcePolicy{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ResourcePolicyGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -112,11 +111,7 @@ func postUpdate(_ context.Context, _ *svcapitypes.ResourcePolicy, _ *svcsdk.PutR
 	return upd, err
 }
 
-func (e *custom) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.ResourcePolicy)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *custom) update(ctx context.Context, cr *svcapitypes.ResourcePolicy) (managed.ExternalUpdate, error) {
 	input := GeneratePutResourcePolicyInput(cr)
 	preUpdate(ctx, cr, input)
 	resp, err := e.client.PutResourcePolicyWithContext(ctx, input)

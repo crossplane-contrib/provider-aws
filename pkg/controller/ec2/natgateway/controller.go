@@ -215,21 +215,26 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mgd.(*v1beta1.NATGateway)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.State == v1beta1.NatGatewayStatusDeleted ||
 		cr.Status.AtProvider.State == v1beta1.NatGatewayStatusDeleting {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
 	_, err := e.client.DeleteNatGateway(ctx, &awsec2.DeleteNatGatewayInput{
 		NatGatewayId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return errorutils.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDelete)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

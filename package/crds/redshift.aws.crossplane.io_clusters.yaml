@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: clusters.redshift.aws.crossplane.io
 spec:
   group: redshift.aws.crossplane.io
@@ -818,7 +818,6 @@ spec:
                           description: |-
                             The list of parameter statuses.
 
-
                             For more information about parameters and parameter groups, go to Amazon
                             Redshift Parameter Groups (https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-parameter-groups.html)
                             in the Amazon Redshift Cluster Management Guide.
@@ -836,31 +835,23 @@ spec:
                                   with the database, waiting for a cluster reboot, or encountered an error
                                   when being applied.
 
-
                                   The following are possible statuses and descriptions.
 
-
                                      * in-sync: The parameter value is in sync with the database.
-
 
                                      * pending-reboot: The parameter value will be applied after the cluster
                                      reboots.
 
-
                                      * applying: The parameter value is being applied to the database.
-
 
                                      * invalid-parameter: Cannot apply the parameter value because it has an
                                      invalid value or syntax.
 
-
                                      * apply-deferred: The parameter contains static property changes. The
                                      changes are deferred until the cluster reboots.
 
-
                                      * apply-error: Cannot connect to the cluster. The parameter change will
                                      be applied after the cluster reboots.
-
 
                                      * unknown-error: Cannot apply the parameter change right now. The change
                                      will be applied after the cluster reboots.
@@ -900,7 +891,6 @@ spec:
                           The number of days that automated snapshots are retained in the destination
                           region after they are copied from a source region. If the value is -1, the
                           manual snapshot is retained indefinitely.
-
 
                           The value must be either -1 or an integer between 1 and 3,653.
                         format: int32
@@ -1012,9 +1002,7 @@ spec:
                       The status of next expected snapshot for clusters having a valid snapshot
                       schedule and backups enabled. Possible values are the following:
 
-
                          * OnTrack - The next snapshot is expected to be taken on time.
-
 
                          * Pending - The next snapshot is pending to be taken.
                     type: string
@@ -1023,7 +1011,6 @@ spec:
                       A value that reports whether the Amazon Redshift cluster has finished applying
                       any hardware security module (HSM) settings changes specified in a modify
                       cluster command.
-
 
                       Values: active, applying
                     properties:
@@ -1041,7 +1028,6 @@ spec:
                         description: |-
                           Reports whether the Amazon Redshift cluster has finished applying any HSM
                           settings changes specified in a modify cluster command.
-
 
                           Values: active, applying
                         type: string

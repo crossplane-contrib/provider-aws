@@ -188,20 +188,25 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyCacheCluster)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*cachev1alpha1.CacheCluster)
 	if !ok {
-		return errors.New(errNotCacheCluster)
+		return managed.ExternalDelete{}, errors.New(errNotCacheCluster)
 	}
 
 	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.CacheClusterStatus == cachev1alpha1.StatusDeleted ||
 		cr.Status.AtProvider.CacheClusterStatus == cachev1alpha1.StatusDeleting {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
 	_, err := e.client.DeleteCacheCluster(ctx, &elasticacheservice.DeleteCacheClusterInput{
 		CacheClusterId: aws.String(meta.GetExternalName(cr)),
 	})
-	return errorutils.Wrap(resource.Ignore(elasticache.IsClusterNotFound, err), errDeleteCacheCluster)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(elasticache.IsClusterNotFound, err), errDeleteCacheCluster)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

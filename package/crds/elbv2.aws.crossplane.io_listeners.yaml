@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: listeners.elbv2.aws.crossplane.io
 spec:
   group: elbv2.aws.crossplane.io
@@ -78,21 +78,15 @@ spec:
                       [TLS listeners] The name of the Application-Layer Protocol Negotiation (ALPN)
                       policy. You can specify one policy name. The following are the possible values:
 
-
                          * HTTP1Only
-
 
                          * HTTP2Only
 
-
                          * HTTP2Optional
-
 
                          * HTTP2Preferred
 
-
                          * None
-
 
                       For more information, see ALPN policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#alpn-policies)
                       in the Network Load Balancers Guide.
@@ -196,7 +190,6 @@ spec:
                     items:
                       description: |-
                         CustomAction includes custom fields for an action.
-
 
                         Each rule must include exactly one of the following types of actions: forward,
                         fixed-response, or redirect, and it must be the last action to be performed.
@@ -389,30 +382,22 @@ spec:
                           description: |-
                             Information about a redirect action.
 
-
                             A URI consists of the following components: protocol://hostname:port/path?query.
                             You must modify at least one of the following components to avoid a redirect
                             loop: protocol, hostname, port, or path. Any components that you do not modify
                             retain their original values.
 
-
                             You can reuse URI components using the following reserved keywords:
-
 
                                * #{protocol}
 
-
                                * #{host}
-
 
                                * #{port}
 
-
                                * #{path} (the leading "/" is removed)
 
-
                                * #{query}
-
 
                             For example, you can change the path to "/new/#{path}", the hostname to "example.#{host}",
                             or the query to "#{query}&value=xyz".
@@ -613,7 +598,6 @@ spec:
                     description: |-
                       [HTTPS and TLS listeners] The security policy that defines which protocols
                       and ciphers are supported.
-
 
                       For more information, see Security policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies)
                       in the Application Load Balancers Guide and Security policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies)
@@ -921,30 +905,22 @@ spec:
                           description: |-
                             Information about a redirect action.
 
-
                             A URI consists of the following components: protocol://hostname:port/path?query.
                             You must modify at least one of the following components to avoid a redirect
                             loop: protocol, hostname, port, or path. Any components that you do not modify
                             retain their original values.
 
-
                             You can reuse URI components using the following reserved keywords:
-
 
                                * #{protocol}
 
-
                                * #{host}
-
 
                                * #{port}
 
-
                                * #{path} (the leading "/" is removed)
 
-
                                * #{query}
-
 
                             For example, you can change the path to "/new/#{path}", the hostname to "example.#{host}",
                             or the query to "#{query}&value=xyz".
