@@ -89,7 +89,7 @@ func SetupCluster(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithInitializers(),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -765,11 +765,7 @@ func isClientAuthenticationUpToDate(wanted *svcapitypes.ClientAuthentication, cu
 	return true
 }
 
-func (u *hooks) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
-	cr, ok := mg.(*svcapitypes.Cluster)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (u *hooks) update(ctx context.Context, cr *svcapitypes.Cluster) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	if aws.StringValue(cr.Status.AtProvider.State) != stateActive {
 		return managed.ExternalUpdate{}, errors.New(errStateForUpdate)
 	}

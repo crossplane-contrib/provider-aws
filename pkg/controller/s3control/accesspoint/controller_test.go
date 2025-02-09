@@ -8,13 +8,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3control/s3controliface"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/common"
+	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/s3control/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/s3control/fake"
 	s3controlTesting "github.com/crossplane-contrib/provider-aws/pkg/controller/s3control/testing"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
@@ -22,7 +22,6 @@ import (
 )
 
 var (
-	unexpectedItem     resource.Managed
 	errBoom            = errors.New("boom")
 	testOutputPolicyV1 = s3control.GetAccessPointPolicyOutput{
 		Policy: pointer.ToOrNilIfZeroValue(`{
@@ -76,11 +75,11 @@ func TestObserve(t *testing.T) {
 	type args struct {
 		kube   client.Client
 		client s3controliface.S3ControlAPI
-		cr     resource.Managed
+		cr     *svcapitypes.AccessPoint
 	}
 
 	type want struct {
-		cr     resource.Managed
+		cr     *svcapitypes.AccessPoint
 		result managed.ExternalObservation
 		err    error
 	}
@@ -90,15 +89,6 @@ func TestObserve(t *testing.T) {
 		args args
 		want want
 	}{
-		{name: "InValidInput",
-			args: args{
-				cr: unexpectedItem,
-			},
-			want: want{
-				cr:  unexpectedItem,
-				err: errors.New(errUnexpectedObject),
-			},
-		},
 		{name: "ClientError",
 			args: args{
 				client: &fake.MockS3ControlClient{
@@ -260,11 +250,11 @@ func TestUpdate(t *testing.T) {
 	type args struct {
 		kube   client.Client
 		client s3controliface.S3ControlAPI
-		cr     resource.Managed
+		cr     *svcapitypes.AccessPoint
 	}
 
 	type want struct {
-		cr     resource.Managed
+		cr     *svcapitypes.AccessPoint
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -274,15 +264,6 @@ func TestUpdate(t *testing.T) {
 		args args
 		want want
 	}{
-		{name: "InValidInput",
-			args: args{
-				cr: unexpectedItem,
-			},
-			want: want{
-				cr:  unexpectedItem,
-				err: errors.New(errUnexpectedObject),
-			},
-		},
 		{name: "GetAccessPointPolicyClientError",
 			args: args{
 				client: &fake.MockS3ControlClient{
@@ -391,11 +372,11 @@ func TestCreate(t *testing.T) {
 	type args struct {
 		kube   client.Client
 		client s3controliface.S3ControlAPI
-		cr     resource.Managed
+		cr     *svcapitypes.AccessPoint
 	}
 
 	type want struct {
-		cr     resource.Managed
+		cr     *svcapitypes.AccessPoint
 		result managed.ExternalCreation
 		err    error
 	}
@@ -405,15 +386,6 @@ func TestCreate(t *testing.T) {
 		args args
 		want want
 	}{
-		{name: "InValidInput",
-			args: args{
-				cr: unexpectedItem,
-			},
-			want: want{
-				cr:  unexpectedItem,
-				err: errors.New(errUnexpectedObject),
-			},
-		},
 		{name: "ClientError",
 			args: args{
 				client: &fake.MockS3ControlClient{
@@ -463,11 +435,11 @@ func TestDelete(t *testing.T) {
 	type args struct {
 		kube   client.Client
 		client s3controliface.S3ControlAPI
-		cr     resource.Managed
+		cr     *svcapitypes.AccessPoint
 	}
 
 	type want struct {
-		cr  resource.Managed
+		cr  *svcapitypes.AccessPoint
 		err error
 	}
 
@@ -476,15 +448,6 @@ func TestDelete(t *testing.T) {
 		args args
 		want want
 	}{
-		{name: "InValidInput",
-			args: args{
-				cr: unexpectedItem,
-			},
-			want: want{
-				cr:  unexpectedItem,
-				err: errors.New(errUnexpectedObject),
-			},
-		},
 		{name: "ClientError",
 			args: args{
 				client: &fake.MockS3ControlClient{

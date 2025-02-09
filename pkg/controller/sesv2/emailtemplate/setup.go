@@ -55,7 +55,7 @@ func SetupEmailTemplate(mgr ctrl.Manager, o controller.Options) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.EmailTemplateGroupVersionKind),
 			managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))

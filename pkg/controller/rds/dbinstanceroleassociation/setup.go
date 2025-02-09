@@ -11,7 +11,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
@@ -44,7 +43,7 @@ func SetupDBInstanceRoleAssociation(mgr ctrl.Manager, o controller.Options) erro
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -86,12 +85,7 @@ func preDelete(_ context.Context, cr *svcapitypes.DBInstanceRoleAssociation, inp
 	return input.RoleArn == nil || input.DBInstanceIdentifier == nil, nil
 }
 
-func (e *external) observer(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.DBInstanceRoleAssociation)
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
-
+func (e *external) observer(ctx context.Context, cr *svcapitypes.DBInstanceRoleAssociation) (managed.ExternalObservation, error) {
 	input := GenerateDescribeDBInstancesInput(cr)
 	resp, err := e.client.DescribeDBInstancesWithContext(ctx, input)
 	if err != nil {

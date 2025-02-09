@@ -33,8 +33,8 @@ func function(m ...functionModifier) *v1beta1.Function {
 	return cr
 }
 
-var _ managed.ExternalClient = &external{}
-var _ managed.ExternalConnecter = &connector{}
+var _ managed.TypedExternalClient[*v1beta1.Function] = &external{}
+var _ managed.TypedExternalConnecter[*v1beta1.Function] = &connector{}
 
 func TestIsUpToDateEnvironment(t *testing.T) {
 	type want struct {

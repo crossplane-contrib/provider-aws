@@ -53,23 +53,15 @@ type connector struct {
 	opts []option
 }
 
-func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.VPCEndpointServiceConfiguration)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+func (c *connector) Connect(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration) (managed.TypedExternalClient[*svcapitypes.VPCEndpointServiceConfiguration], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
 	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.VPCEndpointServiceConfiguration)
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Observe(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration) (managed.ExternalObservation, error) {
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
@@ -108,11 +100,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}, nil)
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.VPCEndpointServiceConfiguration)
-	if !ok {
-		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Create(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration) (managed.ExternalCreation, error) {
 	cr.Status.SetConditions(xpv1.Creating())
 	input := GenerateCreateVpcEndpointServiceConfigurationInput(cr)
 	if err := e.preCreate(ctx, cr, input); err != nil {
@@ -245,11 +233,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.VPCEndpointServiceConfiguration)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Update(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration) (managed.ExternalUpdate, error) {
 	input := GenerateModifyVpcEndpointServiceConfigurationInput(cr)
 	if err := e.preUpdate(ctx, cr, input); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
@@ -258,13 +242,9 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
-	cr, ok := mg.(*svcapitypes.VPCEndpointServiceConfiguration)
-	if !ok {
-		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Delete(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
-	return e.delete(ctx, mg)
+	return e.delete(ctx, cr)
 
 }
 
@@ -306,7 +286,7 @@ type external struct {
 	isUpToDate     func(context.Context, *svcapitypes.VPCEndpointServiceConfiguration, *svcsdk.DescribeVpcEndpointServiceConfigurationsOutput) (bool, string, error)
 	preCreate      func(context.Context, *svcapitypes.VPCEndpointServiceConfiguration, *svcsdk.CreateVpcEndpointServiceConfigurationInput) error
 	postCreate     func(context.Context, *svcapitypes.VPCEndpointServiceConfiguration, *svcsdk.CreateVpcEndpointServiceConfigurationOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	delete         func(context.Context, cpresource.Managed) (managed.ExternalDelete, error)
+	delete         func(context.Context, *svcapitypes.VPCEndpointServiceConfiguration) (managed.ExternalDelete, error)
 	preUpdate      func(context.Context, *svcapitypes.VPCEndpointServiceConfiguration, *svcsdk.ModifyVpcEndpointServiceConfigurationInput) error
 	postUpdate     func(context.Context, *svcapitypes.VPCEndpointServiceConfiguration, *svcsdk.ModifyVpcEndpointServiceConfigurationOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -334,7 +314,7 @@ func nopPreCreate(context.Context, *svcapitypes.VPCEndpointServiceConfiguration,
 func nopPostCreate(_ context.Context, _ *svcapitypes.VPCEndpointServiceConfiguration, _ *svcsdk.CreateVpcEndpointServiceConfigurationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	return cre, err
 }
-func nopDelete(context.Context, cpresource.Managed) (managed.ExternalDelete, error) {
+func nopDelete(context.Context, *svcapitypes.VPCEndpointServiceConfiguration) (managed.ExternalDelete, error) {
 	return managed.ExternalDelete{}, nil
 }
 func nopPreUpdate(context.Context, *svcapitypes.VPCEndpointServiceConfiguration, *svcsdk.ModifyVpcEndpointServiceConfigurationInput) error {

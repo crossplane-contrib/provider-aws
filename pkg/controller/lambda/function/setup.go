@@ -16,7 +16,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/pkg/errors"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -64,7 +63,7 @@ func SetupFunction(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -370,12 +369,7 @@ func (u *updater) isLastUpdateStatusSuccessful(ctx context.Context, cr *svcapity
 }
 
 //nolint:gocyclo
-func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.Function)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-
+func (u *updater) update(ctx context.Context, cr *svcapitypes.Function) (managed.ExternalUpdate, error) {
 	// LastUpdateStatus must be Successful before running UpdateFunctionCode
 	if err := u.isLastUpdateStatusSuccessful(ctx, cr); err != nil {
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)

@@ -13,7 +13,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"
@@ -49,7 +48,7 @@ func SetupVPCEndpointServiceConfiguration(mgr ctrl.Manager, o controller.Options
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -195,12 +194,7 @@ func (u *updater) preUpdate(_ context.Context, cr *svcapitypes.VPCEndpointServic
 	return nil
 }
 
-func (u *updater) delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
-
-	cr, ok := mg.(*svcapitypes.VPCEndpointServiceConfiguration)
-	if !ok {
-		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
-	}
+func (u *updater) delete(ctx context.Context, cr *svcapitypes.VPCEndpointServiceConfiguration) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	input := &svcsdk.DeleteVpcEndpointServiceConfigurationsInput{}

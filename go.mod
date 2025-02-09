@@ -2,8 +2,6 @@ module github.com/crossplane-contrib/provider-aws
 
 go 1.22.0
 
-toolchain go1.23.4
-
 require (
 	github.com/aws-controllers-k8s/code-generator v0.26.1
 	github.com/aws/aws-sdk-go v1.47.11
@@ -44,6 +42,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.1
 	go.uber.org/zap v1.27.0
+	golang.org/x/crypto v0.26.0
 	golang.org/x/sync v0.8.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	k8s.io/api v0.31.0
@@ -127,7 +126,6 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/mod v0.20.0 // indirect
 	golang.org/x/net v0.28.0 // indirect

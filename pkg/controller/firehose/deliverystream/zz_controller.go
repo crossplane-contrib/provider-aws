@@ -53,23 +53,15 @@ type connector struct {
 	opts []option
 }
 
-func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.DeliveryStream)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+func (c *connector) Connect(ctx context.Context, cr *svcapitypes.DeliveryStream) (managed.TypedExternalClient[*svcapitypes.DeliveryStream], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
 	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.DeliveryStream)
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Observe(ctx context.Context, cr *svcapitypes.DeliveryStream) (managed.ExternalObservation, error) {
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
@@ -104,11 +96,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}, nil)
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.DeliveryStream)
-	if !ok {
-		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Create(ctx context.Context, cr *svcapitypes.DeliveryStream) (managed.ExternalCreation, error) {
 	cr.Status.SetConditions(xpv1.Creating())
 	input := GenerateCreateDeliveryStreamInput(cr)
 	if err := e.preCreate(ctx, cr, input); err != nil {
@@ -128,16 +116,12 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	return e.update(ctx, mg)
+func (e *external) Update(ctx context.Context, cr *svcapitypes.DeliveryStream) (managed.ExternalUpdate, error) {
+	return e.update(ctx, cr)
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
-	cr, ok := mg.(*svcapitypes.DeliveryStream)
-	if !ok {
-		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Delete(ctx context.Context, cr *svcapitypes.DeliveryStream) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteDeliveryStreamInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
@@ -189,7 +173,7 @@ type external struct {
 	postCreate     func(context.Context, *svcapitypes.DeliveryStream, *svcsdk.CreateDeliveryStreamOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.DeliveryStream, *svcsdk.DeleteDeliveryStreamInput) (bool, error)
 	postDelete     func(context.Context, *svcapitypes.DeliveryStream, *svcsdk.DeleteDeliveryStreamOutput, error) (managed.ExternalDelete, error)
-	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+	update         func(context.Context, *svcapitypes.DeliveryStream) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.DeliveryStream, *svcsdk.DescribeDeliveryStreamInput) error {
@@ -218,6 +202,6 @@ func nopPreDelete(context.Context, *svcapitypes.DeliveryStream, *svcsdk.DeleteDe
 func nopPostDelete(_ context.Context, _ *svcapitypes.DeliveryStream, _ *svcsdk.DeleteDeliveryStreamOutput, err error) (managed.ExternalDelete, error) {
 	return managed.ExternalDelete{}, err
 }
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+func nopUpdate(context.Context, *svcapitypes.DeliveryStream) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }

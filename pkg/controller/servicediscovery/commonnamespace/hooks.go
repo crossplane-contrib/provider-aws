@@ -57,32 +57,21 @@ type namespace interface {
 }
 
 // NewHooks returns a new Hooks object.
-func NewHooks(kube client.Client, client servicediscoveryiface.ServiceDiscoveryAPI) *Hooks {
-	return &Hooks{
+func NewHooks[managedtype namespace](kube client.Client, client servicediscoveryiface.ServiceDiscoveryAPI) *Hooks[managedtype] {
+	return &Hooks[managedtype]{
 		client: client,
 		kube:   kube,
 	}
 }
 
 // Hooks implements common hooks so that all ServiceDiscovery Namespace resources can use.
-type Hooks struct {
+type Hooks[managedtype namespace] struct {
 	client servicediscoveryiface.ServiceDiscoveryAPI
 	kube   client.Client
 }
 
 // Observe observes any of HTTPNamespace, PrivateDNSNamespace or PublicDNSNamespace types.
-func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) { //nolint:gocyclo
-	var cr namespace
-	switch i := mg.(type) {
-	case *v1alpha1.HTTPNamespace:
-		cr = i
-	case *v1alpha1.PrivateDNSNamespace:
-		cr = i
-	case *v1alpha1.PublicDNSNamespace:
-		cr = i
-	default:
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
+func (h *Hooks[managedtype]) Observe(ctx context.Context, cr managedtype) (managed.ExternalObservation, error) { //nolint:gocyclo
 	// Creation is still on-going.
 	if meta.GetExternalName(cr) == "" {
 		if pointer.StringValue(cr.GetOperationID()) == "" {
@@ -110,15 +99,15 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 			return managed.ExternalObservation{}, errors.New(errOperationResponseMalformed)
 		}
 
-		if meta.GetExternalName(mg) != pointer.StringValue(namespaceID) {
+		if meta.GetExternalName(cr) != pointer.StringValue(namespaceID) {
 			// We need to make sure external name makes it to api-server no matter what.
 			err := retry.OnError(retry.DefaultRetry, cpresource.IsAPIError, func() error {
 				nn := types.NamespacedName{Name: cr.GetName()}
-				if err := h.kube.Get(ctx, nn, mg); err != nil {
+				if err := h.kube.Get(ctx, nn, cr); err != nil {
 					return err
 				}
-				meta.SetExternalName(mg, pointer.StringValue(namespaceID))
-				return h.kube.Update(ctx, mg)
+				meta.SetExternalName(cr, pointer.StringValue(namespaceID))
+				return h.kube.Update(ctx, cr)
 			})
 			if err != nil {
 				return managed.ExternalObservation{}, errors.Wrap(err, "cannot update with external name")
@@ -183,18 +172,7 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 }
 
 // Delete deletes any of HTTPNamespace, PrivateDNSNamespace or PublicDNSNamespace types.
-func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) (managed.ExternalDelete, error) {
-	var cr namespace
-	switch i := mg.(type) {
-	case *v1alpha1.HTTPNamespace:
-		cr = i
-	case *v1alpha1.PrivateDNSNamespace:
-		cr = i
-	case *v1alpha1.PublicDNSNamespace:
-		cr = i
-	default:
-		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
-	}
+func (h *Hooks[managedtype]) Delete(ctx context.Context, cr managedtype) (managed.ExternalDelete, error) {
 	input := &svcsdk.DeleteNamespaceInput{
 		Id: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	}

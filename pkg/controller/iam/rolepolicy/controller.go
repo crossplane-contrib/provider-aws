@@ -51,7 +51,7 @@ const (
 
 // SetupRolePolicy adds a controller that reconciles RolePolicy.
 func SetupRolePolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.RoleGroupKind)
+	name := managed.ControllerName(v1beta1.RolePolicyKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
