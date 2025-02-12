@@ -147,9 +147,15 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, err
 	}
 
+	obs.ConnectionDetails = managed.ConnectionDetails{
+		xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint.Address)),
+		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(int64(pointer.Int64Value(cr.Status.AtProvider.Endpoint.Port)), 10)),
+	}
+
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: upToDate,
+		ResourceExists:          true,
+		ResourceUpToDate:        upToDate,
+		ConnectionDetails:       obs.ConnectionDetails,
 	}, nil
 }
 
