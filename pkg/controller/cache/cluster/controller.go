@@ -162,7 +162,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	return obs, nil
-	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
