@@ -19,10 +19,12 @@ package cluster
 import (
 	"context"
 	"reflect"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -147,15 +149,19 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, err
 	}
 
-	obs.ConnectionDetails = managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint.Address)),
-		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(int64(pointer.Int64Value(cr.Status.AtProvider.Endpoint.Port)), 10)),
+	obs := managed.ExternalObservation{
+		ResourceExists:   true,
+		ResourceUpToDate: upToDate,
 	}
 
-	return managed.ExternalObservation{
-		ResourceExists:          true,
-		ResourceUpToDate:        upToDate,
-		ConnectionDetails:       obs.ConnectionDetails,
+	if cr.Status.AtProvider.Endpoint != nil {
+		obs.ConnectionDetails = managed.ConnectionDetails{
+			xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint.Address)),
+			xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(int64(pointer.Int64Value(cr.Status.AtProvider.Endpoint.Port)), 10)),
+		}
+	}
+
+	return obs, nil
 	}, nil
 }
 
