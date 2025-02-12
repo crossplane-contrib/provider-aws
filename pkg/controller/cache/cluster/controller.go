@@ -19,7 +19,8 @@ package cluster
 import (
 	"context"
 	"reflect"
-	"strconv"
+	"strings"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -154,10 +155,17 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		ResourceUpToDate: upToDate,
 	}
 
-	if cr.Status.AtProvider.Endpoint != nil {
+	if cr.Status.AtProvider.CacheNodes != nil {
+		nodes := []string{}
+		for _, n := range cr.Status.AtProvider.CacheNodes {
+			addr := fmt.Sprintf("%s:%d", n.Endpoint.Address, n.Endpoint.Port)
+			nodes = append(nodes, addr)
+		}
+		
 		obs.ConnectionDetails = managed.ConnectionDetails{
-			xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint.Address)),
-			xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(int64(pointer.Int64Value(cr.Status.AtProvider.Endpoint.Port)), 10)),
+			xpv1.ResourceCredentialsSecretEndpointKey: []byte(
+				strings.Join(nodes, ","),
+			),
 		}
 	}
 
