@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: autoscalinggroups.autoscaling.aws.crossplane.io
 spec:
   group: autoscaling.aws.crossplane.io
@@ -101,12 +101,10 @@ spec:
                     description: |-
                       Only needed if you use simple scaling policies.
 
-
                       The amount of time, in seconds, between one scaling activity ending and another
                       one starting due to simple scaling policies. For more information, see Scaling
                       cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html)
                       in the Amazon EC2 Auto Scaling User Guide.
-
 
                       Default: 300 seconds
                     format: int64
@@ -117,7 +115,6 @@ spec:
                       finished initializing and resource consumption to become stable after it
                       enters the InService state.
 
-
                       During an instance refresh, Amazon EC2 Auto Scaling waits for the warm-up
                       period after it replaces an instance before it moves on to replacing the
                       next instance. Amazon EC2 Auto Scaling also waits for the warm-up period
@@ -127,13 +124,11 @@ spec:
                       warmup for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-default-instance-warmup.html)
                       in the Amazon EC2 Auto Scaling User Guide.
 
-
                       To manage various warm-up settings at the group level, we recommend that
                       you set the default instance warmup, even if it is set to 0 seconds. To remove
                       a value that you previously set, include the property but specify -1 for
                       the value. However, we strongly recommend keeping the default instance warmup
                       enabled by specifying a value of 0 or other nominal value.
-
 
                       Default: None
                     format: int64
@@ -156,10 +151,8 @@ spec:
                       using attribute-based instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
                       in the Amazon EC2 Auto Scaling User Guide.
 
-
                       By default, Amazon EC2 Auto Scaling specifies units, which translates into
                       number of instances.
-
 
                       Valid values: units | vcpu | memory-mib
                     type: string
@@ -173,7 +166,6 @@ spec:
                       period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
                       in the Amazon EC2 Auto Scaling User Guide.
 
-
                       Default: 0 seconds
                     format: int64
                     type: integer
@@ -181,12 +173,10 @@ spec:
                     description: |-
                       A comma-separated value string of one or more health check types.
 
-
                       The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
                       check and cannot be disabled. For more information, see Health checks for
                       Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
                       in the Amazon EC2 Auto Scaling User Guide.
-
 
                       Only specify EC2 if you must clear a value that was previously set.
                     type: string
@@ -204,7 +194,6 @@ spec:
                     description: |-
                       The name of the launch configuration to use to launch instances.
 
-
                       Conditional: You must specify either a launch template (LaunchTemplate or
                       MixedInstancesPolicy) or a launch configuration (LaunchConfigurationName
                       or InstanceId).
@@ -214,11 +203,9 @@ spec:
                       Information used to specify the launch template and version to use to launch
                       instances.
 
-
                       Conditional: You must specify either a launch template (LaunchTemplate or
                       MixedInstancesPolicy) or a launch configuration (LaunchConfigurationName
                       or InstanceId).
-
 
                       The launch template that is specified must be configured for use with an
                       Auto Scaling group. For more information, see Creating a launch template
@@ -275,7 +262,6 @@ spec:
                   maxSize:
                     description: |-
                       The maximum size of the group.
-
 
                       With a mixed instances policy that uses instance weighting, Amazon EC2 Auto
                       Scaling may need to go above MaxSize to meet your capacity requirements.
@@ -345,28 +331,22 @@ spec:
                                     Then, it uses your On-Demand and Spot allocation strategies to launch instances
                                     from these instance types.
 
-
                                     When you specify multiple attributes, you get instance types that satisfy
                                     all of the specified attributes. If you specify multiple values for an attribute,
                                     you get instance types that satisfy any of the specified values.
-
 
                                     To limit the list of instance types from which Amazon EC2 Auto Scaling can
                                     identify matching instance types, you can use one of the following parameters,
                                     but not both in the same request:
 
-
                                        * AllowedInstanceTypes - The instance types to include in the list. All
                                        other instance types are ignored, even if they match your specified attributes.
-
 
                                        * ExcludedInstanceTypes - The instance types to exclude from the list,
                                        even if they match your specified attributes.
 
-
                                     You must specify VCpuCount and MemoryMiB. All other attributes are optional.
                                     Any unspecified optional attribute is set to its default.
-
 
                                     For more information, see Creating an Auto Scaling group using attribute-based
                                     instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
@@ -476,7 +456,6 @@ spec:
                                         Specifies the minimum and maximum for the NetworkBandwidthGbps object when
                                         you specify InstanceRequirements for an Auto Scaling group.
 
-
                                         Setting the minimum bandwidth does not guarantee that your instance will
                                         achieve the minimum bandwidth. Amazon EC2 will identify instance types that
                                         support the specified minimum bandwidth, but the actual bandwidth of your
@@ -568,7 +547,6 @@ spec:
                       more information, see Placement groups (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html)
                       in the Amazon EC2 User Guide for Linux Instances.
 
-
                       A cluster placement group is a logical grouping of instances within a single
                       Availability Zone. You cannot specify multiple Availability Zones and a cluster
                       placement group.
@@ -629,7 +607,6 @@ spec:
                       These policies are executed in the order that you list them. For more information,
                       see Work with Amazon EC2 Auto Scaling termination policies (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
                       in the Amazon EC2 Auto Scaling User Guide.
-
 
                       Valid values: Default | AllocationStrategy | ClosestToNextInstanceHour |
                       NewestInstance | OldestInstance | OldestLaunchConfiguration | OldestLaunchTemplate
@@ -931,7 +908,6 @@ spec:
                     description: |-
                       The maximum amount of time, in seconds, that an instance can be in service.
 
-
                       Valid Range: Minimum value of 0.
                     format: int64
                     type: integer
@@ -997,28 +973,22 @@ spec:
                                     Then, it uses your On-Demand and Spot allocation strategies to launch instances
                                     from these instance types.
 
-
                                     When you specify multiple attributes, you get instance types that satisfy
                                     all of the specified attributes. If you specify multiple values for an attribute,
                                     you get instance types that satisfy any of the specified values.
-
 
                                     To limit the list of instance types from which Amazon EC2 Auto Scaling can
                                     identify matching instance types, you can use one of the following parameters,
                                     but not both in the same request:
 
-
                                        * AllowedInstanceTypes - The instance types to include in the list. All
                                        other instance types are ignored, even if they match your specified attributes.
-
 
                                        * ExcludedInstanceTypes - The instance types to exclude from the list,
                                        even if they match your specified attributes.
 
-
                                     You must specify VCpuCount and MemoryMiB. All other attributes are optional.
                                     Any unspecified optional attribute is set to its default.
-
 
                                     For more information, see Creating an Auto Scaling group using attribute-based
                                     instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
@@ -1127,7 +1097,6 @@ spec:
                                       description: |-
                                         Specifies the minimum and maximum for the NetworkBandwidthGbps object when
                                         you specify InstanceRequirements for an Auto Scaling group.
-
 
                                         Setting the minimum bandwidth does not guarantee that your instance will
                                         achieve the minimum bandwidth. Amazon EC2 will identify instance types that
@@ -1288,7 +1257,6 @@ spec:
                       instanceReusePolicy:
                         description: |-
                           Describes an instance reuse policy for a warm pool.
-
 
                           For more information, see Warm pools for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html)
                           in the Amazon EC2 Auto Scaling User Guide.

@@ -207,18 +207,23 @@ func (e *external) Update(_ context.Context, _ resource.Managed) (managed.Extern
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mgd.(*v1beta1.VPCCIDRBlock)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	if ec2.IsVpcCidrDeleting(cr.Status.AtProvider) {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
 	_, err := e.client.DisassociateVpcCidrBlock(ctx, &awsec2.DisassociateVpcCidrBlockInput{
 		AssociationId: aws.String(meta.GetExternalName(cr)),
 	})
 
-	return errorutils.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDisassociate)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDisassociate)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

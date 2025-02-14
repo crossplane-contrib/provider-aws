@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: identitypools.cognitoidentity.aws.crossplane.io
 spec:
   group: cognitoidentity.aws.crossplane.io
@@ -259,7 +259,6 @@ spec:
                       a placeholder that allows your backend and the Cognito service to communicate
                       about the developer provider. For the DeveloperProviderName, you can use
                       letters as well as period (.), underscore (_), and dash (-).
-
 
                       Once you have set a developer provider name, you cannot change it. Please
                       take care in setting this parameter.

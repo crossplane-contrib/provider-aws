@@ -210,15 +210,20 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*manualv1alpha1.IdentityProviderConfig)
 	if !ok {
-		return errors.New(errNotEKSIdentityProviderConfig)
+		return managed.ExternalDelete{}, errors.New(errNotEKSIdentityProviderConfig)
 	}
 	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.Status == manualv1alpha1.IdentityProviderConfigStatusDeleting {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	_, err := e.client.DisassociateIdentityProviderConfig(ctx, eks.GenerateDisassociateIdentityProviderConfigInput(meta.GetExternalName(cr), cr.Spec.ForProvider.ClusterName))
-	return errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

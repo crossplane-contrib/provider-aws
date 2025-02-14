@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: services.servicediscovery.aws.crossplane.io
 spec:
   group: servicediscovery.aws.crossplane.io
@@ -109,10 +109,8 @@ spec:
                       check, Cloud Map associates the health check with all the Route 53 DNS records
                       that you specify in DnsConfig.
 
-
                       If you specify a health check configuration, you can specify either HealthCheckCustomConfig
                       or HealthCheckConfig but not both.
-
 
                       For information about the charges for health checks, see Cloud Map Pricing
                       (http://aws.amazon.com/cloud-map/pricing/).
@@ -130,10 +128,8 @@ spec:
                       A complex type that contains information about an optional custom health
                       check.
 
-
                       If you specify a health check configuration, you can specify either HealthCheckCustomConfig
                       or HealthCheckConfig but not both.
-
 
                       You can't add, update, or delete a HealthCheckCustomConfig configuration
                       from an existing service.
@@ -146,29 +142,22 @@ spec:
                     description: |-
                       The name that you want to assign to the service.
 
-
                       Do not include sensitive information in the name if the namespace is discoverable
                       by public DNS queries.
-
 
                       If you want Cloud Map to create an SRV record when you register an instance
                       and you're using a system that requires a specific SRV format, such as HAProxy
                       (http://www.haproxy.org/), specify the following for Name:
 
-
                          * Start the name with an underscore (_), such as _exampleservice.
 
-
                          * End the name with ._protocol, such as ._tcp.
-
 
                       When you register an instance, Cloud Map creates an SRV record and assigns
                       a name to the record by concatenating the service name and the namespace
                       name (for example,
 
-
                       _exampleservice._tcp.example.com).
-
 
                       For services that are accessible by DNS queries, you can't create multiple
                       services with names that differ only by case (such as EXAMPLE and example).

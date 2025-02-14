@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: buckets.s3.aws.crossplane.io
 spec:
   group: s3.aws.crossplane.io
@@ -189,7 +189,6 @@ spec:
                         description: |-
                           A lifecycle rule for individual objects in an Amazon S3 bucket.
 
-
                           Rules is a required field
                         items:
                           description: LifecycleRule for individual objects in an
@@ -369,7 +368,6 @@ spec:
                               description: |-
                                 If 'Enabled', the rule is currently being applied. If 'Disabled', the rule
                                 is not currently being applied.
-
 
                                 Status is a required field, valid values are Enabled or Disabled
                               enum:
@@ -601,7 +599,6 @@ spec:
                                 more information, see Supported Event Types (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
                                 in the Amazon Simple Storage Service Developer Guide.
 
-
                                 Events is a required field
                                 A full list of valid events can be found in the Amazon S3 Developer guide
                                 https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html#notification-how-to-event-types-and-destinations
@@ -656,7 +653,6 @@ spec:
                                 The Amazon Resource Name (ARN) of the AWS Lambda function that Amazon S3
                                 invokes when the specified event type occurs.
 
-
                                 LambdaFunctionArn is a required field
                               type: string
                           required:
@@ -681,7 +677,6 @@ spec:
                             events:
                               description: |-
                                 A collection of bucket events for which to send notifications
-
 
                                 Events is a required field
                                 A full list of valid events can be found in the Amazon S3 Developer guide
@@ -736,7 +731,6 @@ spec:
                               description: |-
                                 The Amazon Resource Name (ARN) of the Amazon SQS queue to which Amazon S3
                                 publishes a message when it detects events of the specified type.
-
 
                                 QueueArn is a required field
                               type: string
@@ -840,7 +834,6 @@ spec:
                                 The Amazon S3 bucket event about which to send notifications. For more information,
                                 see Supported Event Types (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
                                 in the Amazon Simple Storage Service Developer Guide.
-
 
                                 Events is a required field
                                 A full list of valid events can be found in the Amazon S3 Developer guide
@@ -1022,7 +1015,6 @@ spec:
                     description: |-
                       Policy is a well defined type which can be parsed into an JSON S3 Bucket
                       Policy.
-
 
                       By default, to ensure compatibility with previous APIs, a bucket policy
                       is never deleted from a bucket if this field is set to null.
@@ -1559,14 +1551,11 @@ spec:
                           DeletionPolicy specifies how and if the bucket policy should be deleted
                           from the bucket.
 
-
                           * `Never`: The bucket policy is never deleted, but only overwritten. If a
                           change is detected.
 
-
                           * `IfNull`: The bucket policy is deleted if the `policy` field is set to
                           null.
-
 
                           The default is `Never`.
                         type: string
@@ -1582,16 +1571,12 @@ spec:
                           for this bucket and objects in this bucket. Setting this element to TRUE
                           causes the following behavior:
 
-
                              * PUT Bucket acl and PUT Object acl calls fail if the specified ACL is
                              public.
 
-
                              * PUT Object calls fail if the request includes a public ACL.
 
-
                              * PUT Bucket calls fail if the request includes a public ACL.
-
 
                           Enabling this setting doesn't affect existing policies or ACLs.
                         type: boolean
@@ -1601,7 +1586,6 @@ spec:
                           bucket. Setting this element to TRUE causes Amazon S3 to reject calls to
                           PUT Bucket policy if the specified bucket policy allows public access.
 
-
                           Enabling this setting doesn't affect existing bucket policies.
                         type: boolean
                       ignorePublicAcls:
@@ -1609,7 +1593,6 @@ spec:
                           Specifies whether Amazon S3 should ignore public ACLs for this bucket and
                           objects in this bucket. Setting this element to TRUE causes Amazon S3 to
                           ignore all public ACLs on this bucket and objects in this bucket.
-
 
                           Enabling this setting doesn't affect the persistence of any existing ACLs
                           and doesn't prevent new public ACLs from being set.
@@ -1620,7 +1603,6 @@ spec:
                           bucket. Setting this element to TRUE restricts access to this bucket to only
                           AWS services and authorized users within this account if the bucket has a
                           public policy.
-
 
                           Enabling this setting doesn't affect previously stored bucket policies, except
                           that public and cross-account access within any public bucket policy, including
@@ -1639,7 +1621,6 @@ spec:
                           (IAM) role that Amazon S3 assumes when replicating objects. For more information,
                           see How to Set Up Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-how-setup.html)
                           in the Amazon Simple Storage Service Developer Guide.
-
 
                           At least one of role, roleRef or roleSelector fields is required.
                         type: string
@@ -1724,7 +1705,6 @@ spec:
                           A container for one or more replication rules. A replication configuration
                           must have at least one rule and can contain a maximum of 1,000 rules.
 
-
                           Rules is a required field
                         items:
                           description: ReplicationRule specifies which Amazon S3 objects
@@ -1738,7 +1718,6 @@ spec:
                                 delete markers. Therefore, the DeleteMarkerReplication element can contain
                                 only <Status>Disabled</Status>. For an example configuration, see Basic Rule
                                 Configuration (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-add-config.html#replication-config-min-rule-config).
-
 
                                 If you don't specify the Filter element, Amazon S3 assumes that the replication
                                 configuration is the earlier version, V1. In the earlier version, Amazon
@@ -1760,7 +1739,6 @@ spec:
                               description: |-
                                 A container for information about the replication destination and its configurations
                                 including enabling the S3 Replication Time Control (S3 RTC).
-
 
                                 Destination is a required field
                               properties:
@@ -1981,7 +1959,6 @@ spec:
                                           description: |-
                                             Contains an integer specifying time in minutes.
 
-
                                             Valid values: 15 minutes.
                                           format: int32
                                           type: integer
@@ -1991,7 +1968,6 @@ spec:
                                     status:
                                       description: |-
                                         Specifies whether the replication metrics are enabled.
-
 
                                         Status is a required field, valid values are "Enabled" and "Disabled"
                                       enum:
@@ -2025,7 +2001,6 @@ spec:
                                         minutes:
                                           description: |-
                                             Contains an integer specifying time in minutes.
-
 
                                             Valid values: 15 minutes.
                                           format: int32
@@ -2083,10 +2058,8 @@ spec:
                                     of objects to which the rule applies. This element is required only if you
                                     specify more than one filter. For example:
 
-
                                        * If you specify both a Prefix and a Tag filter, wrap these filters in
                                        an And tag.
-
 
                                        * If you specify a filter based on multiple tags, wrap the Tag elements
                                        in an And tag.
@@ -2155,14 +2128,11 @@ spec:
                                 when filtering. If two or more rules identify the same object based on a
                                 specified filter, the rule with higher priority takes precedence. For example:
 
-
                                    * Same object quality prefix-based filter criteria if prefixes you specified
                                    in multiple rules overlap
 
-
                                    * Same object qualify tag-based filter criteria specified in multiple
                                    rules
-
 
                                 For more information, see Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication.html)
                                 in the Amazon Simple Storage Service Developer Guide.
@@ -2187,7 +2157,6 @@ spec:
                                         Specifies whether Amazon S3 replicates objects created with server-side encryption
                                         using a customer master key (CMK) stored in AWS Key Management Service.
 
-
                                         Status is a required field
                                         Valid values are "Enabled" or "Disabled"
                                       enum:
@@ -2203,7 +2172,6 @@ spec:
                             status:
                               description: |-
                                 Specifies whether the rule is enabled.
-
 
                                 Status is a required field
                                 Valid values are "Enabled" or "Disabled"
@@ -2247,21 +2215,16 @@ spec:
                                     encryption. This parameter is allowed if and only if SSEAlgorithm is set
                                     to aws:kms.
 
-
                                     You can specify the key ID or the Amazon Resource Name (ARN) of the CMK.
                                     However, if you are using encryption with cross-account operations, you must
                                     use a fully qualified CMK ARN. For more information, see Using encryption
                                     for cross-account operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-encryption.html#bucket-encryption-update-bucket-policy).
 
-
                                     For example:
-
 
                                        * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
 
-
                                        * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
-
 
                                     Amazon S3 only supports symmetric CMKs and not asymmetric CMKs. For more
                                     information, see Using Symmetric and Asymmetric Keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)

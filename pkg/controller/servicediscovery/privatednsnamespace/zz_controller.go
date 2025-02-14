@@ -29,7 +29,6 @@ import (
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/servicediscovery/v1alpha1"
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
@@ -51,27 +50,19 @@ type connector struct {
 	opts []option
 }
 
-func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.PrivateDNSNamespace)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+func (c *connector) Connect(ctx context.Context, cr *svcapitypes.PrivateDNSNamespace) (managed.TypedExternalClient[*svcapitypes.PrivateDNSNamespace], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
 	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	return e.observe(ctx, mg)
+func (e *external) Observe(ctx context.Context, cr *svcapitypes.PrivateDNSNamespace) (managed.ExternalObservation, error) {
+	return e.observe(ctx, cr)
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.PrivateDNSNamespace)
-	if !ok {
-		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Create(ctx context.Context, cr *svcapitypes.PrivateDNSNamespace) (managed.ExternalCreation, error) {
 	cr.Status.SetConditions(xpv1.Creating())
 	input := GenerateCreatePrivateDnsNamespaceInput(cr)
 	if err := e.preCreate(ctx, cr, input); err != nil {
@@ -91,11 +82,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.PrivateDNSNamespace)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Update(ctx context.Context, cr *svcapitypes.PrivateDNSNamespace) (managed.ExternalUpdate, error) {
 	input := GenerateUpdatePrivateDnsNamespaceInput(cr)
 	if err := e.preUpdate(ctx, cr, input); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
@@ -104,14 +91,15 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate))
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
-	cr, ok := mg.(*svcapitypes.PrivateDNSNamespace)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
+func (e *external) Delete(ctx context.Context, cr *svcapitypes.PrivateDNSNamespace) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
-	return e.delete(ctx, mg)
+	return e.delete(ctx, cr)
 
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -136,15 +124,15 @@ func newExternal(kube client.Client, client svcsdkapi.ServiceDiscoveryAPI, opts 
 type external struct {
 	kube       client.Client
 	client     svcsdkapi.ServiceDiscoveryAPI
-	observe    func(context.Context, cpresource.Managed) (managed.ExternalObservation, error)
+	observe    func(context.Context, *svcapitypes.PrivateDNSNamespace) (managed.ExternalObservation, error)
 	preCreate  func(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.CreatePrivateDnsNamespaceInput) error
 	postCreate func(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.CreatePrivateDnsNamespaceOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	delete     func(context.Context, cpresource.Managed) error
+	delete     func(context.Context, *svcapitypes.PrivateDNSNamespace) (managed.ExternalDelete, error)
 	preUpdate  func(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.UpdatePrivateDnsNamespaceInput) error
 	postUpdate func(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.UpdatePrivateDnsNamespaceOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
 
-func nopObserve(context.Context, cpresource.Managed) (managed.ExternalObservation, error) {
+func nopObserve(context.Context, *svcapitypes.PrivateDNSNamespace) (managed.ExternalObservation, error) {
 	return managed.ExternalObservation{}, nil
 }
 
@@ -154,8 +142,8 @@ func nopPreCreate(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.Cre
 func nopPostCreate(_ context.Context, _ *svcapitypes.PrivateDNSNamespace, _ *svcsdk.CreatePrivateDnsNamespaceOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	return cre, err
 }
-func nopDelete(context.Context, cpresource.Managed) error {
-	return nil
+func nopDelete(context.Context, *svcapitypes.PrivateDNSNamespace) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, nil
 }
 func nopPreUpdate(context.Context, *svcapitypes.PrivateDNSNamespace, *svcsdk.UpdatePrivateDnsNamespaceInput) error {
 	return nil

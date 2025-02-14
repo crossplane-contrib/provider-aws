@@ -68,7 +68,7 @@ func SetupLogGroup(mgr ctrl.Manager, o controller.Options) error {
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(),
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
@@ -155,12 +155,7 @@ func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.LogGroup, obj *s
 	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
-func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
-	cr, ok := mg.(*svcapitypes.LogGroup)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-
+func (u *updater) update(ctx context.Context, cr *svcapitypes.LogGroup) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	obj, err := u.client.DescribeLogGroupsWithContext(ctx, &svcsdk.DescribeLogGroupsInput{
 		LogGroupNamePrefix: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 	})

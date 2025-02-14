@@ -5,7 +5,6 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/transfer"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/transfer/v1alpha1"
@@ -13,11 +12,7 @@ import (
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
 )
 
-func (e *external) UpdateServer(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.Server)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) UpdateServer(ctx context.Context, cr *svcapitypes.Server) (managed.ExternalUpdate, error) {
 	input := GenerateUpdateServerInput(cr)
 	_, err := e.client.UpdateServerWithContext(ctx, input)
 

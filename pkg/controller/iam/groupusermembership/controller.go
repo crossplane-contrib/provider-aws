@@ -186,10 +186,10 @@ func (e *external) Update(_ context.Context, _ resource.Managed) (managed.Extern
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mgd.(*v1beta1.GroupUserMembership)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -199,5 +199,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		UserName:  &cr.Spec.ForProvider.UserName,
 	})
 
-	return errorutils.Wrap(err, errRemove)
+	return managed.ExternalDelete{}, errorutils.Wrap(err, errRemove)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

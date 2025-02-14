@@ -54,19 +54,15 @@ type connector struct {
 	opts []option
 }
 
-func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, connectaws.GlobalRegion)
+func (c *connector) Connect(ctx context.Context, cr *svcapitypes.InstanceProfile) (managed.TypedExternalClient[*svcapitypes.InstanceProfile], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, connectaws.GlobalRegion)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
 	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.InstanceProfile)
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Observe(ctx context.Context, cr *svcapitypes.InstanceProfile) (managed.ExternalObservation, error) {
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
@@ -101,11 +97,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}, nil)
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.InstanceProfile)
-	if !ok {
-		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Create(ctx context.Context, cr *svcapitypes.InstanceProfile) (managed.ExternalCreation, error) {
 	cr.Status.SetConditions(xpv1.Creating())
 	input := GenerateCreateInstanceProfileInput(cr)
 	if err := e.preCreate(ctx, cr, input); err != nil {
@@ -229,27 +221,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	return e.update(ctx, mg)
+func (e *external) Update(ctx context.Context, cr *svcapitypes.InstanceProfile) (managed.ExternalUpdate, error) {
+	return e.update(ctx, cr)
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
-	cr, ok := mg.(*svcapitypes.InstanceProfile)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
+func (e *external) Delete(ctx context.Context, cr *svcapitypes.InstanceProfile) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteInstanceProfileInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteInstanceProfileWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -284,8 +277,8 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.CreateInstanceProfileInput) error
 	postCreate     func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.CreateInstanceProfileOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.DeleteInstanceProfileInput) (bool, error)
-	postDelete     func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.DeleteInstanceProfileOutput, error) error
-	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+	postDelete     func(context.Context, *svcapitypes.InstanceProfile, *svcsdk.DeleteInstanceProfileOutput, error) (managed.ExternalDelete, error)
+	update         func(context.Context, *svcapitypes.InstanceProfile) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.InstanceProfile, *svcsdk.GetInstanceProfileInput) error {
@@ -311,9 +304,9 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.InstanceProfile, _ *svcsdk.
 func nopPreDelete(context.Context, *svcapitypes.InstanceProfile, *svcsdk.DeleteInstanceProfileInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.InstanceProfile, _ *svcsdk.DeleteInstanceProfileOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.InstanceProfile, _ *svcsdk.DeleteInstanceProfileOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+func nopUpdate(context.Context, *svcapitypes.InstanceProfile) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }

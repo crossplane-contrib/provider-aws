@@ -66,7 +66,7 @@ func SetupFlowLog(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -224,11 +224,7 @@ func (u *updater) isUpToDate(ctx context.Context, cr *svcapitypes.FlowLog, obj *
 	return len(add) == 0 && len(remove) == 0, "", nil
 }
 
-func (u *updater) update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.FlowLog)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (u *updater) update(ctx context.Context, cr *svcapitypes.FlowLog) (managed.ExternalUpdate, error) {
 	input := GenerateDescribeFlowLogsInput(cr)
 	resp, err := u.client.DescribeFlowLogs(input)
 	if err != nil {
@@ -313,16 +309,12 @@ func GenerateDeleteFlowLogsInput(cr *svcapitypes.FlowLog) *svcsdk.DeleteFlowLogs
 	return res
 }
 
-func (d *deleter) delete(ctx context.Context, mg cpresource.Managed) error {
-	cr, ok := mg.(*svcapitypes.FlowLog)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
+func (d *deleter) delete(ctx context.Context, cr *svcapitypes.FlowLog) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
 	if meta.GetExternalName(cr) == "" {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	input := GenerateDeleteFlowLogsInput(cr)
 	_, err := d.client.DeleteFlowLogsWithContext(ctx, input)
-	return errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	return managed.ExternalDelete{}, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
 }

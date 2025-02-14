@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: dbsubnetgroups.docdb.aws.crossplane.io
 spec:
   group: docdb.aws.crossplane.io
@@ -86,8 +86,6 @@ spec:
                       type: string
                     type: array
                   subnetIDsRefs:
-                    description: 'TODO(haarchri): when resource is bumped to beta
-                      we will convert this field to subnetIdRefs'
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -124,8 +122,7 @@ spec:
                       type: object
                     type: array
                   subnetIDsSelector:
-                    description: 'TODO(haarchri): when resource is bumped to beta
-                      we will convert this field to subnetIdSelector'
+                    description: A Selector selects an object.
                     properties:
                       matchControllerRef:
                         description: |-

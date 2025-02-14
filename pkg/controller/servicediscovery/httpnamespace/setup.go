@@ -43,7 +43,7 @@ func SetupHTTPNamespace(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.HTTPNamespaceGroupKind)
 	opts := []option{
 		func(e *external) {
-			h := commonnamespace.NewHooks(e.kube, e.client)
+			h := commonnamespace.NewHooks[*svcapitypes.HTTPNamespace](e.kube, e.client)
 			hL := &hooks{client: e.client}
 			e.preCreate = preCreate
 			e.postCreate = postCreate
@@ -61,7 +61,7 @@ func SetupHTTPNamespace(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -124,7 +124,6 @@ func (e *hooks) postUpdate(_ context.Context, cr *svcapitypes.HTTPNamespace, res
 		return cre, err
 	}
 	cr.Status.SetConditions(v1.Available())
-
 	// Update Tags
 	return cre, commonnamespace.UpdateTagsForResource(e.client, cr.Spec.ForProvider.Tags, cr)
 }

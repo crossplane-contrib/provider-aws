@@ -48,7 +48,7 @@ func SetupRuleGroupsNamespace(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -98,15 +98,15 @@ func postCreate(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, resp *sv
 	return cre, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, obj *svcsdk.DeleteRuleGroupsNamespaceOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, obj *svcsdk.DeleteRuleGroupsNamespaceOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), svcsdk.ErrCodeConflictException) {
 			// skip: Can't delete rulegroupsnamespace in non-ACTIVE state. Current status is DELETING
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.RuleGroupsNamespace, resp *svcsdk.DescribeRuleGroupsNamespaceOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
@@ -166,11 +166,7 @@ func GeneratePutRuleGroupsNamespaceInput(cr *svcapitypes.RuleGroupsNamespace) *s
 	return res
 }
 
-func (e *updateClient) update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.RuleGroupsNamespace)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *updateClient) update(ctx context.Context, cr *svcapitypes.RuleGroupsNamespace) (managed.ExternalUpdate, error) {
 	input := GeneratePutRuleGroupsNamespaceInput(cr)
 	_, err := e.client.PutRuleGroupsNamespaceWithContext(ctx, input)
 	if err != nil {

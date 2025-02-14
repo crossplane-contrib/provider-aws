@@ -42,7 +42,7 @@ func SetupWorkspace(mgr ctrl.Manager, o controller.Options) error {
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithInitializers(),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
@@ -110,13 +110,13 @@ func preDelete(_ context.Context, cr *svcapitypes.Workspace, obj *svcsdk.DeleteW
 	return false, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.Workspace, obj *svcsdk.DeleteWorkspaceOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.Workspace, obj *svcsdk.DeleteWorkspaceOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), svcsdk.ErrCodeConflictException) {
 			// skip: Can't delete workspace in non-ACTIVE state. Current status is DELETING
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }

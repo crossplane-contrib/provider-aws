@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: topics.sns.aws.crossplane.io
 spec:
   group: sns.aws.crossplane.io
@@ -94,7 +94,6 @@ spec:
                       Setting this enables server side encryption at-rest to your topic.
                       The ID of an AWS-managed customer master key (CMK) for Amazon SNS or a custom CMK
 
-
                       For more examples, see KeyId (https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_RequestParameters)
                       in the AWS Key Management Service API Reference.
                     type: string
@@ -135,7 +134,6 @@ spec:
                             Tags with a key name of Cost Center might have values that consist of the
                             number associated with the different cost centers in your company. Typically,
                             many resources have tags with the same key name but with different values.
-
 
                             AWS always interprets the tag Value as a single string. If you need to store
                             an array, you can store comma-separated values in the string. However, you

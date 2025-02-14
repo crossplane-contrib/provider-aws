@@ -338,14 +338,14 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{ConnectionDetails: conn}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
-		return errors.New(errNotRDSInstance)
+		return managed.ExternalDelete{}, errors.New(errNotRDSInstance)
 	}
 	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateDeleting {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	// TODO(muvaf): There are cases where deletion results in an error that can
 	// be solved only by a config change. But to do that, reconciler has to call
@@ -356,7 +356,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	// user may want to delete a resource whose fields are causing error.
 	_, err := e.Update(ctx, cr)
 	if rds.IsErrorNotFound(err) {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	input := awsrds.DeleteDBInstanceInput{
 		DBInstanceIdentifier:      aws.String(meta.GetExternalName(cr)),
@@ -365,5 +365,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		FinalDBSnapshotIdentifier: cr.Spec.ForProvider.FinalDBSnapshotIdentifier,
 	}
 	_, err = e.client.DeleteDBInstance(ctx, &input)
-	return errorutils.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

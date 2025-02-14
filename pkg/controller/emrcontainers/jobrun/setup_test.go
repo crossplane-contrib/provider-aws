@@ -142,7 +142,7 @@ func TestDeleter(t *testing.T) {
 			ext := newMockExternal(output{
 				nil, nil, nil, nil, &tc.args.describeJobRunOutput,
 			})
-			result := ext.postDeleter(context.Background(), &v1alpha1.JobRun{}, &tc.args.cancelJobRunOutput, tc.args.err)
+			_, result := ext.postDeleter(context.Background(), &v1alpha1.JobRun{}, &tc.args.cancelJobRunOutput, tc.args.err)
 			diff := cmp.Diff(tc.want.err, result, test.EquateErrors())
 			if diff != "" {
 				t.Errorf("-want, +got:\n%s", diff)

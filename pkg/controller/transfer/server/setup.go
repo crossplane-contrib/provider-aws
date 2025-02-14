@@ -62,7 +62,7 @@ func SetupServer(mgr ctrl.Manager, o controller.Options) error {
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithInitializers(),
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&customConnector{connector: &connector{kube: mgr.GetClient()}, newClientFn: newVPCClient}),
+		managed.WithTypedExternalConnector(&customConnector{connector: &connector{kube: mgr.GetClient()}, newClientFn: newVPCClient}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),

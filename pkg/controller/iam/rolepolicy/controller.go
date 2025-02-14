@@ -51,7 +51,7 @@ const (
 
 // SetupRolePolicy adds a controller that reconciles RolePolicy.
 func SetupRolePolicy(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(v1beta1.RoleGroupKind)
+	name := managed.ControllerName(v1beta1.RolePolicyKind)
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
@@ -156,10 +156,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalUpdate{}, e.putRolePolicy(ctx, cr)
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mgd.(*v1beta1.RolePolicy)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -169,7 +169,12 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		RoleName:   aws.String(cr.Spec.ForProvider.RoleName),
 	})
 
-	return err
+	return managed.ExternalDelete{}, err
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 func (e *external) putRolePolicy(ctx context.Context, cr *v1beta1.RolePolicy) error {

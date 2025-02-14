@@ -51,27 +51,19 @@ type connector struct {
 	opts []option
 }
 
-func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.Route)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+func (c *connector) Connect(ctx context.Context, cr *svcapitypes.Route) (managed.TypedExternalClient[*svcapitypes.Route], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
 	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	return e.observe(ctx, mg)
+func (e *external) Observe(ctx context.Context, cr *svcapitypes.Route) (managed.ExternalObservation, error) {
+	return e.observe(ctx, cr)
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*svcapitypes.Route)
-	if !ok {
-		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
+func (e *external) Create(ctx context.Context, cr *svcapitypes.Route) (managed.ExternalCreation, error) {
 	cr.Status.SetConditions(xpv1.Creating())
 	input := GenerateCreateRouteInput(cr)
 	if err := e.preCreate(ctx, cr, input); err != nil {
@@ -91,27 +83,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	return e.update(ctx, mg)
+func (e *external) Update(ctx context.Context, cr *svcapitypes.Route) (managed.ExternalUpdate, error) {
+	return e.update(ctx, cr)
 
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
-	cr, ok := mg.(*svcapitypes.Route)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
+func (e *external) Delete(ctx context.Context, cr *svcapitypes.Route) (managed.ExternalDelete, error) {
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteRouteInput(cr)
 	ignore, err := e.preDelete(ctx, cr, input)
 	if err != nil {
-		return errors.Wrap(err, "pre-delete failed")
+		return managed.ExternalDelete{}, errors.Wrap(err, "pre-delete failed")
 	}
 	if ignore {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 	resp, err := e.client.DeleteRouteWithContext(ctx, input)
 	return e.postDelete(ctx, cr, resp, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
 
 type option func(*external)
@@ -136,15 +129,15 @@ func newExternal(kube client.Client, client svcsdkapi.EC2API, opts []option) *ex
 type external struct {
 	kube       client.Client
 	client     svcsdkapi.EC2API
-	observe    func(context.Context, cpresource.Managed) (managed.ExternalObservation, error)
+	observe    func(context.Context, *svcapitypes.Route) (managed.ExternalObservation, error)
 	preCreate  func(context.Context, *svcapitypes.Route, *svcsdk.CreateRouteInput) error
 	postCreate func(context.Context, *svcapitypes.Route, *svcsdk.CreateRouteOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete  func(context.Context, *svcapitypes.Route, *svcsdk.DeleteRouteInput) (bool, error)
-	postDelete func(context.Context, *svcapitypes.Route, *svcsdk.DeleteRouteOutput, error) error
-	update     func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+	postDelete func(context.Context, *svcapitypes.Route, *svcsdk.DeleteRouteOutput, error) (managed.ExternalDelete, error)
+	update     func(context.Context, *svcapitypes.Route) (managed.ExternalUpdate, error)
 }
 
-func nopObserve(context.Context, cpresource.Managed) (managed.ExternalObservation, error) {
+func nopObserve(context.Context, *svcapitypes.Route) (managed.ExternalObservation, error) {
 	return managed.ExternalObservation{}, nil
 }
 
@@ -157,9 +150,9 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.Route, _ *svcsdk.CreateRout
 func nopPreDelete(context.Context, *svcapitypes.Route, *svcsdk.DeleteRouteInput) (bool, error) {
 	return false, nil
 }
-func nopPostDelete(_ context.Context, _ *svcapitypes.Route, _ *svcsdk.DeleteRouteOutput, err error) error {
-	return err
+func nopPostDelete(_ context.Context, _ *svcapitypes.Route, _ *svcsdk.DeleteRouteOutput, err error) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, err
 }
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+func nopUpdate(context.Context, *svcapitypes.Route) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }

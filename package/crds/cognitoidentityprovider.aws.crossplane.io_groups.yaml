@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: groups.cognitoidentityprovider.aws.crossplane.io
 spec:
   group: cognitoidentityprovider.aws.crossplane.io
@@ -86,13 +86,11 @@ spec:
                       value whose role ARN is given in the user's tokens for the cognito:roles
                       and cognito:preferred_role claims.
 
-
                       Two groups can have the same Precedence value. If this happens, neither group
                       takes precedence over the other. If two groups with the same Precedence have
                       the same role ARN, that role is used in the cognito:preferred_role claim
                       in tokens for users in each group. If the two groups have different role
                       ARNs, the cognito:preferred_role claim isn't set in users' tokens.
-
 
                       The default Precedence value is null. The maximum Precedence value is 2^31-1.
                     format: int64

@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: things.iot.aws.crossplane.io
 spec:
   group: iot.aws.crossplane.io
@@ -77,7 +77,6 @@ spec:
                     description: |-
                       The attribute payload, which consists of up to three name/value pairs in
                       a JSON document. For example:
-
 
                       {\"attributes\":{\"string1\":\"string2\"}}
                     properties:

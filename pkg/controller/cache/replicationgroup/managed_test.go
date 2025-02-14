@@ -913,7 +913,7 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.e.Delete(ctx, tc.r)
+			_, err := tc.e.Delete(ctx, tc.r)
 
 			if tc.returnsErr != (err != nil) {
 				t.Errorf("tc.csd.Delete(...) error: want: %t got: %t", tc.returnsErr, err != nil)

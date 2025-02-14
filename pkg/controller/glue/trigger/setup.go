@@ -29,7 +29,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
@@ -55,12 +54,8 @@ type customExternal struct {
 	external
 }
 
-func (c *customConnector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*svcapitypes.Trigger)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-	sess, err := connectaws.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+func (c *customConnector) Connect(ctx context.Context, cr *svcapitypes.Trigger) (managed.TypedExternalClient[*svcapitypes.Trigger], error) {
+	sess, err := connectaws.GetConfigV1(ctx, c.kube, cr, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, errCreateSession)
 	}
@@ -86,11 +81,7 @@ func newCustomExternal(kube client.Client, client svcsdkapi.GlueAPI) *customExte
 	}
 }
 
-func (e *customExternal) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) { //nolint:gocyclo
-	cr, ok := mg.(*svcapitypes.Trigger)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *customExternal) Update(ctx context.Context, cr *svcapitypes.Trigger) (managed.ExternalUpdate, error) { //nolint:gocyclo
 	triggerUpdate := &svcsdk.TriggerUpdate{}
 
 	if cr.Spec.ForProvider.Predicate != nil {
@@ -187,7 +178,7 @@ func SetupTrigger(mgr ctrl.Manager, o controller.Options) error {
 		For(&svcapitypes.Trigger{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.TriggerGroupVersionKind),
-			managed.WithExternalConnecter(&customConnector{kube: mgr.GetClient()}),
+			managed.WithTypedExternalConnector(&customConnector{kube: mgr.GetClient()}),
 			managed.WithPollInterval(o.PollInterval),
 			managed.WithLogger(o.Logger.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),

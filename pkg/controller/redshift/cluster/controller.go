@@ -220,17 +220,22 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyFailed)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*redshiftv1alpha1.Cluster)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.ClusterStatus == redshiftv1alpha1.StateDeleting {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
 	_, err := e.client.DeleteCluster(ctx, redshift.GenerateDeleteClusterInput(&cr.Spec.ForProvider, aws.String(meta.GetExternalName(cr))))
 
-	return errorutils.Wrap(resource.Ignore(redshift.IsNotFound, err), errDeleteFailed)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(redshift.IsNotFound, err), errDeleteFailed)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

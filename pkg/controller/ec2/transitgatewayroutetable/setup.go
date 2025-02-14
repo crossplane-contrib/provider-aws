@@ -26,7 +26,7 @@ import (
 
 // SetupTransitGatewayRouteTable adds a controller that reconciles TransitGatewayRouteTable.
 func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error {
-	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+	name := managed.ControllerName(svcapitypes.TransitGatewayRouteTableKind)
 	opts := []option{
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}
@@ -45,7 +45,7 @@ func SetupTransitGatewayRouteTable(mgr ctrl.Manager, o controller.Options) error
 
 	reconcilerOpts := []managed.ReconcilerOption{
 		managed.WithCriticalAnnotationUpdater(custommanaged.NewRetryingCriticalAnnotationUpdater(mgr.GetClient())),
-		managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+		managed.WithTypedExternalConnector(&connector{kube: mgr.GetClient(), opts: opts}),
 		managed.WithPollInterval(o.PollInterval),
 		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithInitializers(),
@@ -134,13 +134,13 @@ func postObserve(_ context.Context, cr *svcapitypes.TransitGatewayRouteTable, ob
 	return obs, nil
 }
 
-func postDelete(_ context.Context, cr *svcapitypes.TransitGatewayRouteTable, obj *svcsdk.DeleteTransitGatewayRouteTableOutput, err error) error {
+func postDelete(_ context.Context, cr *svcapitypes.TransitGatewayRouteTable, obj *svcsdk.DeleteTransitGatewayRouteTableOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), string("IncorrectState")) {
 			// skip: IncorrectState: tgw-rtb-xxx is in invalid state Error 400
-			return nil
+			return managed.ExternalDelete{}, nil
 		}
-		return err
+		return managed.ExternalDelete{}, err
 	}
-	return err
+	return managed.ExternalDelete{}, err
 }

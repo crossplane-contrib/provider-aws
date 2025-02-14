@@ -254,13 +254,18 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1beta1.Bucket)
 	if !ok {
-		return errors.New(errUnexpectedObject)
+		return managed.ExternalDelete{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
 	_, err := e.s3client.DeleteBucket(ctx, &awss3.DeleteBucketInput{Bucket: aws.String(meta.GetExternalName(cr))})
-	return resource.Ignore(s3.IsNotFound, err)
+	return managed.ExternalDelete{}, resource.Ignore(s3.IsNotFound, err)
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }

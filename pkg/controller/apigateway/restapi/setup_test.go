@@ -122,8 +122,8 @@ func restAPI(m ...apiModifier) *v1alpha1.RestAPI {
 	return cr
 }
 
-var _ managed.ExternalClient = &external{}
-var _ managed.ExternalConnecter = &connector{}
+var _ managed.TypedExternalClient[*v1alpha1.RestAPI] = &external{}
+var _ managed.TypedExternalConnecter[*v1alpha1.RestAPI] = &connector{}
 
 func TestPreUpdate(t *testing.T) {
 	type want struct {

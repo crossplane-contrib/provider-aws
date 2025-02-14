@@ -187,10 +187,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalUpdate{}, svcutils.UpdateTagsForResource(ctx, e.client, cr.Spec.ForProvider.Tags, cr.Status.AtProvider.JobArn)
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*svcapitypes.Job)
 	if !ok {
-		return errors.New(errNotBatchJob)
+		return managed.ExternalDelete{}, errors.New(errNotBatchJob)
 	}
 
 	// no check possible for a "deleting"-like status at Provider -> many delete-requests
@@ -199,7 +199,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	// No terminate-request needed, when Job is already finished
 	if cr.Status.AtProvider.Status == pointer.ToOrNilIfZeroValue(svcsdk.JobStatusFailed) ||
 		cr.Status.AtProvider.Status == pointer.ToOrNilIfZeroValue(svcsdk.JobStatusSucceeded) {
-		return nil
+		return managed.ExternalDelete{}, nil
 	}
 
 	// terminate includes cancel (seems no need to differentiate)
@@ -209,7 +209,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	// termination seems to not get through until dependend Job is fisnished ... (-> tested on AWS Console)
 
 	_, err := e.client.TerminateJobWithContext(ctx, generateTerminateJobInput(cr, pointer.ToOrNilIfZeroValue("Terminated for crossplane deletion")))
-	return errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errTerminateJob)
+	return managed.ExternalDelete{}, errorutils.Wrap(resource.Ignore(isErrorNotFound, err), errTerminateJob)
 }
 
 func (e *external) lateInitialize(spec, current *svcapitypes.JobParameters) { //nolint:gocyclo
@@ -293,4 +293,9 @@ func lateInitContainerOverrides(spec, current *svcapitypes.ContainerOverrides) {
 func isErrorNotFound(err error) bool {
 	var awsErr smithy.APIError
 	return errors.As(err, &awsErr) && awsErr.ErrorCode() == "JobNotFoundException"
+}
+
+func (e *external) Disconnect(ctx context.Context) error {
+	// Unimplemented, required by newer versions of crossplane-runtime
+	return nil
 }
