@@ -265,14 +265,16 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	instance := result.Instances[0]
 
-	if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
-		Resources: []string{pointer.StringValue(instance.InstanceId)},
-		Tags:      ec2.GenerateEC2TagsManualV1alpha1(cr.Spec.ForProvider.Tags),
-	}); err != nil {
-		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreateTags)
-	}
-
 	meta.SetExternalName(cr, pointer.StringValue(instance.InstanceId))
+
+	if len(cr.Spec.ForProvider.Tags) > 0 {
+		if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
+			Resources: []string{pointer.StringValue(instance.InstanceId)},
+			Tags:      ec2.GenerateEC2TagsManualV1alpha1(cr.Spec.ForProvider.Tags),
+		}); err != nil {
+			return managed.ExternalCreation{}, errorutils.Wrap(err, errCreateTags)
+		}
+	}
 
 	return managed.ExternalCreation{}, nil
 }
