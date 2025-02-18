@@ -259,6 +259,31 @@ func TestCreate(t *testing.T) {
 				result: managed.ExternalCreation{},
 			},
 		},
+		"SuccessfulWithNoTags": {
+			args: args{
+				instance: &fake.MockInstanceClient{
+					MockRunInstances: func(ctx context.Context, input *awsec2.RunInstancesInput, opts []func(*awsec2.Options)) (*awsec2.RunInstancesOutput, error) {
+						return &awsec2.RunInstancesOutput{
+							Instances: []types.Instance{
+								{
+									InstanceId: &instanceID,
+								},
+							},
+						}, nil
+					},
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						// This function should NOT be called if no tags are provided
+						t.Errorf("CreateTags was called but should not have been")
+						return nil, errors.New("CreateTags should not be called")
+					},
+				},
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{})),
+			},
+			want: want{
+				cr:     instance(withExternalName(instanceID), withSpec(manualv1alpha1.InstanceParameters{})),
+				result: managed.ExternalCreation{},
+			},
+		},
 		"CreateFail": {
 			args: args{
 				instance: &fake.MockInstanceClient{
