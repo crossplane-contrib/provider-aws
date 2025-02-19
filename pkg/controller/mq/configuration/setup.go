@@ -3,6 +3,7 @@ package configuration
 import (
 	"context"
 	"encoding/base64"
+	"strings"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/mq"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/mq/mqiface"
@@ -14,6 +15,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -236,12 +238,17 @@ func lateInitialize(describeConfigOutput *svcsdk.DescribeConfigurationOutput, in
 func isRevisionUpToDate(cr *svcapitypes.Configuration) (bool, error) {
 	forProviderConfig := pointer.StringValue(cr.Spec.ForProvider.Data)
 	atProviderConfig := pointer.StringValue(cr.Status.AtProvider.LatestRevisionData)
-	diffDataAtAndForProviderConfig, err := mqconfutils.DiffXMLConfigs(atProviderConfig, forProviderConfig)
-	if err != nil {
-		return false, err
-	}
 
-	isDataUpToDate := diffDataAtAndForProviderConfig == ""
 	isDescriptionUpToDate := pointer.StringValue(cr.Spec.ForProvider.Description) == pointer.StringValue(cr.Status.AtProvider.LatestRevision.Description)
-	return isDataUpToDate && isDescriptionUpToDate, nil
+
+	if strings.ToUpper(pointer.StringValue(cr.Spec.ForProvider.EngineType)) == string(svcapitypes.EngineType_ACTIVEMQ) {
+		diffDataAtAndForProviderConfig, err := mqconfutils.DiffXMLConfigs(atProviderConfig, forProviderConfig)
+		if err != nil {
+			return false, err
+		}
+		isDataUpToDate := diffDataAtAndForProviderConfig == ""
+		return isDataUpToDate && isDescriptionUpToDate, nil
+	}
+	// rabbitmq
+	return cmp.Equal(forProviderConfig, atProviderConfig) && isDescriptionUpToDate, nil
 }
