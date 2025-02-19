@@ -22,13 +22,20 @@ import (
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ecs/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/apis/v1alpha1"
+	ecsclient "github.com/crossplane-contrib/provider-aws/pkg/clients/ecs"
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
+type Cache struct {
+	AddTags    []*svcsdk.Tag
+	RemoveTags []*string
+}
 type custom struct {
 	kube   client.Client
 	client svcsdkapi.ECSAPI
+
+	cache Cache
 }
 
 // SetupService adds a controller that reconciles Service.
@@ -41,8 +48,9 @@ func SetupService(mgr ctrl.Manager, o controller.Options) error {
 			e.postObserve = c.postObserve
 			e.preCreate = preCreate
 			e.preUpdate = preUpdate
+			e.postUpdate = c.postUpdate
 			e.preDelete = preDelete
-			e.isUpToDate = isUpToDate
+			e.isUpToDate = c.isUpToDate
 			e.lateInitialize = lateInitialize
 		},
 	}
@@ -76,7 +84,7 @@ func SetupService(mgr ctrl.Manager, o controller.Options) error {
 		Complete(r)
 }
 
-func isUpToDate(context context.Context, service *svcapitypes.Service, output *svcsdk.DescribeServicesOutput) (bool, string, error) {
+func (e *custom) isUpToDate(context context.Context, service *svcapitypes.Service, output *svcsdk.DescribeServicesOutput) (bool, string, error) {
 	if len(output.Services) != 1 {
 		return false, "", nil
 	}
@@ -84,22 +92,23 @@ func isUpToDate(context context.Context, service *svcapitypes.Service, output *s
 	t := service.Spec.ForProvider.DeepCopy()
 	c := GenerateServiceCustom(output).Spec.ForProvider.DeepCopy()
 
-	tags := func(a, b *svcapitypes.Tag) bool { return aws.StringValue(a.Key) < aws.StringValue(b.Key) }
+	e.cache.AddTags, e.cache.RemoveTags = ecsclient.DiffTags(t.Tags, c.Tags)
+
 	stringpointer := func(a, b *string) bool { return aws.StringValue(a) < aws.StringValue(b) }
 	keyValuePair := func(a, b *svcsdk.KeyValuePair) bool { return aws.StringValue(a.Name) < aws.StringValue(b.Name) }
 
 	diff := cmp.Diff(c, t,
 		cmpopts.EquateEmpty(),
-		cmpopts.SortSlices(tags),
 		cmpopts.SortSlices(stringpointer),
 		cmpopts.SortSlices(keyValuePair),
 		// Not present in DescribeServicesOutput
 		cmpopts.IgnoreFields(svcapitypes.ServiceParameters{}, "Region"),
+		cmpopts.IgnoreFields(svcapitypes.ServiceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(svcapitypes.CustomServiceParameters{}, "Cluster"),
 		cmpopts.IgnoreFields(svcapitypes.CustomServiceParameters{}, "ForceDeletion"),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}))
 
-	return diff == "", diff, nil
+	return diff == "" && len(e.cache.AddTags) == 0 && len(e.cache.RemoveTags) == 0, diff, nil
 }
 
 func lateInitialize(in *svcapitypes.ServiceParameters, out *svcsdk.DescribeServicesOutput) error { //nolint:gocyclo
@@ -241,6 +250,25 @@ func preUpdate(context context.Context, cr *svcapitypes.Service, obj *svcsdk.Upd
 		return err
 	}
 	return nil
+}
+
+func (e *custom) postUpdate(context context.Context, cr *svcapitypes.Service, obj *svcsdk.UpdateServiceOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	arn := obj.Service.ServiceArn
+
+	if arn != nil {
+		if len(e.cache.RemoveTags) > 0 {
+			if _, err := e.client.UntagResourceWithContext(context, &svcsdk.UntagResourceInput{ResourceArn: arn, TagKeys: e.cache.RemoveTags}); err != nil {
+				return managed.ExternalUpdate{}, errors.Wrap(err, "UntagResource failed")
+			}
+		}
+		if len(e.cache.AddTags) > 0 {
+			if _, err := e.client.TagResourceWithContext(context, &svcsdk.TagResourceInput{ResourceArn: arn, Tags: e.cache.AddTags}); err != nil {
+				return managed.ExternalUpdate{}, errors.Wrap(err, "TagResource failed")
+			}
+		}
+	}
+
+	return upd, err
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Service, obj *svcsdk.DeleteServiceInput) (bool, error) {
