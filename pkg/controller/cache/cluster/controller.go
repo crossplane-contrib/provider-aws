@@ -19,10 +19,13 @@ package cluster
 import (
 	"context"
 	"reflect"
+	"strings"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	"github.com/crossplane/crossplane-runtime/pkg/connection"
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -147,10 +150,26 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, err
 	}
 
-	return managed.ExternalObservation{
+	obs := managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: upToDate,
-	}, nil
+	}
+
+	if cr.Status.AtProvider.CacheNodes != nil {
+		nodes := []string{}
+		for _, n := range cr.Status.AtProvider.CacheNodes {
+			addr := fmt.Sprintf("%s:%d", n.Endpoint.Address, n.Endpoint.Port)
+			nodes = append(nodes, addr)
+		}
+		
+		obs.ConnectionDetails = managed.ConnectionDetails{
+			xpv1.ResourceCredentialsSecretEndpointKey: []byte(
+				strings.Join(nodes, ","),
+			),
+		}
+	}
+
+	return obs, nil
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
