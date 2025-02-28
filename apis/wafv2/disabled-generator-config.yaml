@@ -1,0 +1,69 @@
+# NOTE(teeverr): this config file was used for ACK generation(make services SERVICES=wafv2) via ack-code-generator v0.38.1,
+# then these types were backported to v0.26.1(current version in January 2025), and then the controller code was generated(make generate) by ack-code-generator v0.26.1.
+# The reason is that ack-code-generator supports empty shapes(https://github.com/aws-controllers-k8s/code-generator/pull/536) and
+# set: ignore directive(https://github.com/aws-controllers-k8s/code-generator/pull/464) only since version v0.38.0.
+# But github.com/aws-controllers-k8s/code-generator v0.38.0 and higher brings a lot of other changes: 1) it automatically detects new aws resources
+# for cloudfront, cloudwatchlogs, eks, elasticache, elbv2, prometheuservice, s3control 2) breaks camelcase naming pattern for some fields, for instance
+# RecrawlPolicy(glue crawler) field becomes RECrawler 3) Controller servicecatalog/provisionedproduct(probably something else) loses some methods of `external` object.
+# 4) Every crd has changes in description of fields (primary it is about indents/new lines)
+# So these massive changes definitely require a dedicated PR, and until that I disabled this config.
+---
+ignore:
+  resource_names:
+    - APIKey
+    - IPSet
+    - RegexPatternSet
+    - RuleGroup
+  field_paths:
+    - CreateWebACLInput.Name
+    - UpdateWebACLInput.Name
+    - DeleteWebACLInput.Name
+    - GetWebACLInput.Name
+    - WebACL.Rules.Statement.AndStatement
+    - WebACL.Rules.Statement.OrStatement
+    - WebACL.Rules.Statement.NotStatement
+    - WebACL.Rules.Statement.ManagedRuleGroupStatement.ScopeDownStatement
+    - WebACL.Rules.Statement.RateBasedStatement.ScopeDownStatement
+empty_shapes:
+  - All
+  - Method
+  - UriPath
+  - QueryString
+  - AllQueryArguments
+  - RateLimitIP
+  - RateLimitForwardedIP
+  - RateLimitHTTPMethod
+  - NoneAction
+operations:
+  GetWebACL:
+    output_wrapper_field_path: WebACL
+resources:
+  WebACL:
+    fields:
+      # The statements below have infinite recursion(e.g. Statement.AndStatement.Statements contains list of Statement), so it's ignored and replaced with a string. The controller expects json string for these fields.
+      Rules.Statement.AndStatement:
+        type: string
+        set:
+          - ignore: "all"
+      Rules.Statement.OrStatement:
+        type: string
+        set:
+          - ignore: "all"
+      Rules.Statement.NotStatement:
+        type: string
+        set:
+          - ignore: "all"
+      Rules.Statement.ManagedRuleGroupStatement.ScopeDownStatement:
+        type: string
+        set:
+          - ignore: "all"
+      Rules.Statement.RateBasedStatement.ScopeDownStatement:
+        type: string
+        set:
+          - ignore: "all"
+      Rules.Statement.ByteMatchStatement.TextTransformations.Type:
+        go_tag: json:"type,omitempty"
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException

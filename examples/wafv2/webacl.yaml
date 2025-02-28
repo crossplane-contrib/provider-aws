@@ -1,0 +1,92 @@
+---
+apiVersion: wafv2.aws.crossplane.io/v1alpha1
+kind: WebACL
+metadata:
+  name: web-acl-example
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    region: eu-central-1
+    rules:
+      - name: rule-1
+        visibilityConfig:
+          metricName: 'metric-name'
+          sampledRequestsEnabled: false
+          cloudWatchMetricsEnabled: true
+        priority: 0
+        action:
+          allow: { }
+        statement:
+          andStatement: |
+            {
+              "Statements": [
+                {
+                  "ByteMatchStatement":
+                    {
+                      "FieldToMatch": {
+                        "SingleHeader": {
+                          "Name": "Host"
+                        }
+                      },
+                      "PositionalConstraint": "CONTAINS",
+                      "SearchString": "YmFkQm90",
+                      "TextTransformations": [
+                        {
+                          "Priority": 0,
+                          "Type": "NONE"
+                        }
+                      ]
+                    }
+                },
+                {
+                  "ByteMatchStatement":
+                    {
+                      "FieldToMatch": {
+                        "SingleHeader": {
+                          "Name": "User-Agent"
+                        }
+                      },
+                      "PositionalConstraint": "CONTAINS",
+                      "SearchString": "YmFkQm90",
+                      "TextTransformations": [
+                        {
+                          "Priority": 1,
+                          "Type": "NONE"
+                        }
+                      ]
+                    }
+                }
+              ]
+            }
+      - name: rule-2
+        visibilityConfig:
+          metricName: 'metric-name'
+          sampledRequestsEnabled: false
+          cloudWatchMetricsEnabled: true
+        priority: 1
+        action:
+          allow: { }
+        statement:
+          byteMatchStatement:
+            fieldToMatch:
+              singleHeader:
+                 name: "User-Agent"
+            positionalConstraint: "CONTAINS"
+            searchString: "YmFkQm90"
+            textTransformations:
+              - priority: 1
+                type_: "NONE"
+    visibilityConfig:
+      metricName: 'metric-name'
+      sampledRequestsEnabled: false
+      cloudWatchMetricsEnabled: true
+    defaultAction:
+      allow: { }
+    scope: REGIONAL
+    associatedAWSResources:
+      - resourceARN: arn:aws:elasticloadbalancing:eu-central-1:123456789012:loadbalancer/app/k8s-ingress-50f128f9c3/51af477f49da2d20
+    tags:
+      - key: "crossplane:managed"
+        value: "true"
+  providerConfigRef:
+    name: provider-aws
