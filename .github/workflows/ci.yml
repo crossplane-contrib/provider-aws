@@ -345,7 +345,14 @@ jobs:
           username: ${{ secrets.XPKG_ACCESS_ID }}
           password: ${{ secrets.XPKG_TOKEN }}
 
-      - name: Publish Artifacts to S3, Marketplace, DockerHub
+      - name: Login to GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Artifacts to S3, Marketplace, DockerHub, GHCR
         run: make -j2 publish BRANCH_NAME=${GITHUB_REF##*/}
         if: env.AWS_USR != '' && env.CONTRIB_DOCKER_USR != ''
         env:
