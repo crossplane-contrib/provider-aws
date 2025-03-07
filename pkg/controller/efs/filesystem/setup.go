@@ -2,6 +2,7 @@ package filesystem
 
 import (
 	"context"
+	"k8s.io/utils/ptr"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/efs"
@@ -70,6 +71,9 @@ func SetupFileSystem(mgr ctrl.Manager, o controller.Options) error {
 func isUpToDate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsOutput) (bool, string, error) {
 	for _, res := range obj.FileSystems {
 		if pointer.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps) != int64(aws.Float64Value(res.ProvisionedThroughputInMibps)) {
+			return false, "", nil
+		}
+		if !ptr.Equal(cr.Spec.ForProvider.ThroughputMode, res.ThroughputMode) {
 			return false, "", nil
 		}
 	}
