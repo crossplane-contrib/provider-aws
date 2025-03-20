@@ -22,6 +22,8 @@ import (
 
 // goverter:converter
 // goverter:ignoreUnexported
+// goverter:enum no
+// goverter:output:file ./zz_converter.go
 type Converter interface {
 	DeepCopyAWSCacheCluster(*types.CacheCluster) *types.CacheCluster
 }

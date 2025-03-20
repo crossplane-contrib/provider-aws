@@ -136,7 +136,7 @@ run: go.build
 .PHONY: cobertura manifests submodules fallthrough test-integration run crds.clean
 
 AWS_SDK_GO_VERSION ?= $(shell awk '/github.com\/aws\/aws-sdk-go / { print $$2 }' < go.mod)
-ACK_VERSION ?= $(shell awk '/github.com\/aws-controllers-k8s\/code-generator / { print $$2 }' < go.mod)
+ACK_VERSION ?= $(shell awk '/github.com\/aws-controllers-k8s\/code-generator / { print $$2 }' < $(ROOT_DIR)/tools/go.mod)
 ACK_GENERATE_DIR ?= $(CACHE_DIR)/ack-generate
 ACK_GENERATE ?= $(ACK_GENERATE_DIR)/ack-generate_$(ACK_VERSION)
 
@@ -145,7 +145,7 @@ ACK_GENERATE ?= $(ACK_GENERATE_DIR)/ack-generate_$(ACK_VERSION)
 $(ACK_GENERATE):
 	@$(INFO) Building ack-generate $(ACK_VERSION)
 	@mkdir -p "$(ACK_GENERATE_DIR)"
-	@$(GO) build -o "$(ACK_GENERATE)" -tags codegen github.com/aws-controllers-k8s/code-generator/cmd/ack-generate || $(FAIL)
+	@$(GO) build -modfile "$(ROOT_DIR)/tools/go.mod" -o "$(ACK_GENERATE)" -tags codegen github.com/aws-controllers-k8s/code-generator/cmd/ack-generate || $(FAIL)
 	@$(OK) Built ack-generate $(ACK_VERSION)
 
 services: $(ACK_GENERATE) $(GOIMPORTS)
