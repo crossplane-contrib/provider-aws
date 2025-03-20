@@ -61,6 +61,8 @@ resources:
         type: string
         set:
           - ignore: "all"
+      Rules.Statement.ByteMatchStatement.SearchString:
+        type: string
       Rules.Statement.ByteMatchStatement.TextTransformations.Type:
         go_tag: json:"type,omitempty"
     exceptions:

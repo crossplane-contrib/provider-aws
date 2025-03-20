@@ -296,8 +296,8 @@ func (in *ByteMatchStatement) DeepCopyInto(out *ByteMatchStatement) {
 	}
 	if in.SearchString != nil {
 		in, out := &in.SearchString, &out.SearchString
-		*out = make([]byte, len(*in))
-		copy(*out, *in)
+		*out = new(string)
+		**out = **in
 	}
 	if in.TextTransformations != nil {
 		in, out := &in.TextTransformations, &out.TextTransformations

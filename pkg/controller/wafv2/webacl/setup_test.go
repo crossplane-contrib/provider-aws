@@ -70,7 +70,7 @@ func TestIsUpToDate(t *testing.T) {
 	                        }
 	                      },
 	                      "PositionalConstraint": "CONTAINS",
-	                      "SearchString": "YmFkQm90",
+	                      "SearchString": "badBot",
 	                      "TextTransformations": [
 	                        {
 	                          "Priority": 0,
@@ -88,7 +88,7 @@ func TestIsUpToDate(t *testing.T) {
 	                        }
 	                      },
 	                      "PositionalConstraint": "CONTAINS",
-	                      "SearchString": "YmFkQm90",
+	                      "SearchString": "badBot",
 	                      "TextTransformations": [
 	                        {
 	                          "Priority": 1,
@@ -110,7 +110,7 @@ func TestIsUpToDate(t *testing.T) {
 	                        }
 	                      },
 	                      "PositionalConstraint": "CONTAINS",
-	                      "SearchString": "YmFkQm90",
+	                      "SearchString": "badBot",
 	                      "TextTransformations": [
 	                        {
 	                          "Priority": 0,
@@ -128,7 +128,7 @@ func TestIsUpToDate(t *testing.T) {
 	                        }
 	                      },
 	                      "PositionalConstraint": "CONTAINS",
-	                      "SearchString": "Y3Jvc3NwbGFuZS5pbw==",
+	                      "SearchString": "crossplane.io",
 	                      "TextTransformations": [
 	                        {
 	                          "Priority": 1,
@@ -240,8 +240,9 @@ func TestIsUpToDate(t *testing.T) {
 				},
 				observed: &svcsdk.GetWebACLOutput{
 					WebACL: &svcsdk.WebACL{
-						Name: &webAclName,
-						Id:   &webAclId,
+						Name:        &webAclName,
+						Id:          &webAclId,
+						Description: aws.String(""),
 						VisibilityConfig: &svcsdk.VisibilityConfig{
 							MetricName:               &visibilityConfigMetricName,
 							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
@@ -408,8 +409,9 @@ func TestIsUpToDate(t *testing.T) {
 				},
 				observed: &svcsdk.GetWebACLOutput{
 					WebACL: &svcsdk.WebACL{
-						Name: &webAclName,
-						Id:   &webAclId,
+						Name:        &webAclName,
+						Description: aws.String(""),
+						Id:          &webAclId,
 						VisibilityConfig: &svcsdk.VisibilityConfig{
 							MetricName:               &visibilityConfigMetricName,
 							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
@@ -525,7 +527,7 @@ func TestIsUpToDate(t *testing.T) {
 												},
 											},
 											PositionalConstraint: aws.String("CONTAINS"),
-											SearchString:         []byte("YmFkQm90"),
+											SearchString:         aws.String("badBot"),
 											TextTransformations: []*svcapitypes.TextTransformation{
 												{Priority: aws.Int64(1), Type: aws.String("NONE")},
 											},
@@ -538,8 +540,9 @@ func TestIsUpToDate(t *testing.T) {
 				},
 				observed: &svcsdk.GetWebACLOutput{
 					WebACL: &svcsdk.WebACL{
-						Name: &webAclName,
-						Id:   &webAclId,
+						Name:        &webAclName,
+						Description: aws.String(""),
+						Id:          &webAclId,
 						VisibilityConfig: &svcsdk.VisibilityConfig{
 							MetricName:               &visibilityConfigMetricName,
 							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
@@ -568,7 +571,7 @@ func TestIsUpToDate(t *testing.T) {
 											},
 										},
 										PositionalConstraint: aws.String("CONTAINS"),
-										SearchString:         []byte("YmFkQm90"),
+										SearchString:         []byte("badBot"),
 										TextTransformations: []*svcsdk.TextTransformation{
 											{Priority: aws.Int64(1), Type: aws.String("NONE")},
 										},
@@ -650,8 +653,9 @@ func TestIsUpToDate(t *testing.T) {
 				},
 				observed: &svcsdk.GetWebACLOutput{
 					WebACL: &svcsdk.WebACL{
-						Name: &webAclName,
-						Id:   &webAclId,
+						Name:        &webAclName,
+						Description: aws.String(""),
+						Id:          &webAclId,
 						VisibilityConfig: &svcsdk.VisibilityConfig{
 							MetricName:               &visibilityConfigMetricName,
 							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
@@ -804,8 +808,9 @@ func TestIsUpToDate(t *testing.T) {
 				},
 				observed: &svcsdk.GetWebACLOutput{
 					WebACL: &svcsdk.WebACL{
-						Name: &webAclName,
-						Id:   &webAclId,
+						Name:        &webAclName,
+						Description: aws.String(""),
+						Id:          &webAclId,
 						VisibilityConfig: &svcsdk.VisibilityConfig{
 							MetricName:               &visibilityConfigMetricName,
 							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
@@ -870,8 +875,9 @@ func TestIsUpToDate(t *testing.T) {
 				},
 				observed: &svcsdk.GetWebACLOutput{
 					WebACL: &svcsdk.WebACL{
-						Name: &webAclName,
-						Id:   &webAclId,
+						Name:        &webAclName,
+						Description: aws.String(""),
+						Id:          &webAclId,
 						VisibilityConfig: &svcsdk.VisibilityConfig{
 							MetricName:               &visibilityConfigMetricName,
 							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,

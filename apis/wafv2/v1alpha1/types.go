@@ -178,8 +178,8 @@ type ByteMatchStatement struct {
 
 	// A string value that you want WAF to search for. WAF searches only in the
 	// part of web requests that you designate for inspection in FieldToMatch. The
-	// maximum length of the value is 200 bytes. The value should be base64 encoded.
-	SearchString []byte `json:"searchString,omitempty"`
+	// maximum length of the value is 200 bytes.
+	SearchString *string `json:"searchString,omitempty"`
 
 	TextTransformations []*TextTransformation `json:"textTransformations,omitempty"`
 }

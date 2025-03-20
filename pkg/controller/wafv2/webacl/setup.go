@@ -15,8 +15,10 @@ package webacl
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"reflect"
+	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -32,7 +34,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
@@ -45,7 +46,6 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	connectaws "github.com/crossplane-contrib/provider-aws/pkg/utils/connect/aws"
 	errorutils "github.com/crossplane-contrib/provider-aws/pkg/utils/errors"
-	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
 	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
@@ -72,7 +72,6 @@ func SetupWebACL(mgr ctrl.Manager, o controller.Options) error {
 	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
 		reconcilerOpts = append(reconcilerOpts, managed.WithManagementPolicies())
 	}
-
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(svcapitypes.WebACLGroupVersionKind),
 		reconcilerOpts...)
@@ -95,7 +94,6 @@ type customConnector struct {
 	logger logging.Logger
 }
 
-// customExternal is external connector with overridden Observe method due to ACK doesn't correctly generate it.
 type customExternal struct {
 	external
 	cache *cache
@@ -110,6 +108,12 @@ type shared struct {
 type cache struct {
 	tagListOutput               []*svcsdk.Tag
 	observedAssociatedResources []*string
+	// Observe function updates the status, Update func retrieves some required input params from the status,
+	// and Update might be triggered in the same reconciliation loop but the status will be updated only in the next one
+	// which leads to errors in case of taking control over existing webacl with difference configuration(ds is different)
+	// in the very first loop. Because in this case the status is empty. Caching resolve this problem and allows to share
+	// the status in the same reconciliation loop
+	status svcapitypes.WebACLObservation
 }
 
 func newCustomExternal(kube client.Client, client svcsdkapi.WAFV2API, logger logging.Logger) *customExternal {
@@ -172,13 +176,15 @@ func (e *customExternal) Observe(ctx context.Context, cr *svcapitypes.WebACL) (m
 	}
 	resp, err := e.client.GetWebACLWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
+		return managed.ExternalObservation{ResourceExists: false}, errorutils.Wrap(resource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateWebACL(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
+	cr.Status.AtProvider.LockToken = resp.LockToken
+	e.cache.status = cr.Status.AtProvider
 	upToDate := true
 	diff := ""
 	if !meta.WasDeleted(cr) { // There is no need to run isUpToDate if the resource is deleted
@@ -188,7 +194,6 @@ func (e *customExternal) Observe(ctx context.Context, cr *svcapitypes.WebACL) (m
 		}
 	}
 	cr.SetConditions(xpv1.Available())
-	cr.Status.AtProvider.LockToken = resp.LockToken
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
@@ -211,19 +216,11 @@ func (s *shared) isUpToDate(_ context.Context, cr *svcapitypes.WebACL, resp *svc
 	}
 	s.cache.observedAssociatedResources = observedAssociatedResources
 
-	patch, err := createPatch(&cr.Spec.ForProvider, resp, listTagOutput.TagInfoForResource.TagList, observedAssociatedResources)
+	diff, err = calculateDiff(&cr.Spec.ForProvider, resp, listTagOutput.TagInfoForResource.TagList, observedAssociatedResources)
 	if err != nil {
-		return false, "", err
+		return false, diff, err
 	}
 
-	opts := []cmp.Option{
-		cmpopts.EquateEmpty(),
-		// Name and Scope are immutables
-		cmpopts.IgnoreFields(svcapitypes.WebACLParameters{}, "Region", "Scope"),
-		// CustomWebACLParameters.RegionalResourceTypeAssociation exists only as controller type
-		cmpopts.IgnoreFields(svcapitypes.WebACLParameters{}, "CustomWebACLParameters.RegionalResourceTypeAssociation"),
-	}
-	diff = cmp.Diff(&svcapitypes.WebACLParameters{}, patch, opts...)
 	if diff != "" {
 		return false, "Found observed difference in wafv2 webacl " + diff, nil
 	}
@@ -255,6 +252,8 @@ func (s *shared) postCreate(_ context.Context, cr *svcapitypes.WebACL, resp *svc
 
 func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.UpdateWebACLInput) error { //nolint:gocyclo
 	input.Name = aws.String(meta.GetExternalName(cr))
+	input.Id = s.cache.status.ID
+	input.LockToken = s.cache.status.LockToken
 	err := setInputRuleStatementsFromJSON(cr, input.Rules)
 	if err != nil {
 		return err
@@ -295,11 +294,11 @@ func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.WebACL, input *svc
 
 	// Associate and disassociate resources are implemented only for REGIONAL scope yet
 	if *cr.Spec.ForProvider.Scope == "REGIONAL" {
-		desiredAssotiatedResources := make([]*string, 0)
+		desiredAssociatedResources := make([]*string, 0)
 		for _, associatedResource := range cr.Spec.ForProvider.AssociatedAWSResources {
-			desiredAssotiatedResources = append(desiredAssotiatedResources, associatedResource.ResourceARN)
+			desiredAssociatedResources = append(desiredAssociatedResources, associatedResource.ResourceARN)
 		}
-		resourcesToAssociate, resourcesToDisassociate := diffAssociatedResources(desiredAssotiatedResources, s.cache.observedAssociatedResources)
+		resourcesToAssociate, resourcesToDisassociate := diffAssociatedResources(desiredAssociatedResources, s.cache.observedAssociatedResources)
 		for _, res := range resourcesToAssociate {
 			associateWebACLInput := svcsdk.AssociateWebACLInput{
 				ResourceArn: res,
@@ -330,11 +329,23 @@ func preDelete(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.DeleteWe
 	return false, nil
 }
 
+// base64encodeSearchString encodes the SearchString in the jsonified statement to base64
+func base64encodeSearchString(s string) string {
+	exp := regexp.MustCompile(`"SearchString":\s*"([^"]+)"`)
+	matches := exp.FindAllStringSubmatch(s, -1)
+	if len(matches) > 0 {
+		for _, m := range matches {
+			s = strings.ReplaceAll(s, m[1], base64.StdEncoding.EncodeToString([]byte(m[1])))
+		}
+	}
+	return s
+}
+
 // statementFromJSONString convert back to sdk types the rule statements which were ignored in generator-config.yaml and handled by the controller as string(json)
 func statementFromJSONString[S statementWithInfiniteRecursion](jsonPointer *string) (*S, error) {
-	jsonString := ptr.Deref(jsonPointer, "")
 	var statement S
-	err := json.Unmarshal([]byte(jsonString), &statement)
+	jsonString := ptr.Deref(jsonPointer, "")
+	err := json.Unmarshal([]byte(base64encodeSearchString(jsonString)), &statement)
 	if err != nil {
 		return nil, err
 	}
@@ -481,16 +492,19 @@ func traverseStruct(field reflect.StructField, v reflect.Value) {
 	changeCaseInsensitiveFields(interfaceValue)
 }
 
-// GenerateWebACL returns WebACLParameters with a diff between the current and external configuration
-func createPatch(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.GetWebACLOutput, respTagList []*svcsdk.Tag, observedAssociatedResources []*string) (*svcapitypes.WebACLParameters, error) { //nolint:gocyclo
+// calculateDiff returns a diff between the current and external configuration
+func calculateDiff(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.GetWebACLOutput, respTagList []*svcsdk.Tag, observedAssociatedResources []*string) (string, error) { //nolint:gocyclo
 	targetConfig := currentParams.DeepCopy()
 	targetConfig.Tags = sortWebACLTags(targetConfig.Tags)
 	changeCaseInsensitiveFields(targetConfig)
-	externalConfig := GenerateWebACL(resp).Spec.ForProvider
-	patch := &svcapitypes.WebACLParameters{}
+	// aws api returns pointer to empty string if the description is not set
+	if targetConfig.Description == nil {
+		targetConfig.Description = aws.String("")
+	}
+	externalConfig := &GenerateWebACL(resp).Spec.ForProvider
 	err := addJsonifiedRuleStatements(resp.WebACL.Rules, externalConfig)
 	if err != nil {
-		return patch, err
+		return "", err
 	}
 
 	for i, rule := range targetConfig.Rules {
@@ -498,7 +512,7 @@ func createPatch(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.GetWe
 		if rule.Statement.AndStatement != nil {
 			sdkStatement, err := statementFromJSONString[svcsdk.AndStatement](targetConfig.Rules[i].Statement.AndStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 			// Change the case of the fields which are case-insensitive, so that the comparison is accurate.
 			// It is convinient to do it here, as we have the statement in the struct form(which is originally a json string)
@@ -506,51 +520,51 @@ func createPatch(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.GetWe
 			changeCaseInsensitiveFields(sdkStatement)
 			targetConfig.Rules[i].Statement.AndStatement, err = statementToJSONString[svcsdk.AndStatement](*sdkStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 		}
 		if rule.Statement.OrStatement != nil {
 			sdkStatement, err := statementFromJSONString[svcsdk.OrStatement](targetConfig.Rules[i].Statement.OrStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 			changeCaseInsensitiveFields(sdkStatement)
 			targetConfig.Rules[i].Statement.OrStatement, err = statementToJSONString[svcsdk.OrStatement](*sdkStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 		}
 		if rule.Statement.NotStatement != nil {
 			sdkStatement, err := statementFromJSONString[svcsdk.NotStatement](targetConfig.Rules[i].Statement.NotStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 			changeCaseInsensitiveFields(sdkStatement)
 			targetConfig.Rules[i].Statement.NotStatement, err = statementToJSONString[svcsdk.NotStatement](*sdkStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 		}
 		if rule.Statement.ManagedRuleGroupStatement != nil && rule.Statement.ManagedRuleGroupStatement.ScopeDownStatement != nil {
 			sdkStatement, err := statementFromJSONString[svcsdk.Statement](targetConfig.Rules[i].Statement.ManagedRuleGroupStatement.ScopeDownStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 			changeCaseInsensitiveFields(sdkStatement)
 			targetConfig.Rules[i].Statement.ManagedRuleGroupStatement.ScopeDownStatement, err = statementToJSONString[svcsdk.Statement](*sdkStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 		}
 		if rule.Statement.RateBasedStatement != nil && rule.Statement.RateBasedStatement.ScopeDownStatement != nil {
 			sdkStatement, err := statementFromJSONString[svcsdk.Statement](targetConfig.Rules[i].Statement.RateBasedStatement.ScopeDownStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 			changeCaseInsensitiveFields(sdkStatement)
 			targetConfig.Rules[i].Statement.RateBasedStatement.ScopeDownStatement, err = statementToJSONString[svcsdk.Statement](*sdkStatement)
 			if err != nil {
-				return patch, err
+				return "", err
 			}
 		}
 	}
@@ -572,18 +586,19 @@ func createPatch(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.GetWe
 		targetConfig.AssociatedAWSResources = []*svcapitypes.AssociatedResource{}
 		externalConfig.AssociatedAWSResources = []*svcapitypes.AssociatedResource{}
 	}
-	jsonPatch, err := jsonpatch.CreateJSONPatch(externalConfig, targetConfig)
-	if err != nil {
-		return patch, err
+	opts := []cmp.Option{
+		cmpopts.EquateEmpty(),
+		// Name and Scope are immutables
+		cmpopts.IgnoreFields(svcapitypes.WebACLParameters{}, "Region", "Scope"),
+		// CustomWebACLParameters.RegionalResourceTypeAssociation exists only as controller type
+		cmpopts.IgnoreFields(svcapitypes.WebACLParameters{}, "CustomWebACLParameters.RegionalResourceTypeAssociation"),
 	}
-	if err := json.Unmarshal(jsonPatch, patch); err != nil {
-		return patch, err
-	}
-	return patch, nil
+	diff := cmp.Diff(targetConfig, externalConfig, opts...)
+	return diff, nil
 }
 
 // addJsonifiedRuleStatements adds the Jsonified rule statements to the externalConfig(other fields prepared by GenerateWebACL)
-func addJsonifiedRuleStatements(resp []*svcsdk.Rule, externalConfig svcapitypes.WebACLParameters) error { //nolint:gocyclo
+func addJsonifiedRuleStatements(resp []*svcsdk.Rule, externalConfig *svcapitypes.WebACLParameters) error { //nolint:gocyclo
 	for i, rule := range resp {
 		if rule.Statement.AndStatement != nil {
 			jsonStringStatement, err := statementToJSONString[svcsdk.AndStatement](*rule.Statement.AndStatement)
