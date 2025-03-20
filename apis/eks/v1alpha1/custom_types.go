@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//go:generate go run github.com/crossplane/crossplane-tools/cmd/angryjet generate-methodsets ./...
-
 package v1alpha1
 
 import (

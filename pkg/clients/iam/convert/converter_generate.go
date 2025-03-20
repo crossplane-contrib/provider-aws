@@ -19,8 +19,4 @@ limitations under the License.
 
 package convert
 
-//go:generate go run -tags generate github.com/jmattheis/goverter/cmd/goverter -output zz_converter.go -packageName convert .
-
-import (
-	_ "github.com/jmattheis/goverter/cmd/goverter" //nolint:typecheck
-)
+//go:generate go run -modfile ../../../../tools/go.mod -tags goverter github.com/jmattheis/goverter/cmd/goverter gen .
