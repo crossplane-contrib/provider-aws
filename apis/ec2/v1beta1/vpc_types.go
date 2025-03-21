@@ -114,6 +114,10 @@ type VPCParameters struct {
 	// The allowed tenancy of instances launched into the VPC.
 	// +optional
 	InstanceTenancy *string `json:"instanceTenancy,omitempty"`
+
+	// Enables Network Address Usage (nau) monitoring for this VPC.
+	// +optional
+	EnableNetworkAddressUsageMetrics *bool `json:"enableNetworkAddressUsageMetrics,omitempty"`
 }
 
 // A VPCSpec defines the desired state of a VPC.
