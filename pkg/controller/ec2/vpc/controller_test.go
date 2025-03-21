@@ -108,24 +108,27 @@ func TestObserve(t *testing.T) {
 					},
 					MockDescribeVpcAttribute: func(ctx context.Context, input *awsec2.DescribeVpcAttributeInput, opts []func(*awsec2.Options)) (*awsec2.DescribeVpcAttributeOutput, error) {
 						return &awsec2.DescribeVpcAttributeOutput{
-							EnableDnsHostnames: &awsec2types.AttributeBooleanValue{},
-							EnableDnsSupport:   &awsec2types.AttributeBooleanValue{},
+							EnableDnsHostnames:               &awsec2types.AttributeBooleanValue{},
+							EnableDnsSupport:                 &awsec2types.AttributeBooleanValue{},
+							EnableNetworkAddressUsageMetrics: &awsec2types.AttributeBooleanValue{},
 						}, nil
 					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy:    aws.String(tenancyDefault),
-					CIDRBlock:          cidr,
-					EnableDNSHostNames: aws.Bool(false),
-					EnableDNSSupport:   aws.Bool(false),
+					InstanceTenancy:                  aws.String(tenancyDefault),
+					CIDRBlock:                        cidr,
+					EnableDNSHostNames:               aws.Bool(false),
+					EnableDNSSupport:                 aws.Bool(false),
+					EnableNetworkAddressUsageMetrics: aws.Bool(false),
 				}), withExternalName(vpcID)),
 			},
 			want: want{
 				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy:    aws.String(tenancyDefault),
-					CIDRBlock:          cidr,
-					EnableDNSHostNames: aws.Bool(false),
-					EnableDNSSupport:   aws.Bool(false),
+					InstanceTenancy:                  aws.String(tenancyDefault),
+					CIDRBlock:                        cidr,
+					EnableDNSHostNames:               aws.Bool(false),
+					EnableDNSSupport:                 aws.Bool(false),
+					EnableNetworkAddressUsageMetrics: aws.Bool(false),
 				}), withStatus(v1beta1.VPCObservation{
 					VPCState: "available",
 				}), withExternalName(vpcID),

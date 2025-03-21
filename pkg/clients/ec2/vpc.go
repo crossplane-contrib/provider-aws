@@ -49,7 +49,8 @@ func IsVpcUpToDate(spec v1beta1.VPCParameters, vpc ec2types.Vpc, attributes ec2.
 	}
 
 	if aws.ToBool(spec.EnableDNSHostNames) != aws.ToBool(attributes.EnableDnsHostnames.Value) ||
-		aws.ToBool(spec.EnableDNSSupport) != aws.ToBool(attributes.EnableDnsSupport.Value) {
+		aws.ToBool(spec.EnableDNSSupport) != aws.ToBool(attributes.EnableDnsSupport.Value) ||
+		aws.ToBool(spec.EnableNetworkAddressUsageMetrics) != aws.ToBool(attributes.EnableNetworkAddressUsageMetrics.Value) {
 		return false
 	}
 
@@ -118,5 +119,9 @@ func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2types.Vpc, attributes *e
 	}
 	if attributes.EnableDnsHostnames != nil {
 		in.EnableDNSSupport = pointer.LateInitialize(in.EnableDNSSupport, attributes.EnableDnsSupport.Value)
+	}
+	if attributes.EnableNetworkAddressUsageMetrics != nil {
+		in.EnableNetworkAddressUsageMetrics = pointer.LateInitialize(in.EnableNetworkAddressUsageMetrics, attributes.EnableNetworkAddressUsageMetrics.Value)
+
 	}
 }
