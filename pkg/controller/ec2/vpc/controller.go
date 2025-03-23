@@ -149,6 +149,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	for _, input := range []awsec2types.VpcAttributeName{
 		awsec2types.VpcAttributeNameEnableDnsSupport,
 		awsec2types.VpcAttributeNameEnableDnsHostnames,
+		awsec2types.VpcAttributeNameEnableNetworkAddressUsageMetrics,
 	} {
 		r, err := e.client.DescribeVpcAttribute(ctx, &awsec2.DescribeVpcAttributeInput{
 			VpcId:     aws.String(meta.GetExternalName(cr)),
@@ -165,6 +166,10 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 		if r.EnableDnsSupport != nil {
 			o.EnableDnsSupport = r.EnableDnsSupport
+		}
+
+		if r.EnableNetworkAddressUsageMetrics != nil {
+			o.EnableNetworkAddressUsageMetrics = r.EnableNetworkAddressUsageMetrics
 		}
 	}
 
@@ -255,6 +260,16 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		modifyInput := &awsec2.ModifyVpcAttributeInput{
 			VpcId:              aws.String(meta.GetExternalName(cr)),
 			EnableDnsHostnames: &awsec2types.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSHostNames},
+		}
+		if _, err := e.client.ModifyVpcAttribute(ctx, modifyInput); err != nil {
+			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyVPCAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.EnableNetworkAddressUsageMetrics != nil {
+		modifyInput := &awsec2.ModifyVpcAttributeInput{
+			VpcId:                            aws.String(meta.GetExternalName(cr)),
+			EnableNetworkAddressUsageMetrics: &awsec2types.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableNetworkAddressUsageMetrics},
 		}
 		if _, err := e.client.ModifyVpcAttribute(ctx, modifyInput); err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyVPCAttributes)
