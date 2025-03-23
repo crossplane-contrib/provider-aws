@@ -100,6 +100,10 @@ spec:
                     description: A boolean flag to enable/disable DNS support in the
                       VPC
                     type: boolean
+                  enableNetworkAddressUsageMetrics:
+                    description: Enables Network Address Usage (nau) monitoring for
+                      this VPC.
+                    type: boolean
                   instanceTenancy:
                     description: The allowed tenancy of instances launched into the
                       VPC.
