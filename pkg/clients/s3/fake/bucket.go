@@ -86,6 +86,9 @@ type MockBucketClient struct {
 	MockPutBucketOwnershipControls    func(ctx context.Context, input *s3.PutBucketOwnershipControlsInput, opts []func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error)
 	MockDeleteBucketOwnershipControls func(ctx context.Context, input *s3.DeleteBucketOwnershipControlsInput, opts []func(*s3.Options)) (*s3.DeleteBucketOwnershipControlsOutput, error)
 
+	MockGetObjectLockConfiguration func(ctx context.Context, input *s3.GetObjectLockConfigurationInput, opts []func(*s3.Options)) (*s3.GetObjectLockConfigurationOutput, error)
+	MockPutObjectLockConfiguration func(ctx context.Context, input *s3.PutObjectLockConfigurationInput, opts []func(*s3.Options)) (*s3.PutObjectLockConfigurationOutput, error)
+
 	MockBucketPolicyClient
 }
 
@@ -292,4 +295,14 @@ func (m MockBucketClient) PutBucketOwnershipControls(ctx context.Context, input 
 // DeleteBucketOwnershipControls is the fake method call to invoke the internal mock method
 func (m MockBucketClient) DeleteBucketOwnershipControls(ctx context.Context, input *s3.DeleteBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.DeleteBucketOwnershipControlsOutput, error) {
 	return m.MockDeleteBucketOwnershipControls(ctx, input, opts)
+}
+
+// GetObjectLockConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetObjectLockConfiguration(ctx context.Context, input *s3.GetObjectLockConfigurationInput, opts ...func(*s3.Options)) (*s3.GetObjectLockConfigurationOutput, error) {
+	return m.MockGetObjectLockConfiguration(ctx, input, opts)
+}
+
+// PutObjectLockConfiguration is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutObjectLockConfiguration(ctx context.Context, input *s3.PutObjectLockConfigurationInput, opts ...func(*s3.Options)) (*s3.PutObjectLockConfigurationOutput, error) {
+	return m.MockPutObjectLockConfiguration(ctx, input, opts)
 }
