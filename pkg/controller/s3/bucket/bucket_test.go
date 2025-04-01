@@ -291,7 +291,7 @@ func TestCreate(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				kube: &test.MockClient{
 					MockUpdate: test.NewMockUpdateFn(nil),
