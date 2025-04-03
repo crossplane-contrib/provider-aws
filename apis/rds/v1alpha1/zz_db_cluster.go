@@ -721,6 +721,12 @@ type DBClusterObservation struct {
 	//
 	// This setting is only for Aurora DB clusters.
 	IOOptimizedNextAllowedModificationTime *metav1.Time `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
+	// If StorageEncrypted is enabled, the Amazon Web Services KMS key identifier
+	// for the encrypted DB cluster.
+	//
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key.
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The latest time to which a database can be restored with point-in-time restore.
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
 	// Indicates whether an Aurora DB cluster has in-cluster write forwarding enabled,

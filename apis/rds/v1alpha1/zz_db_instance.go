@@ -1035,6 +1035,12 @@ type DBInstanceObservation struct {
 	// For more information, see Upgrading the storage file system for a DB instance
 	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.UpgradeFileSystem).
 	IsStorageConfigUpgradeAvailable *bool `json:"isStorageConfigUpgradeAvailable,omitempty"`
+	// If StorageEncrypted is enabled, the Amazon Web Services KMS key identifier
+	// for the encrypted DB instance.
+	//
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key.
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The latest time to which a database in this DB instance can be restored with
 	// point-in-time restore.
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
