@@ -106,6 +106,9 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
+
+	cr.Status.AtProvider.KMSKeyID = resp.DBClusters[0].KmsKeyId
+
 	switch pointer.StringValue(resp.DBClusters[0].Status) {
 	case "available", "storage-optimization", "backing-up":
 		cr.SetConditions(xpv1.Available())

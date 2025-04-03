@@ -469,6 +469,7 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 		ReadReplicaDBInstanceIdentifiers:      db.ReadReplicaDBInstanceIdentifiers,
 		ReadReplicaSourceDBInstanceIdentifier: aws.ToString(db.ReadReplicaSourceDBInstanceIdentifier),
 		SecondaryAvailabilityZone:             aws.ToString(db.SecondaryAvailabilityZone),
+		KMSKeyID:                              aws.ToString(db.KmsKeyId),
 	}
 	if db.LatestRestorableTime != nil {
 		t := metav1.NewTime(*db.LatestRestorableTime)
