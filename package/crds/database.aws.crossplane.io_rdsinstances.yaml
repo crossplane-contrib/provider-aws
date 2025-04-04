@@ -1701,6 +1701,14 @@ spec:
                       DB instance was created.
                     format: date-time
                     type: string
+                  kmsKeyID:
+                    description: |-
+                      If StorageEncrypted is enabled, the Amazon Web Services KMS key identifier
+                      for the encrypted DB cluster.
+
+                      The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+                      ARN, or alias name for the KMS key.
+                    type: string
                   latestRestorableTime:
                     description: |-
                       LatestRestorableTime specifies the latest time to which a database can be

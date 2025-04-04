@@ -1245,6 +1245,12 @@ type RDSInstanceObservation struct {
 	// VPCSecurityGroups provides a list of VPC security group elements that the DB instance belongs
 	// to.
 	VPCSecurityGroups []VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
+	// If StorageEncrypted is enabled, the Amazon Web Services KMS key identifier
+	// for the encrypted DB cluster.
+	//
+	// The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+	// ARN, or alias name for the KMS key.
+	KMSKeyID string `json:"kmsKeyID,omitempty"`
 }
 
 // An RDSInstanceStatus represents the observed state of an RDSInstance.

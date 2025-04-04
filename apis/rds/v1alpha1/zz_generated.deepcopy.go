@@ -1551,6 +1551,11 @@ func (in *DBClusterObservation) DeepCopyInto(out *DBClusterObservation) {
 		in, out := &in.IOOptimizedNextAllowedModificationTime, &out.IOOptimizedNextAllowedModificationTime
 		*out = (*in).DeepCopy()
 	}
+	if in.KMSKeyID != nil {
+		in, out := &in.KMSKeyID, &out.KMSKeyID
+		*out = new(string)
+		**out = **in
+	}
 	if in.LatestRestorableTime != nil {
 		in, out := &in.LatestRestorableTime, &out.LatestRestorableTime
 		*out = (*in).DeepCopy()
@@ -3420,6 +3425,11 @@ func (in *DBInstanceObservation) DeepCopyInto(out *DBInstanceObservation) {
 	if in.IsStorageConfigUpgradeAvailable != nil {
 		in, out := &in.IsStorageConfigUpgradeAvailable, &out.IsStorageConfigUpgradeAvailable
 		*out = new(bool)
+		**out = **in
+	}
+	if in.KMSKeyID != nil {
+		in, out := &in.KMSKeyID, &out.KMSKeyID
+		*out = new(string)
 		**out = **in
 	}
 	if in.LatestRestorableTime != nil {

@@ -18,12 +18,22 @@ resources:
         from:
           operation: DescribeDBInstances
           path: DBInstances.DBClusterIdentifier
+      KmsKeyId:
+        is_read_only: true
+        from:
+          operation: DescribeDBInstances
+          path: DBInstances.KmsKeyId
   DBCluster:
     fields:
       AllowMajorVersionUpgrade:
         from:
           operation: ModifyDBCluster
           path: AllowMajorVersionUpgrade
+      KmsKeyId:
+        is_read_only: true
+        from:
+          operation: DescribeDBClusters
+          path: DBClusters.KmsKeyId
   DBInstanceRoleAssociation:
     exceptions:
       errors:
