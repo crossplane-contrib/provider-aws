@@ -1836,6 +1836,14 @@ spec:
                       Indicates whether the mapping of Amazon Web Services Identity and Access
                       Management (IAM) accounts to database accounts is enabled.
                     type: boolean
+                  kmsKeyID:
+                    description: |-
+                      If StorageEncrypted is enabled, the Amazon Web Services KMS key identifier
+                      for the encrypted DB cluster.
+
+                      The Amazon Web Services KMS key identifier is the key ARN, key ID, alias
+                      ARN, or alias name for the KMS key.
+                    type: string
                   latestRestorableTime:
                     description: The latest time to which a database can be restored
                       with point-in-time restore.

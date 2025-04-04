@@ -351,6 +351,8 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, re
 		return obs, err
 	}
 
+	cr.Status.AtProvider.KMSKeyID = resp.DBInstances[0].KmsKeyId
+
 	cr.Spec.ForProvider.DBClusterIdentifier = resp.DBInstances[0].DBClusterIdentifier
 
 	switch pointer.StringValue(resp.DBInstances[0].DBInstanceStatus) {
