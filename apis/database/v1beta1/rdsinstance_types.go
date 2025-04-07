@@ -170,7 +170,7 @@ type PointInTimeRestoreBackupConfiguration struct {
 	// Can't be specified if the useLatestRestorableTime parameter is enabled.
 	// Example: 2011-09-07T23:45:00Z
 	// +optional
-	RestoreTime *metav1.Time `json:"restoreTime"`
+	RestoreTime *metav1.Time `json:"restoreTime,omitempty"`
 
 	// UseLatestRestorableTime indicates that the DB instance is restored from the latest backup
 	// Can't be specified if the restoreTime parameter is provided.
@@ -180,16 +180,16 @@ type PointInTimeRestoreBackupConfiguration struct {
 	// SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
 	// from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE
 	// +optional
-	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn"`
+	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn,omitempty"`
 
 	// SourceDBInstanceIdentifier specifies the identifier of the source DB instance from which to restore. Constraints:
 	// Must match the identifier of an existing DB instance.
 	// +optional
-	SourceDBInstanceIdentifier *string `json:"sourceDBInstanceIdentifier"`
+	SourceDBInstanceIdentifier *string `json:"sourceDBInstanceIdentifier,omitempty"`
 
 	// SourceDbiResourceID specifies the resource ID of the source DB instance from which to restore.
 	// +optional
-	SourceDbiResourceID *string `json:"sourceDbiResourceId"`
+	SourceDbiResourceID *string `json:"sourceDbiResourceId,omitempty"`
 }
 
 // RestoreBackupConfiguration defines the backup to restore a new RDS instance from.
