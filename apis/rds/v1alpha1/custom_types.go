@@ -394,7 +394,7 @@ type PointInTimeRestoreBackupConfiguration struct {
 	// Can't be specified if the useLatestRestorableTime parameter is enabled.
 	// Example: 2011-09-07T23:45:00Z
 	// +optional
-	RestoreTime *metav1.Time `json:"restoreTime"`
+	RestoreTime *metav1.Time `json:"restoreTime,omitempty"`
 
 	// UseLatestRestorableTime indicates that the DB instance is restored from the latest backup
 	// Can't be specified if the restoreTime parameter is provided.
@@ -404,16 +404,16 @@ type PointInTimeRestoreBackupConfiguration struct {
 	// SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
 	// from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE
 	// +optional
-	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn"`
+	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn,omitempty"`
 
 	// SourceDBInstanceIdentifier specifies the identifier of the source DB instance from which to restore. Constraints:
 	// Must match the identifier of an existing DB instance.
 	// +optional
-	SourceDBInstanceIdentifier *string `json:"sourceDBInstanceIdentifier"`
+	SourceDBInstanceIdentifier *string `json:"sourceDBInstanceIdentifier,omitempty"`
 
 	// SourceDbiResourceID specifies the resource ID of the source DB instance from which to restore.
 	// +optional
-	SourceDbiResourceID *string `json:"sourceDbiResourceId"`
+	SourceDbiResourceID *string `json:"sourceDbiResourceId,omitempty"`
 }
 
 // PointInTimeRestoreDBClusterBackupConfiguration defines the details of the time to restore from
@@ -423,7 +423,7 @@ type PointInTimeRestoreDBClusterBackupConfiguration struct {
 	// Can't be specified if the useLatestRestorableTime parameter is enabled.
 	// Example: 2011-09-07T23:45:00Z
 	// +optional
-	RestoreTime *metav1.Time `json:"restoreTime"`
+	RestoreTime *metav1.Time `json:"restoreTime,omitempty"`
 
 	// UseLatestRestorableTime indicates that the DB instance is restored from the latest backup
 	// Can't be specified if the restoreTime parameter is provided.
@@ -433,16 +433,16 @@ type PointInTimeRestoreDBClusterBackupConfiguration struct {
 	// SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
 	// from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE
 	// +optional
-	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn"`
+	SourceDBInstanceAutomatedBackupsArn *string `json:"sourceDBInstanceAutomatedBackupsArn,omitempty"`
 
 	// SourceDBClusterIdentifier specifies the identifier of the source DB cluster from which to restore. Constraints:
 	// Must match the identifier of an existing DB instance.
 	// +optional
-	SourceDBClusterIdentifier *string `json:"sourceDBClusterIdentifier"`
+	SourceDBClusterIdentifier *string `json:"sourceDBClusterIdentifier,omitempty"`
 
 	// SourceDbiResourceID specifies the resource ID of the source DB instance from which to restore.
 	// +optional
-	SourceDbiResourceID *string `json:"sourceDbiResourceId"`
+	SourceDbiResourceID *string `json:"sourceDbiResourceId,omitempty"`
 
 	// The type of restore to be performed. You can specify one of the following
 	// values:
@@ -462,7 +462,7 @@ type PointInTimeRestoreDBClusterBackupConfiguration struct {
 	// Valid for: Aurora DB clusters and Multi-AZ DB clusters
 	// +optional
 	// +kubebuilder:validation:Enum=full-copy;copy-on-write
-	RestoreType *string `json:"restoreType"`
+	RestoreType *string `json:"restoreType,omitempty"`
 }
 
 // RestoreDBInstanceBackupConfiguration defines the backup to restore a new DBCluster from.
