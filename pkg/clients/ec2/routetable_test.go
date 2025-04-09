@@ -12,11 +12,15 @@ import (
 )
 
 var (
-	rtVPC      = "some vpc"
-	otherRtVPC = "some other vpc"
-	rtID       = "some RT Id"
-	rtSubnetID = "some subnet"
-	rtOwner    = "some owner"
+	rtVPC           = "some vpc"
+	otherRtVPC      = "some other vpc"
+	rtID            = "some RT Id"
+	rtSubnetID      = "some subnet"
+	rtOwner         = "some owner"
+	rtTagName       = "tag1"
+	rtTagValue      = "value1"
+	otherRtTagName  = "tag2"
+	otherRtTagValue = "value2"
 )
 
 func specAssociations() []v1beta1.Association {
@@ -158,6 +162,23 @@ func TestCreateRTPatch(t *testing.T) {
 				patch: &v1beta1.RouteTableParameters{
 					VPCID: aws.String(otherRtVPC),
 				},
+			},
+		},
+		"DifferentTagOrder": {
+			args: args{
+				rt: ec2types.RouteTable{
+					Tags:         []ec2types.Tag{{Key: &rtTagName, Value: &rtTagValue}, {Key: &otherRtTagName, Value: &otherRtTagValue}},
+					Associations: rtAssociations(),
+					VpcId:        aws.String(rtVPC),
+				},
+				p: &v1beta1.RouteTableParameters{
+					Tags:         []v1beta1.Tag{{Key: otherRtTagName, Value: otherRtTagValue}, {Key: rtTagName, Value: rtTagValue}},
+					Associations: specAssociations(),
+					VPCID:        aws.String(vpcID),
+				},
+			},
+			want: want{
+				patch: &v1beta1.RouteTableParameters{},
 			},
 		},
 	}
