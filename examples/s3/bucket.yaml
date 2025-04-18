@@ -24,7 +24,11 @@ spec:
           value: val2
         - key: key3
           value: val3
-    objectLockEnabledForBucket: false
+    objectLockEnabledForBucket: true
+    objectLockRule:
+      defaultRetention:
+        days: 7
+        mode: COMPLIANCE
     serverSideEncryptionConfiguration:
       rules:
         - applyServerSideEncryptionByDefault:

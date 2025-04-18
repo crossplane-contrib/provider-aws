@@ -46,6 +46,8 @@ var (
 	LifecycleNotFoundErrCode = "NoSuchLifecycleConfiguration"
 	// SSENotFoundErrCode is the error code sent by AWS when the SSE config does not exist
 	SSENotFoundErrCode = "ServerSideEncryptionConfigurationNotFoundError"
+	// ObjectLockConfigurationErrCode is the error code by AWS when Object Lock configuration does not exist for a bucket.
+	ObjectLockConfigurationErrCode = "ObjectLockConfigurationNotFoundError"
 	// TaggingNotFoundErrCode is the error code sent by AWS when the tagging does not exist
 	TaggingNotFoundErrCode = "NoSuchTagSet"
 	// WebsiteNotFoundErrCode is the error code sent by AWS when the website config does not exist
@@ -114,6 +116,9 @@ type BucketClient interface {
 	GetBucketOwnershipControls(ctx context.Context, input *s3.GetBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error)
 	PutBucketOwnershipControls(ctx context.Context, input *s3.PutBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error)
 	DeleteBucketOwnershipControls(ctx context.Context, input *s3.DeleteBucketOwnershipControlsInput, opts ...func(*s3.Options)) (*s3.DeleteBucketOwnershipControlsOutput, error)
+
+	GetObjectLockConfiguration(ctx context.Context, input *s3.GetObjectLockConfigurationInput, opts ...func(*s3.Options)) (*s3.GetObjectLockConfigurationOutput, error)
+	PutObjectLockConfiguration(ctx context.Context, input *s3.PutObjectLockConfigurationInput, opts ...func(*s3.Options)) (*s3.PutObjectLockConfigurationOutput, error)
 
 	BucketPolicyClient
 }
@@ -201,6 +206,11 @@ func TaggingNotFound(err error) bool {
 func WebsiteConfigurationNotFound(err error) bool {
 	var awsErr smithy.APIError
 	return errors.As(err, &awsErr) && awsErr.ErrorCode() == WebsiteNotFoundErrCode
+}
+
+func ObjectLockConfigurationNotFound(err error) bool {
+	var awsErr smithy.APIError
+	return errors.As(err, &awsErr) && awsErr.ErrorCode() == ObjectLockConfigurationErrCode
 }
 
 // MethodNotSupported is parses the aws Error and validates if the method is allowed for a request
