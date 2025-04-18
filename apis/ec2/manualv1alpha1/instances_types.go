@@ -107,7 +107,8 @@ type InstanceParameters struct {
 
 	// The ID of the AMI. An AMI ID is required to launch an instance and must be
 	// specified here or in a launch template.
-	ImageID *string `json:"imageId"`
+	// +optional
+	ImageID *string `json:"imageId,omitempty"`
 
 	// Indicates whether an instance stops or terminates when you initiate shutdown
 	// from the instance (using the operating system command for system shutdown).
