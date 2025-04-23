@@ -232,7 +232,11 @@ func UpdateBucketACL(ctx context.Context, client BucketClient, bucket *v1beta1.B
 
 // BucketHasACLsDisabled returns true if ACLs are disabled for the bucket, i.e., if ObjectOwnership is set to BucketOwnerEnforced
 func BucketHasACLsDisabled(bucket *v1beta1.Bucket) bool {
-	return s3types.ObjectOwnership(aws.ToString(bucket.Spec.ForProvider.ObjectOwnership)) == s3types.ObjectOwnershipBucketOwnerEnforced
+	if s3types.ObjectOwnership(aws.ToString(bucket.Spec.ForProvider.ObjectOwnership)) == s3types.ObjectOwnershipBucketOwnerEnforced ||
+		bucket.Spec.ForProvider.ObjectOwnership == nil {
+		return true
+	}
+	return false
 }
 
 // UpdateBucketOwnershipControls creates the OwnershipContolsInput, sends the request to put an ObjectOwnership based on the bucket

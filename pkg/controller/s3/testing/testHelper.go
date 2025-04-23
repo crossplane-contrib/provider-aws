@@ -42,6 +42,10 @@ var (
 // BucketModifier is a function which modifies the Bucket for testing
 type BucketModifier func(bucket *v1beta1.Bucket)
 
+func WithObjectOwnership(s string) BucketModifier {
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ObjectOwnership = &s }
+}
+
 // WithArn sets the ARN for an S3 Bucket
 func WithArn(arn string) BucketModifier {
 	return func(bucket *v1beta1.Bucket) {
