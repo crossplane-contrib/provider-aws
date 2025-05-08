@@ -127,10 +127,11 @@ func TestObserve(t *testing.T) {
 				s3: s3Testing.Client(s3Testing.WithPutACL(func(ctx context.Context, input *awss3.PutBucketAclInput, opts []func(*awss3.Options)) (*awss3.PutBucketAclOutput, error) {
 					return nil, errBoom
 				})),
-				cr: s3Testing.Bucket(),
+				cr: s3Testing.Bucket(s3Testing.WithObjectOwnership("BucketOwnerPreferred")),
 			},
 			want: want{
 				cr: s3Testing.Bucket(
+					s3Testing.WithObjectOwnership("BucketOwnerPreferred"),
 					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
 				),
 				err:    errBoom,

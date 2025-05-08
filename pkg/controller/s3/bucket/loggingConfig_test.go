@@ -58,6 +58,13 @@ func generateLoggingConfig() *v1beta1.LoggingConfiguration {
 	}
 }
 
+func generateLoggingConfigNoGrants() *v1beta1.LoggingConfiguration {
+	return &v1beta1.LoggingConfiguration{
+		TargetBucket: &bucketName,
+		TargetPrefix: prefix,
+	}
+}
+
 func generateAWSLogging() *s3types.LoggingEnabled {
 	return &s3types.LoggingEnabled{
 		TargetBucket: &bucketName,
@@ -71,6 +78,14 @@ func generateAWSLogging() *s3types.LoggingEnabled {
 			},
 			Permission: s3types.BucketLogsPermissionFullControl,
 		}},
+		TargetPrefix: &prefix,
+	}
+}
+
+func generateAWSLoggingNoGrants() *s3types.LoggingEnabled {
+	return &s3types.LoggingEnabled{
+		TargetBucket: &bucketName,
+		TargetGrants: []s3types.TargetGrant{},
 		TargetPrefix: &prefix,
 	}
 }
@@ -138,6 +153,20 @@ func TestLoggingObserve(t *testing.T) {
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
 						return &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}, nil
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
+				err:    nil,
+			},
+		},
+		"NoUpdateExistsWithoutGrants": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithLoggingConfig(generateLoggingConfigNoGrants())),
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLoggingNoGrants()}, nil
 					},
 				}),
 			},
@@ -220,92 +249,6 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestLoggingLateInit(t *testing.T) {
-	type args struct {
-		cl SubresourceClient
-		b  *v1beta1.Bucket
-	}
-
-	type want struct {
-		err error
-		cr  *v1beta1.Bucket
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Error": {
-			args: args{
-				b: s3testing.Bucket(),
-				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
-						return &s3.GetBucketLoggingOutput{}, errBoom
-					},
-				}),
-			},
-			want: want{
-				err: errorutils.Wrap(errBoom, loggingGetFailed),
-				cr:  s3testing.Bucket(),
-			},
-		},
-		"NoLateInitEmpty": {
-			args: args{
-				b: s3testing.Bucket(),
-				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
-						return &s3.GetBucketLoggingOutput{}, nil
-					},
-				}),
-			},
-			want: want{
-				err: nil,
-				cr:  s3testing.Bucket(),
-			},
-		},
-		"SuccessfulLateInit": {
-			args: args{
-				b: s3testing.Bucket(s3testing.WithLoggingConfig(nil)),
-				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
-						return &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}, nil
-					},
-				}),
-			},
-			want: want{
-				err: nil,
-				cr:  s3testing.Bucket(s3testing.WithLoggingConfig(generateLoggingConfig())),
-			},
-		},
-		"NoOpLateInit": {
-			args: args{
-				b: s3testing.Bucket(s3testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
-						return &s3.GetBucketLoggingOutput{LoggingEnabled: &s3types.LoggingEnabled{}}, nil
-					},
-				}),
-			},
-			want: want{
-				err: nil,
-				cr:  s3testing.Bucket(s3testing.WithLoggingConfig(generateLoggingConfig())),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			err := tc.args.cl.LateInitialize(context.Background(), tc.args.b)
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
