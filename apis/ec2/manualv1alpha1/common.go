@@ -640,10 +640,12 @@ type LicenseConfigurationRequest struct {
 // name in the request, but not both.
 type LaunchTemplateSpecification struct {
 	// The ID of the launch template.
-	LaunchTemplateID *string `json:"launchTemplateId"`
+	// +optional
+	LaunchTemplateID *string `json:"launchTemplateId,omitempty"`
 
 	// The name of the launch template.
-	LaunchTemplateName *string `json:"launchTemplateName"`
+	// +optional
+	LaunchTemplateName *string `json:"launchTemplateName,omitempty"`
 
 	// The version number of the launch template.
 	//
