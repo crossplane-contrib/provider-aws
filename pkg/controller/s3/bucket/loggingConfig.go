@@ -55,7 +55,7 @@ func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		return NeedsUpdate, errorutils.Wrap(err, loggingGetFailed)
 	}
 	if !cmp.Equal(GenerateAWSLogging(bucket.Spec.ForProvider.LoggingConfiguration), external.LoggingEnabled,
-		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}), cmpopts.IgnoreTypes(document.NoSerde{})) {
+		cmpopts.EquateEmpty(), cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}), cmpopts.IgnoreTypes(document.NoSerde{})) {
 		return NeedsUpdate, nil
 	}
 	return Updated, nil
@@ -63,9 +63,6 @@ func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 
 // CreateOrUpdate sends a request to have resource created on AWS
 func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
-	if bucket.Spec.ForProvider.LoggingConfiguration == nil {
-		return nil
-	}
 	input := GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.LoggingConfiguration)
 	_, err := in.client.PutBucketLogging(ctx, input)
 	return errorutils.Wrap(err, loggingPutFailed)
@@ -76,44 +73,9 @@ func (*LoggingConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) 
 	return nil
 }
 
-// LateInitialize is responsible for initializing the resource based on the external value
+// LateInitialize is not needed because loggingConfiguration is not something which is created be default
+// it means if it is not set in the desired state, but it exists on aws side it should be deleted(by CreateOrUpdate), not late initialized
 func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketLogging(ctx, &awss3.GetBucketLoggingInput{Bucket: pointer.ToOrNilIfZeroValue(meta.GetExternalName(bucket))})
-	if err != nil {
-		return errorutils.Wrap(err, loggingGetFailed)
-	}
-
-	if external == nil || external.LoggingEnabled == nil {
-		// There is no value send by AWS to initialize
-		return nil
-	}
-
-	if bucket.Spec.ForProvider.LoggingConfiguration == nil {
-		// We need the configuration to exist so we can initialize
-		bucket.Spec.ForProvider.LoggingConfiguration = &v1beta1.LoggingConfiguration{}
-	}
-
-	config := bucket.Spec.ForProvider.LoggingConfiguration
-	// Late initialize the target Bucket and target prefix
-	config.TargetBucket = pointer.LateInitialize(config.TargetBucket, external.LoggingEnabled.TargetBucket)
-	config.TargetPrefix = pointer.LateInitializeValueFromPtr(config.TargetPrefix, external.LoggingEnabled.TargetPrefix)
-	// If the there is an external target grant list, and the local one does not exist
-	// we create the target grant list
-	if len(external.LoggingEnabled.TargetGrants) != 0 && config.TargetGrants == nil {
-		config.TargetGrants = make([]v1beta1.TargetGrant, len(external.LoggingEnabled.TargetGrants))
-		for i, v := range external.LoggingEnabled.TargetGrants {
-			config.TargetGrants[i] = v1beta1.TargetGrant{
-				Grantee: v1beta1.TargetGrantee{
-					DisplayName:  v.Grantee.DisplayName,
-					EmailAddress: v.Grantee.EmailAddress,
-					ID:           v.Grantee.ID,
-					Type:         string(v.Grantee.Type),
-					URI:          v.Grantee.URI,
-				},
-				Permission: string(v.Permission),
-			}
-		}
-	}
 	return nil
 }
 
@@ -125,24 +87,30 @@ func (in *LoggingConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) 
 // GeneratePutBucketLoggingInput creates the input for the PutBucketLogging request for the S3 Client
 func GeneratePutBucketLoggingInput(name string, config *v1beta1.LoggingConfiguration) *awss3.PutBucketLoggingInput {
 	bci := &awss3.PutBucketLoggingInput{
-		Bucket: pointer.ToOrNilIfZeroValue(name),
-		BucketLoggingStatus: &types.BucketLoggingStatus{LoggingEnabled: &types.LoggingEnabled{
-			TargetBucket: config.TargetBucket,
-			TargetGrants: make([]types.TargetGrant, 0),
-			TargetPrefix: pointer.ToOrNilIfZeroValue(config.TargetPrefix),
-		}},
+		Bucket:              pointer.ToOrNilIfZeroValue(name),
+		BucketLoggingStatus: &types.BucketLoggingStatus{},
 	}
-	for _, grant := range config.TargetGrants {
-		bci.BucketLoggingStatus.LoggingEnabled.TargetGrants = append(bci.BucketLoggingStatus.LoggingEnabled.TargetGrants, types.TargetGrant{
-			Grantee: &types.Grantee{
-				DisplayName:  grant.Grantee.DisplayName,
-				EmailAddress: grant.Grantee.EmailAddress,
-				ID:           grant.Grantee.ID,
-				Type:         types.Type(grant.Grantee.Type),
-				URI:          grant.Grantee.URI,
-			},
-			Permission: types.BucketLogsPermission(grant.Permission),
-		})
+	if config != nil {
+		bci = &awss3.PutBucketLoggingInput{
+			Bucket: pointer.ToOrNilIfZeroValue(name),
+			BucketLoggingStatus: &types.BucketLoggingStatus{LoggingEnabled: &types.LoggingEnabled{
+				TargetBucket: config.TargetBucket,
+				TargetGrants: make([]types.TargetGrant, 0),
+				TargetPrefix: pointer.ToOrNilIfZeroValue(config.TargetPrefix),
+			}},
+		}
+		for _, grant := range config.TargetGrants {
+			bci.BucketLoggingStatus.LoggingEnabled.TargetGrants = append(bci.BucketLoggingStatus.LoggingEnabled.TargetGrants, types.TargetGrant{
+				Grantee: &types.Grantee{
+					DisplayName:  grant.Grantee.DisplayName,
+					EmailAddress: grant.Grantee.EmailAddress,
+					ID:           grant.Grantee.ID,
+					Type:         types.Type(grant.Grantee.Type),
+					URI:          grant.Grantee.URI,
+				},
+				Permission: types.BucketLogsPermission(grant.Permission),
+			})
+		}
 	}
 	return bci
 }
@@ -155,9 +123,7 @@ func GenerateAWSLogging(local *v1beta1.LoggingConfiguration) *types.LoggingEnabl
 	output := types.LoggingEnabled{
 		TargetBucket: local.TargetBucket,
 		TargetPrefix: pointer.ToOrNilIfZeroValue(local.TargetPrefix),
-	}
-	if local.TargetGrants != nil {
-		output.TargetGrants = make([]types.TargetGrant, len(local.TargetGrants))
+		TargetGrants: []types.TargetGrant{},
 	}
 	for i := range local.TargetGrants {
 		target := types.TargetGrant{
@@ -171,7 +137,7 @@ func GenerateAWSLogging(local *v1beta1.LoggingConfiguration) *types.LoggingEnabl
 			Permission: types.BucketLogsPermission(local.TargetGrants[i].Permission),
 		}
 
-		output.TargetGrants[i] = target
+		output.TargetGrants = append(output.TargetGrants, target)
 	}
 	return &output
 }
