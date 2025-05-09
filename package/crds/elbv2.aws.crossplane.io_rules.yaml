@@ -1,0 +1,882 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.0
+  name: rules.elbv2.aws.crossplane.io
+spec:
+  group: elbv2.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: Rule
+    listKind: RuleList
+    plural: rules
+    singular: rule
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Rule is the Schema for the Rules API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: RuleSpec defines the desired state of Rule
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: |-
+                  DeletionPolicy specifies what will happen to the underlying external
+                  when this managed resource is deleted - either "Delete" or "Orphan" the
+                  external resource.
+                  This field is planned to be deprecated in favor of the ManagementPolicies
+                  field in a future release. Currently, both could be set independently and
+                  non-default values would be honored if the feature flag is enabled.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: RuleParameters defines the desired state of Rule
+                properties:
+                  actions:
+                    description: The actions.
+                    items:
+                      properties:
+                        authenticateCognitoConfig:
+                          description: |-
+                            Request parameters to use when integrating with Amazon Cognito to authenticate
+                            users.
+                          properties:
+                            authenticationRequestExtraParams:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            onUnauthenticatedRequest:
+                              type: string
+                            scope:
+                              type: string
+                            sessionCookieName:
+                              type: string
+                            sessionTimeout:
+                              format: int64
+                              type: integer
+                            userPoolARN:
+                              type: string
+                            userPoolClientID:
+                              type: string
+                            userPoolDomain:
+                              type: string
+                          type: object
+                        authenticateOIDCConfig:
+                          description: |-
+                            Request parameters when using an identity provider (IdP) that is compliant
+                            with OpenID Connect (OIDC) to authenticate users.
+                          properties:
+                            authenticationRequestExtraParams:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            authorizationEndpoint:
+                              type: string
+                            clientID:
+                              type: string
+                            clientSecret:
+                              type: string
+                            issuer:
+                              type: string
+                            onUnauthenticatedRequest:
+                              type: string
+                            scope:
+                              type: string
+                            sessionCookieName:
+                              type: string
+                            sessionTimeout:
+                              format: int64
+                              type: integer
+                            tokenEndpoint:
+                              type: string
+                            useExistingClientSecret:
+                              type: boolean
+                            userInfoEndpoint:
+                              type: string
+                          type: object
+                        fixedResponseConfig:
+                          description: Information about an action that returns a
+                            custom HTTP response.
+                          properties:
+                            contentType:
+                              type: string
+                            messageBody:
+                              type: string
+                            statusCode:
+                              type: string
+                          type: object
+                        forwardConfig:
+                          description: Information about a forward action.
+                          properties:
+                            targetGroupStickinessConfig:
+                              description: Information about the target group stickiness
+                                for a rule.
+                              properties:
+                                durationSeconds:
+                                  format: int64
+                                  type: integer
+                                enabled:
+                                  type: boolean
+                              type: object
+                            targetGroups:
+                              items:
+                                properties:
+                                  targetGroupARN:
+                                    type: string
+                                  weight:
+                                    format: int64
+                                    type: integer
+                                type: object
+                              type: array
+                          type: object
+                        order:
+                          format: int64
+                          type: integer
+                        redirectConfig:
+                          description: |-
+                            Information about a redirect action.
+
+                            A URI consists of the following components: protocol://hostname:port/path?query.
+                            You must modify at least one of the following components to avoid a redirect
+                            loop: protocol, hostname, port, or path. Any components that you do not modify
+                            retain their original values.
+
+                            You can reuse URI components using the following reserved keywords:
+
+                               * #{protocol}
+
+                               * #{host}
+
+                               * #{port}
+
+                               * #{path} (the leading "/" is removed)
+
+                               * #{query}
+
+                            For example, you can change the path to "/new/#{path}", the hostname to "example.#{host}",
+                            or the query to "#{query}&value=xyz".
+                          properties:
+                            host:
+                              type: string
+                            path:
+                              type: string
+                            port:
+                              type: string
+                            protocol:
+                              type: string
+                            query:
+                              type: string
+                            statusCode:
+                              type: string
+                          type: object
+                        targetGroupARN:
+                          type: string
+                        type_:
+                          type: string
+                      type: object
+                    type: array
+                  conditions:
+                    description: The conditions.
+                    items:
+                      properties:
+                        field:
+                          type: string
+                        hostHeaderConfig:
+                          description: Information about a host header condition.
+                          properties:
+                            values:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        httpHeaderConfig:
+                          description: |-
+                            Information about an HTTP header condition.
+
+                            There is a set of standard HTTP header fields. You can also define custom
+                            HTTP header fields.
+                          properties:
+                            httpHeaderName:
+                              type: string
+                            values:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        httpRequestMethodConfig:
+                          description: |-
+                            Information about an HTTP method condition.
+
+                            HTTP defines a set of request methods, also referred to as HTTP verbs. For
+                            more information, see the HTTP Method Registry (https://www.iana.org/assignments/http-methods/http-methods.xhtml).
+                            You can also define custom HTTP methods.
+                          properties:
+                            values:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        pathPatternConfig:
+                          description: Information about a path pattern condition.
+                          properties:
+                            values:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        queryStringConfig:
+                          description: |-
+                            Information about a query string condition.
+
+                            The query string component of a URI starts after the first '?' character
+                            and is terminated by either a '#' character or the end of the URI. A typical
+                            query string contains key/value pairs separated by '&' characters. The allowed
+                            characters are specified by RFC 3986. Any character can be percentage encoded.
+                          properties:
+                            values:
+                              items:
+                                properties:
+                                  key:
+                                    type: string
+                                  value:
+                                    type: string
+                                type: object
+                              type: array
+                          type: object
+                        sourceIPConfig:
+                          description: |-
+                            Information about a source IP condition.
+
+                            You can use this condition to route based on the IP address of the source
+                            that connects to the load balancer. If a client is behind a proxy, this is
+                            the IP address of the proxy not the IP address of the client.
+                          properties:
+                            values:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        values:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
+                  listenerARN:
+                    description: The Amazon Resource Name (ARN) of the listener.
+                    type: string
+                  listenerARNRef:
+                    description: Reference to Listener for Listener ARN
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  listenerARNSelector:
+                    description: Selector for references to Listener for Listener
+                      ARN
+                    properties:
+                      matchControllerRef:
+                        description: |-
+                          MatchControllerRef ensures an object with the same controller reference
+                          as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                      policy:
+                        description: Policies for selection.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    type: object
+                  priority:
+                    description: The priority for the rule , must be unique for each
+                      rule in the listener
+                    format: int64
+                    type: integer
+                  region:
+                    description: Region is which region the Rule will be created.
+                    type: string
+                  tags:
+                    description: The tags to assign to the rule.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                required:
+                - actions
+                - conditions
+                - priority
+                - region
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  This field is planned to replace the DeletionPolicy field in a future
+                  release. Currently, both could be set independently and non-default
+                  values would be honored if the feature flag is enabled. If both are
+                  custom, the DeletionPolicy field will be ignored.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
+                items:
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  name: default
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                  policy:
+                    description: Policies for referencing.
+                    properties:
+                      resolution:
+                        default: Required
+                        description: |-
+                          Resolution specifies whether resolution of this reference is required.
+                          The default is 'Required', which means the reconcile will fail if the
+                          reference cannot be resolved. 'Optional' means this reference will be
+                          a no-op if it cannot be resolved.
+                        enum:
+                        - Required
+                        - Optional
+                        type: string
+                      resolve:
+                        description: |-
+                          Resolve specifies when this reference should be resolved. The default
+                          is 'IfNotPresent', which will attempt to resolve the reference only when
+                          the corresponding field is not present. Use 'Always' to resolve the
+                          reference on every reconcile.
+                        enum:
+                        - Always
+                        - IfNotPresent
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
+              publishConnectionDetailsTo:
+                description: |-
+                  PublishConnectionDetailsTo specifies the connection secret config which
+                  contains a name, metadata and a reference to secret store config to
+                  which any connection details for this managed resource should be written.
+                  Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                properties:
+                  configRef:
+                    default:
+                      name: default
+                    description: |-
+                      SecretStoreConfigRef specifies which secret store config should be used
+                      for this ConnectionSecret.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                      policy:
+                        description: Policies for referencing.
+                        properties:
+                          resolution:
+                            default: Required
+                            description: |-
+                              Resolution specifies whether resolution of this reference is required.
+                              The default is 'Required', which means the reconcile will fail if the
+                              reference cannot be resolved. 'Optional' means this reference will be
+                              a no-op if it cannot be resolved.
+                            enum:
+                            - Required
+                            - Optional
+                            type: string
+                          resolve:
+                            description: |-
+                              Resolve specifies when this reference should be resolved. The default
+                              is 'IfNotPresent', which will attempt to resolve the reference only when
+                              the corresponding field is not present. Use 'Always' to resolve the
+                              reference on every reconcile.
+                            enum:
+                            - Always
+                            - IfNotPresent
+                            type: string
+                        type: object
+                    required:
+                    - name
+                    type: object
+                  metadata:
+                    description: Metadata is the metadata for connection secret.
+                    properties:
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Annotations are the annotations to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.annotations".
+                          - It is up to Secret Store implementation for others store types.
+                        type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          Labels are the labels/tags to be added to connection secret.
+                          - For Kubernetes secrets, this will be used as "metadata.labels".
+                          - It is up to Secret Store implementation for others store types.
+                        type: object
+                      type:
+                        description: |-
+                          Type is the SecretType for the connection secret.
+                          - Only valid for Kubernetes Secret Stores.
+                        type: string
+                    type: object
+                  name:
+                    description: Name is the name of the connection secret.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                  This field is planned to be replaced in a future release in favor of
+                  PublishConnectionDetailsTo. Currently, both could be set independently
+                  and connection details would be published to both without affecting
+                  each other.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: RuleStatus defines the observed state of Rule.
+            properties:
+              atProvider:
+                description: RuleObservation defines the observed state of Rule
+                properties:
+                  rules:
+                    description: Information about the rule.
+                    items:
+                      properties:
+                        actions:
+                          items:
+                            properties:
+                              authenticateCognitoConfig:
+                                description: |-
+                                  Request parameters to use when integrating with Amazon Cognito to authenticate
+                                  users.
+                                properties:
+                                  authenticationRequestExtraParams:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
+                                  onUnauthenticatedRequest:
+                                    type: string
+                                  scope:
+                                    type: string
+                                  sessionCookieName:
+                                    type: string
+                                  sessionTimeout:
+                                    format: int64
+                                    type: integer
+                                  userPoolARN:
+                                    type: string
+                                  userPoolClientID:
+                                    type: string
+                                  userPoolDomain:
+                                    type: string
+                                type: object
+                              authenticateOIDCConfig:
+                                description: |-
+                                  Request parameters when using an identity provider (IdP) that is compliant
+                                  with OpenID Connect (OIDC) to authenticate users.
+                                properties:
+                                  authenticationRequestExtraParams:
+                                    additionalProperties:
+                                      type: string
+                                    type: object
+                                  authorizationEndpoint:
+                                    type: string
+                                  clientID:
+                                    type: string
+                                  clientSecret:
+                                    type: string
+                                  issuer:
+                                    type: string
+                                  onUnauthenticatedRequest:
+                                    type: string
+                                  scope:
+                                    type: string
+                                  sessionCookieName:
+                                    type: string
+                                  sessionTimeout:
+                                    format: int64
+                                    type: integer
+                                  tokenEndpoint:
+                                    type: string
+                                  useExistingClientSecret:
+                                    type: boolean
+                                  userInfoEndpoint:
+                                    type: string
+                                type: object
+                              fixedResponseConfig:
+                                description: Information about an action that returns
+                                  a custom HTTP response.
+                                properties:
+                                  contentType:
+                                    type: string
+                                  messageBody:
+                                    type: string
+                                  statusCode:
+                                    type: string
+                                type: object
+                              forwardConfig:
+                                description: Information about a forward action.
+                                properties:
+                                  targetGroupStickinessConfig:
+                                    description: Information about the target group
+                                      stickiness for a rule.
+                                    properties:
+                                      durationSeconds:
+                                        format: int64
+                                        type: integer
+                                      enabled:
+                                        type: boolean
+                                    type: object
+                                  targetGroups:
+                                    items:
+                                      properties:
+                                        targetGroupARN:
+                                          type: string
+                                        weight:
+                                          format: int64
+                                          type: integer
+                                      type: object
+                                    type: array
+                                type: object
+                              order:
+                                format: int64
+                                type: integer
+                              redirectConfig:
+                                description: |-
+                                  Information about a redirect action.
+
+                                  A URI consists of the following components: protocol://hostname:port/path?query.
+                                  You must modify at least one of the following components to avoid a redirect
+                                  loop: protocol, hostname, port, or path. Any components that you do not modify
+                                  retain their original values.
+
+                                  You can reuse URI components using the following reserved keywords:
+
+                                     * #{protocol}
+
+                                     * #{host}
+
+                                     * #{port}
+
+                                     * #{path} (the leading "/" is removed)
+
+                                     * #{query}
+
+                                  For example, you can change the path to "/new/#{path}", the hostname to "example.#{host}",
+                                  or the query to "#{query}&value=xyz".
+                                properties:
+                                  host:
+                                    type: string
+                                  path:
+                                    type: string
+                                  port:
+                                    type: string
+                                  protocol:
+                                    type: string
+                                  query:
+                                    type: string
+                                  statusCode:
+                                    type: string
+                                type: object
+                              targetGroupARN:
+                                type: string
+                              type_:
+                                type: string
+                            type: object
+                          type: array
+                        conditions:
+                          items:
+                            properties:
+                              field:
+                                type: string
+                              hostHeaderConfig:
+                                description: Information about a host header condition.
+                                properties:
+                                  values:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              httpHeaderConfig:
+                                description: |-
+                                  Information about an HTTP header condition.
+
+                                  There is a set of standard HTTP header fields. You can also define custom
+                                  HTTP header fields.
+                                properties:
+                                  httpHeaderName:
+                                    type: string
+                                  values:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              httpRequestMethodConfig:
+                                description: |-
+                                  Information about an HTTP method condition.
+
+                                  HTTP defines a set of request methods, also referred to as HTTP verbs. For
+                                  more information, see the HTTP Method Registry (https://www.iana.org/assignments/http-methods/http-methods.xhtml).
+                                  You can also define custom HTTP methods.
+                                properties:
+                                  values:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              pathPatternConfig:
+                                description: Information about a path pattern condition.
+                                properties:
+                                  values:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              queryStringConfig:
+                                description: |-
+                                  Information about a query string condition.
+
+                                  The query string component of a URI starts after the first '?' character
+                                  and is terminated by either a '#' character or the end of the URI. A typical
+                                  query string contains key/value pairs separated by '&' characters. The allowed
+                                  characters are specified by RFC 3986. Any character can be percentage encoded.
+                                properties:
+                                  values:
+                                    items:
+                                      properties:
+                                        key:
+                                          type: string
+                                        value:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              sourceIPConfig:
+                                description: |-
+                                  Information about a source IP condition.
+
+                                  You can use this condition to route based on the IP address of the source
+                                  that connects to the load balancer. If a client is behind a proxy, this is
+                                  the IP address of the proxy not the IP address of the client.
+                                properties:
+                                  values:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                              values:
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          type: array
+                        isDefault:
+                          type: boolean
+                        priority:
+                          type: string
+                        ruleARN:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
