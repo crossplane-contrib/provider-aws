@@ -119,19 +119,20 @@ func preCreate(_ context.Context, cr *svcapitypes.Rule, obs *svcsdk.CreateRuleIn
 	// Ensure all conditions have the Field property set based on which condition config is present
 	if obs.Conditions != nil {
 		for _, condition := range obs.Conditions {
-			// If Field is not set, determine it from the condition type
+			// If Field is not set, determine it from the condition type , change to switch case
 			if condition.Field == nil || *condition.Field == "" {
-				if condition.PathPatternConfig != nil {
+				switch {
+				case condition.PathPatternConfig != nil:
 					condition.Field = aws.String("path-pattern")
-				} else if condition.HostHeaderConfig != nil {
+				case condition.HostHeaderConfig != nil:
 					condition.Field = aws.String("host-header")
-				} else if condition.HttpHeaderConfig != nil {
+				case condition.HttpHeaderConfig != nil:
 					condition.Field = aws.String("http-header")
-				} else if condition.HttpRequestMethodConfig != nil {
+				case condition.HttpRequestMethodConfig != nil:
 					condition.Field = aws.String("http-request-method")
-				} else if condition.QueryStringConfig != nil {
+				case condition.QueryStringConfig != nil:
 					condition.Field = aws.String("query-string")
-				} else if condition.SourceIpConfig != nil {
+				case condition.SourceIpConfig != nil:
 					condition.Field = aws.String("source-ip")
 				}
 			}
