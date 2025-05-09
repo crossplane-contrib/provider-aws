@@ -2,6 +2,22 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
+type CustomRuleParameters struct {
+	// The Amazon Resource Name (ARN) of the listener.
+	// +optional
+	ListenerARN *string `json:"listenerARN,omitempty"`
+
+	// Reference to Listener for Listener ARN
+	// +optional
+	ListenerARNRef *xpv1.Reference `json:"listenerARNRef,omitempty"`
+
+	// Selector for references to Listener for Listener ARN
+	// +optional
+	ListenerARNSelector *xpv1.Selector `json:"listenerARNSelector,omitempty"`
+}
+
+type CustomRuleObservation struct{}
+
 // CustomCertificate includes custom fields about certificates.
 type CustomCertificate struct {
 	// [HTTPS and TLS listeners] The default certificate for the listener.
