@@ -1277,3 +1277,148 @@ func TestIsSSHPublicKeysUpToDate(t *testing.T) {
 		})
 	}
 }
+
+func TestIsMappingUpToDate(t *testing.T) {
+	type args struct {
+		cr  *svcapitypes.User
+		obj *svcsdk.DescribeUserOutput
+	}
+
+	type want struct {
+		isUpToDate bool
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"NeedsUpdate": {
+			args: args{
+				cr: user(
+					withExternalName("test"),
+					withSpec(svcapitypes.UserParameters{
+						Region: "us-east-1",
+						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
+							{
+								Entry:  ptr.To("entry"),
+								Target: ptr.To("target"),
+							},
+						},
+						CustomUserParameters: svcapitypes.CustomUserParameters{
+							ServerID: ptr.To("server"),
+							Role:     ptr.To("role"),
+							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
+								{
+									Body: "some-public-key",
+								},
+							},
+						},
+					}),
+					withStatus(svcapitypes.UserObservation{
+						ARN: ptr.To("ARN"),
+					}),
+				),
+				obj: &svcsdk.DescribeUserOutput{
+					User: &svcsdk.DescribedUser{
+						HomeDirectoryMappings: []*svcsdk.HomeDirectoryMapEntry{},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"NeedsUpdateNewTarget": {
+			args: args{
+				cr: user(
+					withExternalName("test"),
+					withSpec(svcapitypes.UserParameters{
+						Region: "us-east-1",
+						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
+							{
+								Entry:  ptr.To("entry"),
+								Target: ptr.To("targetnew"),
+							},
+						},
+						CustomUserParameters: svcapitypes.CustomUserParameters{
+							ServerID: ptr.To("server"),
+							Role:     ptr.To("role"),
+							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
+								{
+									Body: "some-public-key",
+								},
+							},
+						},
+					}),
+					withStatus(svcapitypes.UserObservation{
+						ARN: ptr.To("ARN"),
+					}),
+				),
+				obj: &svcsdk.DescribeUserOutput{
+					User: &svcsdk.DescribedUser{
+						HomeDirectoryMappings: []*svcsdk.HomeDirectoryMapEntry{
+							{
+								Entry:  ptr.To("entry"),
+								Target: ptr.To("target"),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"IsUpToDate": {
+			args: args{
+				cr: user(
+					withExternalName("test"),
+					withSpec(svcapitypes.UserParameters{
+						Region: "us-east-1",
+						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
+							{
+								Entry:  ptr.To("entry"),
+								Target: ptr.To("target"),
+							},
+						},
+						CustomUserParameters: svcapitypes.CustomUserParameters{
+							ServerID: ptr.To("server"),
+							Role:     ptr.To("role"),
+							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
+								{
+									Body: "some-public-key",
+								},
+							},
+						},
+					}),
+					withStatus(svcapitypes.UserObservation{
+						ARN: ptr.To("ARN"),
+					}),
+				),
+				obj: &svcsdk.DescribeUserOutput{
+					User: &svcsdk.DescribedUser{
+						HomeDirectoryMappings: []*svcsdk.HomeDirectoryMapEntry{
+							{
+								Entry:  ptr.To("entry"),
+								Target: ptr.To("target"),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			isUpToDate := isMappingsUpToDate(tc.args.cr, tc.args.obj)
+
+			if diff := cmp.Diff(tc.want.isUpToDate, isUpToDate, test.EquateErrors()); diff != "" {
+				t.Errorf("isUpToDate: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
