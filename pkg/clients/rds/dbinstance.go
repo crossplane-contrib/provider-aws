@@ -200,3 +200,154 @@ func GenerateRestoreDBInstanceToPointInTimeInput(name string, p *v1alpha1.DBInst
 	}
 	return c
 }
+
+// GenerateCreateDBInstanceReadReplicaInput returns a create input.
+func GenerateCreateDBInstanceReadReplicaInput(cr *v1alpha1.DBInstance) *svcsdk.CreateDBInstanceReadReplicaInput { //nolint:gocyclo
+	res := &svcsdk.CreateDBInstanceReadReplicaInput{}
+
+	if cr.Spec.ForProvider.AllocatedStorage != nil {
+		res.SetAllocatedStorage(*cr.Spec.ForProvider.AllocatedStorage)
+	}
+	if cr.Spec.ForProvider.AutoMinorVersionUpgrade != nil {
+		res.SetAutoMinorVersionUpgrade(*cr.Spec.ForProvider.AutoMinorVersionUpgrade)
+	}
+	if cr.Spec.ForProvider.AvailabilityZone != nil {
+		res.SetAvailabilityZone(*cr.Spec.ForProvider.AvailabilityZone)
+	}
+	if cr.Spec.ForProvider.CopyTagsToSnapshot != nil {
+		res.SetCopyTagsToSnapshot(*cr.Spec.ForProvider.CopyTagsToSnapshot)
+	}
+	if cr.Spec.ForProvider.CustomIAMInstanceProfile != nil {
+		res.SetCustomIamInstanceProfile(*cr.Spec.ForProvider.CustomIAMInstanceProfile)
+	}
+	if cr.Spec.ForProvider.DBInstanceClass != nil {
+		res.SetDBInstanceClass(*cr.Spec.ForProvider.DBInstanceClass)
+	}
+	if cr.Spec.ForProvider.DBParameterGroupName != nil {
+		res.SetDBParameterGroupName(*cr.Spec.ForProvider.DBParameterGroupName)
+	}
+	if cr.Spec.ForProvider.DBSubnetGroupName != nil {
+		res.SetDBSubnetGroupName(*cr.Spec.ForProvider.DBSubnetGroupName)
+	}
+	if cr.Spec.ForProvider.DedicatedLogVolume != nil {
+		res.SetDedicatedLogVolume(*cr.Spec.ForProvider.DedicatedLogVolume)
+	}
+	if cr.Spec.ForProvider.DeletionProtection != nil {
+		res.SetDeletionProtection(*cr.Spec.ForProvider.DeletionProtection)
+	}
+	if cr.Spec.ForProvider.Domain != nil {
+		res.SetDomain(*cr.Spec.ForProvider.Domain)
+	}
+	if cr.Spec.ForProvider.DomainAuthSecretARN != nil {
+		res.SetDomainAuthSecretArn(*cr.Spec.ForProvider.DomainAuthSecretARN)
+	}
+	if cr.Spec.ForProvider.DomainDNSIPs != nil {
+		res.SetDomainDnsIps(cr.Spec.ForProvider.DomainDNSIPs)
+	}
+	if cr.Spec.ForProvider.DomainFqdn != nil {
+		res.SetDomainFqdn(*cr.Spec.ForProvider.DomainFqdn)
+	}
+	if cr.Spec.ForProvider.DomainIAMRoleName != nil {
+		res.SetDomainIAMRoleName(*cr.Spec.ForProvider.DomainIAMRoleName)
+	}
+	if cr.Spec.ForProvider.DomainOu != nil {
+		res.SetDomainOu(*cr.Spec.ForProvider.DomainOu)
+	}
+	if cr.Spec.ForProvider.EnableCloudwatchLogsExports != nil {
+		res.SetEnableCloudwatchLogsExports(cr.Spec.ForProvider.EnableCloudwatchLogsExports)
+	}
+	if cr.Spec.ForProvider.EnableCustomerOwnedIP != nil {
+		res.SetEnableCustomerOwnedIp(*cr.Spec.ForProvider.EnableCustomerOwnedIP)
+	}
+	if cr.Spec.ForProvider.EnableIAMDatabaseAuthentication != nil {
+		res.SetEnableIAMDatabaseAuthentication(*cr.Spec.ForProvider.EnableIAMDatabaseAuthentication)
+	}
+	if cr.Spec.ForProvider.EnablePerformanceInsights != nil {
+		res.SetEnablePerformanceInsights(*cr.Spec.ForProvider.EnablePerformanceInsights)
+	}
+	if cr.Spec.ForProvider.IOPS != nil {
+		res.SetIops(*cr.Spec.ForProvider.IOPS)
+	}
+	if cr.Spec.ForProvider.KMSKeyID != nil {
+		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
+
+	}
+	if cr.Spec.ForProvider.MaxAllocatedStorage != nil {
+		res.SetMaxAllocatedStorage(*cr.Spec.ForProvider.MaxAllocatedStorage)
+	}
+	if cr.Spec.ForProvider.MonitoringInterval != nil {
+		res.SetMonitoringInterval(*cr.Spec.ForProvider.MonitoringInterval)
+	}
+	if cr.Spec.ForProvider.MonitoringRoleARN != nil {
+		res.SetMonitoringRoleArn(*cr.Spec.ForProvider.MonitoringRoleARN)
+	}
+	if cr.Spec.ForProvider.MultiAZ != nil {
+		res.SetMultiAZ(*cr.Spec.ForProvider.MultiAZ)
+	}
+	if cr.Spec.ForProvider.NetworkType != nil {
+		res.SetNetworkType(*cr.Spec.ForProvider.NetworkType)
+	}
+	if cr.Spec.ForProvider.OptionGroupName != nil {
+		res.SetOptionGroupName(*cr.Spec.ForProvider.OptionGroupName)
+	}
+	if cr.Spec.ForProvider.PerformanceInsightsKMSKeyID != nil {
+		res.SetPerformanceInsightsKMSKeyId(*cr.Spec.ForProvider.PerformanceInsightsKMSKeyID)
+	}
+	if cr.Spec.ForProvider.PerformanceInsightsRetentionPeriod != nil {
+		res.SetPerformanceInsightsRetentionPeriod(*cr.Spec.ForProvider.PerformanceInsightsRetentionPeriod)
+	}
+	if cr.Spec.ForProvider.Port != nil {
+		res.SetPort(*cr.Spec.ForProvider.Port)
+	}
+	if cr.Spec.ForProvider.ProcessorFeatures != nil {
+		var processorFeatures []*svcsdk.ProcessorFeature
+		for _, pf := range cr.Spec.ForProvider.ProcessorFeatures {
+			pfeature := &svcsdk.ProcessorFeature{}
+			if pf.Name != nil {
+				pfeature.SetName(*pf.Name)
+			}
+			if pf.Value != nil {
+				pfeature.SetValue(*pf.Value)
+			}
+			processorFeatures = append(processorFeatures, pfeature)
+		}
+		res.SetProcessorFeatures(processorFeatures)
+	}
+	if cr.Spec.ForProvider.PubliclyAccessible != nil {
+		res.SetPubliclyAccessible(*cr.Spec.ForProvider.PubliclyAccessible)
+	}
+	if cr.Spec.ForProvider.SourceDBClusterID != nil {
+		res.SetSourceDBClusterIdentifier(*cr.Spec.ForProvider.SourceDBClusterID)
+	}
+	if cr.Spec.ForProvider.SourceDBInstanceID != nil {
+		res.SetSourceDBInstanceIdentifier(*cr.Spec.ForProvider.SourceDBInstanceID)
+	}
+	if cr.Spec.ForProvider.StorageThroughput != nil {
+		res.SetStorageThroughput(*cr.Spec.ForProvider.StorageThroughput)
+	}
+	if cr.Spec.ForProvider.StorageType != nil {
+		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
+	}
+	if cr.Spec.ForProvider.Tags != nil {
+		var tags []*svcsdk.Tag
+		for _, t := range cr.Spec.ForProvider.Tags {
+			tag := &svcsdk.Tag{}
+			if t.Key != nil {
+				tag.SetKey(*t.Key)
+			}
+			if t.Value != nil {
+				tag.SetValue(*t.Value)
+			}
+			tags = append(tags, tag)
+		}
+		res.SetTags(tags)
+	}
+	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
+		var vpcSecurityGroupIDs []*string
+		for _, v := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			vpcSecurityGroupIDs = append(vpcSecurityGroupIDs, &v)
+		}
+		res.SetVpcSecurityGroupIds(vpcSecurityGroupIDs)
+	}
+	return res
+}
