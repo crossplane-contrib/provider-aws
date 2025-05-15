@@ -167,7 +167,7 @@ func (h *hooks) isUpToDate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.
 	var areTagsUpToDate bool
 	areTagsUpToDate, h.cache.tagsToAdd, h.cache.tagsToDelete = utils.DiffTags(cr.Spec.ForProvider.Tags, obj.User.Tags)
 
-	return areKeysUpToDate && areTagsUpToDate, "", nil
+	return areKeysUpToDate && areTagsUpToDate && isMappingsUpToDate(cr, obj), "", nil
 }
 
 func isSSHPublicKeysUpToDate(cr *svcapitypes.User, obj *svcsdk.DescribeUserOutput) (isUpToDate bool, toAdd, toRemove []string) {
@@ -197,6 +197,34 @@ func isSSHPublicKeysUpToDate(cr *svcapitypes.User, obj *svcsdk.DescribeUserOutpu
 	}
 
 	return len(toRemove) == 0 && len(toAdd) == 0, toAdd, toRemove
+}
+
+func isMappingsUpToDate(cr *svcapitypes.User, obj *svcsdk.DescribeUserOutput) bool {
+	specMap := make(map[string]string, len(cr.Spec.ForProvider.HomeDirectoryMappings))
+	for _, k := range cr.Spec.ForProvider.HomeDirectoryMappings {
+		specMap[*k.Entry] = *k.Target
+	}
+
+	curMap := make(map[string]string, len(obj.User.HomeDirectoryMappings))
+
+	for _, mapping := range obj.User.HomeDirectoryMappings {
+		body := ptr.Deref(mapping.Entry, "")
+		curMap[body] = ptr.Deref(mapping.Target, "")
+
+		if _, exists := specMap[body]; !exists {
+			return false
+		}
+	}
+
+	for key, value := range specMap {
+		if val, exists := curMap[key]; !exists {
+			return false
+		} else if value != val {
+			return false
+		}
+	}
+
+	return true
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserInput) error {
