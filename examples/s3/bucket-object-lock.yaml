@@ -1,0 +1,15 @@
+---
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  name: object-lock-sample
+spec:
+  forProvider:
+    locationConstraint: eu-central-2
+    objectLockEnabledForBucket: true
+    objectLockRule:
+      defaultRetention:
+        days: 7
+        mode: COMPLIANCE
+  providerConfigRef:
+    name: provider-aws
