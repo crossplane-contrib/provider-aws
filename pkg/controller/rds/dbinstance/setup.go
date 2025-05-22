@@ -656,16 +656,35 @@ func compareTimeRanges(format string, expectedWindow *string, actualWindow *stri
 	// all windows here have a "-" in between two values in the expected format, so just split
 	leftSpans := strings.Split(*expectedWindow, "-")
 	rightSpans := strings.Split(*actualWindow, "-")
+
+	if len(leftSpans) != 2 || len(rightSpans) != 2 {
+		return false, errors.New("invalid time window format")
+	}
+
 	for i := range leftSpans {
-		left, err := time.Parse(format, leftSpans[i])
+		// Extract day and time separately from the string before parsing
+		leftParts := strings.SplitN(leftSpans[i], ":", 2)
+		rightParts := strings.SplitN(rightSpans[i], ":", 2)
+
+		if len(leftParts) != 2 || len(rightParts) != 2 {
+			return false, errors.New("invalid time format, expected 'day:HH:MM'")
+		}
+
+		leftDay := strings.ToLower(strings.TrimSpace(leftParts[0]))
+		rightDay := strings.ToLower(strings.TrimSpace(rightParts[0]))
+
+		leftTime, err := time.Parse(format, leftSpans[i])
 		if err != nil {
 			return false, err
 		}
-		right, err := time.Parse(format, rightSpans[i])
+		rightTime, err := time.Parse(format, rightSpans[i])
 		if err != nil {
 			return false, err
 		}
-		if left != right {
+		fmt.Printf("leftTime: %s, rightTime: %s\n", leftTime, rightTime)
+
+		// Compare both day and parsed time
+		if leftDay != rightDay || !leftTime.Equal(rightTime) {
 			return true, nil
 		}
 	}
