@@ -681,7 +681,6 @@ func compareTimeRanges(format string, expectedWindow *string, actualWindow *stri
 		if err != nil {
 			return false, err
 		}
-		fmt.Printf("leftTime: %s, rightTime: %s\n", leftTime, rightTime)
 
 		// Compare both day and parsed time
 		if leftDay != rightDay || !leftTime.Equal(rightTime) {
