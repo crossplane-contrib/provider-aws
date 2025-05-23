@@ -41,14 +41,14 @@ const (
 	taggingDeleteFailed = "cannot delete Bucket tagging set"
 )
 
-type cache struct {
+type taggingConfigurationCache struct {
 	getBucketTaggingOutput *awss3.GetBucketTaggingOutput
 }
 
 // TaggingConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type TaggingConfigurationClient struct {
 	client s3.BucketClient
-	cache  cache
+	cache  taggingConfigurationCache
 }
 
 // NewTaggingConfigurationClient creates the client for CORS Configuration
@@ -57,7 +57,7 @@ func NewTaggingConfigurationClient(client s3.BucketClient) *TaggingConfiguration
 }
 
 // CacheBucketTaggingOutput returns cached *awss3.GetBucketTaggingOutput` if it exists, otherwise adds
-// `TaggingConfigurationClient.GetBucketTagging` output to cache and then returns it
+// `TaggingConfigurationClient.GetBucketTagging` output to taggingConfigurationCache and then returns it
 func (in *TaggingConfigurationClient) CacheBucketTaggingOutput(ctx context.Context, bucketName *string) (*awss3.GetBucketTaggingOutput, error) {
 	if in.cache.getBucketTaggingOutput == nil {
 		external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: bucketName})

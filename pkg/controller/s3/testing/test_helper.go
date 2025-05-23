@@ -34,7 +34,6 @@ var (
 	grantReadACP     = "readACPGrant"
 	grantWrite       = "writeGrant"
 	grantWriteACP    = "writeACPGrant"
-	objectLock       = true
 	// BucketName is the name of the s3 bucket in testing
 	BucketName = "test.bucket.name"
 )
@@ -123,19 +122,28 @@ func WithPolicyUpdatePolicy(s *v1beta1.BucketPolicyUpdatePolicy) BucketModifier 
 	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.PolicyUpdatePolicy = s }
 }
 
+// WithObjectLockEnabledForBucket sets ObjectLockEnabledForBucket for an S3 Bucket
+func WithObjectLockEnabledForBucket(s bool) BucketModifier {
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ObjectLockEnabledForBucket = &s }
+}
+
+// WithObjectLockRule sets ObjectLockRule for an S3 Bucket
+func WithObjectLockRule(s *v1beta1.ObjectLockRule) BucketModifier {
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ObjectLockRule = s }
+}
+
 // Bucket creates a v1beta1 Bucket for use in testing
 func Bucket(m ...BucketModifier) *v1beta1.Bucket {
 	cr := &v1beta1.Bucket{
 		Spec: v1beta1.BucketSpec{
 			ForProvider: v1beta1.BucketParameters{
-				ACL:                        &acl,
-				LocationConstraint:         Region,
-				GrantFullControl:           &grantFullControl,
-				GrantRead:                  &grantRead,
-				GrantReadACP:               &grantReadACP,
-				GrantWrite:                 &grantWrite,
-				GrantWriteACP:              &grantWriteACP,
-				ObjectLockEnabledForBucket: &objectLock,
+				ACL:                &acl,
+				LocationConstraint: Region,
+				GrantFullControl:   &grantFullControl,
+				GrantRead:          &grantRead,
+				GrantReadACP:       &grantReadACP,
+				GrantWrite:         &grantWrite,
+				GrantWriteACP:      &grantWriteACP,
 			},
 		},
 	}

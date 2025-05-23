@@ -50,6 +50,7 @@ func NewSubresourceClients(client s3.BucketClient) []SubresourceClient {
 		NewWebsiteConfigurationClient(client),
 		NewPublicAccessBlockClient(client),
 		NewPolicyClient(client),
+		NewObjectLockConfigurationClient(client),
 	}
 }
 

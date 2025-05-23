@@ -29,7 +29,7 @@ spec:
                         }
                       },
                       "PositionalConstraint": "CONTAINS",
-                      "SearchString": "YmFkQm90",
+                      "SearchString": "badBot",
                       "TextTransformations": [
                         {
                           "Priority": 0,
@@ -47,7 +47,7 @@ spec:
                         }
                       },
                       "PositionalConstraint": "CONTAINS",
-                      "SearchString": "YmFkQm90",
+                      "SearchString": "badBot",
                       "TextTransformations": [
                         {
                           "Priority": 1,
@@ -72,7 +72,7 @@ spec:
               singleHeader:
                  name: "User-Agent"
             positionalConstraint: "CONTAINS"
-            searchString: "YmFkQm90"
+            searchString: "badBot"
             textTransformations:
               - priority: 1
                 type_: "NONE"

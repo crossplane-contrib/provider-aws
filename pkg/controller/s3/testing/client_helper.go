@@ -83,6 +83,12 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 				return &awss3.DeleteBucketPolicyOutput{}, nil
 			},
 		},
+		MockGetObjectLockConfiguration: func(ctx context.Context, input *awss3.GetObjectLockConfigurationInput, opts []func(*awss3.Options)) (*awss3.GetObjectLockConfigurationOutput, error) {
+			return &awss3.GetObjectLockConfigurationOutput{}, nil
+		},
+		MockPutObjectLockConfiguration: func(ctx context.Context, input *awss3.PutObjectLockConfigurationInput, opts []func(*awss3.Options)) (*awss3.PutObjectLockConfigurationOutput, error) {
+			return &awss3.PutObjectLockConfigurationOutput{}, nil
+		},
 	}
 	for _, v := range m {
 		v(client)

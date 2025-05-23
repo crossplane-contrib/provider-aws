@@ -64,8 +64,13 @@ type BucketParameters struct {
 	GrantWriteACP *string `json:"grantWriteAcp,omitempty"`
 
 	// Specifies whether you want S3 Object Lock to be enabled for the new bucket.
+	// After you enable Object Lock for a bucket, you can't disable Object Lock or suspend Versioning for that bucket
 	// +optional
 	ObjectLockEnabledForBucket *bool `json:"objectLockEnabledForBucket,omitempty"`
+
+	// Specifies the Object Lock rule for the bucket. Works only when ObjectLockEnabledForBucket is true.
+	// +optional
+	ObjectLockRule *ObjectLockRule `json:"objectLockRule,omitempty"`
 
 	// The container element for object ownership for a bucket's ownership controls.
 	// BucketOwnerPreferred - Objects uploaded to the bucket change ownership to the

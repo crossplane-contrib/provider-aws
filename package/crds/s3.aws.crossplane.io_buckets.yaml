@@ -972,9 +972,48 @@ spec:
                         type: array
                     type: object
                   objectLockEnabledForBucket:
-                    description: Specifies whether you want S3 Object Lock to be enabled
-                      for the new bucket.
+                    description: |-
+                      Specifies whether you want S3 Object Lock to be enabled for the new bucket.
+                      After you enable Object Lock for a bucket, you can't disable Object Lock or suspend Versioning for that bucket
                     type: boolean
+                  objectLockRule:
+                    description: Specifies the Object Lock rule for the bucket. Works
+                      only when ObjectLockEnabledForBucket is true.
+                    properties:
+                      defaultRetention:
+                        description: |-
+                          The container element for optionally specifying the default Object Lock
+                          retention settings for new objects placed in the specified bucket.
+                          The DefaultRetention settings require both a mode and a period.
+                          The DefaultRetention period can be either Days or Years but you must select one
+                          You cannot specify Days and Years at the same time.
+                          For more information, see Object Lock(https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html)
+                        properties:
+                          days:
+                            description: |-
+                              The number of days that you want to specify for the default retention period.
+                              Must be used with Mode.
+                            format: int32
+                            type: integer
+                          mode:
+                            description: |-
+                              The default Object Lock retention mode you want to apply to new objects placed
+                              in the specified bucket. Must be used with either Days or Years .
+                              Valid values are "GOVERNANCE", "COMPLIANCE"
+                            enum:
+                            - GOVERNANCE
+                            - COMPLIANCE
+                            type: string
+                          years:
+                            description: |-
+                              The number of years that you want to specify for the default retention period.
+                              Must be used with Mode .
+                            format: int32
+                            type: integer
+                        required:
+                        - mode
+                        type: object
+                    type: object
                   objectOwnership:
                     description: |-
                       The container element for object ownership for a bucket's ownership controls.
