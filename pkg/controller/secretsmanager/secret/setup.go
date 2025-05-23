@@ -248,7 +248,7 @@ func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.Secret, resp *sv
 		return false, "", nil
 	}
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, resp.Tags)
-	if len(add) != 0 && len(remove) != 0 {
+	if len(add) != 0 || len(remove) != 0 {
 		return false, "", nil
 	}
 
