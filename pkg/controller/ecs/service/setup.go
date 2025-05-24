@@ -253,17 +253,19 @@ func preUpdate(context context.Context, cr *svcapitypes.Service, obj *svcsdk.Upd
 }
 
 func (e *custom) postUpdate(context context.Context, cr *svcapitypes.Service, obj *svcsdk.UpdateServiceOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	arn := obj.Service.ServiceArn
+	if obj != nil && obj.Service != nil {
+		arn := obj.Service.ServiceArn
 
-	if arn != nil {
-		if len(e.cache.RemoveTags) > 0 {
-			if _, err := e.client.UntagResourceWithContext(context, &svcsdk.UntagResourceInput{ResourceArn: arn, TagKeys: e.cache.RemoveTags}); err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, "UntagResource failed")
+		if arn != nil {
+			if len(e.cache.RemoveTags) > 0 {
+				if _, err := e.client.UntagResourceWithContext(context, &svcsdk.UntagResourceInput{ResourceArn: arn, TagKeys: e.cache.RemoveTags}); err != nil {
+					return managed.ExternalUpdate{}, errors.Wrap(err, "UntagResource failed")
+				}
 			}
-		}
-		if len(e.cache.AddTags) > 0 {
-			if _, err := e.client.TagResourceWithContext(context, &svcsdk.TagResourceInput{ResourceArn: arn, Tags: e.cache.AddTags}); err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, "TagResource failed")
+			if len(e.cache.AddTags) > 0 {
+				if _, err := e.client.TagResourceWithContext(context, &svcsdk.TagResourceInput{ResourceArn: arn, Tags: e.cache.AddTags}); err != nil {
+					return managed.ExternalUpdate{}, errors.Wrap(err, "TagResource failed")
+				}
 			}
 		}
 	}
