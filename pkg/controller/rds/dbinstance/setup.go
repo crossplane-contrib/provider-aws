@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -644,28 +645,48 @@ func createPatch(out *svcsdk.DescribeDBInstancesOutput, target *svcapitypes.DBIn
 	return patch, nil
 }
 
+func parseTimeWindowSpan(span, format string) (string, time.Time, error) {
+	// Regex: optional day, always HH:MM
+	re := regexp.MustCompile(`^\s*([A-Za-z]+:)?(\d{2}:\d{2})\s*$`)
+	matches := re.FindStringSubmatch(span)
+	if len(matches) != 3 {
+		return "", time.Time{}, errors.New("invalid time format, expected '[day:]HH:MM'")
+	}
+	day := ""
+	if matches[1] != "" {
+		day = strings.ToLower(strings.TrimSuffix(matches[1], ":"))
+	}
+	t, err := time.Parse(format, strings.TrimSpace(span))
+	if err != nil {
+		return day, time.Time{}, err
+	}
+	return day, t, nil
+}
+
 func compareTimeRanges(format string, expectedWindow *string, actualWindow *string) (bool, error) {
 	if pointer.StringValue(expectedWindow) == "" {
-		// no window to set, don't bother
 		return false, nil
 	}
 	if pointer.StringValue(actualWindow) == "" {
-		// expected is set but actual is not, so we should set it
 		return true, nil
 	}
-	// all windows here have a "-" in between two values in the expected format, so just split
 	leftSpans := strings.Split(*expectedWindow, "-")
 	rightSpans := strings.Split(*actualWindow, "-")
+
+	if len(leftSpans) != 2 || len(rightSpans) != 2 {
+		return false, errors.New("invalid time window format")
+	}
+
 	for i := range leftSpans {
-		left, err := time.Parse(format, leftSpans[i])
+		dayA, timeA, err := parseTimeWindowSpan(leftSpans[i], format)
 		if err != nil {
 			return false, err
 		}
-		right, err := time.Parse(format, rightSpans[i])
+		dayB, timeB, err := parseTimeWindowSpan(rightSpans[i], format)
 		if err != nil {
 			return false, err
 		}
-		if left != right {
+		if dayA != dayB || !timeA.Equal(timeB) {
 			return true, nil
 		}
 	}
