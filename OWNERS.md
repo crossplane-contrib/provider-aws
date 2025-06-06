@@ -14,3 +14,6 @@ guidelines and responsibilities for the steering committee and maintainers.
 * Maximilian Blatt ([MisterMX](https://github.com/MisterMX))
 * Ana Garlau ([anagarlau](https://github.com/anagarlau))
 * Christopher Junk ([christophrj](https://github.com/christophrj))
+* Nico Andres ([AndresNico](https://github.com/AndresNico))
+* Kevin Kendzia ([kkendzia](https://github.com/kkendzia))
+* Gosha Khromov ([ggkhrmv](https://github.com/ggkhrmv))
