@@ -534,7 +534,20 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "DeleteAutomatedBackups"),
 	)
 
-	e.cache.addTags, e.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, db.TagList)
+	var observedTags []*svcsdk.Tag
+	if db.TagList != nil {
+		for i, tag := range db.TagList {
+			// ignore system tags
+			if strings.HasPrefix(*tag.Key, "aws:") || strings.HasPrefix(*tag.Key, "c7n:") {
+				continue
+			}
+			observedTags[i] = &svcsdk.Tag{
+				Key:   tag.Key,
+				Value: tag.Value,
+			}
+		}
+	}
+	e.cache.addTags, e.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, observedTags)
 	tagsChanged := len(e.cache.addTags) != 0 || len(e.cache.removeTags) != 0
 
 	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !iopsChanged && !storageThroughputChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged && !tagsChanged {
