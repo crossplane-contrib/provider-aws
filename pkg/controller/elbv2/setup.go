@@ -22,6 +22,7 @@ import (
 
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/listener"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/loadbalancer"
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/rule"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/target"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/elbv2/targetgroup"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
@@ -34,6 +35,7 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		listener.SetupListener,
 		loadbalancer.SetupLoadBalancer,
 		target.SetupTarget,
+		rule.SetupRule,
 		targetgroup.SetupTargetGroup,
 	)
 }

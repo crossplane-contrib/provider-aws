@@ -8,8 +8,8 @@ ignore:
     # Type has a json key of type_, so it's reimplemented with loadBalancerType
     - CreateLoadBalancerInput.Type
     - DescribeListenersInput.LoadBalancerArn
-  resource_names:
-    - Rule
+    - CreateRuleInput.ListenerArn
+    - CreateRuleInput.Priority
 resources:
   Listener:
     exceptions:
@@ -26,6 +26,11 @@ resources:
       errors:
         404:
           code: TargetGroupNotFound
+  Rule:
+    exceptions:
+      errors:
+        404:
+          code: RuleNotFound
 # Since the Create* actions all return a list and we can't use the same return
 # type for Create and Generate* functions, use a noop statement here. This is a
 # bit hacky, but can't be helped without some way to configure this more
