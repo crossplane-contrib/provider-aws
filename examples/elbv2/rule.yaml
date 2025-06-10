@@ -1,0 +1,45 @@
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: Rule
+metadata:
+  name: rule-test
+spec:
+  providerConfigRef:
+    name: providerconfig-aws
+  forProvider:
+    actions:
+    - type_: forward
+      targetGroupARN: 'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/elbv2-crossplane-test/2024c4ffdf606bd3'
+    conditions:
+      - field: path-pattern
+        pathPatternConfig:
+          values:
+            - /static/test/*
+      - field: host-header
+        hostHeaderConfig:
+          values:
+            - example.com
+    listenerARN: 'arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/crossplane-elbv2-crd-test/8702b45b10788e66/76bafee45f01ca63'
+    priority: 102
+    region: us-east-1
+---
+apiVersion: elbv2.aws.crossplane.io/v1alpha1
+kind: Rule
+metadata:
+  name: rule-sample
+spec:
+  providerConfigRef:
+    name: providerconfig-aws
+  forProvider:
+    actions:
+    - type_: forward
+      forwardConfig:
+        targetGroups:
+          - targetGroupARN: 'arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/elbv2-crossplane-test/2024c4ffdf606bd3'
+    conditions:
+      - field: path-pattern
+        pathPatternConfig:
+          values:
+            - /static/*
+    listenerARN: 'arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/crossplane-elbv2-crd-test/8702b45b10788e66/76bafee45f01ca63'
+    priority: 101
+    region: us-east-1
