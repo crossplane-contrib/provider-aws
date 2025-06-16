@@ -1585,6 +1585,11 @@ func (in *DBClusterObservation) DeepCopyInto(out *DBClusterObservation) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Port != nil {
+		in, out := &in.Port, &out.Port
+		*out = new(int64)
+		**out = **in
+	}
 	if in.ReadReplicaIdentifiers != nil {
 		in, out := &in.ReadReplicaIdentifiers, &out.ReadReplicaIdentifiers
 		*out = make([]*string, len(*in))
