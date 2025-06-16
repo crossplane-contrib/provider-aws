@@ -34,6 +34,11 @@ resources:
         from:
           operation: DescribeDBClusters
           path: DBClusters.KmsKeyId
+      Port:
+        is_read_only: true
+        from:
+          operation: DescribeDBClusters
+          path: DBClusters.Port    
   DBInstanceRoleAssociation:
     exceptions:
       errors:
