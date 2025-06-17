@@ -749,6 +749,8 @@ type DBClusterObservation struct {
 	//
 	// This setting is only for non-Aurora Multi-AZ DB clusters.
 	PerformanceInsightsEnabled *bool `json:"performanceInsightsEnabled,omitempty"`
+	// The port that the database engine is listening on.
+	Port *int64 `json:"port,omitempty"`
 	// Contains one or more identifiers of the read replicas associated with this
 	// DB cluster.
 	ReadReplicaIdentifiers []*string `json:"readReplicaIdentifiers,omitempty"`

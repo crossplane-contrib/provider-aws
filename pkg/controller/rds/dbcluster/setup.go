@@ -108,6 +108,7 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 	}
 
 	cr.Status.AtProvider.KMSKeyID = resp.DBClusters[0].KmsKeyId
+	cr.Status.AtProvider.Port = resp.DBClusters[0].Port
 
 	switch pointer.StringValue(resp.DBClusters[0].Status) {
 	case "available", "storage-optimization", "backing-up":
@@ -125,12 +126,8 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 	obs.ConnectionDetails = managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint)),
 		xpv1.ResourceCredentialsSecretUserKey:     []byte(pointer.StringValue(cr.Spec.ForProvider.MasterUsername)),
-		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(pointer.Int64Value(cr.Spec.ForProvider.Port), 10)),
+		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(pointer.Int64Value(cr.Status.AtProvider.Port), 10)),
 		"readerEndpoint":                          []byte(pointer.StringValue(cr.Status.AtProvider.ReaderEndpoint)),
-	}
-
-	if pointer.Int64Value(cr.Spec.ForProvider.Port) > 0 {
-		obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(pointer.Int64Value(cr.Spec.ForProvider.Port), 10))
 	}
 
 	pw, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
