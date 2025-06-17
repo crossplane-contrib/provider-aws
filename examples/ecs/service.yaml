@@ -37,3 +37,41 @@ spec:
       name: example
   providerConfigRef:
     name: example
+---
+apiVersion: ecs.aws.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  name: nginx-test-ecs
+  annotations:
+    task-definition-network-mode: awsvpc
+spec:
+  forProvider:
+    cluster: arn:aws:ecs:us-east-1:123456789:cluster/crossplane-ecs-controller-test
+    launchType: EC2
+    region: us-east-1
+    schedulingStrategy: DAEMON
+    networkConfiguration:
+      awsvpcConfiguration:
+        assignPublicIP: DISABLED
+        subnets: 
+        - subnet-06338caec7dcf
+        - subnet-02a8df89fdafa
+    taskDefinition: arn:aws:ecs:us-east-1:123456789:task-definition/nginx:3
+  providerConfigRef:
+    name: providerconfig-aws
+---
+apiVersion: ecs.aws.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  name: filebeat-test
+  annotations:
+    task-definition-network-mode: host
+spec:
+  forProvider:
+    cluster: arn:aws:ecs:us-east-1:123456789:cluster/crossplane-ecs-controller-test
+    launchType: EC2
+    region: us-east-1
+    schedulingStrategy: DAEMON
+    taskDefinition: arn:aws:ecs:us-east-1:123456789:task-definition/pratyush-filebeat:1
+  providerConfigRef:
+    name: providerconfig-aws
