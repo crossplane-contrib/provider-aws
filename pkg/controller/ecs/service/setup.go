@@ -537,7 +537,7 @@ func generateNetworkConfiguration(cr *svcapitypes.Service) *svcsdk.NetworkConfig
 	networkConfiguration := &svcsdk.NetworkConfiguration{}
 
 	if cr.Spec.ForProvider.NetworkConfiguration == nil {
-		return networkConfiguration
+		return nil
 	}
 
 	if cr.Spec.ForProvider.NetworkConfiguration.AWSvpcConfiguration != nil {
