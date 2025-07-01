@@ -69,6 +69,10 @@ type CustomVPCEndpointServiceConfigurationParameters struct {
 	// to set the NetworkLoadBalancerARNs.
 	// +optional
 	NetworkLoadBalancerARNSelector *xpv1.Selector `json:"networkLoadBalancerARNSelector,omitempty"`
+
+	// SupportedRegions the set of regions from which service consumers can access the service.
+	// +optional
+	SupportedRegions []*string `json:"supportedRegions,omitempty"`
 }
 
 // CustomLaunchTemplateParameters includes the custom status fields of VPCEndpointServiceConfigurationParameter.
@@ -432,6 +436,10 @@ type CustomVPCEndpointParameters struct {
 	// to set the RouteTableIDs.
 	// +optional
 	RouteTableIDSelector *xpv1.Selector `json:"routeTableIdSelector,omitempty"`
+
+	// ServiceRegion the AWS region of the VPC Endpoint Service. If specified, the VPC endpoint will connect to the service in the provided region. Applicable for endpoints of type Interface.
+	// +optional
+	ServiceRegion *string `json:"serviceRegion,omitempty"`
 }
 
 // CustomVPCEndpointObservation includes the custom status fields of VPCEndpoint.
