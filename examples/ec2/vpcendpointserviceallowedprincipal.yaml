@@ -1,0 +1,11 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCEndpointServiceAllowedPrincipal
+metadata:
+  name: example-vpc-endpoint-service-allowed-principal
+spec:
+  forProvider:
+    region: us-east-1
+    vpcEndpointServiceId: vpce-svc-123456789abcdef01
+    principalArn: "arn:aws:iam::123456789012:root"
+  providerConfigRef:
+    name: default 

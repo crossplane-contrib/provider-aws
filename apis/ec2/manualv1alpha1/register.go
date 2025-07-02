@@ -64,8 +64,17 @@ var (
 	InstanceGroupVersionKind = SchemeGroupVersion.WithKind(InstanceKind)
 )
 
+// VPCEndpointServiceAllowedPrincipal type metadata.
+var (
+	VPCEndpointServiceAllowedPrincipalKind             = reflect.TypeOf(VPCEndpointServiceAllowedPrincipal{}).Name()
+	VPCEndpointServiceAllowedPrincipalGroupKind        = schema.GroupKind{Group: Group, Kind: VPCEndpointServiceAllowedPrincipalKind}.String()
+	VPCEndpointServiceAllowedPrincipalKindAPIVersion   = VPCEndpointServiceAllowedPrincipalKind + "." + SchemeGroupVersion.String()
+	VPCEndpointServiceAllowedPrincipalGroupVersionKind = SchemeGroupVersion.WithKind(VPCEndpointServiceAllowedPrincipalKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
 	SchemeBuilder.Register(&SecurityGroupRule{}, &SecurityGroupRuleList{})
 	SchemeBuilder.Register(&Instance{}, &InstanceList{})
+	SchemeBuilder.Register(&VPCEndpointServiceAllowedPrincipal{}, &VPCEndpointServiceAllowedPrincipalList{})
 }
