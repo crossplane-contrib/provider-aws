@@ -28,8 +28,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.35.3
 	github.com/aws/aws-sdk-go-v2/service/sts v1.31.3
 	github.com/aws/smithy-go v1.22.1
-	github.com/crossplane/crossplane-runtime v1.18.0
-	github.com/evanphx/json-patch v5.9.0+incompatible
+	github.com/crossplane/crossplane-runtime v1.20.0
+	github.com/evanphx/json-patch v5.9.11+incompatible
 	github.com/go-ini/ini v1.67.0
 	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.6.0
@@ -109,7 +109,7 @@ require (
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/mod v0.20.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
