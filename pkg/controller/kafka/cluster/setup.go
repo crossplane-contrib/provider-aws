@@ -18,6 +18,7 @@ package cluster
 
 import (
 	"context"
+	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -159,8 +160,8 @@ func (u *hooks) postObserve(ctx context.Context, cr *svcapitypes.Cluster, obj *s
 	obs.ConnectionDetails = managed.ConnectionDetails{
 		// see: https://docs.aws.amazon.com/msk/latest/developerguide/client-access.html
 		// no endpoint informations available in DescribeClusterOutput only endpoints for zookeeperPlain/Tls
-		"zookeeperEndpointPlain": []byte(pointer.StringValue(obj.ClusterInfo.ZookeeperConnectString)),
-		"zookeeperEndpointTls":   []byte(pointer.StringValue(obj.ClusterInfo.ZookeeperConnectStringTls)),
+		"zookeeperEndpointPlain": []byte(sortBootstrapBrokerString(pointer.StringValue(obj.ClusterInfo.ZookeeperConnectString))),
+		"zookeeperEndpointTls":   []byte(sortBootstrapBrokerString(pointer.StringValue(obj.ClusterInfo.ZookeeperConnectStringTls))),
 	}
 
 	switch pointer.StringValue(obj.ClusterInfo.State) {
@@ -174,13 +175,13 @@ func (u *hooks) postObserve(ctx context.Context, cr *svcapitypes.Cluster, obj *s
 		if err != nil {
 			return obs, errorutils.Wrap(err, errGetBootstrapBrokers)
 		}
-		obs.ConnectionDetails["clusterEndpointPlain"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerString))
-		obs.ConnectionDetails["clusterEndpointTls"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringTls))
-		obs.ConnectionDetails["clusterEndpointIAM"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringSaslIam))
-		obs.ConnectionDetails["clusterEndpointScram"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringSaslScram))
-		obs.ConnectionDetails["clusterEndpointTlsPublic"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringPublicTls))
-		obs.ConnectionDetails["clusterEndpointIAMPublic"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringPublicSaslIam))
-		obs.ConnectionDetails["clusterEndpointScramPublic"] = []byte(pointer.StringValue(endpoints.BootstrapBrokerStringPublicSaslScram))
+		obs.ConnectionDetails["clusterEndpointPlain"] = []byte(sortBootstrapBrokerString(pointer.StringValue(endpoints.BootstrapBrokerString)))
+		obs.ConnectionDetails["clusterEndpointTls"] = []byte(sortBootstrapBrokerString(pointer.StringValue(endpoints.BootstrapBrokerStringTls)))
+		obs.ConnectionDetails["clusterEndpointIAM"] = []byte(sortBootstrapBrokerString(pointer.StringValue(endpoints.BootstrapBrokerStringSaslIam)))
+		obs.ConnectionDetails["clusterEndpointScram"] = []byte(sortBootstrapBrokerString(pointer.StringValue(endpoints.BootstrapBrokerStringSaslScram)))
+		obs.ConnectionDetails["clusterEndpointTlsPublic"] = []byte(sortBootstrapBrokerString(pointer.StringValue(endpoints.BootstrapBrokerStringPublicTls)))
+		obs.ConnectionDetails["clusterEndpointIAMPublic"] = []byte(sortBootstrapBrokerString(pointer.StringValue(endpoints.BootstrapBrokerStringPublicSaslIam)))
+		obs.ConnectionDetails["clusterEndpointScramPublic"] = []byte(sortBootstrapBrokerString(pointer.StringValue(endpoints.BootstrapBrokerStringPublicSaslScram)))
 
 	case string(svcapitypes.ClusterState_CREATING):
 		cr.SetConditions(xpv1.Creating())
@@ -1191,4 +1192,18 @@ func generateOpenMonitorinInput(wanted *svcapitypes.OpenMonitoringInfo) *svcsdk.
 	}
 	return output
 
+}
+
+// sortBootstrapBrokerString splits the provided string at ",",
+// trims potential spaces, sorts the resulting list of endpoints
+// and returns this a consistent string value with the endpoints joined by "," again.
+func sortBootstrapBrokerString(endpoints string) string {
+	endpointList := strings.Split(endpoints, ",")
+	sort.Strings(endpointList)
+	// for potential edge case, where someday AWS string contains spaces
+	for i, endpoint := range endpointList {
+		endpointList[i] = strings.TrimSpace(endpoint)
+	}
+	sort.Strings(endpointList)
+	return strings.Join(endpointList, ",")
 }
