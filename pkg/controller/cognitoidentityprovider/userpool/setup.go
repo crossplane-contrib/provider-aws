@@ -163,7 +163,7 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.UserPool, resp *sv
 		!areEmailConfigurationEqual(spec.EmailConfiguration, pool.EmailConfiguration),
 		!areLambdaConfigEqual(spec.LambdaConfig, pool.LambdaConfig),
 		!arePoliciesEqual(spec.Policies, pool.Policies),
-		!e.areSchemaEqual(spec.Schema, pool.SchemaAttributes),
+		!areSchemaEqual(spec.Schema, pool.SchemaAttributes),
 		pointer.StringValue(spec.SmsAuthenticationMessage) != pointer.StringValue(pool.SmsAuthenticationMessage),
 		!areSmsConfigurationEqual(spec.SmsConfiguration, pool.SmsConfiguration),
 		!areUserPoolAddOnsEqual(spec.UserPoolAddOns, pool.UserPoolAddOns),
@@ -316,7 +316,7 @@ func arePoliciesEqual(spec *svcapitypes.UserPoolPolicyType, current *svcsdk.User
 	return true
 }
 
-func (h *hooks) areSchemaEqual(spec []*svcapitypes.SchemaAttributeType, current []*svcsdk.SchemaAttributeType) bool { //nolint:gocyclo
+func areSchemaEqual(spec []*svcapitypes.SchemaAttributeType, current []*svcsdk.SchemaAttributeType) bool { //nolint:gocyclo
 	if spec != nil && current != nil {
 		if len(spec) == 0 {
 			return true
