@@ -16,7 +16,6 @@ package userpool
 import (
 	"context"
 	"reflect"
-	"strings"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/cognitoidentityprovider/cognitoidentityprovideriface"
@@ -54,7 +53,6 @@ func SetupUserPool(mgr ctrl.Manager, o controller.Options) error {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preUpdate = h.preUpdate
-			e.postUpdate = h.postUpdate
 			e.preDelete = preDelete
 			e.preCreate = preCreate
 			e.postCreate = postCreate
@@ -95,8 +93,7 @@ func SetupUserPool(mgr ctrl.Manager, o controller.Options) error {
 }
 
 type hooks struct {
-	client                  svcsdkapi.CognitoIdentityProviderAPI
-	currentCustomAttributes []*svcsdk.SchemaAttributeType
+	client svcsdkapi.CognitoIdentityProviderAPI
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.UserPool, obj *svcsdk.DescribeUserPoolInput) error {
@@ -316,43 +313,28 @@ func arePoliciesEqual(spec *svcapitypes.UserPoolPolicyType, current *svcsdk.User
 	return true
 }
 
-func areSchemaEqual(spec []*svcapitypes.SchemaAttributeType, current []*svcsdk.SchemaAttributeType) bool { //nolint:gocyclo
+func areSchemaEqual(spec []*svcapitypes.SchemaAttributeType, current []*svcsdk.SchemaAttributeType) bool {
 	if spec != nil && current != nil {
-		if len(spec) == 0 {
-			return true
+		if len(spec) > 0 && len(spec) != len(current) {
+			return false
 		}
 
-		for _, s := range spec {
-			for _, cur := range current {
-				if *s.Name != strings.TrimPrefix(*cur.Name, "custom:") {
-					continue
-				}
-				switch {
-				case pointer.StringValue(s.AttributeDataType) != pointer.StringValue(cur.AttributeDataType),
-					pointer.BoolValue(s.DeveloperOnlyAttribute) != pointer.BoolValue(cur.DeveloperOnlyAttribute),
-					pointer.BoolValue(s.Mutable) != pointer.BoolValue(cur.Mutable),
-					pointer.BoolValue(s.Required) != pointer.BoolValue(cur.Required),
-					s.NumberAttributeConstraints == nil && cur.NumberAttributeConstraints != nil,
-					s.NumberAttributeConstraints != nil && cur.NumberAttributeConstraints == nil,
-					s.StringAttributeConstraints == nil && cur.StringAttributeConstraints != nil,
-					s.StringAttributeConstraints != nil && cur.StringAttributeConstraints == nil:
-					return false
-				}
-				if s.NumberAttributeConstraints != nil && cur.NumberAttributeConstraints != nil {
-					if pointer.StringValue(s.NumberAttributeConstraints.MaxValue) != pointer.StringValue(cur.NumberAttributeConstraints.MaxValue) ||
-						pointer.StringValue(s.NumberAttributeConstraints.MinValue) != pointer.StringValue(cur.NumberAttributeConstraints.MinValue) {
-						return false
-					}
-				}
-				if s.StringAttributeConstraints != nil && cur.StringAttributeConstraints != nil {
-					if pointer.StringValue(s.StringAttributeConstraints.MaxLength) != pointer.StringValue(cur.StringAttributeConstraints.MaxLength) ||
-						pointer.StringValue(s.StringAttributeConstraints.MinLength) != pointer.StringValue(cur.StringAttributeConstraints.MinLength) {
-						return false
-					}
-				}
+		for i, s := range spec {
+			switch {
+			case pointer.StringValue(s.AttributeDataType) != pointer.StringValue(current[i].AttributeDataType),
+				pointer.BoolValue(s.DeveloperOnlyAttribute) != pointer.BoolValue(current[i].DeveloperOnlyAttribute),
+				pointer.BoolValue(s.Mutable) != pointer.BoolValue(current[i].Mutable),
+				pointer.StringValue(s.Name) != pointer.StringValue(current[i].Name),
+				pointer.StringValue(s.NumberAttributeConstraints.MaxValue) != pointer.StringValue(current[i].NumberAttributeConstraints.MaxValue),
+				pointer.StringValue(s.NumberAttributeConstraints.MinValue) != pointer.StringValue(current[i].NumberAttributeConstraints.MinValue),
+				pointer.BoolValue(s.Required) != pointer.BoolValue(current[i].Required),
+				pointer.StringValue(s.StringAttributeConstraints.MaxLength) != pointer.StringValue(current[i].StringAttributeConstraints.MaxLength),
+				pointer.StringValue(s.StringAttributeConstraints.MinLength) != pointer.StringValue(current[i].StringAttributeConstraints.MinLength):
+				return false
 			}
 		}
 	}
+
 	return true
 }
 
@@ -478,7 +460,7 @@ func (e *hooks) areMFAConfigEqual(cr *svcapitypes.UserPool) (bool, error) {
 	return true, nil
 }
 
-func lateInitialize(cr *svcapitypes.UserPoolParameters, resp *svcsdk.DescribeUserPoolOutput) error { //nolint:gocyclo
+func lateInitialize(cr *svcapitypes.UserPoolParameters, resp *svcsdk.DescribeUserPoolOutput) error {
 	instance := resp.UserPool
 
 	cr.MFAConfiguration = pointer.LateInitialize(cr.MFAConfiguration, instance.MfaConfiguration)
@@ -518,21 +500,6 @@ func lateInitialize(cr *svcapitypes.UserPoolParameters, resp *svcsdk.DescribeUse
 		cr.VerificationMessageTemplate.DefaultEmailOption = pointer.LateInitialize(cr.VerificationMessageTemplate.DefaultEmailOption, instance.VerificationMessageTemplate.DefaultEmailOption)
 	}
 
-	if cr.Schema != nil || len(cr.Schema) > 0 {
-		for i, scheme := range cr.Schema {
-			if scheme.StringAttributeConstraints != nil {
-				continue
-			}
-			for _, schemaAttribute := range instance.SchemaAttributes {
-				if *scheme.Name == strings.TrimPrefix(*schemaAttribute.Name, "custom:") {
-					cr.Schema[i].StringAttributeConstraints = &svcapitypes.StringAttributeConstraintsType{
-						MaxLength: schemaAttribute.StringAttributeConstraints.MaxLength,
-						MinLength: schemaAttribute.StringAttributeConstraints.MinLength,
-					}
-				}
-			}
-		}
-	}
 	// Info: to avoid redundancy+problems, do not lateInit conflicting fields
 	// (e.g. VerificationMessageTemplate.SmsMessage & SmsVerificationMessage)
 
@@ -581,57 +548,4 @@ func (e *hooks) setMfaConfiguration(ctx context.Context, cr *svcapitypes.UserPoo
 	}
 
 	return nil
-}
-
-func (h *hooks) postUpdate(ctx context.Context, cr *svcapitypes.UserPool, _ *svcsdk.UpdateUserPoolOutput, updateExternalUpdate managed.ExternalUpdate, updateError error) (managed.ExternalUpdate, error) {
-	if updateError != nil {
-		return updateExternalUpdate, updateError
-	}
-
-	for _, scheme := range cr.Spec.ForProvider.Schema {
-		isNew := true
-		for _, schemaAttribute := range cr.Status.AtProvider.SchemaAttributes {
-			if *scheme.Name == strings.TrimPrefix(*schemaAttribute.Name, "custom:") {
-				isNew = false
-			}
-		}
-		if isNew {
-			_, err := h.client.AddCustomAttributes(&svcsdk.AddCustomAttributesInput{
-				CustomAttributes: []*svcsdk.SchemaAttributeType{
-					convertSchemaAttribute(scheme),
-				},
-				UserPoolId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
-			})
-			if err != nil {
-				return managed.ExternalUpdate{}, err
-			}
-		}
-	}
-	return managed.ExternalUpdate{}, nil
-}
-
-func convertSchemaAttribute(in *svcapitypes.SchemaAttributeType) *svcsdk.SchemaAttributeType {
-	out := &svcsdk.SchemaAttributeType{
-		AttributeDataType:      in.AttributeDataType,
-		DeveloperOnlyAttribute: in.DeveloperOnlyAttribute,
-		Mutable:                in.Mutable,
-		Name:                   in.Name,
-		Required:               in.Required,
-	}
-
-	if in.NumberAttributeConstraints != nil {
-		out.NumberAttributeConstraints = &svcsdk.NumberAttributeConstraintsType{
-			MaxValue: in.NumberAttributeConstraints.MaxValue,
-			MinValue: in.NumberAttributeConstraints.MinValue,
-		}
-	}
-
-	if in.StringAttributeConstraints != nil {
-		out.StringAttributeConstraints = &svcsdk.StringAttributeConstraintsType{
-			MaxLength: in.StringAttributeConstraints.MaxLength,
-			MinLength: in.StringAttributeConstraints.MinLength,
-		}
-	}
-
-	return out
 }

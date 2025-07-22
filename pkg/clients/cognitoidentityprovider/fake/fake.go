@@ -31,7 +31,6 @@ type MockCognitoIdentityProviderClient struct {
 
 	MockGetUserPoolMfaConfig            func(*cognitoidentityprovider.GetUserPoolMfaConfigInput) (*cognitoidentityprovider.GetUserPoolMfaConfigOutput, error)
 	MockSetUserPoolMfaConfigWithContext func(context.Context, *cognitoidentityprovider.SetUserPoolMfaConfigInput, []request.Option) (*cognitoidentityprovider.SetUserPoolMfaConfigOutput, error)
-	MockAddCustomAttributes             func(*cognitoidentityprovider.AddCustomAttributesInput) (*cognitoidentityprovider.AddCustomAttributesOutput, error)
 
 	Called MockCognitoIdentityProviderClientCall
 }
@@ -41,11 +40,6 @@ type CallGetUserPoolMfaConfig struct {
 	Ctx  aws.Context
 	I    *cognitoidentityprovider.GetUserPoolMfaConfigInput
 	Opts []request.Option
-}
-
-// CallAddCustomAttributes to log call
-type CallAddCustomAttributes struct {
-	I *cognitoidentityprovider.AddCustomAttributesInput
 }
 
 // GetUserPoolMfaConfig calls MockGetUserPoolMfaConfig
@@ -69,14 +63,8 @@ func (m *MockCognitoIdentityProviderClient) SetUserPoolMfaConfigWithContext(ctx 
 	return m.MockSetUserPoolMfaConfigWithContext(ctx, i, opts)
 }
 
-func (m *MockCognitoIdentityProviderClient) AddCustomAttributes(in *cognitoidentityprovider.AddCustomAttributesInput) (*cognitoidentityprovider.AddCustomAttributesOutput, error) {
-	m.Called.MockAddCustomAttributes = append(m.Called.MockAddCustomAttributes, &CallAddCustomAttributes{I: in})
-	return m.MockAddCustomAttributes(in)
-}
-
 // MockCognitoIdentityProviderClientCall to log calls
 type MockCognitoIdentityProviderClientCall struct {
 	GetUserPoolMfaConfig            []*CallGetUserPoolMfaConfig
 	SetUserPoolMfaConfigWithContext []*CallSetUserPoolMfaConfigWithContext
-	MockAddCustomAttributes         []*CallAddCustomAttributes
 }

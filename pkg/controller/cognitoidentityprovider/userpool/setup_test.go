@@ -10,7 +10,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"k8s.io/utils/ptr"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/cognitoidentityprovider/v1alpha1"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/cognitoidentityprovider/fake"
@@ -314,7 +313,6 @@ func TestIsUpToDate(t *testing.T) {
 				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
 					Schema: []*svcapitypes.SchemaAttributeType{
 						{
-							Name: &testString1,
 							NumberAttributeConstraints: &svcapitypes.NumberAttributeConstraintsType{
 								MaxValue: &testString1,
 							},
@@ -324,7 +322,6 @@ func TestIsUpToDate(t *testing.T) {
 				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
 					SchemaAttributes: []*svcsdk.SchemaAttributeType{
 						{
-							Name: &testString1,
 							NumberAttributeConstraints: &svcsdk.NumberAttributeConstraintsType{
 								MaxValue: &testString2,
 							},
@@ -604,65 +601,6 @@ func TestPostCreate(t *testing.T) {
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.result, result, test.EquateConditions()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestPostUpdate(t *testing.T) {
-	type args struct {
-		cr   *svcapitypes.UserPool
-		err  error
-		resp *svcsdk.AddCustomAttributesOutput
-	}
-
-	type want struct {
-		result managed.ExternalUpdate
-		err    error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"CreateSuccessful": {
-			args: args{
-				cr: userPool(
-					withSpec(svcapitypes.UserPoolParameters{
-						Schema: []*svcapitypes.SchemaAttributeType{
-							{
-								Name: ptr.To("attribute1"),
-							},
-						},
-					}),
-					withExternalName(testString1),
-				),
-				resp: &svcsdk.AddCustomAttributesOutput{},
-				err:  nil,
-			},
-			want: want{
-				result: managed.ExternalUpdate{},
-				err:    nil,
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			h := &hooks{
-				client: &fake.MockCognitoIdentityProviderClient{
-					MockAddCustomAttributes: func(in *svcsdk.AddCustomAttributesInput) (*svcsdk.AddCustomAttributesOutput, error) {
-						return tc.resp, nil
-					},
-				},
-			}
-			// Act
-			result, err := h.postUpdate(context.Background(), tc.args.cr, nil, managed.ExternalUpdate{}, tc.args.err)
 			if diff := cmp.Diff(tc.want.result, result, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
