@@ -92,7 +92,7 @@ func GetSecretValue(ctx context.Context, kube client.Client, ref *xpv1.SecretKey
 
 // GetDesiredPassword calculates the desired password from cache/masterPasswordSecretRef
 func GetDesiredPassword(ctx context.Context, kube client.Client, cr svcapitypes.RDSClusterOrInstance) (desiredPassword string, err error) {
-	cachedPassword, err := getCachedPassword(ctx, kube, cr)
+	cachedPassword, err := GetCachedPassword(ctx, kube, cr)
 	if err != nil {
 		return "", errors.Wrap(err, errGetCachedPassword)
 	}
@@ -120,7 +120,7 @@ func PasswordUpToDate(ctx context.Context, kube client.Client, cr svcapitypes.RD
 	if err != nil {
 		return false, errors.Wrap(err, errGetCachedRestoreInfo)
 	}
-	cachedPassword, err := getCachedPassword(ctx, kube, cr)
+	cachedPassword, err := GetCachedPassword(ctx, kube, cr)
 	if err != nil {
 		return false, errors.Wrap(err, errGetCachedPassword)
 	}
@@ -157,7 +157,7 @@ func getCachedRestoreInfo(ctx context.Context, kube client.Client, mg resource.M
 	return state, err
 }
 
-func getCachedPassword(ctx context.Context, kube client.Client, mg resource.Managed) (pw string, err error) {
+func GetCachedPassword(ctx context.Context, kube client.Client, mg resource.Managed) (pw string, err error) {
 	secretKeyRef := &xpv1.SecretKeySelector{
 		SecretReference: getCachingSecretRef(mg),
 		Key:             PasswordCacheKey,

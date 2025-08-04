@@ -636,7 +636,7 @@ func Test_getCachedPassword(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, err := getCachedPassword(context.Background(), tc.args.kube, tc.args.cr)
+			got, err := GetCachedPassword(context.Background(), tc.args.kube, tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.value, got); diff != "" {
 				t.Errorf("\n%s\ngetCachedPassword(...): -want, +got:\n", diff)

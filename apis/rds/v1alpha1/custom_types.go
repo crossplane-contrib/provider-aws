@@ -676,6 +676,72 @@ type CustomDBInstanceParameters struct {
 	// +optional
 	SkipFinalSnapshot bool `json:"skipFinalSnapshot,omitempty"`
 
+	// The identifier of the Multi-AZ DB cluster that will act as the source for
+	// the read replica. Each DB cluster can have up to 15 read replicas.
+	//
+	// Constraints:
+	//
+	//    * Must be the identifier of an existing Multi-AZ DB cluster.
+	//
+	//    * Can't be specified if the SourceDBInstanceIdentifier parameter is also
+	//    specified.
+	//
+	//    * The specified DB cluster must have automatic backups enabled, that is,
+	//    its backup retention period must be greater than 0.
+	//
+	//    * The source DB cluster must be in the same Amazon Web Services Region
+	//    as the read replica. Cross-Region replication isn't supported.
+	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1.DBCluster
+	SourceDBClusterID *string `json:"sourceDBClusterID,omitempty"`
+
+	// SourceDBClusterIDRef is a reference to a DBCluster used to set
+	// SourceDBClusterID.
+	// +optional
+	SourceDBClusterIDRef *xpv1.Reference `json:"sourceDBClusterIDRef,omitempty"`
+
+	// SourceDBClusterIDSelector selects a reference to a DBCluster used to
+	// set SourceDBClusterID.
+	// +optional
+	SourceDBClusterIDSelector *xpv1.Selector `json:"sourceDBClusterIDSelector,omitempty"`
+
+	// The identifier of the DB instance that will act as the source for the read
+	// replica. Each DB instance can have up to 15 read replicas, with the exception of
+	// Oracle and SQL Server, which can have up to five.
+	//
+	// Constraints:
+	//
+	//   - Must be the identifier of an existing Db2, MariaDB, MySQL, Oracle,
+	//   PostgreSQL, or SQL Server DB instance.
+	//
+	//    * Can't be specified if the SourceDBClusterIdentifier parameter is also
+	//    specified.
+	//
+	//   - For the limitations of Oracle read replicas, see [Version and licensing considerations for RDS for Oracle replicas]in the Amazon RDS User
+	//   Guide.
+	//
+	//   - For the limitations of SQL Server read replicas, see [Read replica limitations with SQL Server]in the Amazon RDS User
+	//   Guide.
+	//
+	//   - The specified DB instance must have automatic backups enabled, that is, its
+	//   backup retention period must be greater than 0.
+	//
+	// [Read replica limitations with SQL Server]: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.ReadReplicas.html#SQLServer.ReadReplicas.Limitations
+	// [Version and licensing considerations for RDS for Oracle replicas]: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/oracle-read-replicas.limitations.html#oracle-read-replicas.limitations.versions-and-licenses
+	// +immutable
+	// +crossplane:generate:reference:type=github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1.DBInstance
+	SourceDBInstanceID *string `json:"sourceDBInstanceID,omitempty"`
+
+	// SourceDBInstanceIDRef is a reference to a DBInstance used to set
+	// SourceDBInstanceID.
+	// +optional
+	SourceDBInstanceIDRef *xpv1.Reference `json:"sourceDBInstanceIDRef,omitempty"`
+
+	// SourceDBInstanceIDSelector selects a reference to a DBInstance used to
+	// set SourceDBInstanceID.
+	// +optional
+	SourceDBInstanceIDSelector *xpv1.Selector `json:"sourceDBInstanceIDSelector,omitempty"`
+
 	// A list of Amazon EC2 VPC security groups to authorize on this DB instance.
 	// This change is asynchronously applied as soon as possible.
 	//
@@ -744,7 +810,13 @@ type CustomDBInstanceParameters struct {
 }
 
 // CustomDBInstanceObservation includes the custom status fields of DBInstance.
-type CustomDBInstanceObservation struct{}
+type CustomDBInstanceObservation struct {
+	// AWS API calls don't return any field which explicitly indicates the role of database, which would be really convenient.
+	// DatabaseRole works on the similar principle as the Role field in AWS UI("Aurora and RDS" > "Databases").
+
+	// The database role may be Standalone, Primary or Replica.
+	DatabaseRole *string `json:"databaseRole,omitempty"`
+}
 
 // CustomDBInstanceRoleAssociationParameters are custom parameters for the DBInstanceRoleAssociation
 type CustomDBInstanceRoleAssociationParameters struct {
