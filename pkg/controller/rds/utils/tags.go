@@ -19,6 +19,7 @@ package utils
 import (
 	"context"
 	"sort"
+	"strings"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
@@ -34,6 +35,16 @@ const (
 	errRemoveTags          = "cannot remove tags"
 	errCreateTags          = "cannot create tags"
 )
+
+// ShouldIgnore returns true if `key` starts with any supplied prefix.
+func ShouldIgnore(key string, prefixes []string) bool {
+	for _, p := range prefixes {
+		if strings.HasPrefix(key, p) {
+			return true
+		}
+	}
+	return false
+}
 
 // AreTagsUpToDate for spec and resourceName
 func AreTagsUpToDate(ctx context.Context, client rdsiface.RDSAPI, spec []*svcapitypes.Tag, resourceName *string) (bool, []*svcsdk.Tag, []*string, error) {

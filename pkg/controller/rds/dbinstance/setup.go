@@ -614,9 +614,23 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{},
 			"SourceDBClusterID", "SourceDBClusterIDRef", "SourceDBClusterIDSelector",
 			"SourceDBInstanceID", "SourceDBInstanceIDRef", "SourceDBInstanceIDSelector"),
+		cmpopts.IgnoreFields(svcapitypes.CustomDBInstanceParameters{}, "TagIgnorePrefixes"),
 	)
 
-	s.cache.addTags, s.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, db.TagList)
+	ignore := append([]string{"aws:"}, cr.Spec.ForProvider.TagIgnorePrefixes...)
+	var observedTags []*svcsdk.Tag
+	if db.TagList != nil {
+		for _, tag := range db.TagList { // index discarded with _
+			if utils.ShouldIgnore(pointer.StringValue(tag.Key), ignore) {
+				continue
+			}
+			observedTags = append(observedTags, &svcsdk.Tag{
+				Key:   tag.Key,
+				Value: tag.Value,
+			})
+		}
+	}
+	s.cache.addTags, s.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, observedTags)
 	tagsChanged := len(s.cache.addTags) != 0 || len(s.cache.removeTags) != 0
 
 	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !iopsChanged && !storageThroughputChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged && !tagsChanged {

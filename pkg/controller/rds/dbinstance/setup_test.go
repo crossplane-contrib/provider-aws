@@ -209,6 +209,43 @@ func TestIsUpToDate(t *testing.T) {
 				},
 			},
 		},
+		"Ignores Tags with TagIgnorePrefixes": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								TagIgnorePrefixes: []string{"aws:", "c7n:"},
+							},
+							Tags: []*svcapitypes.Tag{
+								{Key: aws.String("env"), Value: aws.String("prod")},
+							},
+							DeletionProtection: aws.Bool(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DeletionProtection: aws.Bool(true),
+							TagList: []*svcsdk.Tag{
+								{Key: aws.String("aws:createdBy"), Value: aws.String("terraform")},
+								{Key: aws.String("c7n:policy"), Value: aws.String("auto")},
+								{Key: aws.String("env"), Value: aws.String("prod")},
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
+					DatabaseRole: aws.String(databaseRoleStandalone),
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
