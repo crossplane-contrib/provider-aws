@@ -209,6 +209,116 @@ func TestIsUpToDate(t *testing.T) {
 				},
 			},
 		},
+		"Ignores Tags with TagsIgnore prefix*": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								TagsIgnore: []svcapitypes.TagIgnoreRule{{Key: "aws:*"}, {Key: "c7n:*"}},
+							},
+							Tags: []*svcapitypes.Tag{
+								{Key: aws.String("env"), Value: aws.String("prod")},
+							},
+							DeletionProtection: aws.Bool(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DeletionProtection: aws.Bool(true),
+							TagList: []*svcsdk.Tag{
+								{Key: aws.String("aws:createdBy"), Value: aws.String("terraform")},
+								{Key: aws.String("c7n:policy"), Value: aws.String("auto")},
+								{Key: aws.String("env"), Value: aws.String("prod")},
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
+					DatabaseRole: aws.String(databaseRoleStandalone),
+				},
+			},
+		},
+		"Ignores Tags with TagsIgnore exact": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								TagsIgnore: []svcapitypes.TagIgnoreRule{{Key: "aws:*"}, {Key: "c7n:policy"}},
+							},
+							Tags: []*svcapitypes.Tag{
+								{Key: aws.String("env"), Value: aws.String("prod")},
+							},
+							DeletionProtection: aws.Bool(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DeletionProtection: aws.Bool(true),
+							TagList: []*svcsdk.Tag{
+								{Key: aws.String("aws:createdBy"), Value: aws.String("terraform")},
+								{Key: aws.String("c7n:policy"), Value: aws.String("auto")},
+								{Key: aws.String("c7n:other"), Value: aws.String("x")},
+								{Key: aws.String("env"), Value: aws.String("prod")},
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false, // c7n:other should be removed since not ignored and not in spec
+				err:      nil,
+				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
+					DatabaseRole: aws.String(databaseRoleStandalone),
+				},
+			},
+		},
+		"DoesNotIgnoreAllWithStarOnlyRule": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								// User attempts to ignore all tags with a single "*" rule; guard should prevent this.
+								TagsIgnore: []svcapitypes.TagIgnoreRule{{Key: "*"}},
+							},
+							// Desired spec has no tags.
+							Tags:               []*svcapitypes.Tag{},
+							DeletionProtection: aws.Bool(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DeletionProtection: aws.Bool(true),
+							TagList: []*svcsdk.Tag{
+								{Key: aws.String("env"), Value: aws.String("prod")}, // Should not be ignored; will cause diff
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false, // env tag should be scheduled for removal
+				err:      nil,
+				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
+					DatabaseRole: aws.String(databaseRoleStandalone),
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {
