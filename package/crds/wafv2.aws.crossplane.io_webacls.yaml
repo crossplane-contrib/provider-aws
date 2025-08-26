@@ -236,9 +236,9 @@ spec:
                     type: string
                   regionalResourceTypeAssociation:
                     description: |-
-                      Used for regional scoped configuration. Specifies the types of resources which the provider checks while in the reconciliation loop
-                      Each type requires additional request to aws api and appropriate permissions
-                      Only enableApplicationLoadBalancer is enabled by default
+                      Used for regional scoped configuration. Specifies the types of resources which the provider checks while in the reconciliation loop.
+                      Each type requires additional request to aws api and appropriate permissions.
+                      Only enableApplicationLoadBalancer is enabled by default.
                     properties:
                       enableApiGateway:
                         type: boolean
@@ -3631,6 +3631,10 @@ spec:
                           type: object
                       type: object
                     type: array
+                  rulesJSON:
+                    description: Raw JSON string for rules configuration. Mutually
+                      exclusive with rules.
+                    type: string
                   scope:
                     description: |-
                       Specifies whether this is for an Amazon CloudFront distribution or for a
