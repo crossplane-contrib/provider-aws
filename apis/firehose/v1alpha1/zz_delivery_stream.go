@@ -67,6 +67,8 @@ type DeliveryStreamParameters struct {
 	RedshiftDestinationConfiguration *RedshiftDestinationConfiguration `json:"redshiftDestinationConfiguration,omitempty"`
 	// [Deprecated] The destination in Amazon S3. You can specify only one destination.
 	S3DestinationConfiguration *S3DestinationConfiguration `json:"s3DestinationConfiguration,omitempty"`
+	// Configure Snowflake destination
+	SnowflakeDestinationConfiguration *SnowflakeDestinationConfiguration `json:"snowflakeDestinationConfiguration,omitempty"`
 	// The destination in Splunk. You can specify only one destination.
 	SplunkDestinationConfiguration *SplunkDestinationConfiguration `json:"splunkDestinationConfiguration,omitempty"`
 	// A set of tags to assign to the delivery stream. A tag is a key-value pair

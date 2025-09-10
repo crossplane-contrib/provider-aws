@@ -235,6 +235,21 @@ const (
 	S3BackupMode_Enabled  S3BackupMode = "Enabled"
 )
 
+type SnowflakeDataLoadingOption string
+
+const (
+	SnowflakeDataLoadingOption_JSON_MAPPING                         SnowflakeDataLoadingOption = "JSON_MAPPING"
+	SnowflakeDataLoadingOption_VARIANT_CONTENT_MAPPING              SnowflakeDataLoadingOption = "VARIANT_CONTENT_MAPPING"
+	SnowflakeDataLoadingOption_VARIANT_CONTENT_AND_METADATA_MAPPING SnowflakeDataLoadingOption = "VARIANT_CONTENT_AND_METADATA_MAPPING"
+)
+
+type SnowflakeS3BackupMode string
+
+const (
+	SnowflakeS3BackupMode_FailedDataOnly SnowflakeS3BackupMode = "FailedDataOnly"
+	SnowflakeS3BackupMode_AllData        SnowflakeS3BackupMode = "AllData"
+)
+
 type SplunkS3BackupMode string
 
 const (
