@@ -208,7 +208,11 @@ type ServiceParameters struct {
 	//    as a prefix for either keys or values as it is reserved for Amazon Web
 	//    Services use. You cannot edit or delete tag keys or values with this prefix.
 	//    Tags with this prefix do not count against your tags per resource limit.
-	Tags                    []*Tag `json:"tags,omitempty"`
+	Tags []*Tag `json:"tags,omitempty"`
+	// The configuration for a volume specified in the task definition as a volume
+	// that is configured at launch time. Currently, the only supported volume type
+	// is an Amazon EBS volume.
+	VolumeConfigurations    []*ServiceVolumeConfiguration `json:"volumeConfigurations,omitempty"`
 	CustomServiceParameters `json:",inline"`
 }
 

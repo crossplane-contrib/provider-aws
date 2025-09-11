@@ -123,8 +123,8 @@ spec:
                           masterUserARN:
                             description: |-
                               The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-                              (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-                              Identity and Access Management for more information.
+                              (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+                              Web Services Identity and Access Management for more information.
                             type: string
                           masterUserName:
                             type: string
@@ -261,8 +261,8 @@ spec:
                       customEndpointCertificateARN:
                         description: |-
                           The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-                          (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-                          Identity and Access Management for more information.
+                          (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+                          Web Services Identity and Access Management for more information.
                         type: string
                       customEndpointEnabled:
                         type: boolean
@@ -385,8 +385,11 @@ spec:
                       OpenSearch Service domains (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
                     type: string
                   iPAddressType:
-                    description: The type of IP addresses supported by the endpoint
-                      for the domain.
+                    description: |-
+                      Specify either dual stack or IPv4 as your IP address type. Dual stack allows
+                      you to share domain resources across IPv4 and IPv6 address types, and is
+                      the recommended option. If you set your IP address type to dual stack, you
+                      can't change your address type later.
                     type: string
                   logPublishingOptions:
                     additionalProperties:
@@ -981,8 +984,8 @@ spec:
                       customEndpointCertificateARN:
                         description: |-
                           The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-                          (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-                          Identity and Access Management for more information.
+                          (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+                          Web Services Identity and Access Management for more information.
                         type: string
                       customEndpointEnabled:
                         type: boolean
@@ -1013,13 +1016,18 @@ spec:
                       to the domain.
                     type: string
                   endpointV2:
+                    description: |-
+                      If IPAddressType to set to dualstack, a version 2 domain endpoint is provisioned.
+                      This endpoint functions like a normal endpoint, except that it works with
+                      both IPv4 and IPv6 IP addresses. Normal endpoints work only with IPv4 IP
+                      addresses.
                     type: string
                   endpoints:
                     additionalProperties:
                       type: string
                     description: |-
                       The key-value pair that exists if the OpenSearch Service domain uses VPC
-                      endpoints.. Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
+                      endpoints. Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
                     type: object
                   engineVersion:
                     description: |-

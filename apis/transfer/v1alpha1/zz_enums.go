@@ -67,6 +67,13 @@ const (
 	CustomStepStatus_FAILURE CustomStepStatus = "FAILURE"
 )
 
+type DirectoryListingOptimization string
+
+const (
+	DirectoryListingOptimization_ENABLED  DirectoryListingOptimization = "ENABLED"
+	DirectoryListingOptimization_DISABLED DirectoryListingOptimization = "DISABLED"
+)
+
 type Domain string
 
 const (
@@ -133,6 +140,13 @@ const (
 	IdentityProviderType_API_GATEWAY           IdentityProviderType = "API_GATEWAY"
 	IdentityProviderType_AWS_DIRECTORY_SERVICE IdentityProviderType = "AWS_DIRECTORY_SERVICE"
 	IdentityProviderType_AWS_LAMBDA            IdentityProviderType = "AWS_LAMBDA"
+)
+
+type MapType string
+
+const (
+	MapType_FILE      MapType = "FILE"
+	MapType_DIRECTORY MapType = "DIRECTORY"
 )
 
 type MdnResponse string

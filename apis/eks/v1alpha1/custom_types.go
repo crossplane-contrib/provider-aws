@@ -43,3 +43,15 @@ type CustomAddonParameters struct {
 
 // CustomAddonObservation includes the custom status fields of Addon.
 type CustomAddonObservation struct{}
+
+// CustomAccessEntryParameters includes the custom fields of AccessEntry.
+type CustomAccessEntryParameters struct{}
+
+// CustomAccessEntryObservation includes the custom status fields of AccessEntry.
+type CustomAccessEntryObservation struct{}
+
+// CustomPodIdentityAssociationParameters includes the custom fields of PodIdentityAssociation.
+type CustomPodIdentityAssociationParameters struct{}
+
+// CustomPodIdentityAssociationObservation includes the custom status fields of PodIdentityAssociation.
+type CustomPodIdentityAssociationObservation struct{}

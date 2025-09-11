@@ -197,14 +197,20 @@ type DBClusterParameters struct {
 	//
 	// Valid for Cluster Type: Aurora DB clusters only
 	EnableGlobalWriteForwarding *bool `json:"enableGlobalWriteForwarding,omitempty"`
-	// Specifies whether to enable the HTTP endpoint for an Aurora Serverless v1
-	// DB cluster. By default, the HTTP endpoint is disabled.
+	// Specifies whether to enable the HTTP endpoint for the DB cluster. By default,
+	// the HTTP endpoint isn't enabled.
 	//
 	// When enabled, the HTTP endpoint provides a connectionless web service API
-	// for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
-	// query your database from inside the RDS console with the query editor.
+	// (RDS Data API) for running SQL queries on the DB cluster. You can also query
+	// your database from inside the RDS console with the RDS query editor.
 	//
-	// For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+	// RDS Data API is supported with the following DB clusters:
+	//
+	//    * Aurora PostgreSQL Serverless v2 and provisioned
+	//
+	//    * Aurora PostgreSQL and Aurora MySQL Serverless v1
+	//
+	// For more information, see Using RDS Data API (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 	// in the Amazon Aurora User Guide.
 	//
 	// Valid for Cluster Type: Aurora DB clusters only
@@ -703,14 +709,13 @@ type DBClusterObservation struct {
 	GlobalWriteForwardingStatus *string `json:"globalWriteForwardingStatus,omitempty"`
 	// The ID that Amazon Route 53 assigns when you create a hosted zone.
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
-	// Indicates whether the HTTP endpoint for an Aurora Serverless v1 DB cluster
-	// is enabled.
+	// Indicates whether the HTTP endpoint is enabled for an Aurora DB cluster.
 	//
 	// When enabled, the HTTP endpoint provides a connectionless web service API
-	// for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
-	// query your database from inside the RDS console with the query editor.
+	// (RDS Data API) for running SQL queries on the DB cluster. You can also query
+	// your database from inside the RDS console with the RDS query editor.
 	//
-	// For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+	// For more information, see Using RDS Data API (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 	// in the Amazon Aurora User Guide.
 	HTTPEndpointEnabled *bool `json:"httpEndpointEnabled,omitempty"`
 	// Indicates whether the mapping of Amazon Web Services Identity and Access
@@ -770,6 +775,8 @@ type DBClusterObservation struct {
 	ScalingConfigurationInfo *ScalingConfigurationInfo `json:"scalingConfigurationInfo,omitempty"`
 	// The current state of this DB cluster.
 	Status *string `json:"status,omitempty"`
+	// Reserved for future use.
+	StatusInfos []*DBClusterStatusInfo `json:"statusInfos,omitempty"`
 
 	TagList []*Tag `json:"tagList,omitempty"`
 	// The list of VPC security groups that the DB cluster belongs to.

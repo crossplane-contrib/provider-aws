@@ -60,6 +60,14 @@ const (
 	ConfigurationState_DELETE_FAILED ConfigurationState = "DELETE_FAILED"
 )
 
+type CustomerActionStatus string
+
+const (
+	CustomerActionStatus_CRITICAL_ACTION_REQUIRED CustomerActionStatus = "CRITICAL_ACTION_REQUIRED"
+	CustomerActionStatus_ACTION_RECOMMENDED       CustomerActionStatus = "ACTION_RECOMMENDED"
+	CustomerActionStatus_NONE                     CustomerActionStatus = "NONE"
+)
+
 type EnhancedMonitoring string
 
 const (

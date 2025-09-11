@@ -132,6 +132,14 @@ const (
 	OutpostResolverStatus_FAILED_DELETION OutpostResolverStatus = "FAILED_DELETION"
 )
 
+type Protocol string
+
+const (
+	Protocol_DoH      Protocol = "DoH"
+	Protocol_Do53     Protocol = "Do53"
+	Protocol_DoH_FIPS Protocol = "DoH-FIPS"
+)
+
 type ResolverAutodefinedReverseStatus string
 
 const (

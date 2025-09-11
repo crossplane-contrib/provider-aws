@@ -18,6 +18,13 @@ limitations under the License.
 
 package v1alpha1
 
+type EndpointManagement string
+
+const (
+	EndpointManagement_CUSTOMER EndpointManagement = "CUSTOMER"
+	EndpointManagement_SERVICE  EndpointManagement = "SERVICE"
+)
+
 type EnvironmentStatus_SDK string
 
 const (
@@ -31,6 +38,7 @@ const (
 	EnvironmentStatus_SDK_UPDATE_FAILED     EnvironmentStatus_SDK = "UPDATE_FAILED"
 	EnvironmentStatus_SDK_ROLLING_BACK      EnvironmentStatus_SDK = "ROLLING_BACK"
 	EnvironmentStatus_SDK_CREATING_SNAPSHOT EnvironmentStatus_SDK = "CREATING_SNAPSHOT"
+	EnvironmentStatus_SDK_PENDING           EnvironmentStatus_SDK = "PENDING"
 )
 
 type LoggingLevel string

@@ -70,8 +70,10 @@ type DBClusterParameters struct {
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
 	// DestinationRegion is used for presigning the request to a given region.
 	DestinationRegion *string `json:"destinationRegion,omitempty"`
-	// The list of log types that need to be enabled for exporting to CloudWatch
-	// Logs.
+	// A list of the log types that this DB cluster should export to CloudWatch
+	// Logs. Valid log types are: audit (to publish audit logs) and slowquery (to
+	// publish slow-query logs). See Publishing Neptune logs to Amazon CloudWatch
+	// logs (https://docs.aws.amazon.com/neptune/latest/userguide/cloudwatch-logs.html).
 	EnableCloudwatchLogsExports []*string `json:"enableCloudwatchLogsExports,omitempty"`
 	// If set to true, enables Amazon Identity and Access Management (IAM) authentication
 	// for the entire DB cluster (this cannot be set at an instance level).
@@ -173,6 +175,20 @@ type DBClusterParameters struct {
 	SourceRegion *string `json:"sourceRegion,omitempty"`
 	// Specifies whether the DB cluster is encrypted.
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+	// The storage type to associate with the DB cluster.
+	//
+	// Valid Values:
+	//
+	//    * standard | iopt1
+	//
+	// Default:
+	//
+	//    * standard
+	//
+	// When you create a Neptune cluster with the storage type set to iopt1, the
+	// storage type is returned in the response. The storage type isn't returned
+	// when you set it to standard.
+	StorageType *string `json:"storageType,omitempty"`
 	// The tags to assign to the new DB cluster.
 	Tags []*Tag `json:"tags,omitempty"`
 	// A list of EC2 VPC security groups to associate with this DB cluster.
@@ -226,8 +242,10 @@ type DBClusterObservation struct {
 	// Specifies the earliest time to which a database can be restored with point-in-time
 	// restore.
 	EarliestRestorableTime *metav1.Time `json:"earliestRestorableTime,omitempty"`
-	// A list of log types that this DB cluster is configured to export to CloudWatch
-	// Logs.
+	// A list of the log types that this DB cluster is configured to export to CloudWatch
+	// Logs. Valid log types are: audit (to publish audit logs to CloudWatch) and
+	// slowquery (to publish slow-query logs to CloudWatch). See Publishing Neptune
+	// logs to Amazon CloudWatch logs (https://docs.aws.amazon.com/neptune/latest/userguide/cloudwatch-logs.html).
 	EnabledCloudwatchLogsExports []*string `json:"enabledCloudwatchLogsExports,omitempty"`
 	// Specifies the connection endpoint for the primary instance of the DB cluster.
 	Endpoint *string `json:"endpoint,omitempty"`
@@ -236,6 +254,8 @@ type DBClusterObservation struct {
 	// True if mapping of Amazon Identity and Access Management (IAM) accounts to
 	// database accounts is enabled, and otherwise false.
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
+	// The next time you can modify the DB cluster to use the iopt1 storage type.
+	IOOptimizedNextAllowedModificationTime *metav1.Time `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
 	// Specifies the latest time to which a database can be restored with point-in-time
 	// restore.
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`

@@ -1140,8 +1140,7 @@ spec:
                   ephemeralStorage:
                     description: |-
                       The size of the function's /tmp directory in MB. The default value is 512,
-                      but can be any whole number between 512 and 10,240 MB. For more information,
-                      see Configuring ephemeral storage (console) (https://docs.aws.amazon.com/lambda/latest/dg/configuration-function-common.html#configuration-ephemeral-storage).
+                      but can be any whole number between 512 and 10,240 MB.
                     properties:
                       size:
                         format: int64
@@ -1279,6 +1278,19 @@ spec:
                     items:
                       type: string
                     type: array
+                  loggingConfig:
+                    description: The function's Amazon CloudWatch Logs configuration
+                      settings.
+                    properties:
+                      applicationLogLevel:
+                        type: string
+                      logFormat:
+                        type: string
+                      logGroup:
+                        type: string
+                      systemLogLevel:
+                        type: string
+                    type: object
                   memorySize:
                     description: |-
                       The amount of memory available to the function (https://docs.aws.amazon.com/lambda/latest/dg/configuration-function-common.html#configuration-memory-console)

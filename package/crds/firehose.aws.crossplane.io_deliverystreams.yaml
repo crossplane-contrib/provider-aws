@@ -1330,10 +1330,178 @@ spec:
                       roleARN:
                         type: string
                     type: object
+                  snowflakeDestinationConfiguration:
+                    description: Configure Snowflake destination
+                    properties:
+                      accountURL:
+                        type: string
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      contentColumnName:
+                        type: string
+                      dataLoadingOption:
+                        type: string
+                      database:
+                        type: string
+                      keyPassphrase:
+                        type: string
+                      metaDataColumnName:
+                        type: string
+                      privateKey:
+                        type: string
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      retryOptions:
+                        description: |-
+                          Specify how long Kinesis Data Firehose retries sending data to the New Relic
+                          HTTP endpoint. After sending data, Kinesis Data Firehose first waits for
+                          an acknowledgment from the HTTP endpoint. If an error occurs or the acknowledgment
+                          doesn’t arrive within the acknowledgment timeout period, Kinesis Data Firehose
+                          starts the retry duration counter. It keeps retrying until the retry duration
+                          expires. After that, Kinesis Data Firehose considers it a data delivery failure
+                          and backs up the data to your Amazon S3 bucket. Every time that Kinesis Data
+                          Firehose sends data to the HTTP endpoint (either the initial attempt or a
+                          retry), it restarts the acknowledgement timeout counter and waits for an
+                          acknowledgement from the HTTP endpoint. Even if the retry duration expires,
+                          Kinesis Data Firehose still waits for the acknowledgment until it receives
+                          it or the acknowledgement timeout period is reached. If the acknowledgment
+                          times out, Kinesis Data Firehose determines whether there's time left in
+                          the retry counter. If there is time left, it retries again and repeats the
+                          logic until it receives an acknowledgment or determines that the retry time
+                          has expired. If you don't want Kinesis Data Firehose to retry sending data,
+                          set this value to 0.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: |-
+                              Describes hints for the buffering to perform before delivering data to the
+                              destination. These options are treated as hints, and therefore Kinesis Data
+                              Firehose might choose to use different values when it is optimal. The SizeInMBs
+                              and IntervalInSeconds parameters are optional. However, if specify a value
+                              for one of them, you must also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      schema:
+                        type: string
+                      snowflakeRoleConfiguration:
+                        description: |-
+                          Optionally configure a Snowflake role. Otherwise the default user role will
+                          be used.
+                        properties:
+                          enabled:
+                            type: boolean
+                          snowflakeRole:
+                            type: string
+                        type: object
+                      snowflakeVPCConfiguration:
+                        description: Configure a Snowflake VPC
+                        properties:
+                          privateLinkVPCeID:
+                            type: string
+                        type: object
+                      table:
+                        type: string
+                      user:
+                        type: string
+                    type: object
                   splunkDestinationConfiguration:
                     description: The destination in Splunk. You can specify only one
                       destination.
                     properties:
+                      bufferingHints:
+                        description: |-
+                          The buffering options. If no value is specified, the default values for Splunk
+                          are used.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
                       cloudWatchLoggingOptions:
                         description: Describes the Amazon CloudWatch logging options
                           for your delivery stream.

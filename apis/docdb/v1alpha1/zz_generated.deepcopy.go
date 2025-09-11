@@ -973,6 +973,11 @@ func (in *DBClusterParameters) DeepCopyInto(out *DBClusterParameters) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.StorageType != nil {
+		in, out := &in.StorageType, &out.StorageType
+		*out = new(string)
+		**out = **in
+	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]*Tag, len(*in))
@@ -1118,6 +1123,11 @@ func (in *DBClusterSnapshot) DeepCopyInto(out *DBClusterSnapshot) {
 	if in.StorageEncrypted != nil {
 		in, out := &in.StorageEncrypted, &out.StorageEncrypted
 		*out = new(bool)
+		**out = **in
+	}
+	if in.StorageType != nil {
+		in, out := &in.StorageType, &out.StorageType
+		*out = new(string)
 		**out = **in
 	}
 	if in.VPCID != nil {
@@ -1396,6 +1406,11 @@ func (in *DBCluster_SDK) DeepCopyInto(out *DBCluster_SDK) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.StorageType != nil {
+		in, out := &in.StorageType, &out.StorageType
+		*out = new(string)
+		**out = **in
+	}
 	if in.VPCSecurityGroups != nil {
 		in, out := &in.VPCSecurityGroups, &out.VPCSecurityGroups
 		*out = make([]*VPCSecurityGroupMembership, len(*in))
@@ -1620,6 +1635,11 @@ func (in *DBInstanceObservation) DeepCopyInto(out *DBInstanceObservation) {
 		in, out := &in.PendingModifiedValues, &out.PendingModifiedValues
 		*out = new(PendingModifiedValues)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.PerformanceInsightsEnabled != nil {
+		in, out := &in.PerformanceInsightsEnabled, &out.PerformanceInsightsEnabled
+		*out = new(bool)
+		**out = **in
 	}
 	if in.PreferredBackupWindow != nil {
 		in, out := &in.PreferredBackupWindow, &out.PreferredBackupWindow
@@ -1928,6 +1948,16 @@ func (in *DBInstance_SDK) DeepCopyInto(out *DBInstance_SDK) {
 		in, out := &in.PendingModifiedValues, &out.PendingModifiedValues
 		*out = new(PendingModifiedValues)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.PerformanceInsightsEnabled != nil {
+		in, out := &in.PerformanceInsightsEnabled, &out.PerformanceInsightsEnabled
+		*out = new(bool)
+		**out = **in
+	}
+	if in.PerformanceInsightsKMSKeyID != nil {
+		in, out := &in.PerformanceInsightsKMSKeyID, &out.PerformanceInsightsKMSKeyID
+		*out = new(string)
+		**out = **in
 	}
 	if in.PreferredBackupWindow != nil {
 		in, out := &in.PreferredBackupWindow, &out.PreferredBackupWindow
@@ -2522,6 +2552,11 @@ func (in *OrderableDBInstanceOption) DeepCopyInto(out *OrderableDBInstanceOption
 	}
 	if in.LicenseModel != nil {
 		in, out := &in.LicenseModel, &out.LicenseModel
+		*out = new(string)
+		**out = **in
+	}
+	if in.StorageType != nil {
+		in, out := &in.StorageType, &out.StorageType
 		*out = new(string)
 		**out = **in
 	}

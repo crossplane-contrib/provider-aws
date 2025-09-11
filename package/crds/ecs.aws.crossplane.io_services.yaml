@@ -1068,6 +1068,66 @@ spec:
                             type: string
                         type: object
                     type: object
+                  volumeConfigurations:
+                    description: |-
+                      The configuration for a volume specified in the task definition as a volume
+                      that is configured at launch time. Currently, the only supported volume type
+                      is an Amazon EBS volume.
+                    items:
+                      properties:
+                        managedEBSVolume:
+                          description: |-
+                            The configuration for the Amazon EBS volume that Amazon ECS creates and manages
+                            on your behalf. These settings are used to create each Amazon EBS volume,
+                            with one volume created for each task in the service.
+
+                            Many of these parameters map 1:1 with the Amazon EBS CreateVolume API request
+                            parameters.
+                          properties:
+                            encrypted:
+                              type: boolean
+                            filesystemType:
+                              type: string
+                            iops:
+                              format: int64
+                              type: integer
+                            kmsKeyID:
+                              type: string
+                            roleARN:
+                              type: string
+                            sizeInGiB:
+                              format: int64
+                              type: integer
+                            snapshotID:
+                              type: string
+                            tagSpecifications:
+                              items:
+                                properties:
+                                  propagateTags:
+                                    type: string
+                                  resourceType:
+                                    type: string
+                                  tags:
+                                    items:
+                                      properties:
+                                        key:
+                                          type: string
+                                        value:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            throughput:
+                              format: int64
+                              type: integer
+                            volumeType:
+                              type: string
+                          type: object
+                        name:
+                          type: string
+                      type: object
+                    type: array
                 required:
                 - region
                 type: object
@@ -1431,6 +1491,62 @@ spec:
                         updatedAt:
                           format: date-time
                           type: string
+                        volumeConfigurations:
+                          items:
+                            properties:
+                              managedEBSVolume:
+                                description: |-
+                                  The configuration for the Amazon EBS volume that Amazon ECS creates and manages
+                                  on your behalf. These settings are used to create each Amazon EBS volume,
+                                  with one volume created for each task in the service.
+
+                                  Many of these parameters map 1:1 with the Amazon EBS CreateVolume API request
+                                  parameters.
+                                properties:
+                                  encrypted:
+                                    type: boolean
+                                  filesystemType:
+                                    type: string
+                                  iops:
+                                    format: int64
+                                    type: integer
+                                  kmsKeyID:
+                                    type: string
+                                  roleARN:
+                                    type: string
+                                  sizeInGiB:
+                                    format: int64
+                                    type: integer
+                                  snapshotID:
+                                    type: string
+                                  tagSpecifications:
+                                    items:
+                                      properties:
+                                        propagateTags:
+                                          type: string
+                                        resourceType:
+                                          type: string
+                                        tags:
+                                          items:
+                                            properties:
+                                              key:
+                                                type: string
+                                              value:
+                                                type: string
+                                            type: object
+                                          type: array
+                                      type: object
+                                    type: array
+                                  throughput:
+                                    format: int64
+                                    type: integer
+                                  volumeType:
+                                    type: string
+                                type: object
+                              name:
+                                type: string
+                            type: object
+                          type: array
                       type: object
                     type: array
                   events:

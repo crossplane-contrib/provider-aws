@@ -547,14 +547,20 @@ spec:
                     type: boolean
                   enableHTTPEndpoint:
                     description: |-
-                      Specifies whether to enable the HTTP endpoint for an Aurora Serverless v1
-                      DB cluster. By default, the HTTP endpoint is disabled.
+                      Specifies whether to enable the HTTP endpoint for the DB cluster. By default,
+                      the HTTP endpoint isn't enabled.
 
                       When enabled, the HTTP endpoint provides a connectionless web service API
-                      for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
-                      query your database from inside the RDS console with the query editor.
+                      (RDS Data API) for running SQL queries on the DB cluster. You can also query
+                      your database from inside the RDS console with the RDS query editor.
 
-                      For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+                      RDS Data API is supported with the following DB clusters:
+
+                         * Aurora PostgreSQL Serverless v2 and provisioned
+
+                         * Aurora PostgreSQL and Aurora MySQL Serverless v1
+
+                      For more information, see Using RDS Data API (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
                       in the Amazon Aurora User Guide.
 
                       Valid for Cluster Type: Aurora DB clusters only
@@ -1122,6 +1128,8 @@ spec:
                     description: Reserved for future use.
                     properties:
                       interconnectSubnetID:
+                        type: string
+                      replicaMode:
                         type: string
                       transitGatewayMulticastDomainID:
                         type: string
@@ -1813,14 +1821,13 @@ spec:
                     type: string
                   httpEndpointEnabled:
                     description: |-
-                      Indicates whether the HTTP endpoint for an Aurora Serverless v1 DB cluster
-                      is enabled.
+                      Indicates whether the HTTP endpoint is enabled for an Aurora DB cluster.
 
                       When enabled, the HTTP endpoint provides a connectionless web service API
-                      for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
-                      query your database from inside the RDS console with the query editor.
+                      (RDS Data API) for running SQL queries on the DB cluster. You can also query
+                      your database from inside the RDS console with the RDS query editor.
 
-                      For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+                      For more information, see Using RDS Data API (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
                       in the Amazon Aurora User Guide.
                     type: boolean
                   iOOptimizedNextAllowedModificationTime:
@@ -1932,6 +1939,20 @@ spec:
                   status:
                     description: The current state of this DB cluster.
                     type: string
+                  statusInfos:
+                    description: Reserved for future use.
+                    items:
+                      properties:
+                        message:
+                          type: string
+                        normal:
+                          type: boolean
+                        status:
+                          type: string
+                        statusType:
+                          type: string
+                      type: object
+                    type: array
                   tagList:
                     items:
                       properties:

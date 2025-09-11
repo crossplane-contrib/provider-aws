@@ -193,3 +193,9 @@ type CustomTargetGroupParameters struct {
 
 // CustomTargetGroupObservation includes the custom status fields of TargetGroup.
 type CustomTargetGroupObservation struct{}
+
+// CustomTrustStoreParameters includes the custom fields of TrustStore.
+type CustomTrustStoreParameters struct{}
+
+// CustomTrustStoreObservation includes the custom status fields of TrustStore.
+type CustomTrustStoreObservation struct{}

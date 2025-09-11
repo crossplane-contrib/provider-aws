@@ -294,6 +294,11 @@ func (in *EnvironmentParameters) DeepCopyInto(out *EnvironmentParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EndpointManagement != nil {
+		in, out := &in.EndpointManagement, &out.EndpointManagement
+		*out = new(string)
+		**out = **in
+	}
 	if in.EnvironmentClass != nil {
 		in, out := &in.EnvironmentClass, &out.EnvironmentClass
 		*out = new(string)
@@ -451,12 +456,27 @@ func (in *Environment_SDK) DeepCopyInto(out *Environment_SDK) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CeleryExecutorQueue != nil {
+		in, out := &in.CeleryExecutorQueue, &out.CeleryExecutorQueue
+		*out = new(string)
+		**out = **in
+	}
 	if in.CreatedAt != nil {
 		in, out := &in.CreatedAt, &out.CreatedAt
 		*out = (*in).DeepCopy()
 	}
 	if in.DagS3Path != nil {
 		in, out := &in.DagS3Path, &out.DagS3Path
+		*out = new(string)
+		**out = **in
+	}
+	if in.DatabaseVPCEndpointService != nil {
+		in, out := &in.DatabaseVPCEndpointService, &out.DatabaseVPCEndpointService
+		*out = new(string)
+		**out = **in
+	}
+	if in.EndpointManagement != nil {
+		in, out := &in.EndpointManagement, &out.EndpointManagement
 		*out = new(string)
 		**out = **in
 	}
@@ -573,6 +593,11 @@ func (in *Environment_SDK) DeepCopyInto(out *Environment_SDK) {
 	}
 	if in.WebserverURL != nil {
 		in, out := &in.WebserverURL, &out.WebserverURL
+		*out = new(string)
+		**out = **in
+	}
+	if in.WebserverVPCEndpointService != nil {
+		in, out := &in.WebserverVPCEndpointService, &out.WebserverVPCEndpointService
 		*out = new(string)
 		**out = **in
 	}

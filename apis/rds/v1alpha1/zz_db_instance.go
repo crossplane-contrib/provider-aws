@@ -46,6 +46,14 @@ type DBInstanceParameters struct {
 	//    * Provisioned IOPS storage (io1): Must be an integer from 40 to 65536
 	//    for RDS Custom for Oracle, 16384 for RDS Custom for SQL Server.
 	//
+	// RDS for Db2
+	//
+	// Constraints to the amount of storage for each storage type are the following:
+	//
+	//    * General Purpose (SSD) storage (gp3): Must be an integer from 20 to 64000.
+	//
+	//    * Provisioned IOPS storage (io1): Must be an integer from 100 to 64000.
+	//
 	// RDS for MariaDB
 	//
 	// Constraints to the amount of storage for each storage type are the following:
@@ -166,7 +174,7 @@ type DBInstanceParameters struct {
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 	// The location for storing automated backups and manual snapshots.
 	//
-	// Valie Values:
+	// Valid Values:
 	//
 	//    * outposts (Amazon Web Services Outposts)
 	//
@@ -240,85 +248,6 @@ type DBInstanceParameters struct {
 	// The meaning of this parameter differs according to the database engine you
 	// use.
 	//
-	// MySQL
-	//
-	// The name of the database to create when the DB instance is created. If this
-	// parameter isn't specified, no database is created in the DB instance.
-	//
-	// Constraints:
-	//
-	//    * Must contain 1 to 64 letters or numbers.
-	//
-	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
-	//    or digits (0-9).
-	//
-	//    * Can't be a word reserved by the specified database engine
-	//
-	// MariaDB
-	//
-	// The name of the database to create when the DB instance is created. If this
-	// parameter isn't specified, no database is created in the DB instance.
-	//
-	// Constraints:
-	//
-	//    * Must contain 1 to 64 letters or numbers.
-	//
-	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
-	//    or digits (0-9).
-	//
-	//    * Can't be a word reserved by the specified database engine
-	//
-	// PostgreSQL
-	//
-	// The name of the database to create when the DB instance is created. If this
-	// parameter isn't specified, a database named postgres is created in the DB
-	// instance.
-	//
-	// Constraints:
-	//
-	//    * Must contain 1 to 63 letters, numbers, or underscores.
-	//
-	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
-	//    or digits (0-9).
-	//
-	//    * Can't be a word reserved by the specified database engine
-	//
-	// Oracle
-	//
-	// The Oracle System ID (SID) of the created DB instance. If you don't specify
-	// a value, the default value is ORCL. You can't specify the string null, or
-	// any other reserved word, for DBName.
-	//
-	// Default: ORCL
-	//
-	// Constraints:
-	//
-	//    * Can't be longer than 8 characters
-	//
-	// Amazon RDS Custom for Oracle
-	//
-	// The Oracle System ID (SID) of the created RDS Custom DB instance. If you
-	// don't specify a value, the default value is ORCL for non-CDBs and RDSCDB
-	// for CDBs.
-	//
-	// Default: ORCL
-	//
-	// Constraints:
-	//
-	//    * It must contain 1 to 8 alphanumeric characters.
-	//
-	//    * It must contain a letter.
-	//
-	//    * It can't be a word reserved by the database engine.
-	//
-	// Amazon RDS Custom for SQL Server
-	//
-	// Not applicable. Must be null.
-	//
-	// SQL Server
-	//
-	// Not applicable. Must be null.
-	//
 	// Amazon Aurora MySQL
 	//
 	// The name of the database to create when the primary DB instance of the Aurora
@@ -327,9 +256,9 @@ type DBInstanceParameters struct {
 	//
 	// Constraints:
 	//
-	//    * It must contain 1 to 64 alphanumeric characters.
+	//    * Must contain 1 to 64 alphanumeric characters.
 	//
-	//    * It can't be a word reserved by the database engine.
+	//    * Can't be a word reserved by the database engine.
 	//
 	// Amazon Aurora PostgreSQL
 	//
@@ -342,10 +271,103 @@ type DBInstanceParameters struct {
 	//
 	//    * It must contain 1 to 63 alphanumeric characters.
 	//
-	//    * It must begin with a letter. Subsequent characters can be letters, underscores,
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
 	//    or digits (0 to 9).
 	//
-	//    * It can't be a word reserved by the database engine.
+	//    * Can't be a word reserved by the database engine.
+	//
+	// Amazon RDS Custom for Oracle
+	//
+	// The Oracle System ID (SID) of the created RDS Custom DB instance. If you
+	// don't specify a value, the default value is ORCL for non-CDBs and RDSCDB
+	// for CDBs.
+	//
+	// Default: ORCL
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 8 alphanumeric characters.
+	//
+	//    * Must contain a letter.
+	//
+	//    * Can't be a word reserved by the database engine.
+	//
+	// Amazon RDS Custom for SQL Server
+	//
+	// Not applicable. Must be null.
+	//
+	// RDS for Db2
+	//
+	// The name of the database to create when the DB instance is created. If this
+	// parameter isn't specified, no database is created in the DB instance.
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 64 letters or numbers.
+	//
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
+	//    or digits (0-9).
+	//
+	//    * Can't be a word reserved by the specified database engine.
+	//
+	// RDS for MariaDB
+	//
+	// The name of the database to create when the DB instance is created. If this
+	// parameter isn't specified, no database is created in the DB instance.
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 64 letters or numbers.
+	//
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
+	//    or digits (0-9).
+	//
+	//    * Can't be a word reserved by the specified database engine.
+	//
+	// RDS for MySQL
+	//
+	// The name of the database to create when the DB instance is created. If this
+	// parameter isn't specified, no database is created in the DB instance.
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 64 letters or numbers.
+	//
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
+	//    or digits (0-9).
+	//
+	//    * Can't be a word reserved by the specified database engine.
+	//
+	// RDS for Oracle
+	//
+	// The Oracle System ID (SID) of the created DB instance. If you don't specify
+	// a value, the default value is ORCL. You can't specify the string null, or
+	// any other reserved word, for DBName.
+	//
+	// Default: ORCL
+	//
+	// Constraints:
+	//
+	//    * Can't be longer than 8 characters.
+	//
+	// RDS for PostgreSQL
+	//
+	// The name of the database to create when the DB instance is created. If this
+	// parameter isn't specified, a database named postgres is created in the DB
+	// instance.
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 63 letters, numbers, or underscores.
+	//
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
+	//    or digits (0-9).
+	//
+	//    * Can't be a word reserved by the specified database engine.
+	//
+	// RDS for SQL Server
+	//
+	// Not applicable. Must be null.
 	DBName *string `json:"dbName,omitempty"`
 	// The name of the DB parameter group to associate with this DB instance. If
 	// you don't specify a value, then Amazon RDS uses the default DB parameter
@@ -390,8 +412,8 @@ type DBInstanceParameters struct {
 	// deletion protection is enabled for the DB cluster.
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
 	// The Active Directory directory ID to create the DB instance in. Currently,
-	// only Microsoft SQL Server, MySQL, Oracle, and PostgreSQL DB instances can
-	// be created in an Active Directory Domain.
+	// you can create only Db2, MySQL, Microsoft SQL Server, Oracle, and PostgreSQL
+	// DB instances in an Active Directory Domain.
 	//
 	// For more information, see Kerberos Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/kerberos-authentication.html)
 	// in the Amazon RDS User Guide.
@@ -444,9 +466,8 @@ type DBInstanceParameters struct {
 	//
 	// Example: OU=mymanagedADtestOU,DC=mymanagedADtest,DC=mymanagedAD,DC=mydomain
 	DomainOu *string `json:"domainOu,omitempty"`
-	// The list of log types that need to be enabled for exporting to CloudWatch
-	// Logs. For more information, see Publishing Database Logs to Amazon CloudWatch
-	// Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+	// The list of log types to enable for exporting to CloudWatch Logs. For more
+	// information, see Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
 	// in the Amazon RDS User Guide.
 	//
 	// This setting doesn't apply to the following DB instances:
@@ -456,6 +477,8 @@ type DBInstanceParameters struct {
 	//    * RDS Custom
 	//
 	// The following values are valid for each DB engine:
+	//
+	//    * RDS for Db2 - diag.log | notify.log
 	//
 	//    * RDS for MariaDB - audit | error | general | slowquery
 	//
@@ -523,6 +546,10 @@ type DBInstanceParameters struct {
 	//
 	//    * custom-sqlserver-web (for RDS Custom for SQL Server DB instances)
 	//
+	//    * db2-ae
+	//
+	//    * db2-se
+	//
 	//    * mariadb
 	//
 	//    * mysql
@@ -556,8 +583,8 @@ type DBInstanceParameters struct {
 	//
 	// Constraints:
 	//
-	//    * For RDS for MariaDB, MySQL, Oracle, and PostgreSQL - Must be a multiple
-	//    between .5 and 50 of the storage amount for the DB instance.
+	//    * For RDS for Db2, MariaDB, MySQL, Oracle, and PostgreSQL - Must be a
+	//    multiple between .5 and 50 of the storage amount for the DB instance.
 	//
 	//    * For RDS for SQL Server - Must be a multiple between 1 and 50 of the
 	//    storage amount for the DB instance.
@@ -587,6 +614,8 @@ type DBInstanceParameters struct {
 	// This setting doesn't apply to Amazon Aurora or RDS Custom DB instances.
 	//
 	// Valid Values:
+	//
+	//    * RDS for Db2 - bring-your-own-license
 	//
 	//    * RDS for MariaDB - general-public-license
 	//
@@ -768,6 +797,8 @@ type DBInstanceParameters struct {
 	// Valid Values: 1150-65535
 	//
 	// Default:
+	//
+	//    * RDS for Db2 - 50000
 	//
 	//    * RDS for MariaDB - 3306
 	//

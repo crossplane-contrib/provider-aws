@@ -37,12 +37,22 @@ type EnvironmentParameters struct {
 	// it defaults to the latest version. For more information, see Apache Airflow
 	// versions on Amazon Managed Workflows for Apache Airflow (MWAA) (https://docs.aws.amazon.com/mwaa/latest/userguide/airflow-versions.html).
 	//
-	// Valid values: 1.10.12, 2.0.2, 2.2.2, 2.4.3, 2.5.1, 2.6.3, 2.7.2.
+	// Valid values: 1.10.12, 2.0.2, 2.2.2, 2.4.3, 2.5.1, 2.6.3, 2.7.2
 	AirflowVersion *string `json:"airflowVersion,omitempty"`
 	// The relative path to the DAGs folder on your Amazon S3 bucket. For example,
 	// dags. For more information, see Adding or updating DAGs (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-folder.html).
 	// +kubebuilder:validation:Required
 	DagS3Path *string `json:"dagS3Path"`
+	// Defines whether the VPC endpoints configured for the environment are created,
+	// and managed, by the customer or by Amazon MWAA. If set to SERVICE, Amazon
+	// MWAA will create and manage the required VPC endpoints in your VPC. If set
+	// to CUSTOMER, you must create, and manage, the VPC endpoints for your VPC.
+	// If you choose to create an environment in a shared VPC, you must set this
+	// value to CUSTOMER. In a shared VPC deployment, the environment will remain
+	// in PENDING status until you create the VPC endpoints. If you do not take
+	// action to create the endpoints within 72 hours, the status will change to
+	// CREATE_FAILED. You can delete the failed environment and create a new one.
+	EndpointManagement *string `json:"endpointManagement,omitempty"`
 	// The environment class type. Valid values: mw1.small, mw1.medium, mw1.large.
 	// For more information, see Amazon MWAA environment class (https://docs.aws.amazon.com/mwaa/latest/userguide/environment-class.html).
 	EnvironmentClass *string `json:"environmentClass,omitempty"`
@@ -107,8 +117,8 @@ type EnvironmentParameters struct {
 	// "Environment": "Staging". For more information, see Tagging Amazon Web Services
 	// resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `json:"tags,omitempty"`
-	// The Apache Airflow Web server access mode. For more information, see Apache
-	// Airflow access modes (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-networking.html).
+	// Defines the access mode for the Apache Airflow web server. For more information,
+	// see Apache Airflow access modes (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-networking.html).
 	WebserverAccessMode *string `json:"webserverAccessMode,omitempty"`
 	// The day and time of the week in Coordinated Universal Time (UTC) 24-hour
 	// standard time to start weekly maintenance updates of your environment in
@@ -130,7 +140,9 @@ type EnvironmentObservation struct {
 	ARN *string `json:"arn,omitempty"`
 	// The status of the last update on the environment.
 	LastUpdate *LastUpdate `json:"lastUpdate,omitempty"`
-	// The status of the Amazon MWAA environment. Valid values:
+	// The status of the Amazon MWAA environment.
+	//
+	// Valid values:
 	//
 	//    * CREATING - Indicates the request to create the environment is in progress.
 	//
@@ -146,6 +158,10 @@ type EnvironmentObservation struct {
 	//
 	//    * AVAILABLE - Indicates the request was successful and the environment
 	//    is ready to use.
+	//
+	//    * PENDING - Indicates the request was successful, but the process to create
+	//    the environment is paused until you create the required VPC endpoints
+	//    in your VPC. After you create the VPC endpoints, the process resumes.
 	//
 	//    * UPDATING - Indicates the request to update the environment is in progress.
 	//

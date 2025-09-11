@@ -190,6 +190,19 @@ spec:
                       an EC2 instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-from-instance.html)
                       in the Amazon EC2 Auto Scaling User Guide.
                     type: string
+                  instanceMaintenancePolicy:
+                    description: |-
+                      An instance maintenance policy. For more information, see Set instance maintenance
+                      policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+                      in the Amazon EC2 Auto Scaling User Guide.
+                    properties:
+                      maxHealthyPercentage:
+                        format: int64
+                        type: integer
+                      minHealthyPercentage:
+                        format: int64
+                        type: integer
+                    type: object
                   launchConfigurationName:
                     description: |-
                       The name of the launch configuration to use to launch instances.

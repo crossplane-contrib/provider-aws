@@ -78,6 +78,10 @@ spec:
                       An optional user-assigned alias for this workspace. This alias is for user
                       reference and does not need to be unique.
                     type: string
+                  kmsKeyARN:
+                    description: Optional, customer managed KMS key used to encrypt
+                      data for this workspace
+                    type: string
                   region:
                     description: Region is which region the Workspace will be created.
                     type: string

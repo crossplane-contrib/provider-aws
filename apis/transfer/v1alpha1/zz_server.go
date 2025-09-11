@@ -178,6 +178,13 @@ type ServerParameters struct {
 	//    * If Protocol includes AS2, then the EndpointType must be VPC, and domain
 	//    must be Amazon S3.
 	Protocols []*string `json:"protocols,omitempty"`
+	// Specifies whether or not performance for your Amazon S3 directories is optimized.
+	// This is disabled by default.
+	//
+	// By default, home directory mappings have a TYPE of DIRECTORY. If you enable
+	// this option, you would then need to explicitly set the HomeDirectoryMapEntry
+	// Type to FILE if you want a mapping to have a file target.
+	S3StorageOptions *S3StorageOptions `json:"s3StorageOptions,omitempty"`
 	// Specifies the name of the security policy that is attached to the server.
 	SecurityPolicyName *string `json:"securityPolicyName,omitempty"`
 	// Specifies the log groups to which your server logs are sent.

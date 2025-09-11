@@ -29,19 +29,19 @@ type FileSystemParameters struct {
 	// Region is which region the FileSystem will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Used to create a file system that uses One Zone storage classes. It specifies
-	// the Amazon Web Services Availability Zone in which to create the file system.
-	// Use the format us-east-1a to specify the Availability Zone. For more information
-	// about One Zone storage classes, see Using EFS storage classes (https://docs.aws.amazon.com/efs/latest/ug/storage-classes.html)
+	// Used to create a One Zone file system. It specifies the Amazon Web Services
+	// Availability Zone in which to create the file system. Use the format us-east-1a
+	// to specify the Availability Zone. For more information about One Zone file
+	// systems, see Using EFS storage classes (https://docs.aws.amazon.com/efs/latest/ug/storage-classes.html)
 	// in the Amazon EFS User Guide.
 	//
-	// One Zone storage classes are not available in all Availability Zones in Amazon
+	// One Zone file systems are not available in all Availability Zones in Amazon
 	// Web Services Regions where Amazon EFS is available.
 	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
 	// Specifies whether automatic backups are enabled on the file system that you
 	// are creating. Set the value to true to enable automatic backups. If you are
-	// creating a file system that uses One Zone storage classes, automatic backups
-	// are enabled by default. For more information, see Automatic backups (https://docs.aws.amazon.com/efs/latest/ug/awsbackup.html#automatic-backups)
+	// creating a One Zone file system, automatic backups are enabled by default.
+	// For more information, see Automatic backups (https://docs.aws.amazon.com/efs/latest/ug/awsbackup.html#automatic-backups)
 	// in the Amazon EFS User Guide.
 	//
 	// Default is false. However, if you specify an AvailabilityZoneName, the default
@@ -76,13 +76,15 @@ type FileSystemParameters struct {
 	// EFS accepts only symmetric KMS keys. You cannot use asymmetric KMS keys with
 	// Amazon EFS file systems.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
-	// The performance mode of the file system. We recommend generalPurpose performance
-	// mode for most file systems. File systems using the maxIO performance mode
+	// The Performance mode of the file system. We recommend generalPurpose performance
+	// mode for all file systems. File systems using the maxIO performance mode
 	// can scale to higher levels of aggregate throughput and operations per second
 	// with a tradeoff of slightly higher latencies for most file operations. The
 	// performance mode can't be changed after the file system has been created.
+	// The maxIO mode is not supported on One Zone file systems.
 	//
-	// The maxIO mode is not supported on file systems using One Zone storage classes.
+	// Due to the higher per-operation latencies with Max I/O, we recommend using
+	// General Purpose performance mode for all file systems.
 	//
 	// Default is generalPurpose.
 	PerformanceMode *string `json:"performanceMode,omitempty"`
@@ -95,9 +97,9 @@ type FileSystemParameters struct {
 	// Specifies the throughput mode for the file system. The mode can be bursting,
 	// provisioned, or elastic. If you set ThroughputMode to provisioned, you must
 	// also set a value for ProvisionedThroughputInMibps. After you create the file
-	// system, you can decrease your file system's throughput in Provisioned Throughput
-	// mode or change between the throughput modes, with certain time restrictions.
-	// For more information, see Specifying throughput with provisioned mode (https://docs.aws.amazon.com/efs/latest/ug/performance.html#provisioned-throughput)
+	// system, you can decrease your file system's Provisioned throughput or change
+	// between the throughput modes, with certain time restrictions. For more information,
+	// see Specifying throughput with provisioned mode (https://docs.aws.amazon.com/efs/latest/ug/performance.html#provisioned-throughput)
 	// in the Amazon EFS User Guide.
 	//
 	// Default is bursting.
@@ -114,9 +116,10 @@ type FileSystemSpec struct {
 // FileSystemObservation defines the observed state of FileSystem
 type FileSystemObservation struct {
 	// The unique and consistent identifier of the Availability Zone in which the
-	// file system's One Zone storage classes exist. For example, use1-az1 is an
-	// Availability Zone ID for the us-east-1 Amazon Web Services Region, and it
-	// has the same location in every Amazon Web Services account.
+	// file system is located, and is valid only for One Zone file systems. For
+	// example, use1-az1 is an Availability Zone ID for the us-east-1 Amazon Web
+	// Services Region, and it has the same location in every Amazon Web Services
+	// account.
 	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
 	// The time that the file system was created, in seconds (since 1970-01-01T00:00:00Z).
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
@@ -127,6 +130,8 @@ type FileSystemObservation struct {
 	FileSystemARN *string `json:"fileSystemARN,omitempty"`
 	// The ID of the file system, assigned by Amazon EFS.
 	FileSystemID *string `json:"fileSystemID,omitempty"`
+	// Describes the protection on the file system.
+	FileSystemProtection *FileSystemProtectionDescription `json:"fileSystemProtection,omitempty"`
 	// The lifecycle phase of the file system.
 	LifeCycleState *string `json:"lifeCycleState,omitempty"`
 	// You can add tags to a file system, including a Name tag. For more information,

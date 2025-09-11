@@ -522,6 +522,8 @@ type Deployment struct {
 	TaskDefinition *string `json:"taskDefinition,omitempty"`
 
 	UpdatedAt *metav1.Time `json:"updatedAt,omitempty"`
+
+	VolumeConfigurations []*ServiceVolumeConfiguration `json:"volumeConfigurations,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -601,6 +603,15 @@ type DockerVolumeConfiguration struct {
 	Labels map[string]*string `json:"labels,omitempty"`
 
 	Scope *string `json:"scope,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EBSTagSpecification struct {
+	PropagateTags *string `json:"propagateTags,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1038,6 +1049,29 @@ type ServiceEvent struct {
 }
 
 // +kubebuilder:skipversion
+type ServiceManagedEBSVolumeConfiguration struct {
+	Encrypted *bool `json:"encrypted,omitempty"`
+
+	FilesystemType *string `json:"filesystemType,omitempty"`
+
+	IOPS *int64 `json:"iops,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	SizeInGiB *int64 `json:"sizeInGiB,omitempty"`
+
+	SnapshotID *string `json:"snapshotID,omitempty"`
+
+	TagSpecifications []*EBSTagSpecification `json:"tagSpecifications,omitempty"`
+
+	Throughput *int64 `json:"throughput,omitempty"`
+
+	VolumeType *string `json:"volumeType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ServiceRegistry struct {
 	ContainerName *string `json:"containerName,omitempty"`
 
@@ -1046,6 +1080,19 @@ type ServiceRegistry struct {
 	Port *int64 `json:"port,omitempty"`
 
 	RegistryARN *string `json:"registryARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServiceVolumeConfiguration struct {
+	// The configuration for the Amazon EBS volume that Amazon ECS creates and manages
+	// on your behalf. These settings are used to create each Amazon EBS volume,
+	// with one volume created for each task in the service.
+	//
+	// Many of these parameters map 1:1 with the Amazon EBS CreateVolume API request
+	// parameters.
+	ManagedEBSVolume *ServiceManagedEBSVolumeConfiguration `json:"managedEBSVolume,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1296,6 +1343,34 @@ type TaskDefinition_SDK struct {
 }
 
 // +kubebuilder:skipversion
+type TaskManagedEBSVolumeConfiguration struct {
+	Encrypted *bool `json:"encrypted,omitempty"`
+
+	FilesystemType *string `json:"filesystemType,omitempty"`
+
+	IOPS *int64 `json:"iops,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	SizeInGiB *int64 `json:"sizeInGiB,omitempty"`
+
+	SnapshotID *string `json:"snapshotID,omitempty"`
+
+	TagSpecifications []*EBSTagSpecification `json:"tagSpecifications,omitempty"`
+
+	Throughput *int64 `json:"throughput,omitempty"`
+
+	VolumeType *string `json:"volumeType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TaskManagedEBSVolumeTerminationPolicy struct {
+	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type TaskOverride struct {
 	CPU *string `json:"cpu,omitempty"`
 	// The amount of ephemeral storage to allocate for the task. This parameter
@@ -1372,6 +1447,11 @@ type TaskSet struct {
 }
 
 // +kubebuilder:skipversion
+type TaskVolumeConfiguration struct {
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Tmpfs struct {
 	ContainerPath *string `json:"containerPath,omitempty"`
 
@@ -1400,6 +1480,7 @@ type VersionInfo struct {
 
 // +kubebuilder:skipversion
 type Volume struct {
+	ConfiguredAtLaunch *bool `json:"configuredAtLaunch,omitempty"`
 	// This parameter is specified when you're using Docker volumes. Docker volumes
 	// are only supported when you're using the EC2 launch type. Windows containers
 	// only support the use of the local driver. To use bind mounts, specify a host

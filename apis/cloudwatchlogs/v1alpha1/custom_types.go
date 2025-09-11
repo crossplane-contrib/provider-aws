@@ -53,3 +53,9 @@ type CustomResourcePolicyParameters struct{}
 
 // CustomResourcePolicyObservation contains the additional status fields for ResourcePolicy.
 type CustomResourcePolicyObservation struct{}
+
+// CustomLogAnomalyDetectorParameters includes the custom fields of LogAnomalyDetector.
+type CustomLogAnomalyDetectorParameters struct{}
+
+// CustomLogAnomalyDetectorObservation includes the custom status fields of LogAnomalyDetector.
+type CustomLogAnomalyDetectorObservation struct{}

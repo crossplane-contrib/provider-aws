@@ -126,6 +126,12 @@ const (
 	ICPRecordalStatus_PENDING   ICPRecordalStatus = "PENDING"
 )
 
+type ImportSourceType string
+
+const (
+	ImportSourceType_S3 ImportSourceType = "S3"
+)
+
 type ItemSelection string
 
 const (

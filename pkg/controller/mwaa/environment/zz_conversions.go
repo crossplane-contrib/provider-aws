@@ -66,86 +66,91 @@ func GenerateEnvironment(resp *svcsdk.GetEnvironmentOutput) *svcapitypes.Environ
 	} else {
 		cr.Spec.ForProvider.DagS3Path = nil
 	}
+	if resp.Environment.EndpointManagement != nil {
+		cr.Spec.ForProvider.EndpointManagement = resp.Environment.EndpointManagement
+	} else {
+		cr.Spec.ForProvider.EndpointManagement = nil
+	}
 	if resp.Environment.EnvironmentClass != nil {
 		cr.Spec.ForProvider.EnvironmentClass = resp.Environment.EnvironmentClass
 	} else {
 		cr.Spec.ForProvider.EnvironmentClass = nil
 	}
 	if resp.Environment.LastUpdate != nil {
-		f8 := &svcapitypes.LastUpdate{}
+		f11 := &svcapitypes.LastUpdate{}
 		if resp.Environment.LastUpdate.Error != nil {
-			f8f0 := &svcapitypes.UpdateError{}
+			f11f0 := &svcapitypes.UpdateError{}
 			if resp.Environment.LastUpdate.Error.ErrorCode != nil {
-				f8f0.ErrorCode = resp.Environment.LastUpdate.Error.ErrorCode
+				f11f0.ErrorCode = resp.Environment.LastUpdate.Error.ErrorCode
 			}
 			if resp.Environment.LastUpdate.Error.ErrorMessage != nil {
-				f8f0.ErrorMessage = resp.Environment.LastUpdate.Error.ErrorMessage
+				f11f0.ErrorMessage = resp.Environment.LastUpdate.Error.ErrorMessage
 			}
-			f8.Error = f8f0
+			f11.Error = f11f0
 		}
 		if resp.Environment.LastUpdate.Source != nil {
-			f8.Source = resp.Environment.LastUpdate.Source
+			f11.Source = resp.Environment.LastUpdate.Source
 		}
 		if resp.Environment.LastUpdate.Status != nil {
-			f8.Status = resp.Environment.LastUpdate.Status
+			f11.Status = resp.Environment.LastUpdate.Status
 		}
-		cr.Status.AtProvider.LastUpdate = f8
+		cr.Status.AtProvider.LastUpdate = f11
 	} else {
 		cr.Status.AtProvider.LastUpdate = nil
 	}
 	if resp.Environment.LoggingConfiguration != nil {
-		f9 := &svcapitypes.LoggingConfigurationInput{}
+		f12 := &svcapitypes.LoggingConfigurationInput{}
 		if resp.Environment.LoggingConfiguration.DagProcessingLogs != nil {
-			f9f0 := &svcapitypes.ModuleLoggingConfigurationInput{}
+			f12f0 := &svcapitypes.ModuleLoggingConfigurationInput{}
 			if resp.Environment.LoggingConfiguration.DagProcessingLogs.Enabled != nil {
-				f9f0.Enabled = resp.Environment.LoggingConfiguration.DagProcessingLogs.Enabled
+				f12f0.Enabled = resp.Environment.LoggingConfiguration.DagProcessingLogs.Enabled
 			}
 			if resp.Environment.LoggingConfiguration.DagProcessingLogs.LogLevel != nil {
-				f9f0.LogLevel = resp.Environment.LoggingConfiguration.DagProcessingLogs.LogLevel
+				f12f0.LogLevel = resp.Environment.LoggingConfiguration.DagProcessingLogs.LogLevel
 			}
-			f9.DagProcessingLogs = f9f0
+			f12.DagProcessingLogs = f12f0
 		}
 		if resp.Environment.LoggingConfiguration.SchedulerLogs != nil {
-			f9f1 := &svcapitypes.ModuleLoggingConfigurationInput{}
+			f12f1 := &svcapitypes.ModuleLoggingConfigurationInput{}
 			if resp.Environment.LoggingConfiguration.SchedulerLogs.Enabled != nil {
-				f9f1.Enabled = resp.Environment.LoggingConfiguration.SchedulerLogs.Enabled
+				f12f1.Enabled = resp.Environment.LoggingConfiguration.SchedulerLogs.Enabled
 			}
 			if resp.Environment.LoggingConfiguration.SchedulerLogs.LogLevel != nil {
-				f9f1.LogLevel = resp.Environment.LoggingConfiguration.SchedulerLogs.LogLevel
+				f12f1.LogLevel = resp.Environment.LoggingConfiguration.SchedulerLogs.LogLevel
 			}
-			f9.SchedulerLogs = f9f1
+			f12.SchedulerLogs = f12f1
 		}
 		if resp.Environment.LoggingConfiguration.TaskLogs != nil {
-			f9f2 := &svcapitypes.ModuleLoggingConfigurationInput{}
+			f12f2 := &svcapitypes.ModuleLoggingConfigurationInput{}
 			if resp.Environment.LoggingConfiguration.TaskLogs.Enabled != nil {
-				f9f2.Enabled = resp.Environment.LoggingConfiguration.TaskLogs.Enabled
+				f12f2.Enabled = resp.Environment.LoggingConfiguration.TaskLogs.Enabled
 			}
 			if resp.Environment.LoggingConfiguration.TaskLogs.LogLevel != nil {
-				f9f2.LogLevel = resp.Environment.LoggingConfiguration.TaskLogs.LogLevel
+				f12f2.LogLevel = resp.Environment.LoggingConfiguration.TaskLogs.LogLevel
 			}
-			f9.TaskLogs = f9f2
+			f12.TaskLogs = f12f2
 		}
 		if resp.Environment.LoggingConfiguration.WebserverLogs != nil {
-			f9f3 := &svcapitypes.ModuleLoggingConfigurationInput{}
+			f12f3 := &svcapitypes.ModuleLoggingConfigurationInput{}
 			if resp.Environment.LoggingConfiguration.WebserverLogs.Enabled != nil {
-				f9f3.Enabled = resp.Environment.LoggingConfiguration.WebserverLogs.Enabled
+				f12f3.Enabled = resp.Environment.LoggingConfiguration.WebserverLogs.Enabled
 			}
 			if resp.Environment.LoggingConfiguration.WebserverLogs.LogLevel != nil {
-				f9f3.LogLevel = resp.Environment.LoggingConfiguration.WebserverLogs.LogLevel
+				f12f3.LogLevel = resp.Environment.LoggingConfiguration.WebserverLogs.LogLevel
 			}
-			f9.WebserverLogs = f9f3
+			f12.WebserverLogs = f12f3
 		}
 		if resp.Environment.LoggingConfiguration.WorkerLogs != nil {
-			f9f4 := &svcapitypes.ModuleLoggingConfigurationInput{}
+			f12f4 := &svcapitypes.ModuleLoggingConfigurationInput{}
 			if resp.Environment.LoggingConfiguration.WorkerLogs.Enabled != nil {
-				f9f4.Enabled = resp.Environment.LoggingConfiguration.WorkerLogs.Enabled
+				f12f4.Enabled = resp.Environment.LoggingConfiguration.WorkerLogs.Enabled
 			}
 			if resp.Environment.LoggingConfiguration.WorkerLogs.LogLevel != nil {
-				f9f4.LogLevel = resp.Environment.LoggingConfiguration.WorkerLogs.LogLevel
+				f12f4.LogLevel = resp.Environment.LoggingConfiguration.WorkerLogs.LogLevel
 			}
-			f9.WorkerLogs = f9f4
+			f12.WorkerLogs = f12f4
 		}
-		cr.Spec.ForProvider.LoggingConfiguration = f9
+		cr.Spec.ForProvider.LoggingConfiguration = f12
 	} else {
 		cr.Spec.ForProvider.LoggingConfiguration = nil
 	}
@@ -200,13 +205,13 @@ func GenerateEnvironment(resp *svcsdk.GetEnvironmentOutput) *svcapitypes.Environ
 		cr.Status.AtProvider.Status = nil
 	}
 	if resp.Environment.Tags != nil {
-		f23 := map[string]*string{}
-		for f23key, f23valiter := range resp.Environment.Tags {
-			var f23val string
-			f23val = *f23valiter
-			f23[f23key] = &f23val
+		f26 := map[string]*string{}
+		for f26key, f26valiter := range resp.Environment.Tags {
+			var f26val string
+			f26val = *f26valiter
+			f26[f26key] = &f26val
 		}
-		cr.Spec.ForProvider.Tags = f23
+		cr.Spec.ForProvider.Tags = f26
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -243,62 +248,65 @@ func GenerateCreateEnvironmentInput(cr *svcapitypes.Environment) *svcsdk.CreateE
 	if cr.Spec.ForProvider.DagS3Path != nil {
 		res.SetDagS3Path(*cr.Spec.ForProvider.DagS3Path)
 	}
+	if cr.Spec.ForProvider.EndpointManagement != nil {
+		res.SetEndpointManagement(*cr.Spec.ForProvider.EndpointManagement)
+	}
 	if cr.Spec.ForProvider.EnvironmentClass != nil {
 		res.SetEnvironmentClass(*cr.Spec.ForProvider.EnvironmentClass)
 	}
 	if cr.Spec.ForProvider.LoggingConfiguration != nil {
-		f4 := &svcsdk.LoggingConfigurationInput{}
+		f5 := &svcsdk.LoggingConfigurationInput{}
 		if cr.Spec.ForProvider.LoggingConfiguration.DagProcessingLogs != nil {
-			f4f0 := &svcsdk.ModuleLoggingConfigurationInput{}
+			f5f0 := &svcsdk.ModuleLoggingConfigurationInput{}
 			if cr.Spec.ForProvider.LoggingConfiguration.DagProcessingLogs.Enabled != nil {
-				f4f0.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.DagProcessingLogs.Enabled)
+				f5f0.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.DagProcessingLogs.Enabled)
 			}
 			if cr.Spec.ForProvider.LoggingConfiguration.DagProcessingLogs.LogLevel != nil {
-				f4f0.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.DagProcessingLogs.LogLevel)
+				f5f0.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.DagProcessingLogs.LogLevel)
 			}
-			f4.SetDagProcessingLogs(f4f0)
+			f5.SetDagProcessingLogs(f5f0)
 		}
 		if cr.Spec.ForProvider.LoggingConfiguration.SchedulerLogs != nil {
-			f4f1 := &svcsdk.ModuleLoggingConfigurationInput{}
+			f5f1 := &svcsdk.ModuleLoggingConfigurationInput{}
 			if cr.Spec.ForProvider.LoggingConfiguration.SchedulerLogs.Enabled != nil {
-				f4f1.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.SchedulerLogs.Enabled)
+				f5f1.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.SchedulerLogs.Enabled)
 			}
 			if cr.Spec.ForProvider.LoggingConfiguration.SchedulerLogs.LogLevel != nil {
-				f4f1.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.SchedulerLogs.LogLevel)
+				f5f1.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.SchedulerLogs.LogLevel)
 			}
-			f4.SetSchedulerLogs(f4f1)
+			f5.SetSchedulerLogs(f5f1)
 		}
 		if cr.Spec.ForProvider.LoggingConfiguration.TaskLogs != nil {
-			f4f2 := &svcsdk.ModuleLoggingConfigurationInput{}
+			f5f2 := &svcsdk.ModuleLoggingConfigurationInput{}
 			if cr.Spec.ForProvider.LoggingConfiguration.TaskLogs.Enabled != nil {
-				f4f2.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.TaskLogs.Enabled)
+				f5f2.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.TaskLogs.Enabled)
 			}
 			if cr.Spec.ForProvider.LoggingConfiguration.TaskLogs.LogLevel != nil {
-				f4f2.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.TaskLogs.LogLevel)
+				f5f2.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.TaskLogs.LogLevel)
 			}
-			f4.SetTaskLogs(f4f2)
+			f5.SetTaskLogs(f5f2)
 		}
 		if cr.Spec.ForProvider.LoggingConfiguration.WebserverLogs != nil {
-			f4f3 := &svcsdk.ModuleLoggingConfigurationInput{}
+			f5f3 := &svcsdk.ModuleLoggingConfigurationInput{}
 			if cr.Spec.ForProvider.LoggingConfiguration.WebserverLogs.Enabled != nil {
-				f4f3.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.WebserverLogs.Enabled)
+				f5f3.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.WebserverLogs.Enabled)
 			}
 			if cr.Spec.ForProvider.LoggingConfiguration.WebserverLogs.LogLevel != nil {
-				f4f3.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.WebserverLogs.LogLevel)
+				f5f3.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.WebserverLogs.LogLevel)
 			}
-			f4.SetWebserverLogs(f4f3)
+			f5.SetWebserverLogs(f5f3)
 		}
 		if cr.Spec.ForProvider.LoggingConfiguration.WorkerLogs != nil {
-			f4f4 := &svcsdk.ModuleLoggingConfigurationInput{}
+			f5f4 := &svcsdk.ModuleLoggingConfigurationInput{}
 			if cr.Spec.ForProvider.LoggingConfiguration.WorkerLogs.Enabled != nil {
-				f4f4.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.WorkerLogs.Enabled)
+				f5f4.SetEnabled(*cr.Spec.ForProvider.LoggingConfiguration.WorkerLogs.Enabled)
 			}
 			if cr.Spec.ForProvider.LoggingConfiguration.WorkerLogs.LogLevel != nil {
-				f4f4.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.WorkerLogs.LogLevel)
+				f5f4.SetLogLevel(*cr.Spec.ForProvider.LoggingConfiguration.WorkerLogs.LogLevel)
 			}
-			f4.SetWorkerLogs(f4f4)
+			f5.SetWorkerLogs(f5f4)
 		}
-		res.SetLoggingConfiguration(f4)
+		res.SetLoggingConfiguration(f5)
 	}
 	if cr.Spec.ForProvider.MaxWorkers != nil {
 		res.SetMaxWorkers(*cr.Spec.ForProvider.MaxWorkers)
@@ -328,13 +336,13 @@ func GenerateCreateEnvironmentInput(cr *svcapitypes.Environment) *svcsdk.CreateE
 		res.SetStartupScriptS3Path(*cr.Spec.ForProvider.StartupScriptS3Path)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f14 := map[string]*string{}
-		for f14key, f14valiter := range cr.Spec.ForProvider.Tags {
-			var f14val string
-			f14val = *f14valiter
-			f14[f14key] = &f14val
+		f15 := map[string]*string{}
+		for f15key, f15valiter := range cr.Spec.ForProvider.Tags {
+			var f15val string
+			f15val = *f15valiter
+			f15[f15key] = &f15val
 		}
-		res.SetTags(f14)
+		res.SetTags(f15)
 	}
 	if cr.Spec.ForProvider.WebserverAccessMode != nil {
 		res.SetWebserverAccessMode(*cr.Spec.ForProvider.WebserverAccessMode)

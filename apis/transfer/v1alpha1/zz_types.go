@@ -74,6 +74,8 @@ type DescribedConnector struct {
 
 	LoggingRole *string `json:"loggingRole,omitempty"`
 
+	ServiceManagedEgressIPAddresses []*string `json:"serviceManagedEgressIPAddresses,omitempty"`
+
 	Tags []*Tag `json:"tags,omitempty"`
 
 	URL *string `json:"url,omitempty"`
@@ -116,6 +118,8 @@ type DescribedSecurityPolicy struct {
 // +kubebuilder:skipversion
 type DescribedServer struct {
 	ARN *string `json:"arn,omitempty"`
+
+	As2ServiceManagedEgressIPAddresses []*string `json:"as2ServiceManagedEgressIPAddresses,omitempty"`
 
 	Certificate *string `json:"certificate,omitempty"`
 
@@ -171,6 +175,8 @@ type DescribedServer struct {
 	ProtocolDetails *ProtocolDetails `json:"protocolDetails,omitempty"`
 
 	Protocols []*string `json:"protocols,omitempty"`
+	// The Amazon S3 storage options that are configured for your server.
+	S3StorageOptions *S3StorageOptions `json:"s3StorageOptions,omitempty"`
 
 	SecurityPolicyName *string `json:"securityPolicyName,omitempty"`
 
@@ -251,6 +257,8 @@ type HomeDirectoryMapEntry struct {
 	Entry *string `json:"entry,omitempty"`
 
 	Target *string `json:"target,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -398,6 +406,13 @@ type ProtocolDetails struct {
 	SetStatOption *string `json:"setStatOption,omitempty"`
 
 	TLSSessionResumptionMode *string `json:"tlsSessionResumptionMode,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3StorageOptions struct {
+	// Indicates whether optimization to directory listing on S3 servers is used.
+	// Disabled by default for compatibility.
+	DirectoryListingOptimization *string `json:"directoryListingOptimization,omitempty"`
 }
 
 // +kubebuilder:skipversion

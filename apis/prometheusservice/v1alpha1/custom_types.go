@@ -69,3 +69,9 @@ type CustomAlertManagerDefinitionParameters struct {
 
 // CustomAlertManagerDefinitionObservation includes the custom status fields of AlertManagerDefinition.
 type CustomAlertManagerDefinitionObservation struct{}
+
+// CustomScraperParameters includes the custom fields of Scraper.
+type CustomScraperParameters struct{}
+
+// CustomScraperObservation includes the custom status fields of Scraper.
+type CustomScraperObservation struct{}

@@ -576,6 +576,31 @@ type ColumnStatistics struct {
 }
 
 // +kubebuilder:skipversion
+type ColumnStatisticsTaskRun struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	CustomerID *string `json:"customerID,omitempty"`
+
+	DatabaseName *string `json:"databaseName,omitempty"`
+
+	EndTime *metav1.Time `json:"endTime,omitempty"`
+
+	ErrorMessage *string `json:"errorMessage,omitempty"`
+
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
+
+	Role *string `json:"role,omitempty"`
+
+	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
+
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+
+	WorkerType *string `json:"workerType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Condition struct {
 	CrawlState *string `json:"crawlState,omitempty"`
 
@@ -889,10 +914,26 @@ type DataLakePrincipal struct {
 }
 
 // +kubebuilder:skipversion
+type DataQualityAnalyzerResult struct {
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DataQualityEvaluationRunAdditionalRunOptions struct {
 	CloudWatchMetricsEnabled *bool `json:"cloudWatchMetricsEnabled,omitempty"`
 
 	ResultsS3Prefix *string `json:"resultsS3Prefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DataQualityMetricValues struct {
+	ActualValue *float64 `json:"actualValue,omitempty"`
+
+	ExpectedValue *float64 `json:"expectedValue,omitempty"`
+
+	LowerLimit *float64 `json:"lowerLimit,omitempty"`
+
+	UpperLimit *float64 `json:"upperLimit,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -938,10 +979,6 @@ type DataQualityRuleRecommendationRunFilter struct {
 
 // +kubebuilder:skipversion
 type DataQualityRuleResult struct {
-	Description *string `json:"description,omitempty"`
-
-	EvaluationMessage *string `json:"evaluationMessage,omitempty"`
-
 	Name *string `json:"name,omitempty"`
 }
 
@@ -1936,6 +1973,11 @@ type Merge struct {
 }
 
 // +kubebuilder:skipversion
+type MetricBasedObservation struct {
+	MetricName *string `json:"metricName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type MicrosoftSQLServerCatalogSource struct {
 	Database *string `json:"database,omitempty"`
 
@@ -2157,6 +2199,11 @@ type PropertyPredicate struct {
 	Key *string `json:"key,omitempty"`
 
 	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type QuerySessionContext struct {
+	QueryStartTime *metav1.Time `json:"queryStartTime,omitempty"`
 }
 
 // +kubebuilder:skipversion

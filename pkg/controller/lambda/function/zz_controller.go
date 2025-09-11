@@ -263,6 +263,24 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Function) (manage
 	} else {
 		cr.Status.AtProvider.LastUpdateStatusReasonCode = nil
 	}
+	if resp.LoggingConfig != nil {
+		f17 := &svcapitypes.LoggingConfig{}
+		if resp.LoggingConfig.ApplicationLogLevel != nil {
+			f17.ApplicationLogLevel = resp.LoggingConfig.ApplicationLogLevel
+		}
+		if resp.LoggingConfig.LogFormat != nil {
+			f17.LogFormat = resp.LoggingConfig.LogFormat
+		}
+		if resp.LoggingConfig.LogGroup != nil {
+			f17.LogGroup = resp.LoggingConfig.LogGroup
+		}
+		if resp.LoggingConfig.SystemLogLevel != nil {
+			f17.SystemLogLevel = resp.LoggingConfig.SystemLogLevel
+		}
+		cr.Spec.ForProvider.LoggingConfig = f17
+	} else {
+		cr.Spec.ForProvider.LoggingConfig = nil
+	}
 	if resp.MasterArn != nil {
 		cr.Status.AtProvider.MasterARN = resp.MasterArn
 	} else {
@@ -294,21 +312,21 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Function) (manage
 		cr.Spec.ForProvider.Runtime = nil
 	}
 	if resp.RuntimeVersionConfig != nil {
-		f23 := &svcapitypes.RuntimeVersionConfig{}
+		f24 := &svcapitypes.RuntimeVersionConfig{}
 		if resp.RuntimeVersionConfig.Error != nil {
-			f23f0 := &svcapitypes.RuntimeVersionError{}
+			f24f0 := &svcapitypes.RuntimeVersionError{}
 			if resp.RuntimeVersionConfig.Error.ErrorCode != nil {
-				f23f0.ErrorCode = resp.RuntimeVersionConfig.Error.ErrorCode
+				f24f0.ErrorCode = resp.RuntimeVersionConfig.Error.ErrorCode
 			}
 			if resp.RuntimeVersionConfig.Error.Message != nil {
-				f23f0.Message = resp.RuntimeVersionConfig.Error.Message
+				f24f0.Message = resp.RuntimeVersionConfig.Error.Message
 			}
-			f23.Error = f23f0
+			f24.Error = f24f0
 		}
 		if resp.RuntimeVersionConfig.RuntimeVersionArn != nil {
-			f23.RuntimeVersionARN = resp.RuntimeVersionConfig.RuntimeVersionArn
+			f24.RuntimeVersionARN = resp.RuntimeVersionConfig.RuntimeVersionArn
 		}
-		cr.Status.AtProvider.RuntimeVersionConfig = f23
+		cr.Status.AtProvider.RuntimeVersionConfig = f24
 	} else {
 		cr.Status.AtProvider.RuntimeVersionConfig = nil
 	}
@@ -323,11 +341,11 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Function) (manage
 		cr.Status.AtProvider.SigningProfileVersionARN = nil
 	}
 	if resp.SnapStart != nil {
-		f26 := &svcapitypes.SnapStart{}
+		f27 := &svcapitypes.SnapStart{}
 		if resp.SnapStart.ApplyOn != nil {
-			f26.ApplyOn = resp.SnapStart.ApplyOn
+			f27.ApplyOn = resp.SnapStart.ApplyOn
 		}
-		cr.Spec.ForProvider.SnapStart = f26
+		cr.Spec.ForProvider.SnapStart = f27
 	} else {
 		cr.Spec.ForProvider.SnapStart = nil
 	}
@@ -352,11 +370,11 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Function) (manage
 		cr.Spec.ForProvider.Timeout = nil
 	}
 	if resp.TracingConfig != nil {
-		f31 := &svcapitypes.TracingConfig{}
+		f32 := &svcapitypes.TracingConfig{}
 		if resp.TracingConfig.Mode != nil {
-			f31.Mode = resp.TracingConfig.Mode
+			f32.Mode = resp.TracingConfig.Mode
 		}
-		cr.Spec.ForProvider.TracingConfig = f31
+		cr.Spec.ForProvider.TracingConfig = f32
 	} else {
 		cr.Spec.ForProvider.TracingConfig = nil
 	}
@@ -366,32 +384,32 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Function) (manage
 		cr.Status.AtProvider.Version = nil
 	}
 	if resp.VpcConfig != nil {
-		f33 := &svcapitypes.VPCConfigResponse{}
+		f34 := &svcapitypes.VPCConfigResponse{}
 		if resp.VpcConfig.Ipv6AllowedForDualStack != nil {
-			f33.IPv6AllowedForDualStack = resp.VpcConfig.Ipv6AllowedForDualStack
+			f34.IPv6AllowedForDualStack = resp.VpcConfig.Ipv6AllowedForDualStack
 		}
 		if resp.VpcConfig.SecurityGroupIds != nil {
-			f33f1 := []*string{}
-			for _, f33f1iter := range resp.VpcConfig.SecurityGroupIds {
-				var f33f1elem string
-				f33f1elem = *f33f1iter
-				f33f1 = append(f33f1, &f33f1elem)
+			f34f1 := []*string{}
+			for _, f34f1iter := range resp.VpcConfig.SecurityGroupIds {
+				var f34f1elem string
+				f34f1elem = *f34f1iter
+				f34f1 = append(f34f1, &f34f1elem)
 			}
-			f33.SecurityGroupIDs = f33f1
+			f34.SecurityGroupIDs = f34f1
 		}
 		if resp.VpcConfig.SubnetIds != nil {
-			f33f2 := []*string{}
-			for _, f33f2iter := range resp.VpcConfig.SubnetIds {
-				var f33f2elem string
-				f33f2elem = *f33f2iter
-				f33f2 = append(f33f2, &f33f2elem)
+			f34f2 := []*string{}
+			for _, f34f2iter := range resp.VpcConfig.SubnetIds {
+				var f34f2elem string
+				f34f2elem = *f34f2iter
+				f34f2 = append(f34f2, &f34f2elem)
 			}
-			f33.SubnetIDs = f33f2
+			f34.SubnetIDs = f34f2
 		}
 		if resp.VpcConfig.VpcId != nil {
-			f33.VPCID = resp.VpcConfig.VpcId
+			f34.VPCID = resp.VpcConfig.VpcId
 		}
-		cr.Status.AtProvider.VPCConfig = f33
+		cr.Status.AtProvider.VPCConfig = f34
 	} else {
 		cr.Status.AtProvider.VPCConfig = nil
 	}

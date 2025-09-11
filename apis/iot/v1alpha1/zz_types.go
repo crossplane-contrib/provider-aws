@@ -75,6 +75,13 @@ type CertificateDescription struct {
 }
 
 // +kubebuilder:skipversion
+type CertificateProviderSummary struct {
+	CertificateProviderARN *string `json:"certificateProviderARN,omitempty"`
+
+	CertificateProviderName *string `json:"certificateProviderName,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CertificateValidity struct {
 	NotAfter *metav1.Time `json:"notAfter,omitempty"`
 

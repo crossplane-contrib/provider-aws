@@ -29,7 +29,21 @@ type LogGroupParameters struct {
 	// Region is which region the LogGroup will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The name of the log group.
+	// Use this parameter to specify the log group class for this log group. There
+	// are two classes:
+	//
+	//    * The Standard log class supports all CloudWatch Logs features.
+	//
+	//    * The Infrequent Access log class supports a subset of CloudWatch Logs
+	//    features and incurs lower costs.
+	//
+	// If you omit this parameter, the default of STANDARD is used.
+	//
+	// The value of logGroupClass can't be changed after a log group is created.
+	//
+	// For details about the features supported by each class, see Log classes (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CloudWatch_Logs_Log_Classes.html)
+	LogGroupClass *string `json:"logGroupClass,omitempty"`
+	// A name for the log group.
 	// +kubebuilder:validation:Required
 	LogGroupName *string `json:"logGroupName"`
 	// The key-value pairs to use for the tags.

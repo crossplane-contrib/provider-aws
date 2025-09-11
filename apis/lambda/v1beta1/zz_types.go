@@ -137,8 +137,7 @@ type FunctionConfiguration struct {
 	// fails, the response contains details about the error.
 	Environment *EnvironmentResponse `json:"environment,omitempty"`
 	// The size of the function's /tmp directory in MB. The default value is 512,
-	// but can be any whole number between 512 and 10,240 MB. For more information,
-	// see Configuring ephemeral storage (console) (https://docs.aws.amazon.com/lambda/latest/dg/configuration-function-common.html#configuration-ephemeral-storage).
+	// but it can be any whole number between 512 and 10,240 MB.
 	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
 
 	FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"`
@@ -160,6 +159,8 @@ type FunctionConfiguration struct {
 	LastUpdateStatusReason *string `json:"lastUpdateStatusReason,omitempty"`
 
 	LastUpdateStatusReasonCode *string `json:"lastUpdateStatusReasonCode,omitempty"`
+	// The function's Amazon CloudWatch Logs configuration settings.
+	LoggingConfig *LoggingConfig `json:"loggingConfig,omitempty"`
 
 	MasterARN *string `json:"masterARN,omitempty"`
 
@@ -287,6 +288,17 @@ type LayerVersionsListItem struct {
 	Description *string `json:"description,omitempty"`
 
 	LayerVersionARN *string `json:"layerVersionARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LoggingConfig struct {
+	ApplicationLogLevel *string `json:"applicationLogLevel,omitempty"`
+
+	LogFormat *string `json:"logFormat,omitempty"`
+
+	LogGroup *string `json:"logGroup,omitempty"`
+
+	SystemLogLevel *string `json:"systemLogLevel,omitempty"`
 }
 
 // +kubebuilder:skipversion
