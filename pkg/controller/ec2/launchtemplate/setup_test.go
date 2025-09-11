@@ -26,8 +26,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
+	gomock "go.uber.org/mock/gomock"
 	"k8s.io/utils/ptr"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/ec2/v1alpha1"

@@ -26,9 +26,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	gomock "go.uber.org/mock/gomock"
 
 	"github.com/crossplane-contrib/provider-aws/apis/eks/v1alpha1"
 	mockeksiface "github.com/crossplane-contrib/provider-aws/pkg/clients/mock/eksiface"
