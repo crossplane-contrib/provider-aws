@@ -1,0 +1,96 @@
+---
+apiVersion: wafv2.aws.crossplane.io/v1alpha1
+kind: WebACL
+metadata:
+  name: web-acl-example
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    region: eu-central-1
+    rulesJSON: |
+      [
+        {
+          "Name": "rule-1",
+          "Priority": 2,
+          "Statement": {
+            "OrStatement": {
+              "Statements": [
+                {
+                  "ByteMatchStatement": {
+                    "SearchString": "crossplane.io",
+                    "FieldToMatch": {
+                      "SingleHeader": {
+                        "Name": "Host"
+                      }
+                    },
+                    "TextTransformations": [
+                      {
+                        "Priority": 0,
+                        "Type": "NONE"
+                      }
+                    ],
+                    "PositionalConstraint": "EXACTLY"
+                  }
+                },
+                {
+                  "ByteMatchStatement": {
+                    "SearchString": "github.com",
+                    "FieldToMatch": {
+                      "SingleHeader": {
+                        "Name": "Host"
+                      }
+                    },
+                    "TextTransformations": [
+                      {
+                        "Priority": 0,
+                        "Type": "NONE"
+                      }
+                    ],
+                    "PositionalConstraint": "EXACTLY"
+                  }
+                }
+              ]
+            }
+          },
+          "Action": {
+            "Allow": {}
+          },
+          "VisibilityConfig": {
+            "SampledRequestsEnabled": true,
+            "CloudWatchMetricsEnabled": true,
+            "MetricName": "allow_hosts"
+          }
+        },
+        {
+          "Name": "rule-2",
+          "Priority": 10,
+          "Statement": {
+            "ManagedRuleGroupStatement": {
+              "VendorName": "AWS",
+              "Name": "AWSManagedRulesCommonRuleSet"
+            }
+          },
+          "OverrideAction": {
+            "None": {}
+          },
+          "VisibilityConfig": {
+            "SampledRequestsEnabled": true,
+            "CloudWatchMetricsEnabled": true,
+            "MetricName": "AWS-AWSManagedRulesCommonRuleSet"
+          }
+        }
+      ]
+    visibilityConfig:
+      metricName: 'metric-name'
+      sampledRequestsEnabled: false
+      cloudWatchMetricsEnabled: true
+    defaultAction:
+      allow: { }
+    scope: REGIONAL
+    associatedAWSResources:
+      - resourceARN: arn:aws:elasticloadbalancing:eu-central-1:123456789012:loadbalancer/app/k8s-ingress-50f128f9c3/51af477f49da2d20
+    tags:
+      - key: "crossplane:managed"
+        value: "true"
+  providerConfigRef:
+    name: provider-aws

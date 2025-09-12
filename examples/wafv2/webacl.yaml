@@ -15,7 +15,10 @@ spec:
           cloudWatchMetricsEnabled: true
         priority: 0
         action:
-          allow: { }
+          block:
+            customResponse:
+              responseCode: 403
+              customResponseBodyKey: Forbidden
         statement:
           andStatement: |
             {

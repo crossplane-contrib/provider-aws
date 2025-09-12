@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"regexp"
 	"slices"
@@ -146,6 +147,9 @@ func (c *customConnector) Connect(ctx context.Context, cr *svcapitypes.WebACL) (
 }
 
 func (e *customExternal) Observe(ctx context.Context, cr *svcapitypes.WebACL) (managed.ExternalObservation, error) { //nolint:gocyclo
+	if len(cr.Spec.ForProvider.Rules) > 0 && cr.Spec.ForProvider.RulesJSON != nil {
+		return managed.ExternalObservation{}, errors.New("spec.forProvider parameters rules and rulesJSON are mutually exclusive")
+	}
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
@@ -228,10 +232,20 @@ func (s *shared) isUpToDate(_ context.Context, cr *svcapitypes.WebACL, resp *svc
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.CreateWebACLInput) error {
+	if len(cr.Spec.ForProvider.Rules) > 0 && cr.Spec.ForProvider.RulesJSON != nil {
+		return errors.New("spec.forProvider parameters rules and rulesJSON are mutually exclusive")
+	}
 	input.Name = aws.String(meta.GetExternalName(cr))
-	err := setInputRuleStatementsFromJSON(cr, input.Rules)
-	if err != nil {
-		return err
+	if cr.Spec.ForProvider.RulesJSON != nil {
+		err := json.Unmarshal([]byte(encodeBase64SearchString(*cr.Spec.ForProvider.RulesJSON)), &input.Rules)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := setInputRuleStatementsFromJSON(cr, input.Rules)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -250,13 +264,25 @@ func (s *shared) postCreate(_ context.Context, cr *svcapitypes.WebACL, resp *svc
 	return extCreation, err
 }
 
-func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.UpdateWebACLInput) error { //nolint:gocyclo
+func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.UpdateWebACLInput) (err error) { //nolint:gocyclo
+	if len(cr.Spec.ForProvider.Rules) > 0 && cr.Spec.ForProvider.RulesJSON != nil {
+		return errors.New("spec.forProvider parameters rules and rulesJSON are mutually exclusive")
+	}
+
 	input.Name = aws.String(meta.GetExternalName(cr))
 	input.Id = s.cache.status.ID
 	input.LockToken = s.cache.status.LockToken
-	err := setInputRuleStatementsFromJSON(cr, input.Rules)
-	if err != nil {
-		return err
+
+	if cr.Spec.ForProvider.RulesJSON != nil {
+		err := json.Unmarshal([]byte(encodeBase64SearchString(*cr.Spec.ForProvider.RulesJSON)), &input.Rules)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := setInputRuleStatementsFromJSON(cr, input.Rules)
+		if err != nil {
+			return err
+		}
 	}
 
 	desiredTags := map[string]*string{}
@@ -329,23 +355,47 @@ func preDelete(_ context.Context, cr *svcapitypes.WebACL, input *svcsdk.DeleteWe
 	return false, nil
 }
 
-// base64encodeSearchString encodes the SearchString in the jsonified statement to base64
-func base64encodeSearchString(s string) string {
+// encodeBase64SearchString encodes the SearchString in the jsonified statement to base64
+func encodeBase64SearchString(s string) string {
 	exp := regexp.MustCompile(`"SearchString":\s*"([^"]+)"`)
 	matches := exp.FindAllStringSubmatch(s, -1)
 	if len(matches) > 0 {
 		for _, m := range matches {
-			s = strings.ReplaceAll(s, m[1], base64.StdEncoding.EncodeToString([]byte(m[1])))
+			encVal := base64.StdEncoding.EncodeToString([]byte(m[1]))
+			// replace exact match with base64 encoded value
+			// e.g. "SearchString":"badBot" -> "SearchString":"YmFkQm90"
+			exactMatch := regexp.MustCompile(fmt.Sprintf(`"SearchString":\s*("%s")`, m[1]))
+			s = exactMatch.ReplaceAllString(s, fmt.Sprintf(`"SearchString": "%s"`, encVal))
+			fmt.Printf("encoded s: %s\n", s)
 		}
 	}
 	return s
+}
+
+// decodeBase64SearchString decodes base64 encoded SearchString in the jsonified statement
+func decodeBase64SearchString(s string) (string, error) {
+	exp := regexp.MustCompile(`"SearchString":\s*"([^"]+)"`)
+	matches := exp.FindAllStringSubmatch(s, -1)
+	if len(matches) > 0 {
+		for _, m := range matches {
+			decVal, err := base64.StdEncoding.DecodeString(m[1])
+			if err != nil {
+				return "", errors.Wrap(err, "cannot decode base64 SearchString")
+			}
+			// replace excat match with base64 decoded value
+			// e.g. "SearchString":"YmFkQm90" -> "SearchString":"badBot"
+			exactMatch := regexp.MustCompile(fmt.Sprintf(`"SearchString":\s*("%s")`, m[1]))
+			s = exactMatch.ReplaceAllString(s, fmt.Sprintf(`"SearchString": "%s"`, string(decVal)))
+		}
+	}
+	return s, nil
 }
 
 // statementFromJSONString convert back to sdk types the rule statements which were ignored in generator-config.yaml and handled by the controller as string(json)
 func statementFromJSONString[S statementWithInfiniteRecursion](jsonPointer *string) (*S, error) {
 	var statement S
 	jsonString := ptr.Deref(jsonPointer, "")
-	err := json.Unmarshal([]byte(base64encodeSearchString(jsonString)), &statement)
+	err := json.Unmarshal([]byte(encodeBase64SearchString(jsonString)), &statement)
 	if err != nil {
 		return nil, err
 	}
@@ -502,9 +552,27 @@ func calculateDiff(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.Get
 		targetConfig.Description = aws.String("")
 	}
 	externalConfig := &GenerateWebACL(resp).Spec.ForProvider
-	err := addJsonifiedRuleStatements(resp.WebACL.Rules, externalConfig)
+	err := addJsonifiedRuleStatements(resp.WebACL.Rules, externalConfig, false)
 	if err != nil {
 		return "", err
+	}
+	// If the rules are provided as JSON string, then we need to unmarshal it and set it to the targetConfig.Rules
+	// Further the diff will be calculated based on the targetConfig.Rules and externalConfig.Rules
+	if targetConfig.RulesJSON != nil {
+		var awsSDKRules []*svcsdk.Rule
+		// Deserializing the JSON string to the struct of the aws-sdk type
+		err := json.Unmarshal([]byte(encodeBase64SearchString(*targetConfig.RulesJSON)), &awsSDKRules)
+		if err != nil {
+			return "", err
+		}
+		// Use the generated function to convert aws-sdk rules to provider-aws rules, except the statements which are handled as JSON string by the controller
+		rules := GenerateWebACL(&svcsdk.GetWebACLOutput{WebACL: &svcsdk.WebACL{Rules: awsSDKRules}}).Spec.ForProvider.Rules
+		targetConfig.Rules = rules
+		// Now set the statements which are handled as JSON string by the controller, decodeing the base64 SearchString is needed for further comparison
+		err = addJsonifiedRuleStatements(awsSDKRules, targetConfig, true)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	for i, rule := range targetConfig.Rules {
@@ -592,48 +660,84 @@ func calculateDiff(currentParams *svcapitypes.WebACLParameters, resp *svcsdk.Get
 		cmpopts.IgnoreFields(svcapitypes.WebACLParameters{}, "Region", "Scope"),
 		// CustomWebACLParameters.RegionalResourceTypeAssociation exists only as controller type
 		cmpopts.IgnoreFields(svcapitypes.WebACLParameters{}, "CustomWebACLParameters.RegionalResourceTypeAssociation"),
+		cmpopts.IgnoreFields(svcapitypes.WebACLParameters{}, "CustomWebACLParameters.RulesJSON"),
 	}
 	diff := cmp.Diff(targetConfig, externalConfig, opts...)
 	return diff, nil
 }
 
-// addJsonifiedRuleStatements adds the Jsonified rule statements to the externalConfig(other fields prepared by GenerateWebACL)
-func addJsonifiedRuleStatements(resp []*svcsdk.Rule, externalConfig *svcapitypes.WebACLParameters) error { //nolint:gocyclo
-	for i, rule := range resp {
+// addJsonifiedRuleStatements adds the Jsonified rule statements to type svcapitypes.WebACLParameters (other fields prepared by GenerateWebACL)
+func addJsonifiedRuleStatements(awsSDKrules []*svcsdk.Rule, webaclParams *svcapitypes.WebACLParameters, decB64 bool) error { //nolint:gocyclo
+	for i, rule := range awsSDKrules {
 		if rule.Statement.AndStatement != nil {
 			jsonStringStatement, err := statementToJSONString[svcsdk.AndStatement](*rule.Statement.AndStatement)
 			if err != nil {
 				return err
 			}
-			externalConfig.Rules[i].Statement.AndStatement = jsonStringStatement
+			if decB64 {
+				decJsonStringStatement, err := decodeBase64SearchString(*jsonStringStatement)
+				jsonStringStatement = &decJsonStringStatement
+				if err != nil {
+					return err
+				}
+			}
+			webaclParams.Rules[i].Statement.AndStatement = jsonStringStatement
 		}
 		if rule.Statement.OrStatement != nil {
 			jsonStringStatement, err := statementToJSONString[svcsdk.OrStatement](*rule.Statement.OrStatement)
 			if err != nil {
 				return err
 			}
-			externalConfig.Rules[i].Statement.OrStatement = jsonStringStatement
+			if decB64 {
+				decJsonStringStatement, err := decodeBase64SearchString(*jsonStringStatement)
+				jsonStringStatement = &decJsonStringStatement
+				if err != nil {
+					return err
+				}
+			}
+			webaclParams.Rules[i].Statement.OrStatement = jsonStringStatement
 		}
 		if rule.Statement.NotStatement != nil {
 			jsonStringStatement, err := statementToJSONString[svcsdk.NotStatement](*rule.Statement.NotStatement)
 			if err != nil {
 				return err
 			}
-			externalConfig.Rules[i].Statement.NotStatement = jsonStringStatement
+			if decB64 {
+				decJsonStringStatement, err := decodeBase64SearchString(*jsonStringStatement)
+				jsonStringStatement = &decJsonStringStatement
+				if err != nil {
+					return err
+				}
+			}
+			webaclParams.Rules[i].Statement.NotStatement = jsonStringStatement
 		}
 		if rule.Statement.ManagedRuleGroupStatement != nil && rule.Statement.ManagedRuleGroupStatement.ScopeDownStatement != nil {
 			jsonStringStatement, err := statementToJSONString[svcsdk.Statement](*rule.Statement.ManagedRuleGroupStatement.ScopeDownStatement)
 			if err != nil {
 				return err
 			}
-			externalConfig.Rules[i].Statement.ManagedRuleGroupStatement.ScopeDownStatement = jsonStringStatement
+			if decB64 {
+				decJsonStringStatement, err := decodeBase64SearchString(*jsonStringStatement)
+				jsonStringStatement = &decJsonStringStatement
+				if err != nil {
+					return err
+				}
+			}
+			webaclParams.Rules[i].Statement.ManagedRuleGroupStatement.ScopeDownStatement = jsonStringStatement
 		}
 		if rule.Statement.RateBasedStatement != nil && rule.Statement.RateBasedStatement.ScopeDownStatement != nil {
 			jsonStringStatement, err := statementToJSONString[svcsdk.Statement](*rule.Statement.RateBasedStatement.ScopeDownStatement)
 			if err != nil {
 				return err
 			}
-			externalConfig.Rules[i].Statement.RateBasedStatement.ScopeDownStatement = jsonStringStatement
+			if decB64 {
+				decJsonStringStatement, err := decodeBase64SearchString(*jsonStringStatement)
+				jsonStringStatement = &decJsonStringStatement
+				if err != nil {
+					return err
+				}
+			}
+			webaclParams.Rules[i].Statement.RateBasedStatement.ScopeDownStatement = jsonStringStatement
 		}
 	}
 	return nil

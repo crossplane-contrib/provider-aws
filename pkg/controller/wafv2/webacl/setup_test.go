@@ -61,7 +61,7 @@ func TestIsUpToDate(t *testing.T) {
 	rulePriority1 := int64(1)
 	ruleAndStatement0 := ` {
 	              "Statements": [
-	                {
+{
 	                  "ByteMatchStatement":
 	                    {
 	                      "FieldToMatch": {
@@ -155,6 +155,145 @@ func TestIsUpToDate(t *testing.T) {
 	ruleAndStatement1TextTransformations1Priority := int64(1)
 	ruleAndStatement1TextTransformations0Type := ruleAndStatement0TextTransformations0Type
 	ruleAndStatement1TextTransformations1Type := ruleAndStatement1TextTransformations0Type
+
+	rulesJSON := `[
+                    {
+                      "Action": {
+                        "Allow": {}
+                      },
+                      "Name": "ruleName0",
+                      "Priority": 0,
+                      "Statement": {
+                        "AndStatement": {
+                          "Statements": [
+                            {
+                              "ByteMatchStatement": {
+                                "FieldToMatch": {
+                                  "SingleHeader": {
+                                    "Name": "User-Agent"
+                                  }
+                                },
+                                "PositionalConstraint": "CONTAINS",
+                                "SearchString": "badBot",
+                                "TextTransformations": [
+                                  {
+                                    "Priority": 0,
+                                    "Type": "NONE"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "ByteMatchStatement": {
+                                "FieldToMatch": {
+                                  "SingleHeader": {
+                                    "Name": "Host"
+                                  }
+                                },
+                                "PositionalConstraint": "CONTAINS",
+                                "SearchString": "badBot",
+                                "TextTransformations": [
+                                  {
+                                    "Priority": 1,
+                                    "Type": "NONE"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "VisibilityConfig": {
+                        "CloudWatchMetricsEnabled": false,
+                        "MetricName": "metricName",
+                        "SampledRequestsEnabled": false
+                      }
+                    },
+                    {
+                      "Action": {
+                        "Allow": {}
+                      },
+                      "Name": "ruleName1",
+                      "Priority": 1,
+                      "Statement": {
+                        "AndStatement": {
+                          "Statements": [
+                            {
+                              "ByteMatchStatement": {
+                                "FieldToMatch": {
+                                  "SingleHeader": {
+                                    "Name": "User-Agent"
+                                  }
+                                },
+                                "PositionalConstraint": "CONTAINS",
+                                "SearchString": "badBot",
+                                "TextTransformations": [
+                                  {
+                                    "Priority": 0,
+                                    "Type": "NONE"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "ByteMatchStatement": {
+                                "FieldToMatch": {
+                                  "SingleHeader": {
+                                    "Name": "Host"
+                                  }
+                                },
+                                "PositionalConstraint": "CONTAINS",
+                                "SearchString": "crossplane.io",
+                                "TextTransformations": [
+                                  {
+                                    "Priority": 1,
+                                    "Type": "NONE"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "VisibilityConfig": {
+                        "CloudWatchMetricsEnabled": false,
+                        "MetricName": "metricName",
+                        "SampledRequestsEnabled": false
+                      }
+                    }
+                  ]`
+	rulesJSON2 := `[
+                     {
+                       "Action": {
+                         "Allow": {}
+                       },
+                       "Name": "ruleName0",
+                       "Priority": 0,
+                       "Statement": {
+                         "ByteMatchStatement": {
+                           "FieldToMatch": {
+                             "SingleHeader": {
+                               "Name": "user-agent"
+                             },
+                             "UriPath": null
+                           },
+                           "PositionalConstraint": "CONTAINS",
+                           "SearchString": "badBot",
+                           "TextTransformations": [
+                             {
+                               "Priority": 1,
+                               "Type": "NONE"
+                             }
+                           ]
+                         }
+                       },
+                       "VisibilityConfig": {
+                         "CloudWatchMetricsEnabled": false,
+                         "MetricName": "metricName",
+                         "SampledRequestsEnabled": false
+                       }
+                     }
+                   ]`
 
 	type want struct {
 		result bool
@@ -346,6 +485,337 @@ func TestIsUpToDate(t *testing.T) {
 			},
 			want: want{
 				result: true,
+				err:    nil,
+			},
+		},
+		"SameRulesJSON": {
+			args: args{
+				client: &fake.MockWAFV2Client{
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							TagInfoForResource: &svcsdk.TagInfoForResource{TagList: []*svcsdk.Tag{
+								{Key: &tag0Key, Value: &tag0Value},
+							}},
+						}, nil
+					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: nil,
+						}, nil
+					},
+				},
+				desired: &svcapitypes.WebACL{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: webAclName,
+						Annotations: map[string]string{
+							meta.AnnotationKeyExternalName: webAclName,
+						},
+					},
+					Spec: svcapitypes.WebACLSpec{
+						ForProvider: svcapitypes.WebACLParameters{
+							Region: "eu-central-1",
+							VisibilityConfig: &svcapitypes.VisibilityConfig{
+								MetricName:               &visibilityConfigMetricName,
+								SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+								CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+							},
+							DefaultAction: &svcapitypes.DefaultAction{
+								Allow: &svcapitypes.AllowAction{},
+							},
+							Scope: &scope,
+							CustomWebACLParameters: svcapitypes.CustomWebACLParameters{
+								RulesJSON: aws.String(rulesJSON),
+							},
+							Tags: []*svcapitypes.Tag{
+								{Key: &tag0Key, Value: &tag0Value},
+							},
+						},
+					},
+				},
+				observed: &svcsdk.GetWebACLOutput{
+					WebACL: &svcsdk.WebACL{
+						Name:        &webAclName,
+						Id:          &webAclId,
+						Description: aws.String(""),
+						VisibilityConfig: &svcsdk.VisibilityConfig{
+							MetricName:               &visibilityConfigMetricName,
+							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+							CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+						},
+						DefaultAction: &svcsdk.DefaultAction{
+							Allow: &svcsdk.AllowAction{},
+						},
+						Rules: []*svcsdk.Rule{
+							{
+								Name: &ruleName1,
+								VisibilityConfig: &svcsdk.VisibilityConfig{
+									MetricName:               &visibilityConfigMetricName,
+									SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+									CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+								},
+								Priority: &rulePriority1,
+								Action: &svcsdk.RuleAction{
+									Allow: &svcsdk.AllowAction{},
+								},
+								Statement: &svcsdk.Statement{
+									AndStatement: &svcsdk.AndStatement{
+										Statements: []*svcsdk.Statement{
+											{ByteMatchStatement: &svcsdk.ByteMatchStatement{
+												FieldToMatch: &svcsdk.FieldToMatch{
+													SingleHeader: &svcsdk.SingleHeader{
+														Name: &ruleAndStatement0FieldToMatchSingleHeaderName,
+													},
+												},
+												PositionalConstraint: &ruleAndStatement0PositionalConstraint,
+												SearchString:         ruleAndStatement0SearchString,
+												TextTransformations: []*svcsdk.TextTransformation{
+													{Priority: &ruleAndStatement0TextTransformations0Priority, Type: &ruleAndStatement0TextTransformations0Type},
+												},
+											},
+											},
+											{ByteMatchStatement: &svcsdk.ByteMatchStatement{
+												FieldToMatch: &svcsdk.FieldToMatch{
+													SingleHeader: &svcsdk.SingleHeader{
+														Name: &ruleAndStatement1FieldToMatchSingleHeaderName,
+													},
+												},
+												PositionalConstraint: &ruleAndStatement1PositionalConstraint,
+												SearchString:         ruleAndStatement1SearchString,
+												TextTransformations: []*svcsdk.TextTransformation{
+													{Priority: &ruleAndStatement1TextTransformations1Priority, Type: &ruleAndStatement1TextTransformations1Type},
+												},
+											},
+											},
+										},
+									},
+								},
+							},
+							{
+								Name: &ruleName0,
+								VisibilityConfig: &svcsdk.VisibilityConfig{
+									MetricName:               &visibilityConfigMetricName,
+									SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+									CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+								},
+								Priority: &rulePriority0,
+								Action: &svcsdk.RuleAction{
+									Allow: &svcsdk.AllowAction{},
+								},
+								Statement: &svcsdk.Statement{
+									AndStatement: &svcsdk.AndStatement{
+										Statements: []*svcsdk.Statement{
+											{ByteMatchStatement: &svcsdk.ByteMatchStatement{
+												FieldToMatch: &svcsdk.FieldToMatch{
+													SingleHeader: &svcsdk.SingleHeader{
+														Name: &ruleAndStatement0FieldToMatchSingleHeaderName,
+													},
+												},
+												PositionalConstraint: &ruleAndStatement0PositionalConstraint,
+												SearchString:         ruleAndStatement0SearchString,
+												TextTransformations: []*svcsdk.TextTransformation{
+													{Priority: &ruleAndStatement0TextTransformations0Priority, Type: &ruleAndStatement0TextTransformations0Type},
+												},
+											},
+											},
+											{ByteMatchStatement: &svcsdk.ByteMatchStatement{
+												FieldToMatch: &svcsdk.FieldToMatch{
+													SingleHeader: &svcsdk.SingleHeader{
+														Name: &ruleAndStatement1FieldToMatchSingleHeaderName,
+													},
+												},
+												PositionalConstraint: &ruleAndStatement1PositionalConstraint,
+												SearchString:         ruleAndStatement0SearchString,
+												TextTransformations: []*svcsdk.TextTransformation{
+													{Priority: &ruleAndStatement0TextTransformations1Priority, Type: &ruleAndStatement0TextTransformations1Type},
+												},
+											},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				result: true,
+				err:    nil,
+			},
+		},
+		"SameRulesJSON2": {
+			args: args{
+				client: &fake.MockWAFV2Client{
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							TagInfoForResource: &svcsdk.TagInfoForResource{TagList: []*svcsdk.Tag{}},
+						}, nil
+					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: nil,
+						}, nil
+					},
+				},
+				desired: &svcapitypes.WebACL{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: webAclName,
+						Annotations: map[string]string{
+							meta.AnnotationKeyExternalName: webAclName,
+						},
+					},
+					Spec: svcapitypes.WebACLSpec{
+						ForProvider: svcapitypes.WebACLParameters{
+							Region: "eu-central-1",
+							VisibilityConfig: &svcapitypes.VisibilityConfig{
+								MetricName:               &visibilityConfigMetricName,
+								SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+								CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+							},
+							DefaultAction: &svcapitypes.DefaultAction{
+								Allow: &svcapitypes.AllowAction{},
+							},
+							Scope: &scope,
+							CustomWebACLParameters: svcapitypes.CustomWebACLParameters{
+								RulesJSON: aws.String(rulesJSON2),
+							},
+						},
+					},
+				},
+				observed: &svcsdk.GetWebACLOutput{
+					WebACL: &svcsdk.WebACL{
+						Name:        &webAclName,
+						Description: aws.String(""),
+						Id:          &webAclId,
+						VisibilityConfig: &svcsdk.VisibilityConfig{
+							MetricName:               &visibilityConfigMetricName,
+							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+							CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+						},
+						DefaultAction: &svcsdk.DefaultAction{
+							Allow: &svcsdk.AllowAction{},
+						},
+						Rules: []*svcsdk.Rule{
+							{
+								Name: &ruleName0,
+								VisibilityConfig: &svcsdk.VisibilityConfig{
+									MetricName:               &visibilityConfigMetricName,
+									SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+									CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+								},
+								Priority: &rulePriority0,
+								Action: &svcsdk.RuleAction{
+									Allow: &svcsdk.AllowAction{},
+								},
+								Statement: &svcsdk.Statement{
+									ByteMatchStatement: &svcsdk.ByteMatchStatement{
+										FieldToMatch: &svcsdk.FieldToMatch{
+											SingleHeader: &svcsdk.SingleHeader{
+												Name: aws.String("user-agent"),
+											},
+										},
+										PositionalConstraint: aws.String("CONTAINS"),
+										SearchString:         []byte("badBot"),
+										TextTransformations: []*svcsdk.TextTransformation{
+											{Priority: aws.Int64(1), Type: aws.String("NONE")},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				result: true,
+				err:    nil,
+			},
+		},
+		"ChangedRulesJSON2": {
+			args: args{
+				client: &fake.MockWAFV2Client{
+					MockListTagsForResource: func(input *svcsdk.ListTagsForResourceInput) (*svcsdk.ListTagsForResourceOutput, error) {
+						return &svcsdk.ListTagsForResourceOutput{
+							TagInfoForResource: &svcsdk.TagInfoForResource{TagList: []*svcsdk.Tag{}},
+						}, nil
+					},
+					MockListResourcesForWebACL: func(input *svcsdk.ListResourcesForWebACLInput) (*svcsdk.ListResourcesForWebACLOutput, error) {
+						return &svcsdk.ListResourcesForWebACLOutput{
+							ResourceArns: nil,
+						}, nil
+					},
+				},
+				desired: &svcapitypes.WebACL{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: webAclName,
+						Annotations: map[string]string{
+							meta.AnnotationKeyExternalName: webAclName,
+						},
+					},
+					Spec: svcapitypes.WebACLSpec{
+						ForProvider: svcapitypes.WebACLParameters{
+							Region: "eu-central-1",
+							VisibilityConfig: &svcapitypes.VisibilityConfig{
+								MetricName:               &visibilityConfigMetricName,
+								SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+								CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+							},
+							DefaultAction: &svcapitypes.DefaultAction{
+								Allow: &svcapitypes.AllowAction{},
+							},
+							Scope: &scope,
+							CustomWebACLParameters: svcapitypes.CustomWebACLParameters{
+								RulesJSON: aws.String(rulesJSON2),
+							},
+						},
+					},
+				},
+				observed: &svcsdk.GetWebACLOutput{
+					WebACL: &svcsdk.WebACL{
+						Name:        &webAclName,
+						Description: aws.String(""),
+						Id:          &webAclId,
+						VisibilityConfig: &svcsdk.VisibilityConfig{
+							MetricName:               &visibilityConfigMetricName,
+							SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+							CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+						},
+						DefaultAction: &svcsdk.DefaultAction{
+							Allow: &svcsdk.AllowAction{},
+						},
+						Rules: []*svcsdk.Rule{
+							{
+								Name: &ruleName0,
+								VisibilityConfig: &svcsdk.VisibilityConfig{
+									MetricName:               &visibilityConfigMetricName,
+									SampledRequestsEnabled:   &visibilityConfigSampledRequestsEnabled,
+									CloudWatchMetricsEnabled: &visibilityConfigCloudWatchMetricsEnabled,
+								},
+								Priority: &rulePriority1,
+								Action: &svcsdk.RuleAction{
+									Allow: &svcsdk.AllowAction{},
+								},
+								Statement: &svcsdk.Statement{
+									ByteMatchStatement: &svcsdk.ByteMatchStatement{
+										FieldToMatch: &svcsdk.FieldToMatch{
+											SingleHeader: &svcsdk.SingleHeader{
+												Name: aws.String("user-agent"),
+											},
+										},
+										PositionalConstraint: aws.String("CONTAINS"),
+										SearchString:         []byte("crossplane.io"),
+										TextTransformations: []*svcsdk.TextTransformation{
+											{Priority: aws.Int64(1), Type: aws.String("NONE")},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				result: false,
 				err:    nil,
 			},
 		},
