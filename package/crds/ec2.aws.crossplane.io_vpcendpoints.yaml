@@ -287,6 +287,12 @@ spec:
                   serviceName:
                     description: The name of the endpoint service.
                     type: string
+                  serviceRegion:
+                    description: ServiceRegion the AWS region of the VPC Endpoint
+                      Service. If specified, the VPC endpoint will connect to the
+                      service in the provided region. Applicable for endpoints of
+                      type Interface.
+                    type: string
                   subnetConfigurations:
                     description: The subnet configurations for the endpoint.
                     items:

@@ -271,6 +271,12 @@ spec:
                     items:
                       type: string
                     type: array
+                  supportedRegions:
+                    description: SupportedRegions the set of regions from which service
+                      consumers can access the service.
+                    items:
+                      type: string
+                    type: array
                   tagSpecifications:
                     description: The tags to associate with the service.
                     items:
