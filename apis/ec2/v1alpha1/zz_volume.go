@@ -49,15 +49,15 @@ type VolumeParameters struct {
 	//
 	// The following are the supported values for each volume type:
 	//
-	//    * gp3: 3,000-16,000 IOPS
+	//    * gp3: 3,000 - 16,000 IOPS
 	//
-	//    * io1: 100-64,000 IOPS
+	//    * io1: 100 - 64,000 IOPS
 	//
-	//    * io2: 100-64,000 IOPS
+	//    * io2: 100 - 256,000 IOPS
 	//
-	// io1 and io2 volumes support up to 64,000 IOPS only on Instances built on
+	// For io2 volumes, you can achieve up to 256,000 IOPS on instances built on
 	// the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
-	// Other instance families support performance up to 32,000 IOPS.
+	// On other instances, you can achieve performance up to 32,000 IOPS.
 	//
 	// This parameter is required for io1 and io2 volumes. The default for gp3 volumes
 	// is 3,000 IOPS. This parameter is not supported for gp2, st1, sc1, or standard
@@ -79,13 +79,15 @@ type VolumeParameters struct {
 	//
 	// The following are the supported volumes sizes for each volume type:
 	//
-	//    * gp2 and gp3: 1-16,384
+	//    * gp2 and gp3: 1 - 16,384 GiB
 	//
-	//    * io1 and io2: 4-16,384
+	//    * io1: 4 - 16,384 GiB
 	//
-	//    * st1 and sc1: 125-16,384
+	//    * io2: 4 - 65,536 GiB
 	//
-	//    * standard: 1-1,024
+	//    * st1 and sc1: 125 - 16,384 GiB
+	//
+	//    * standard: 1 - 1024 GiB
 	Size *int64 `json:"size,omitempty"`
 	// The snapshot from which to create the volume. You must specify either a snapshot
 	// ID or a volume size.

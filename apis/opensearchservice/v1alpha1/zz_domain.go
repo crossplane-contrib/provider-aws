@@ -78,7 +78,10 @@ type DomainParameters struct {
 	// Elasticsearch_7.9. For more information, see Creating and managing Amazon
 	// OpenSearch Service domains (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomains).
 	EngineVersion *string `json:"engineVersion,omitempty"`
-	// The type of IP addresses supported by the endpoint for the domain.
+	// Specify either dual stack or IPv4 as your IP address type. Dual stack allows
+	// you to share domain resources across IPv4 and IPv6 address types, and is
+	// the recommended option. If you set your IP address type to dual stack, you
+	// can't change your address type later.
 	IPAddressType *string `json:"iPAddressType,omitempty"`
 	// Key-value pairs to configure log publishing.
 	LogPublishingOptions map[string]*LogPublishingOption `json:"logPublishingOptions,omitempty"`
@@ -145,10 +148,13 @@ type DomainObservation struct {
 	// Domain-specific endpoint used to submit index, search, and data upload requests
 	// to the domain.
 	Endpoint *string `json:"endpoint,omitempty"`
-
+	// If IPAddressType to set to dualstack, a version 2 domain endpoint is provisioned.
+	// This endpoint functions like a normal endpoint, except that it works with
+	// both IPv4 and IPv6 IP addresses. Normal endpoints work only with IPv4 IP
+	// addresses.
 	EndpointV2 *string `json:"endpointV2,omitempty"`
 	// The key-value pair that exists if the OpenSearch Service domain uses VPC
-	// endpoints.. Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
+	// endpoints. Example key, value: 'vpc','vpc-endpoint-h2dsd34efgyghrtguk5gt6j2foh4.us-east-1.es.amazonaws.com'.
 	Endpoints map[string]*string `json:"endpoints,omitempty"`
 	// Version of OpenSearch or Elasticsearch that the domain is running, in the
 	// format Elasticsearch_X.Y or OpenSearch_X.Y.

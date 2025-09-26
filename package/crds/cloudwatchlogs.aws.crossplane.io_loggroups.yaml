@@ -155,8 +155,24 @@ spec:
                             type: string
                         type: object
                     type: object
+                  logGroupClass:
+                    description: |-
+                      Use this parameter to specify the log group class for this log group. There
+                      are two classes:
+
+                         * The Standard log class supports all CloudWatch Logs features.
+
+                         * The Infrequent Access log class supports a subset of CloudWatch Logs
+                         features and incurs lower costs.
+
+                      If you omit this parameter, the default of STANDARD is used.
+
+                      The value of logGroupClass can't be changed after a log group is created.
+
+                      For details about the features supported by each class, see Log classes (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CloudWatch_Logs_Log_Classes.html)
+                    type: string
                   logGroupName:
-                    description: The name of the log group.
+                    description: A name for the log group.
                     type: string
                   region:
                     description: Region is which region the LogGroup will be created.

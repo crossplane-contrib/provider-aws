@@ -2021,6 +2021,8 @@ spec:
                       volumes:
                         items:
                           properties:
+                            configuredAtLaunch:
+                              type: boolean
                             dockerVolumeConfiguration:
                               description: |-
                                 This parameter is specified when you're using Docker volumes. Docker volumes

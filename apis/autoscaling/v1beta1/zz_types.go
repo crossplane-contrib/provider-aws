@@ -157,6 +157,11 @@ type Group struct {
 	HealthCheckGracePeriod *int64 `json:"healthCheckGracePeriod,omitempty"`
 
 	HealthCheckType *string `json:"healthCheckType,omitempty"`
+	// Describes an instance maintenance policy.
+	//
+	// For more information, see Set instance maintenance policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `json:"instanceMaintenancePolicy,omitempty"`
 
 	Instances []*Instance `json:"instances,omitempty"`
 
@@ -259,6 +264,13 @@ type InstanceDetails struct {
 	ProtectedFromScaleIn *bool `json:"protectedFromScaleIn,omitempty"`
 
 	WeightedCapacity *string `json:"weightedCapacity,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InstanceMaintenancePolicy struct {
+	MaxHealthyPercentage *int64 `json:"maxHealthyPercentage,omitempty"`
+
+	MinHealthyPercentage *int64 `json:"minHealthyPercentage,omitempty"`
 }
 
 // +kubebuilder:skipversion

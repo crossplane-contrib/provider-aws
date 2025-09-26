@@ -134,6 +134,11 @@ type Certificate struct {
 }
 
 // +kubebuilder:skipversion
+type DescribeTrustStoreRevocation struct {
+	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FixedResponseActionConfig struct {
 	ContentType *string `json:"contentType,omitempty"`
 
@@ -178,6 +183,8 @@ type Listener_SDK struct {
 	ListenerARN *string `json:"listenerARN,omitempty"`
 
 	LoadBalancerARN *string `json:"loadBalancerARN,omitempty"`
+	// Information about the mutual authentication attributes of a listener.
+	MutualAuthentication *MutualAuthenticationAttributes `json:"mutualAuthentication,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
 
@@ -243,6 +250,15 @@ type Matcher struct {
 }
 
 // +kubebuilder:skipversion
+type MutualAuthenticationAttributes struct {
+	IgnoreClientCertificateExpiry *bool `json:"ignoreClientCertificateExpiry,omitempty"`
+
+	Mode *string `json:"mode,omitempty"`
+
+	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type PathPatternConditionConfig struct {
 	Values []*string `json:"values,omitempty"`
 }
@@ -272,6 +288,15 @@ type RedirectActionConfig struct {
 	Query *string `json:"query,omitempty"`
 
 	StatusCode *string `json:"statusCode,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RevocationContent struct {
+	S3Bucket *string `json:"s3Bucket,omitempty"`
+
+	S3Key *string `json:"s3Key,omitempty"`
+
+	S3ObjectVersion *string `json:"s3ObjectVersion,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -427,4 +452,22 @@ type TargetGroup_SDK struct {
 // +kubebuilder:skipversion
 type TargetHealthDescription struct {
 	HealthCheckPort *string `json:"healthCheckPort,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TrustStoreRevocation struct {
+	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TrustStore_SDK struct {
+	Name *string `json:"name,omitempty"`
+
+	NumberOfCaCertificates *int64 `json:"numberOfCaCertificates,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	TotalRevokedEntries *int64 `json:"totalRevokedEntries,omitempty"`
+
+	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
 }

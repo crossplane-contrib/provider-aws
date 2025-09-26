@@ -896,6 +896,13 @@ type Headers struct {
 }
 
 // +kubebuilder:skipversion
+type ImportSource struct {
+	SourceARN *string `json:"sourceARN,omitempty"`
+
+	SourceType *string `json:"sourceType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Invalidation struct {
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
 
@@ -966,6 +973,37 @@ type KeyPairIDs struct {
 	Items []*string `json:"items,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type KeyValueStoreAssociations struct {
+	Quantity *int64 `json:"quantity,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type KeyValueStoreList_SDK struct {
+	Items []*KeyValueStore_SDK `json:"items,omitempty"`
+
+	MaxItems *int64 `json:"maxItems,omitempty"`
+
+	NextMarker *string `json:"nextMarker,omitempty"`
+
+	Quantity *int64 `json:"quantity,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type KeyValueStore_SDK struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Comment *string `json:"comment,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Status *string `json:"status,omitempty"`
 }
 
 // +kubebuilder:skipversion

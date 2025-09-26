@@ -28,6 +28,13 @@ const (
 	ActionTypeEnum_fixed_response       ActionTypeEnum = "fixed-response"
 )
 
+type AnomalyResultEnum string
+
+const (
+	AnomalyResultEnum_anomalous AnomalyResultEnum = "anomalous"
+	AnomalyResultEnum_normal    AnomalyResultEnum = "normal"
+)
+
 type AuthenticateCognitoActionConditionalBehaviorEnum string
 
 const (
@@ -42,6 +49,13 @@ const (
 	AuthenticateOIDCActionConditionalBehaviorEnum_deny         AuthenticateOIDCActionConditionalBehaviorEnum = "deny"
 	AuthenticateOIDCActionConditionalBehaviorEnum_allow        AuthenticateOIDCActionConditionalBehaviorEnum = "allow"
 	AuthenticateOIDCActionConditionalBehaviorEnum_authenticate AuthenticateOIDCActionConditionalBehaviorEnum = "authenticate"
+)
+
+type DescribeTargetHealthInputIncludeEnum string
+
+const (
+	DescribeTargetHealthInputIncludeEnum_AnomalyDetection DescribeTargetHealthInputIncludeEnum = "AnomalyDetection"
+	DescribeTargetHealthInputIncludeEnum_All              DescribeTargetHealthInputIncludeEnum = "All"
 )
 
 type EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum string
@@ -82,6 +96,13 @@ const (
 	LoadBalancerTypeEnum_gateway     LoadBalancerTypeEnum = "gateway"
 )
 
+type MitigationInEffectEnum string
+
+const (
+	MitigationInEffectEnum_yes MitigationInEffectEnum = "yes"
+	MitigationInEffectEnum_no  MitigationInEffectEnum = "no"
+)
+
 type ProtocolEnum string
 
 const (
@@ -99,6 +120,12 @@ type RedirectActionStatusCodeEnum string
 const (
 	RedirectActionStatusCodeEnum_HTTP_301 RedirectActionStatusCodeEnum = "HTTP_301"
 	RedirectActionStatusCodeEnum_HTTP_302 RedirectActionStatusCodeEnum = "HTTP_302"
+)
+
+type RevocationType string
+
+const (
+	RevocationType_CRL RevocationType = "CRL"
 )
 
 type TargetGroupIPAddressTypeEnum string
@@ -143,4 +170,11 @@ const (
 	TargetTypeEnum_ip       TargetTypeEnum = "ip"
 	TargetTypeEnum_lambda   TargetTypeEnum = "lambda"
 	TargetTypeEnum_alb      TargetTypeEnum = "alb"
+)
+
+type TrustStoreStatus_SDK string
+
+const (
+	TrustStoreStatus_SDK_ACTIVE   TrustStoreStatus_SDK = "ACTIVE"
+	TrustStoreStatus_SDK_CREATING TrustStoreStatus_SDK = "CREATING"
 )

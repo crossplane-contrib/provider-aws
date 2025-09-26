@@ -29,3 +29,9 @@ type CustomPolicyParameters struct {
 
 // CustomPolicyObservation includes the custom status fields of Policy.
 type CustomPolicyObservation struct{}
+
+// CustomCertificateProviderParameters includes the custom fields of CertificateProvider.
+type CustomCertificateProviderParameters struct{}
+
+// CustomCertificateProviderObservation includes the custom status fields of CertificateProvider.
+type CustomCertificateProviderObservation struct{}

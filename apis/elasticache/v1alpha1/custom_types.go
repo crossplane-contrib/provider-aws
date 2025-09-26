@@ -25,3 +25,15 @@ type CustomCacheParameterGroupParameters struct {
 
 // CustomCacheParameterGroupObservation includes the custom status fields of CacheParameterGroupObservation.
 type CustomCacheParameterGroupObservation struct{}
+
+// CustomServerlessCacheParameters includes the custom fields of ServerlessCache.
+type CustomServerlessCacheParameters struct{}
+
+// CustomServerlessCacheObservation includes the custom status fields of ServerlessCache.
+type CustomServerlessCacheObservation struct{}
+
+// CustomServerlessCacheSnapshotParameters includes the custom fields of ServerlessCacheSnapshot.
+type CustomServerlessCacheSnapshotParameters struct{}
+
+// CustomServerlessCacheSnapshotObservation includes the custom status fields of ServerlessCacheSnapshot.
+type CustomServerlessCacheSnapshotObservation struct{}

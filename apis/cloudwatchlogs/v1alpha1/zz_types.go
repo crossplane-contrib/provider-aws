@@ -37,6 +37,53 @@ type AccountPolicy struct {
 }
 
 // +kubebuilder:skipversion
+type Anomaly struct {
+	Active *bool `json:"active,omitempty"`
+
+	AnomalyDetectorARN *string `json:"anomalyDetectorARN,omitempty"`
+
+	FirstSeen *int64 `json:"firstSeen,omitempty"`
+
+	IsPatternLevelSuppression *bool `json:"isPatternLevelSuppression,omitempty"`
+
+	LastSeen *int64 `json:"lastSeen,omitempty"`
+
+	LogGroupARNList []*string `json:"logGroupARNList,omitempty"`
+
+	Suppressed *bool `json:"suppressed,omitempty"`
+
+	SuppressedDate *int64 `json:"suppressedDate,omitempty"`
+
+	SuppressedUntil *int64 `json:"suppressedUntil,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AnomalyDetector struct {
+	AnomalyDetectorARN *string `json:"anomalyDetectorARN,omitempty"`
+
+	AnomalyDetectorStatus *string `json:"anomalyDetectorStatus,omitempty"`
+
+	AnomalyVisibilityTime *int64 `json:"anomalyVisibilityTime,omitempty"`
+
+	CreationTimeStamp *int64 `json:"creationTimeStamp,omitempty"`
+
+	DetectorName *string `json:"detectorName,omitempty"`
+
+	EvaluationFrequency *string `json:"evaluationFrequency,omitempty"`
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	FilterPattern *string `json:"filterPattern,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	LastModifiedTimeStamp *int64 `json:"lastModifiedTimeStamp,omitempty"`
+
+	LogGroupARNList []*string `json:"logGroupARNList,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Delivery struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -100,6 +147,22 @@ type InputLogEvent struct {
 }
 
 // +kubebuilder:skipversion
+type LiveTailSessionLogEvent struct {
+	IngestionTime *int64 `json:"ingestionTime,omitempty"`
+
+	Timestamp *int64 `json:"timestamp,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LiveTailSessionStart struct {
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	LogEventFilterPattern *string `json:"logEventFilterPattern,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LogGroup_SDK struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -110,6 +173,8 @@ type LogGroup_SDK struct {
 	InheritedProperties []*string `json:"inheritedProperties,omitempty"`
 
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	LogGroupClass *string `json:"logGroupClass,omitempty"`
 
 	LogGroupName *string `json:"logGroupName,omitempty"`
 
@@ -143,6 +208,11 @@ type LogStream struct {
 // +kubebuilder:skipversion
 type MetricFilter struct {
 	CreationTime *int64 `json:"creationTime,omitempty"`
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	FilterPattern *string `json:"filterPattern,omitempty"`
 
 	LogGroupName *string `json:"logGroupName,omitempty"`
 }
@@ -152,6 +222,11 @@ type OutputLogEvent struct {
 	IngestionTime *int64 `json:"ingestionTime,omitempty"`
 
 	Timestamp *int64 `json:"timestamp,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PatternToken struct {
+	IsDynamic *bool `json:"isDynamic,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -178,6 +253,11 @@ type ResourcePolicy_SDK struct {
 // +kubebuilder:skipversion
 type SubscriptionFilter struct {
 	CreationTime *int64 `json:"creationTime,omitempty"`
+	// A symbolic description of how CloudWatch Logs should interpret the data in
+	// each log event. For example, a log event can contain timestamps, IP addresses,
+	// strings, and so on. You use the filter pattern to specify what to look for
+	// in the log event message.
+	FilterPattern *string `json:"filterPattern,omitempty"`
 
 	LogGroupName *string `json:"logGroupName,omitempty"`
 }

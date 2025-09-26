@@ -47,6 +47,28 @@ type AlertManagerDefinitionStatus_SDK struct {
 }
 
 // +kubebuilder:skipversion
+type AmpConfiguration struct {
+	// An ARN identifying a Workspace.
+	WorkspaceARN *string `json:"workspaceARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Destination struct {
+	// A representation of an AMP destination.
+	AmpConfiguration *AmpConfiguration `json:"ampConfiguration,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EKSConfiguration struct {
+	// The ARN of an EKS cluster.
+	ClusterARN *string `json:"clusterARN,omitempty"`
+	// A list of security group IDs specified for VPC configuration.
+	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
+	// A list of subnet IDs specified for VPC configuration.
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LoggingConfigurationMetadata struct {
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
@@ -103,6 +125,79 @@ type RuleGroupsNamespaceSummary struct {
 }
 
 // +kubebuilder:skipversion
+type ScrapeConfiguration struct {
+	ConfigurationBlob []byte `json:"configurationBlob,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ScraperDescription struct {
+	// A user-assigned scraper alias.
+	Alias *string `json:"alias,omitempty"`
+	// An ARN identifying a scrape configuration.
+	ARN *string `json:"arn,omitempty"`
+
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+	// A representation of a destination that a scraper can produce metrics to.
+	Destination *Destination `json:"destination,omitempty"`
+
+	LastModifiedAt *metav1.Time `json:"lastModifiedAt,omitempty"`
+	// An ARN identifying an IAM role used by the scraper.
+	RoleARN *string `json:"roleARN,omitempty"`
+	// A representation of a Prometheus configuration file.
+	ScrapeConfiguration *ScrapeConfiguration `json:"scrapeConfiguration,omitempty"`
+	// A scraper ID.
+	ScraperID *string `json:"scraperID,omitempty"`
+	// A representation of a source that a scraper can discover and collect metrics
+	// from.
+	Source *Source `json:"source,omitempty"`
+	// Represents the status of a scraper.
+	Status *ScraperStatus_SDK `json:"status,omitempty"`
+	// The reason for failure if any.
+	StatusReason *string `json:"statusReason,omitempty"`
+	// The list of tags assigned to the resource.
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ScraperStatus_SDK struct {
+	// State of a scraper.
+	StatusCode *string `json:"statusCode,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ScraperSummary struct {
+	// A user-assigned scraper alias.
+	Alias *string `json:"alias,omitempty"`
+	// An ARN identifying a scrape configuration.
+	ARN *string `json:"arn,omitempty"`
+
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+	// A representation of a destination that a scraper can produce metrics to.
+	Destination *Destination `json:"destination,omitempty"`
+
+	LastModifiedAt *metav1.Time `json:"lastModifiedAt,omitempty"`
+	// An ARN identifying an IAM role used by the scraper.
+	RoleARN *string `json:"roleARN,omitempty"`
+	// A scraper ID.
+	ScraperID *string `json:"scraperID,omitempty"`
+	// A representation of a source that a scraper can discover and collect metrics
+	// from.
+	Source *Source `json:"source,omitempty"`
+	// Represents the status of a scraper.
+	Status *ScraperStatus_SDK `json:"status,omitempty"`
+	// The reason for failure if any.
+	StatusReason *string `json:"statusReason,omitempty"`
+	// The list of tags assigned to the resource.
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Source struct {
+	// A representation of an EKS source.
+	EKSConfiguration *EKSConfiguration `json:"eksConfiguration,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ValidationExceptionField struct {
 	Message *string `json:"message,omitempty"`
 
@@ -117,6 +212,8 @@ type WorkspaceDescription struct {
 	ARN *string `json:"arn,omitempty"`
 
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+	// A KMS Key ARN.
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 
 	PrometheusEndpoint *string `json:"prometheusEndpoint,omitempty"`
 	// Represents the status of a workspace.
@@ -141,6 +238,8 @@ type WorkspaceSummary struct {
 	ARN *string `json:"arn,omitempty"`
 
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+	// A KMS Key ARN.
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 	// Represents the status of a workspace.
 	Status *WorkspaceStatus_SDK `json:"status,omitempty"`
 	// The list of tags assigned to the resource.

@@ -241,6 +241,13 @@ const (
 	OAuthFlowType_client_credentials OAuthFlowType = "client_credentials"
 )
 
+type PreTokenGenerationLambdaVersionType string
+
+const (
+	PreTokenGenerationLambdaVersionType_V1_0 PreTokenGenerationLambdaVersionType = "V1_0"
+	PreTokenGenerationLambdaVersionType_V2_0 PreTokenGenerationLambdaVersionType = "V2_0"
+)
+
 type PreventUserExistenceErrorTypes string
 
 const (

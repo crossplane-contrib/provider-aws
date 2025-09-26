@@ -147,6 +147,13 @@ type ConnectionPoolConfigurationInfo struct {
 }
 
 // +kubebuilder:skipversion
+type ContextAttribute struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CustomDBEngineVersionAMI struct {
 	ImageID *string `json:"imageID,omitempty"`
 
@@ -328,6 +335,17 @@ type DBClusterSnapshotAttributesResult struct {
 }
 
 // +kubebuilder:skipversion
+type DBClusterStatusInfo struct {
+	Message *string `json:"message,omitempty"`
+
+	Normal *bool `json:"normal,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	StatusType *string `json:"statusType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DBCluster_SDK struct {
 	ActivityStreamKinesisStreamName *string `json:"activityStreamKinesisStreamName,omitempty"`
 
@@ -482,6 +500,8 @@ type DBCluster_SDK struct {
 	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfigurationInfo `json:"serverlessV2ScalingConfiguration,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+
+	StatusInfos []*DBClusterStatusInfo `json:"statusInfos,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 
@@ -945,6 +965,43 @@ type DBProxyTargetGroup struct {
 }
 
 // +kubebuilder:skipversion
+type DBRecommendation struct {
+	AdditionalInfo *string `json:"additionalInfo,omitempty"`
+
+	Category *string `json:"category,omitempty"`
+
+	CreatedTime *metav1.Time `json:"createdTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	Detection *string `json:"detection,omitempty"`
+
+	Impact *string `json:"impact,omitempty"`
+
+	Reason *string `json:"reason,omitempty"`
+
+	Recommendation *string `json:"recommendation,omitempty"`
+
+	RecommendationID *string `json:"recommendationID,omitempty"`
+
+	ResourceARN *string `json:"resourceARN,omitempty"`
+
+	Severity *string `json:"severity,omitempty"`
+
+	Source *string `json:"source,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	TypeDetection *string `json:"typeDetection,omitempty"`
+
+	TypeID *string `json:"typeID,omitempty"`
+
+	TypeRecommendation *string `json:"typeRecommendation,omitempty"`
+
+	UpdatedTime *metav1.Time `json:"updatedTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DBSecurityGroup struct {
 	DBSecurityGroupARN *string `json:"dbSecurityGroupARN,omitempty"`
 
@@ -1100,6 +1157,13 @@ type DBSubnetGroup struct {
 // +kubebuilder:skipversion
 type DescribeDBLogFilesDetails struct {
 	LogFileName *string `json:"logFileName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DocLink struct {
+	Text *string `json:"text,omitempty"`
+
+	URL *string `json:"url,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1305,6 +1369,18 @@ type MasterUserSecret struct {
 	SecretARN *string `json:"secretARN,omitempty"`
 
 	SecretStatus *string `json:"secretStatus,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Metric struct {
+	Name *string `json:"name,omitempty"`
+
+	StatisticsDetails *string `json:"statisticsDetails,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MetricReference struct {
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1626,6 +1702,29 @@ type PendingModifiedValues struct {
 }
 
 // +kubebuilder:skipversion
+type PerformanceInsightsMetricDimensionGroup struct {
+	Dimensions []*string `json:"dimensions,omitempty"`
+
+	Group *string `json:"group,omitempty"`
+
+	Limit *int64 `json:"limit,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PerformanceInsightsMetricQuery struct {
+	Metric *string `json:"metric,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PerformanceIssueDetails struct {
+	Analysis *string `json:"analysis,omitempty"`
+
+	EndTime *metav1.Time `json:"endTime,omitempty"`
+
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ProcessorFeature struct {
 	Name *string `json:"name,omitempty"`
 
@@ -1645,7 +1744,38 @@ type Range struct {
 type RdsCustomClusterConfiguration struct {
 	InterconnectSubnetID *string `json:"interconnectSubnetID,omitempty"`
 
+	ReplicaMode *string `json:"replicaMode,omitempty"`
+
 	TransitGatewayMulticastDomainID *string `json:"transitGatewayMulticastDomainID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecommendedAction struct {
+	ActionID *string `json:"actionID,omitempty"`
+
+	ApplyModes []*string `json:"applyModes,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	Operation *string `json:"operation,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	Title *string `json:"title,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecommendedActionParameter struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecommendedActionUpdate struct {
+	ActionID *string `json:"actionID,omitempty"`
+
+	Status *string `json:"status,omitempty"`
 }
 
 // +kubebuilder:skipversion

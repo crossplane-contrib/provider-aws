@@ -364,6 +364,8 @@ type DestinationDescription struct {
 	RedshiftDestinationDescription *RedshiftDestinationDescription `json:"redshiftDestinationDescription,omitempty"`
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+	// Optional Snowflake destination description
+	SnowflakeDestinationDescription *SnowflakeDestinationDescription `json:"snowflakeDestinationDescription,omitempty"`
 	// Describes a destination in Splunk.
 	SplunkDestinationDescription *SplunkDestinationDescription `json:"splunkDestinationDescription,omitempty"`
 }
@@ -1073,6 +1075,183 @@ type Serializer struct {
 }
 
 // +kubebuilder:skipversion
+type SnowflakeDestinationConfiguration struct {
+	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	ContentColumnName *string `json:"contentColumnName,omitempty"`
+
+	DataLoadingOption *string `json:"dataLoadingOption,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	KeyPassphrase *string `json:"keyPassphrase,omitempty"`
+
+	MetaDataColumnName *string `json:"metaDataColumnName,omitempty"`
+
+	PrivateKey *string `json:"privateKey,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// Specify how long Kinesis Data Firehose retries sending data to the New Relic
+	// HTTP endpoint. After sending data, Kinesis Data Firehose first waits for
+	// an acknowledgment from the HTTP endpoint. If an error occurs or the acknowledgment
+	// doesn’t arrive within the acknowledgment timeout period, Kinesis Data Firehose
+	// starts the retry duration counter. It keeps retrying until the retry duration
+	// expires. After that, Kinesis Data Firehose considers it a data delivery failure
+	// and backs up the data to your Amazon S3 bucket. Every time that Kinesis Data
+	// Firehose sends data to the HTTP endpoint (either the initial attempt or a
+	// retry), it restarts the acknowledgement timeout counter and waits for an
+	// acknowledgement from the HTTP endpoint. Even if the retry duration expires,
+	// Kinesis Data Firehose still waits for the acknowledgment until it receives
+	// it or the acknowledgement timeout period is reached. If the acknowledgment
+	// times out, Kinesis Data Firehose determines whether there's time left in
+	// the retry counter. If there is time left, it retries again and repeats the
+	// logic until it receives an acknowledgment or determines that the retry time
+	// has expired. If you don't want Kinesis Data Firehose to retry sending data,
+	// set this value to 0.
+	RetryOptions *SnowflakeRetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes the configuration of a destination in Amazon S3.
+	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+
+	Schema *string `json:"schema,omitempty"`
+	// Optionally configure a Snowflake role. Otherwise the default user role will
+	// be used.
+	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
+	// Configure a Snowflake VPC
+	SnowflakeVPCConfiguration *SnowflakeVPCConfiguration `json:"snowflakeVPCConfiguration,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+
+	User *string `json:"user,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeDestinationDescription struct {
+	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	ContentColumnName *string `json:"contentColumnName,omitempty"`
+
+	DataLoadingOption *string `json:"dataLoadingOption,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	MetaDataColumnName *string `json:"metaDataColumnName,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// Specify how long Kinesis Data Firehose retries sending data to the New Relic
+	// HTTP endpoint. After sending data, Kinesis Data Firehose first waits for
+	// an acknowledgment from the HTTP endpoint. If an error occurs or the acknowledgment
+	// doesn’t arrive within the acknowledgment timeout period, Kinesis Data Firehose
+	// starts the retry duration counter. It keeps retrying until the retry duration
+	// expires. After that, Kinesis Data Firehose considers it a data delivery failure
+	// and backs up the data to your Amazon S3 bucket. Every time that Kinesis Data
+	// Firehose sends data to the HTTP endpoint (either the initial attempt or a
+	// retry), it restarts the acknowledgement timeout counter and waits for an
+	// acknowledgement from the HTTP endpoint. Even if the retry duration expires,
+	// Kinesis Data Firehose still waits for the acknowledgment until it receives
+	// it or the acknowledgement timeout period is reached. If the acknowledgment
+	// times out, Kinesis Data Firehose determines whether there's time left in
+	// the retry counter. If there is time left, it retries again and repeats the
+	// logic until it receives an acknowledgment or determines that the retry time
+	// has expired. If you don't want Kinesis Data Firehose to retry sending data,
+	// set this value to 0.
+	RetryOptions *SnowflakeRetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes a destination in Amazon S3.
+	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+
+	Schema *string `json:"schema,omitempty"`
+	// Optionally configure a Snowflake role. Otherwise the default user role will
+	// be used.
+	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
+	// Configure a Snowflake VPC
+	SnowflakeVPCConfiguration *SnowflakeVPCConfiguration `json:"snowflakeVPCConfiguration,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+
+	User *string `json:"user,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeDestinationUpdate struct {
+	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	ContentColumnName *string `json:"contentColumnName,omitempty"`
+
+	DataLoadingOption *string `json:"dataLoadingOption,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	KeyPassphrase *string `json:"keyPassphrase,omitempty"`
+
+	MetaDataColumnName *string `json:"metaDataColumnName,omitempty"`
+
+	PrivateKey *string `json:"privateKey,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// Specify how long Kinesis Data Firehose retries sending data to the New Relic
+	// HTTP endpoint. After sending data, Kinesis Data Firehose first waits for
+	// an acknowledgment from the HTTP endpoint. If an error occurs or the acknowledgment
+	// doesn’t arrive within the acknowledgment timeout period, Kinesis Data Firehose
+	// starts the retry duration counter. It keeps retrying until the retry duration
+	// expires. After that, Kinesis Data Firehose considers it a data delivery failure
+	// and backs up the data to your Amazon S3 bucket. Every time that Kinesis Data
+	// Firehose sends data to the HTTP endpoint (either the initial attempt or a
+	// retry), it restarts the acknowledgement timeout counter and waits for an
+	// acknowledgement from the HTTP endpoint. Even if the retry duration expires,
+	// Kinesis Data Firehose still waits for the acknowledgment until it receives
+	// it or the acknowledgement timeout period is reached. If the acknowledgment
+	// times out, Kinesis Data Firehose determines whether there's time left in
+	// the retry counter. If there is time left, it retries again and repeats the
+	// logic until it receives an acknowledgment or determines that the retry time
+	// has expired. If you don't want Kinesis Data Firehose to retry sending data,
+	// set this value to 0.
+	RetryOptions *SnowflakeRetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+
+	Schema *string `json:"schema,omitempty"`
+	// Optionally configure a Snowflake role. Otherwise the default user role will
+	// be used.
+	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+
+	User *string `json:"user,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeRetryOptions struct {
+	DurationInSeconds *int64 `json:"durationInSeconds,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeRoleConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	SnowflakeRole *string `json:"snowflakeRole,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeVPCConfiguration struct {
+	PrivateLinkVPCeID *string `json:"privateLinkVPCeID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SourceDescription struct {
 	// Details about a Kinesis data stream used as the source for a Kinesis Data
 	// Firehose delivery stream.
@@ -1083,7 +1262,17 @@ type SourceDescription struct {
 }
 
 // +kubebuilder:skipversion
+type SplunkBufferingHints struct {
+	IntervalInSeconds *int64 `json:"intervalInSeconds,omitempty"`
+
+	SizeInMBs *int64 `json:"sizeInMBs,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SplunkDestinationConfiguration struct {
+	// The buffering options. If no value is specified, the default values for Splunk
+	// are used.
+	BufferingHints *SplunkBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
@@ -1107,6 +1296,9 @@ type SplunkDestinationConfiguration struct {
 
 // +kubebuilder:skipversion
 type SplunkDestinationDescription struct {
+	// The buffering options. If no value is specified, the default values for Splunk
+	// are used.
+	BufferingHints *SplunkBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
@@ -1130,6 +1322,9 @@ type SplunkDestinationDescription struct {
 
 // +kubebuilder:skipversion
 type SplunkDestinationUpdate struct {
+	// The buffering options. If no value is specified, the default values for Splunk
+	// are used.
+	BufferingHints *SplunkBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 

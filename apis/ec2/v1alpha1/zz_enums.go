@@ -18,6 +18,28 @@ limitations under the License.
 
 package v1alpha1
 
+type ASNAssociationState string
+
+const (
+	ASNAssociationState_disassociated          ASNAssociationState = "disassociated"
+	ASNAssociationState_failed_disassociation  ASNAssociationState = "failed-disassociation"
+	ASNAssociationState_failed_association     ASNAssociationState = "failed-association"
+	ASNAssociationState_pending_disassociation ASNAssociationState = "pending-disassociation"
+	ASNAssociationState_pending_association    ASNAssociationState = "pending-association"
+	ASNAssociationState_associated             ASNAssociationState = "associated"
+)
+
+type ASNState string
+
+const (
+	ASNState_deprovisioned       ASNState = "deprovisioned"
+	ASNState_failed_deprovision  ASNState = "failed-deprovision"
+	ASNState_failed_provision    ASNState = "failed-provision"
+	ASNState_pending_deprovision ASNState = "pending-deprovision"
+	ASNState_pending_provision   ASNState = "pending-provision"
+	ASNState_provisioned         ASNState = "provisioned"
+)
+
 type AcceleratorManufacturer string
 
 const (
@@ -25,6 +47,7 @@ const (
 	AcceleratorManufacturer_amd                 AcceleratorManufacturer = "amd"
 	AcceleratorManufacturer_nvidia              AcceleratorManufacturer = "nvidia"
 	AcceleratorManufacturer_xilinx              AcceleratorManufacturer = "xilinx"
+	AcceleratorManufacturer_habana              AcceleratorManufacturer = "habana"
 )
 
 type AcceleratorName string
@@ -39,6 +62,9 @@ const (
 	AcceleratorName_t4              AcceleratorName = "t4"
 	AcceleratorName_vu9p            AcceleratorName = "vu9p"
 	AcceleratorName_v100            AcceleratorName = "v100"
+	AcceleratorName_a10g            AcceleratorName = "a10g"
+	AcceleratorName_h100            AcceleratorName = "h100"
+	AcceleratorName_t4g             AcceleratorName = "t4g"
 )
 
 type AcceleratorType string
@@ -601,6 +627,7 @@ type DeviceTrustProviderType string
 const (
 	DeviceTrustProviderType_jamf        DeviceTrustProviderType = "jamf"
 	DeviceTrustProviderType_crowdstrike DeviceTrustProviderType = "crowdstrike"
+	DeviceTrustProviderType_jumpcloud   DeviceTrustProviderType = "jumpcloud"
 )
 
 type DeviceType string
@@ -1020,6 +1047,7 @@ const (
 	IPAMPoolAllocationResourceType_vpc                  IPAMPoolAllocationResourceType = "vpc"
 	IPAMPoolAllocationResourceType_ec2_public_ipv4_pool IPAMPoolAllocationResourceType = "ec2-public-ipv4-pool"
 	IPAMPoolAllocationResourceType_custom               IPAMPoolAllocationResourceType = "custom"
+	IPAMPoolAllocationResourceType_subnet               IPAMPoolAllocationResourceType = "subnet"
 )
 
 type IPAMPoolCIDRFailureCode string
@@ -1049,6 +1077,12 @@ const (
 	IPAMPoolPublicIPSource_byoip  IPAMPoolPublicIPSource = "byoip"
 )
 
+type IPAMPoolSourceResourceType string
+
+const (
+	IPAMPoolSourceResourceType_vpc IPAMPoolSourceResourceType = "vpc"
+)
+
 type IPAMPoolState string
 
 const (
@@ -1064,6 +1098,37 @@ const (
 	IPAMPoolState_isolate_in_progress IPAMPoolState = "isolate-in-progress"
 	IPAMPoolState_isolate_complete    IPAMPoolState = "isolate-complete"
 	IPAMPoolState_restore_in_progress IPAMPoolState = "restore-in-progress"
+)
+
+type IPAMPublicAddressAWSService string
+
+const (
+	IPAMPublicAddressAWSService_nat_gateway                 IPAMPublicAddressAWSService = "nat-gateway"
+	IPAMPublicAddressAWSService_database_migration_service  IPAMPublicAddressAWSService = "database-migration-service"
+	IPAMPublicAddressAWSService_redshift                    IPAMPublicAddressAWSService = "redshift"
+	IPAMPublicAddressAWSService_elastic_container_service   IPAMPublicAddressAWSService = "elastic-container-service"
+	IPAMPublicAddressAWSService_relational_database_service IPAMPublicAddressAWSService = "relational-database-service"
+	IPAMPublicAddressAWSService_site_to_site_vpn            IPAMPublicAddressAWSService = "site-to-site-vpn"
+	IPAMPublicAddressAWSService_load_balancer               IPAMPublicAddressAWSService = "load-balancer"
+	IPAMPublicAddressAWSService_global_accelerator          IPAMPublicAddressAWSService = "global-accelerator"
+	IPAMPublicAddressAWSService_other                       IPAMPublicAddressAWSService = "other"
+)
+
+type IPAMPublicAddressAssociationStatus string
+
+const (
+	IPAMPublicAddressAssociationStatus_associated    IPAMPublicAddressAssociationStatus = "associated"
+	IPAMPublicAddressAssociationStatus_disassociated IPAMPublicAddressAssociationStatus = "disassociated"
+)
+
+type IPAMPublicAddressType string
+
+const (
+	IPAMPublicAddressType_service_managed_ip    IPAMPublicAddressType = "service-managed-ip"
+	IPAMPublicAddressType_service_managed_byoip IPAMPublicAddressType = "service-managed-byoip"
+	IPAMPublicAddressType_amazon_owned_eip      IPAMPublicAddressType = "amazon-owned-eip"
+	IPAMPublicAddressType_byoip                 IPAMPublicAddressType = "byoip"
+	IPAMPublicAddressType_ec2_public_ip         IPAMPublicAddressType = "ec2-public-ip"
 )
 
 type IPAMResourceDiscoveryAssociationState string
@@ -1105,6 +1170,7 @@ const (
 	IPAMResourceType_eip              IPAMResourceType = "eip"
 	IPAMResourceType_public_ipv4_pool IPAMResourceType = "public-ipv4-pool"
 	IPAMResourceType_ipv6_pool        IPAMResourceType = "ipv6-pool"
+	IPAMResourceType_eni              IPAMResourceType = "eni"
 )
 
 type IPAMScopeState string
@@ -1146,6 +1212,13 @@ const (
 	IPAMState_isolate_in_progress IPAMState = "isolate-in-progress"
 	IPAMState_isolate_complete    IPAMState = "isolate-complete"
 	IPAMState_restore_in_progress IPAMState = "restore-in-progress"
+)
+
+type IPAMTier string
+
+const (
+	IPAMTier_free     IPAMTier = "free"
+	IPAMTier_advanced IPAMTier = "advanced"
 )
 
 type IPAddressType string
@@ -2134,6 +2207,18 @@ const (
 	InstanceType_r7i_16xlarge      InstanceType = "r7i.16xlarge"
 	InstanceType_r7i_24xlarge      InstanceType = "r7i.24xlarge"
 	InstanceType_r7i_48xlarge      InstanceType = "r7i.48xlarge"
+	InstanceType_dl2q_24xlarge     InstanceType = "dl2q.24xlarge"
+	InstanceType_mac2_m2_metal     InstanceType = "mac2-m2.metal"
+	InstanceType_i4i_12xlarge      InstanceType = "i4i.12xlarge"
+	InstanceType_i4i_24xlarge      InstanceType = "i4i.24xlarge"
+	InstanceType_c7i_metal_24xl    InstanceType = "c7i.metal-24xl"
+	InstanceType_c7i_metal_48xl    InstanceType = "c7i.metal-48xl"
+	InstanceType_m7i_metal_24xl    InstanceType = "m7i.metal-24xl"
+	InstanceType_m7i_metal_48xl    InstanceType = "m7i.metal-48xl"
+	InstanceType_r7i_metal_24xl    InstanceType = "r7i.metal-24xl"
+	InstanceType_r7i_metal_48xl    InstanceType = "r7i.metal-48xl"
+	InstanceType_r7iz_metal_16xl   InstanceType = "r7iz.metal-16xl"
+	InstanceType_r7iz_metal_32xl   InstanceType = "r7iz.metal-32xl"
 )
 
 type InstanceTypeHypervisor string
@@ -2288,6 +2373,22 @@ const (
 	LocationType_availability_zone    LocationType = "availability-zone"
 	LocationType_availability_zone_id LocationType = "availability-zone-id"
 	LocationType_outpost              LocationType = "outpost"
+)
+
+type LockMode string
+
+const (
+	LockMode_compliance LockMode = "compliance"
+	LockMode_governance LockMode = "governance"
+)
+
+type LockState string
+
+const (
+	LockState_compliance         LockState = "compliance"
+	LockState_governance         LockState = "governance"
+	LockState_compliance_cooloff LockState = "compliance-cooloff"
+	LockState_expired            LockState = "expired"
 )
 
 type LogDestinationType string
@@ -2821,6 +2922,13 @@ type Scope string
 const (
 	Scope_Availability_Zone Scope = "Availability Zone"
 	Scope_Region            Scope = "Region"
+)
+
+type SecurityGroupReferencingSupportValue string
+
+const (
+	SecurityGroupReferencingSupportValue_enable  SecurityGroupReferencingSupportValue = "enable"
+	SecurityGroupReferencingSupportValue_disable SecurityGroupReferencingSupportValue = "disable"
 )
 
 type SelfServicePortal string

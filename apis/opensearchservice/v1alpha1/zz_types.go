@@ -237,8 +237,8 @@ type DomainConfig struct {
 type DomainEndpointOptions struct {
 	CustomEndpoint *string `json:"customEndpoint,omitempty"`
 	// The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-	// Identity and Access Management for more information.
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+	// Web Services Identity and Access Management for more information.
 	CustomEndpointCertificateARN *string `json:"customEndpointCertificateARN,omitempty"`
 
 	CustomEndpointEnabled *bool `json:"customEndpointEnabled,omitempty"`
@@ -286,8 +286,8 @@ type DomainPackageDetails struct {
 // +kubebuilder:skipversion
 type DomainStatus_SDK struct {
 	// The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-	// Identity and Access Management for more information.
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+	// Web Services Identity and Access Management for more information.
 	ARN *string `json:"arn,omitempty"`
 	// Access policy rules for an Amazon OpenSearch Service domain endpoint. For
 	// more information, see Configuring access policies (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomain-configure-access-policies).
@@ -475,8 +475,8 @@ type LogPublishingOptionsStatus struct {
 // +kubebuilder:skipversion
 type MasterUserOptions struct {
 	// The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-	// Identity and Access Management for more information.
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+	// Web Services Identity and Access Management for more information.
 	MasterUserARN *string `json:"masterUserARN,omitempty"`
 
 	MasterUserName *string `json:"masterUserName,omitempty"`
@@ -557,6 +557,11 @@ type ReservedInstanceOffering struct {
 	InstanceType *string `json:"instanceType,omitempty"`
 
 	ReservedInstanceOfferingID *string `json:"reservedInstanceOfferingID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3GlueDataCatalog struct {
+	RoleARN *string `json:"roleARN,omitempty"`
 }
 
 // +kubebuilder:skipversion

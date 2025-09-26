@@ -534,6 +534,9 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.DBCluster) (manag
 		if resp.DBCluster.RdsCustomClusterConfiguration.InterconnectSubnetId != nil {
 			f63.InterconnectSubnetID = resp.DBCluster.RdsCustomClusterConfiguration.InterconnectSubnetId
 		}
+		if resp.DBCluster.RdsCustomClusterConfiguration.ReplicaMode != nil {
+			f63.ReplicaMode = resp.DBCluster.RdsCustomClusterConfiguration.ReplicaMode
+		}
 		if resp.DBCluster.RdsCustomClusterConfiguration.TransitGatewayMulticastDomainId != nil {
 			f63.TransitGatewayMulticastDomainID = resp.DBCluster.RdsCustomClusterConfiguration.TransitGatewayMulticastDomainId
 		}
@@ -603,6 +606,28 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.DBCluster) (manag
 	} else {
 		cr.Status.AtProvider.Status = nil
 	}
+	if resp.DBCluster.StatusInfos != nil {
+		f70 := []*svcapitypes.DBClusterStatusInfo{}
+		for _, f70iter := range resp.DBCluster.StatusInfos {
+			f70elem := &svcapitypes.DBClusterStatusInfo{}
+			if f70iter.Message != nil {
+				f70elem.Message = f70iter.Message
+			}
+			if f70iter.Normal != nil {
+				f70elem.Normal = f70iter.Normal
+			}
+			if f70iter.Status != nil {
+				f70elem.Status = f70iter.Status
+			}
+			if f70iter.StatusType != nil {
+				f70elem.StatusType = f70iter.StatusType
+			}
+			f70 = append(f70, f70elem)
+		}
+		cr.Status.AtProvider.StatusInfos = f70
+	} else {
+		cr.Status.AtProvider.StatusInfos = nil
+	}
 	if resp.DBCluster.StorageEncrypted != nil {
 		cr.Spec.ForProvider.StorageEncrypted = resp.DBCluster.StorageEncrypted
 	} else {
@@ -614,34 +639,34 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.DBCluster) (manag
 		cr.Spec.ForProvider.StorageType = nil
 	}
 	if resp.DBCluster.TagList != nil {
-		f72 := []*svcapitypes.Tag{}
-		for _, f72iter := range resp.DBCluster.TagList {
-			f72elem := &svcapitypes.Tag{}
-			if f72iter.Key != nil {
-				f72elem.Key = f72iter.Key
+		f73 := []*svcapitypes.Tag{}
+		for _, f73iter := range resp.DBCluster.TagList {
+			f73elem := &svcapitypes.Tag{}
+			if f73iter.Key != nil {
+				f73elem.Key = f73iter.Key
 			}
-			if f72iter.Value != nil {
-				f72elem.Value = f72iter.Value
+			if f73iter.Value != nil {
+				f73elem.Value = f73iter.Value
 			}
-			f72 = append(f72, f72elem)
+			f73 = append(f73, f73elem)
 		}
-		cr.Status.AtProvider.TagList = f72
+		cr.Status.AtProvider.TagList = f73
 	} else {
 		cr.Status.AtProvider.TagList = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
-		f73 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f73iter := range resp.DBCluster.VpcSecurityGroups {
-			f73elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f73iter.Status != nil {
-				f73elem.Status = f73iter.Status
+		f74 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f74iter := range resp.DBCluster.VpcSecurityGroups {
+			f74elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f74iter.Status != nil {
+				f74elem.Status = f74iter.Status
 			}
-			if f73iter.VpcSecurityGroupId != nil {
-				f73elem.VPCSecurityGroupID = f73iter.VpcSecurityGroupId
+			if f74iter.VpcSecurityGroupId != nil {
+				f74elem.VPCSecurityGroupID = f74iter.VpcSecurityGroupId
 			}
-			f73 = append(f73, f73elem)
+			f74 = append(f74, f74elem)
 		}
-		cr.Status.AtProvider.VPCSecurityGroups = f73
+		cr.Status.AtProvider.VPCSecurityGroups = f74
 	} else {
 		cr.Status.AtProvider.VPCSecurityGroups = nil
 	}

@@ -110,6 +110,14 @@ const (
 	HistoryEventType_MapRunRedriven               HistoryEventType = "MapRunRedriven"
 )
 
+type InspectionLevel string
+
+const (
+	InspectionLevel_INFO  InspectionLevel = "INFO"
+	InspectionLevel_DEBUG InspectionLevel = "DEBUG"
+	InspectionLevel_TRACE InspectionLevel = "TRACE"
+)
+
 type LogLevel string
 
 const (
@@ -148,6 +156,15 @@ const (
 	SyncExecutionStatus_SUCCEEDED SyncExecutionStatus = "SUCCEEDED"
 	SyncExecutionStatus_FAILED    SyncExecutionStatus = "FAILED"
 	SyncExecutionStatus_TIMED_OUT SyncExecutionStatus = "TIMED_OUT"
+)
+
+type TestExecutionStatus string
+
+const (
+	TestExecutionStatus_SUCCEEDED    TestExecutionStatus = "SUCCEEDED"
+	TestExecutionStatus_FAILED       TestExecutionStatus = "FAILED"
+	TestExecutionStatus_RETRIABLE    TestExecutionStatus = "RETRIABLE"
+	TestExecutionStatus_CAUGHT_ERROR TestExecutionStatus = "CAUGHT_ERROR"
 )
 
 type ValidationExceptionReason string

@@ -22,6 +22,7 @@ type AdditionalOptionKeys string
 
 const (
 	AdditionalOptionKeys_performanceTuning_caching AdditionalOptionKeys = "performanceTuning.caching"
+	AdditionalOptionKeys_observations_scope        AdditionalOptionKeys = "observations.scope"
 )
 
 type AggFunction string
@@ -84,6 +85,16 @@ type CloudWatchEncryptionMode string
 const (
 	CloudWatchEncryptionMode_DISABLED CloudWatchEncryptionMode = "DISABLED"
 	CloudWatchEncryptionMode_SSE_KMS  CloudWatchEncryptionMode = "SSE-KMS"
+)
+
+type ColumnStatisticsState string
+
+const (
+	ColumnStatisticsState_STARTING  ColumnStatisticsState = "STARTING"
+	ColumnStatisticsState_RUNNING   ColumnStatisticsState = "RUNNING"
+	ColumnStatisticsState_SUCCEEDED ColumnStatisticsState = "SUCCEEDED"
+	ColumnStatisticsState_FAILED    ColumnStatisticsState = "FAILED"
+	ColumnStatisticsState_STOPPED   ColumnStatisticsState = "STOPPED"
 )
 
 type ColumnStatisticsType string
@@ -868,6 +879,14 @@ type UpdateCatalogBehavior string
 const (
 	UpdateCatalogBehavior_UPDATE_IN_DATABASE UpdateCatalogBehavior = "UPDATE_IN_DATABASE"
 	UpdateCatalogBehavior_LOG                UpdateCatalogBehavior = "LOG"
+)
+
+type ViewDialect string
+
+const (
+	ViewDialect_REDSHIFT ViewDialect = "REDSHIFT"
+	ViewDialect_ATHENA   ViewDialect = "ATHENA"
+	ViewDialect_SPARK    ViewDialect = "SPARK"
 )
 
 type WorkerType string

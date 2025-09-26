@@ -28,6 +28,11 @@ var (
 )
 
 // +kubebuilder:skipversion
+type AccessGrantsLocationConfiguration struct {
+	S3SubPrefix *string `json:"s3SubPrefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type AccessPoint_SDK struct {
 	AccessPointARN *string `json:"accessPointARN,omitempty"`
 
@@ -62,12 +67,117 @@ type Destination struct {
 }
 
 // +kubebuilder:skipversion
+type Grantee struct {
+	GranteeIdentifier *string `json:"granteeIdentifier,omitempty"`
+
+	GranteeType *string `json:"granteeType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type JobDescriptor struct {
+	RoleARN *string `json:"roleARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type JobManifestLocation struct {
 	ETag *string `json:"eTag,omitempty"`
 }
 
 // +kubebuilder:skipversion
+type LifecycleRuleAndOperator struct {
+	Prefix *string `json:"prefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LifecycleRuleFilter struct {
+	Prefix *string `json:"prefix,omitempty"`
+	// A container for a key-value name pair.
+	Tag *S3Tag `json:"tag,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListAccessGrantEntry struct {
+	AccessGrantARN *string `json:"accessGrantARN,omitempty"`
+
+	AccessGrantID *string `json:"accessGrantID,omitempty"`
+	// The configuration options of the S3 Access Grants location. It contains the
+	// S3SubPrefix field. The grant scope, the data to which you are granting access,
+	// is the result of appending the Subprefix field to the scope of the registered
+	// location.
+	AccessGrantsLocationConfiguration *AccessGrantsLocationConfiguration `json:"accessGrantsLocationConfiguration,omitempty"`
+
+	AccessGrantsLocationID *string `json:"accessGrantsLocationID,omitempty"`
+
+	ApplicationARN *string `json:"applicationARN,omitempty"`
+
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	GrantScope *string `json:"grantScope,omitempty"`
+	// The user, group, or role to which you are granting access. You can grant
+	// access to an IAM user or role. If you have added your corporate directory
+	// to Amazon Web Services IAM Identity Center and associated your Identity Center
+	// instance with your S3 Access Grants instance, the grantee can also be a corporate
+	// directory user or group.
+	Grantee *Grantee `json:"grantee,omitempty"`
+
+	Permission *string `json:"permission,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListAccessGrantsInstanceEntry struct {
+	AccessGrantsInstanceARN *string `json:"accessGrantsInstanceARN,omitempty"`
+
+	AccessGrantsInstanceID *string `json:"accessGrantsInstanceID,omitempty"`
+
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	IdentityCenterARN *string `json:"identityCenterARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListAccessGrantsLocationsEntry struct {
+	AccessGrantsLocationARN *string `json:"accessGrantsLocationARN,omitempty"`
+
+	AccessGrantsLocationID *string `json:"accessGrantsLocationID,omitempty"`
+
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	IAMRoleARN *string `json:"iamRoleARN,omitempty"`
+
+	LocationScope *string `json:"locationScope,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListStorageLensConfigurationEntry struct {
+	HomeRegion *string `json:"homeRegion,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ListStorageLensGroupEntry struct {
+	HomeRegion *string `json:"homeRegion,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	StorageLensGroupARN *string `json:"storageLensGroupARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MatchObjectAge struct {
+	DaysGreaterThan *int64 `json:"daysGreaterThan,omitempty"`
+
+	DaysLessThan *int64 `json:"daysLessThan,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MatchObjectSize struct {
+	BytesGreaterThan *int64 `json:"bytesGreaterThan,omitempty"`
+
+	BytesLessThan *int64 `json:"bytesLessThan,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type MultiRegionAccessPointReport struct {
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 	// The PublicAccessBlock configuration that you want to apply to this Amazon
 	// S3 account. You can enable the configuration options in any combination.
 	// For more information about when Amazon S3 considers a bucket or object public,
@@ -116,8 +226,27 @@ type RegionalBucket struct {
 }
 
 // +kubebuilder:skipversion
+type ReplicationRule struct {
+	Prefix *string `json:"prefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplicationRuleAndOperator struct {
+	Prefix *string `json:"prefix,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ReplicationRuleFilter struct {
+	Prefix *string `json:"prefix,omitempty"`
+	// A container for a key-value name pair.
+	Tag *S3Tag `json:"tag,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type S3BucketDestination struct {
 	AccountID *string `json:"accountID,omitempty"`
+
+	Prefix *string `json:"prefix,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -162,6 +291,93 @@ type S3ObjectOwner struct {
 	DisplayName *string `json:"displayName,omitempty"`
 
 	ID *string `json:"id,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3Tag struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StorageLensGroupAndOperator struct {
+	MatchAnyPrefix []*string `json:"matchAnyPrefix,omitempty"`
+
+	MatchAnySuffix []*string `json:"matchAnySuffix,omitempty"`
+
+	MatchAnyTag []*S3Tag `json:"matchAnyTag,omitempty"`
+	// A filter condition that specifies the object age range of included objects
+	// in days. Only integers are supported.
+	MatchObjectAge *MatchObjectAge `json:"matchObjectAge,omitempty"`
+	// A filter condition that specifies the object size range of included objects
+	// in bytes. Only integers are supported.
+	MatchObjectSize *MatchObjectSize `json:"matchObjectSize,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StorageLensGroupFilter struct {
+	// A logical operator that allows multiple filter conditions to be joined for
+	// more complex comparisons of Storage Lens group data.
+	And *StorageLensGroupAndOperator `json:"and,omitempty"`
+
+	MatchAnyPrefix []*string `json:"matchAnyPrefix,omitempty"`
+
+	MatchAnySuffix []*string `json:"matchAnySuffix,omitempty"`
+
+	MatchAnyTag []*S3Tag `json:"matchAnyTag,omitempty"`
+	// A filter condition that specifies the object age range of included objects
+	// in days. Only integers are supported.
+	MatchObjectAge *MatchObjectAge `json:"matchObjectAge,omitempty"`
+	// A filter condition that specifies the object size range of included objects
+	// in bytes. Only integers are supported.
+	MatchObjectSize *MatchObjectSize `json:"matchObjectSize,omitempty"`
+	// A container element for specifying Or rule conditions. The rule conditions
+	// determine the subset of objects to which the Or rule applies. Objects can
+	// match any of the listed filter conditions, which are joined by the Or logical
+	// operator. Only one of each filter condition is allowed.
+	Or *StorageLensGroupOrOperator `json:"or,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StorageLensGroupOrOperator struct {
+	MatchAnyPrefix []*string `json:"matchAnyPrefix,omitempty"`
+
+	MatchAnySuffix []*string `json:"matchAnySuffix,omitempty"`
+
+	MatchAnyTag []*S3Tag `json:"matchAnyTag,omitempty"`
+	// A filter condition that specifies the object age range of included objects
+	// in days. Only integers are supported.
+	MatchObjectAge *MatchObjectAge `json:"matchObjectAge,omitempty"`
+	// A filter condition that specifies the object size range of included objects
+	// in bytes. Only integers are supported.
+	MatchObjectSize *MatchObjectSize `json:"matchObjectSize,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StorageLensGroup_SDK struct {
+	// The filter element sets the criteria for the Storage Lens group data that
+	// is displayed. For multiple filter conditions, the AND or OR logical operator
+	// is used.
+	Filter *StorageLensGroupFilter `json:"filter,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	StorageLensGroupARN *string `json:"storageLensGroupARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type StorageLensTag struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Tag struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
 }
 
 // +kubebuilder:skipversion

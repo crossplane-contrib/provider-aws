@@ -42,9 +42,15 @@ type Environment_SDK struct {
 
 	ARN *string `json:"arn,omitempty"`
 
+	CeleryExecutorQueue *string `json:"celeryExecutorQueue,omitempty"`
+
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
 	DagS3Path *string `json:"dagS3Path,omitempty"`
+
+	DatabaseVPCEndpointService *string `json:"databaseVPCEndpointService,omitempty"`
+
+	EndpointManagement *string `json:"endpointManagement,omitempty"`
 
 	EnvironmentClass *string `json:"environmentClass,omitempty"`
 
@@ -88,6 +94,8 @@ type Environment_SDK struct {
 	WebserverAccessMode *string `json:"webserverAccessMode,omitempty"`
 
 	WebserverURL *string `json:"webserverURL,omitempty"`
+
+	WebserverVPCEndpointService *string `json:"webserverVPCEndpointService,omitempty"`
 
 	WeeklyMaintenanceWindowStart *string `json:"weeklyMaintenanceWindowStart,omitempty"`
 }

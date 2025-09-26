@@ -28,6 +28,63 @@ var (
 )
 
 // +kubebuilder:skipversion
+type AccessEntry_SDK struct {
+	AccessEntryARN *string `json:"accessEntryARN,omitempty"`
+
+	ClusterName *string `json:"clusterName,omitempty"`
+
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	KubernetesGroups []*string `json:"kubernetesGroups,omitempty"`
+
+	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
+
+	PrincipalARN *string `json:"principalARN,omitempty"`
+	// The metadata that you apply to a resource to help you categorize and organize
+	// them. Each tag consists of a key and an optional value. You define them.
+	//
+	// The following basic restrictions apply to tags:
+	//
+	//    * Maximum number of tags per resource – 50
+	//
+	//    * For each resource, each tag key must be unique, and each tag key can
+	//    have only one value.
+	//
+	//    * Maximum key length – 128 Unicode characters in UTF-8
+	//
+	//    * Maximum value length – 256 Unicode characters in UTF-8
+	//
+	//    * If your tagging schema is used across multiple services and resources,
+	//    remember that other services may have restrictions on allowed characters.
+	//    Generally allowed characters are: letters, numbers, and spaces representable
+	//    in UTF-8, and the following characters: + - = . _ : / @.
+	//
+	//    * Tag keys and values are case-sensitive.
+	//
+	//    * Do not use aws:, AWS:, or any upper or lowercase combination of such
+	//    as a prefix for either keys or values as it is reserved for Amazon Web
+	//    Services use. You cannot edit or delete tag keys or values with this prefix.
+	//    Tags with this prefix do not count against your tags per resource limit.
+	Tags map[string]*string `json:"tags,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
+
+	Username *string `json:"username,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AccessPolicy struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AccessScope struct {
+	Namespaces []*string `json:"namespaces,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type AddonHealth struct {
 	Issues []*AddonIssue `json:"issues,omitempty"`
 }
@@ -90,8 +147,41 @@ type Addon_SDK struct {
 	ServiceAccountRoleARN *string `json:"serviceAccountRoleARN,omitempty"`
 
 	Status *string `json:"status,omitempty"`
-
+	// The metadata that you apply to a resource to help you categorize and organize
+	// them. Each tag consists of a key and an optional value. You define them.
+	//
+	// The following basic restrictions apply to tags:
+	//
+	//    * Maximum number of tags per resource – 50
+	//
+	//    * For each resource, each tag key must be unique, and each tag key can
+	//    have only one value.
+	//
+	//    * Maximum key length – 128 Unicode characters in UTF-8
+	//
+	//    * Maximum value length – 256 Unicode characters in UTF-8
+	//
+	//    * If your tagging schema is used across multiple services and resources,
+	//    remember that other services may have restrictions on allowed characters.
+	//    Generally allowed characters are: letters, numbers, and spaces representable
+	//    in UTF-8, and the following characters: + - = . _ : / @.
+	//
+	//    * Tag keys and values are case-sensitive.
+	//
+	//    * Do not use aws:, AWS:, or any upper or lowercase combination of such
+	//    as a prefix for either keys or values as it is reserved for Amazon Web
+	//    Services use. You cannot edit or delete tag keys or values with this prefix.
+	//    Tags with this prefix do not count against your tags per resource limit.
 	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AssociatedAccessPolicy struct {
+	AssociatedAt *metav1.Time `json:"associatedAt,omitempty"`
+
+	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
+
+	PolicyARN *string `json:"policyARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -102,6 +192,13 @@ type AutoScalingGroup struct {
 // +kubebuilder:skipversion
 type Certificate struct {
 	Data *string `json:"data,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ClientStat struct {
+	LastRequestTime *metav1.Time `json:"lastRequestTime,omitempty"`
+
+	UserAgent *string `json:"userAgent,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -149,6 +246,17 @@ type ControlPlanePlacementResponse struct {
 }
 
 // +kubebuilder:skipversion
+type DeprecationDetail struct {
+	ReplacedWith *string `json:"replacedWith,omitempty"`
+
+	StartServingReplacementVersion *string `json:"startServingReplacementVersion,omitempty"`
+
+	StopServingVersion *string `json:"stopServingVersion,omitempty"`
+
+	Usage *string `json:"usage,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EKSAnywhereSubscription struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -165,7 +273,31 @@ type EKSAnywhereSubscription struct {
 	LicenseARNs []*string `json:"licenseARNs,omitempty"`
 
 	Status *string `json:"status,omitempty"`
-
+	// The metadata that you apply to a resource to help you categorize and organize
+	// them. Each tag consists of a key and an optional value. You define them.
+	//
+	// The following basic restrictions apply to tags:
+	//
+	//    * Maximum number of tags per resource – 50
+	//
+	//    * For each resource, each tag key must be unique, and each tag key can
+	//    have only one value.
+	//
+	//    * Maximum key length – 128 Unicode characters in UTF-8
+	//
+	//    * Maximum value length – 256 Unicode characters in UTF-8
+	//
+	//    * If your tagging schema is used across multiple services and resources,
+	//    remember that other services may have restrictions on allowed characters.
+	//    Generally allowed characters are: letters, numbers, and spaces representable
+	//    in UTF-8, and the following characters: + - = . _ : / @.
+	//
+	//    * Tag keys and values are case-sensitive.
+	//
+	//    * Do not use aws:, AWS:, or any upper or lowercase combination of such
+	//    as a prefix for either keys or values as it is reserved for Amazon Web
+	//    Services use. You cannot edit or delete tag keys or values with this prefix.
+	//    Tags with this prefix do not count against your tags per resource limit.
 	Tags map[string]*string `json:"tags,omitempty"`
 }
 
@@ -186,6 +318,55 @@ type ErrorDetail struct {
 // +kubebuilder:skipversion
 type FargateProfileSelector struct {
 	Namespace *string `json:"namespace,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Insight struct {
+	Description *string `json:"description,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	KubernetesVersion *string `json:"kubernetesVersion,omitempty"`
+
+	LastRefreshTime *metav1.Time `json:"lastRefreshTime,omitempty"`
+
+	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Recommendation *string `json:"recommendation,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InsightResourceDetail struct {
+	ARN *string `json:"arn,omitempty"`
+
+	KubernetesResourceURI *string `json:"kubernetesResourceURI,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InsightStatus struct {
+	Reason *string `json:"reason,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InsightSummary struct {
+	Description *string `json:"description,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	KubernetesVersion *string `json:"kubernetesVersion,omitempty"`
+
+	LastRefreshTime *metav1.Time `json:"lastRefreshTime,omitempty"`
+
+	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InsightsFilter struct {
+	KubernetesVersions []*string `json:"kubernetesVersions,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -248,7 +429,31 @@ type OIDCIdentityProviderConfig struct {
 	IdentityProviderConfigName *string `json:"identityProviderConfigName,omitempty"`
 
 	IssuerURL *string `json:"issuerURL,omitempty"`
-
+	// The metadata that you apply to a resource to help you categorize and organize
+	// them. Each tag consists of a key and an optional value. You define them.
+	//
+	// The following basic restrictions apply to tags:
+	//
+	//    * Maximum number of tags per resource – 50
+	//
+	//    * For each resource, each tag key must be unique, and each tag key can
+	//    have only one value.
+	//
+	//    * Maximum key length – 128 Unicode characters in UTF-8
+	//
+	//    * Maximum value length – 256 Unicode characters in UTF-8
+	//
+	//    * If your tagging schema is used across multiple services and resources,
+	//    remember that other services may have restrictions on allowed characters.
+	//    Generally allowed characters are: letters, numbers, and spaces representable
+	//    in UTF-8, and the following characters: + - = . _ : / @.
+	//
+	//    * Tag keys and values are case-sensitive.
+	//
+	//    * Do not use aws:, AWS:, or any upper or lowercase combination of such
+	//    as a prefix for either keys or values as it is reserved for Amazon Web
+	//    Services use. You cannot edit or delete tag keys or values with this prefix.
+	//    Tags with this prefix do not count against your tags per resource limit.
 	Tags map[string]*string `json:"tags,omitempty"`
 
 	UsernameClaim *string `json:"usernameClaim,omitempty"`
@@ -285,6 +490,64 @@ type OutpostConfigResponse struct {
 	ControlPlaneInstanceType *string `json:"controlPlaneInstanceType,omitempty"`
 
 	OutpostARNs []*string `json:"outpostARNs,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PodIdentityAssociationSummary struct {
+	AssociationARN *string `json:"associationARN,omitempty"`
+
+	AssociationID *string `json:"associationID,omitempty"`
+
+	ClusterName *string `json:"clusterName,omitempty"`
+
+	Namespace *string `json:"namespace,omitempty"`
+
+	ServiceAccount *string `json:"serviceAccount,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PodIdentityAssociation_SDK struct {
+	AssociationARN *string `json:"associationARN,omitempty"`
+
+	AssociationID *string `json:"associationID,omitempty"`
+
+	ClusterName *string `json:"clusterName,omitempty"`
+
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
+
+	Namespace *string `json:"namespace,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	ServiceAccount *string `json:"serviceAccount,omitempty"`
+	// The metadata that you apply to a resource to help you categorize and organize
+	// them. Each tag consists of a key and an optional value. You define them.
+	//
+	// The following basic restrictions apply to tags:
+	//
+	//    * Maximum number of tags per resource – 50
+	//
+	//    * For each resource, each tag key must be unique, and each tag key can
+	//    have only one value.
+	//
+	//    * Maximum key length – 128 Unicode characters in UTF-8
+	//
+	//    * Maximum value length – 256 Unicode characters in UTF-8
+	//
+	//    * If your tagging schema is used across multiple services and resources,
+	//    remember that other services may have restrictions on allowed characters.
+	//    Generally allowed characters are: letters, numbers, and spaces representable
+	//    in UTF-8, and the following characters: + - = . _ : / @.
+	//
+	//    * Tag keys and values are case-sensitive.
+	//
+	//    * Do not use aws:, AWS:, or any upper or lowercase combination of such
+	//    as a prefix for either keys or values as it is reserved for Amazon Web
+	//    Services use. You cannot edit or delete tag keys or values with this prefix.
+	//    Tags with this prefix do not count against your tags per resource limit.
+	Tags map[string]*string `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion

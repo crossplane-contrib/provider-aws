@@ -488,6 +488,19 @@ func GenerateCreateLaunchTemplateInput(cr *svcapitypes.LaunchTemplate) *svcsdk.C
 				if f0f23iter.AssociatePublicIPAddress != nil {
 					f0f23elem.SetAssociatePublicIpAddress(*f0f23iter.AssociatePublicIPAddress)
 				}
+				if f0f23iter.ConnectionTrackingSpecification != nil {
+					f0f23elemf2 := &svcsdk.ConnectionTrackingSpecificationRequest{}
+					if f0f23iter.ConnectionTrackingSpecification.TCPEstablishedTimeout != nil {
+						f0f23elemf2.SetTcpEstablishedTimeout(*f0f23iter.ConnectionTrackingSpecification.TCPEstablishedTimeout)
+					}
+					if f0f23iter.ConnectionTrackingSpecification.UDPStreamTimeout != nil {
+						f0f23elemf2.SetUdpStreamTimeout(*f0f23iter.ConnectionTrackingSpecification.UDPStreamTimeout)
+					}
+					if f0f23iter.ConnectionTrackingSpecification.UDPTimeout != nil {
+						f0f23elemf2.SetUdpTimeout(*f0f23iter.ConnectionTrackingSpecification.UDPTimeout)
+					}
+					f0f23elem.SetConnectionTrackingSpecification(f0f23elemf2)
+				}
 				if f0f23iter.DeleteOnTermination != nil {
 					f0f23elem.SetDeleteOnTermination(*f0f23iter.DeleteOnTermination)
 				}
@@ -498,27 +511,27 @@ func GenerateCreateLaunchTemplateInput(cr *svcapitypes.LaunchTemplate) *svcsdk.C
 					f0f23elem.SetDeviceIndex(*f0f23iter.DeviceIndex)
 				}
 				if f0f23iter.ENASrdSpecification != nil {
-					f0f23elemf5 := &svcsdk.EnaSrdSpecificationRequest{}
+					f0f23elemf6 := &svcsdk.EnaSrdSpecificationRequest{}
 					if f0f23iter.ENASrdSpecification.ENASrdEnabled != nil {
-						f0f23elemf5.SetEnaSrdEnabled(*f0f23iter.ENASrdSpecification.ENASrdEnabled)
+						f0f23elemf6.SetEnaSrdEnabled(*f0f23iter.ENASrdSpecification.ENASrdEnabled)
 					}
 					if f0f23iter.ENASrdSpecification.ENASrdUDPSpecification != nil {
-						f0f23elemf5f1 := &svcsdk.EnaSrdUdpSpecificationRequest{}
+						f0f23elemf6f1 := &svcsdk.EnaSrdUdpSpecificationRequest{}
 						if f0f23iter.ENASrdSpecification.ENASrdUDPSpecification.ENASrdUDPEnabled != nil {
-							f0f23elemf5f1.SetEnaSrdUdpEnabled(*f0f23iter.ENASrdSpecification.ENASrdUDPSpecification.ENASrdUDPEnabled)
+							f0f23elemf6f1.SetEnaSrdUdpEnabled(*f0f23iter.ENASrdSpecification.ENASrdUDPSpecification.ENASrdUDPEnabled)
 						}
-						f0f23elemf5.SetEnaSrdUdpSpecification(f0f23elemf5f1)
+						f0f23elemf6.SetEnaSrdUdpSpecification(f0f23elemf6f1)
 					}
-					f0f23elem.SetEnaSrdSpecification(f0f23elemf5)
+					f0f23elem.SetEnaSrdSpecification(f0f23elemf6)
 				}
 				if f0f23iter.Groups != nil {
-					f0f23elemf6 := []*string{}
-					for _, f0f23elemf6iter := range f0f23iter.Groups {
-						var f0f23elemf6elem string
-						f0f23elemf6elem = *f0f23elemf6iter
-						f0f23elemf6 = append(f0f23elemf6, &f0f23elemf6elem)
+					f0f23elemf7 := []*string{}
+					for _, f0f23elemf7iter := range f0f23iter.Groups {
+						var f0f23elemf7elem string
+						f0f23elemf7elem = *f0f23elemf7iter
+						f0f23elemf7 = append(f0f23elemf7, &f0f23elemf7elem)
 					}
-					f0f23elem.SetGroups(f0f23elemf6)
+					f0f23elem.SetGroups(f0f23elemf7)
 				}
 				if f0f23iter.InterfaceType != nil {
 					f0f23elem.SetInterfaceType(*f0f23iter.InterfaceType)
@@ -527,43 +540,43 @@ func GenerateCreateLaunchTemplateInput(cr *svcapitypes.LaunchTemplate) *svcsdk.C
 					f0f23elem.SetIpv4PrefixCount(*f0f23iter.IPv4PrefixCount)
 				}
 				if f0f23iter.IPv4Prefixes != nil {
-					f0f23elemf9 := []*svcsdk.Ipv4PrefixSpecificationRequest{}
-					for _, f0f23elemf9iter := range f0f23iter.IPv4Prefixes {
-						f0f23elemf9elem := &svcsdk.Ipv4PrefixSpecificationRequest{}
-						if f0f23elemf9iter.IPv4Prefix != nil {
-							f0f23elemf9elem.SetIpv4Prefix(*f0f23elemf9iter.IPv4Prefix)
+					f0f23elemf10 := []*svcsdk.Ipv4PrefixSpecificationRequest{}
+					for _, f0f23elemf10iter := range f0f23iter.IPv4Prefixes {
+						f0f23elemf10elem := &svcsdk.Ipv4PrefixSpecificationRequest{}
+						if f0f23elemf10iter.IPv4Prefix != nil {
+							f0f23elemf10elem.SetIpv4Prefix(*f0f23elemf10iter.IPv4Prefix)
 						}
-						f0f23elemf9 = append(f0f23elemf9, f0f23elemf9elem)
+						f0f23elemf10 = append(f0f23elemf10, f0f23elemf10elem)
 					}
-					f0f23elem.SetIpv4Prefixes(f0f23elemf9)
+					f0f23elem.SetIpv4Prefixes(f0f23elemf10)
 				}
 				if f0f23iter.IPv6AddressCount != nil {
 					f0f23elem.SetIpv6AddressCount(*f0f23iter.IPv6AddressCount)
 				}
 				if f0f23iter.IPv6Addresses != nil {
-					f0f23elemf11 := []*svcsdk.InstanceIpv6AddressRequest{}
-					for _, f0f23elemf11iter := range f0f23iter.IPv6Addresses {
-						f0f23elemf11elem := &svcsdk.InstanceIpv6AddressRequest{}
-						if f0f23elemf11iter.IPv6Address != nil {
-							f0f23elemf11elem.SetIpv6Address(*f0f23elemf11iter.IPv6Address)
+					f0f23elemf12 := []*svcsdk.InstanceIpv6AddressRequest{}
+					for _, f0f23elemf12iter := range f0f23iter.IPv6Addresses {
+						f0f23elemf12elem := &svcsdk.InstanceIpv6AddressRequest{}
+						if f0f23elemf12iter.IPv6Address != nil {
+							f0f23elemf12elem.SetIpv6Address(*f0f23elemf12iter.IPv6Address)
 						}
-						f0f23elemf11 = append(f0f23elemf11, f0f23elemf11elem)
+						f0f23elemf12 = append(f0f23elemf12, f0f23elemf12elem)
 					}
-					f0f23elem.SetIpv6Addresses(f0f23elemf11)
+					f0f23elem.SetIpv6Addresses(f0f23elemf12)
 				}
 				if f0f23iter.IPv6PrefixCount != nil {
 					f0f23elem.SetIpv6PrefixCount(*f0f23iter.IPv6PrefixCount)
 				}
 				if f0f23iter.IPv6Prefixes != nil {
-					f0f23elemf13 := []*svcsdk.Ipv6PrefixSpecificationRequest{}
-					for _, f0f23elemf13iter := range f0f23iter.IPv6Prefixes {
-						f0f23elemf13elem := &svcsdk.Ipv6PrefixSpecificationRequest{}
-						if f0f23elemf13iter.IPv6Prefix != nil {
-							f0f23elemf13elem.SetIpv6Prefix(*f0f23elemf13iter.IPv6Prefix)
+					f0f23elemf14 := []*svcsdk.Ipv6PrefixSpecificationRequest{}
+					for _, f0f23elemf14iter := range f0f23iter.IPv6Prefixes {
+						f0f23elemf14elem := &svcsdk.Ipv6PrefixSpecificationRequest{}
+						if f0f23elemf14iter.IPv6Prefix != nil {
+							f0f23elemf14elem.SetIpv6Prefix(*f0f23elemf14iter.IPv6Prefix)
 						}
-						f0f23elemf13 = append(f0f23elemf13, f0f23elemf13elem)
+						f0f23elemf14 = append(f0f23elemf14, f0f23elemf14elem)
 					}
-					f0f23elem.SetIpv6Prefixes(f0f23elemf13)
+					f0f23elem.SetIpv6Prefixes(f0f23elemf14)
 				}
 				if f0f23iter.NetworkCardIndex != nil {
 					f0f23elem.SetNetworkCardIndex(*f0f23iter.NetworkCardIndex)
@@ -578,18 +591,18 @@ func GenerateCreateLaunchTemplateInput(cr *svcapitypes.LaunchTemplate) *svcsdk.C
 					f0f23elem.SetPrivateIpAddress(*f0f23iter.PrivateIPAddress)
 				}
 				if f0f23iter.PrivateIPAddresses != nil {
-					f0f23elemf18 := []*svcsdk.PrivateIpAddressSpecification{}
-					for _, f0f23elemf18iter := range f0f23iter.PrivateIPAddresses {
-						f0f23elemf18elem := &svcsdk.PrivateIpAddressSpecification{}
-						if f0f23elemf18iter.Primary != nil {
-							f0f23elemf18elem.SetPrimary(*f0f23elemf18iter.Primary)
+					f0f23elemf19 := []*svcsdk.PrivateIpAddressSpecification{}
+					for _, f0f23elemf19iter := range f0f23iter.PrivateIPAddresses {
+						f0f23elemf19elem := &svcsdk.PrivateIpAddressSpecification{}
+						if f0f23elemf19iter.Primary != nil {
+							f0f23elemf19elem.SetPrimary(*f0f23elemf19iter.Primary)
 						}
-						if f0f23elemf18iter.PrivateIPAddress != nil {
-							f0f23elemf18elem.SetPrivateIpAddress(*f0f23elemf18iter.PrivateIPAddress)
+						if f0f23elemf19iter.PrivateIPAddress != nil {
+							f0f23elemf19elem.SetPrivateIpAddress(*f0f23elemf19iter.PrivateIPAddress)
 						}
-						f0f23elemf18 = append(f0f23elemf18, f0f23elemf18elem)
+						f0f23elemf19 = append(f0f23elemf19, f0f23elemf19elem)
 					}
-					f0f23elem.SetPrivateIpAddresses(f0f23elemf18)
+					f0f23elem.SetPrivateIpAddresses(f0f23elemf19)
 				}
 				if f0f23iter.SecondaryPrivateIPAddressCount != nil {
 					f0f23elem.SetSecondaryPrivateIpAddressCount(*f0f23iter.SecondaryPrivateIPAddressCount)

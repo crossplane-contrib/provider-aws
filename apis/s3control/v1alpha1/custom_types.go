@@ -47,3 +47,27 @@ type CustomAccessPointParameters struct {
 
 // CustomAccessPointObservation includes the custom status fields of AccessPoint.
 type CustomAccessPointObservation struct{}
+
+// CustomAccessGrantParameters includes the custom fields of AccessGrant.
+type CustomAccessGrantParameters struct{}
+
+// CustomAccessGrantObservation includes the custom status fields of AccessGrant.
+type CustomAccessGrantObservation struct{}
+
+// CustomAccessGrantsInstanceParameters includes the custom fields of AccessGrantsInstance.
+type CustomAccessGrantsInstanceParameters struct{}
+
+// CustomAccessGrantsInstanceObservation includes the custom status fields of AccessGrantsInstance.
+type CustomAccessGrantsInstanceObservation struct{}
+
+// CustomAccessGrantsLocationParameters includes the custom fields of AccessGrantsLocation.
+type CustomAccessGrantsLocationParameters struct{}
+
+// CustomAccessGrantsLocationObservation includes the custom status fields of AccessGrantsLocation.
+type CustomAccessGrantsLocationObservation struct{}
+
+// CustomStorageLensGroupParameters includes the custom fields of StorageLensGroup.
+type CustomStorageLensGroupParameters struct{}
+
+// CustomStorageLensGroupObservation includes the custom status fields of StorageLensGroup.
+type CustomStorageLensGroupObservation struct{}

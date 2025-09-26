@@ -465,6 +465,9 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			if elem.RdsCustomClusterConfiguration.InterconnectSubnetId != nil {
 				f63.InterconnectSubnetID = elem.RdsCustomClusterConfiguration.InterconnectSubnetId
 			}
+			if elem.RdsCustomClusterConfiguration.ReplicaMode != nil {
+				f63.ReplicaMode = elem.RdsCustomClusterConfiguration.ReplicaMode
+			}
 			if elem.RdsCustomClusterConfiguration.TransitGatewayMulticastDomainId != nil {
 				f63.TransitGatewayMulticastDomainID = elem.RdsCustomClusterConfiguration.TransitGatewayMulticastDomainId
 			}
@@ -534,6 +537,28 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		} else {
 			cr.Status.AtProvider.Status = nil
 		}
+		if elem.StatusInfos != nil {
+			f70 := []*svcapitypes.DBClusterStatusInfo{}
+			for _, f70iter := range elem.StatusInfos {
+				f70elem := &svcapitypes.DBClusterStatusInfo{}
+				if f70iter.Message != nil {
+					f70elem.Message = f70iter.Message
+				}
+				if f70iter.Normal != nil {
+					f70elem.Normal = f70iter.Normal
+				}
+				if f70iter.Status != nil {
+					f70elem.Status = f70iter.Status
+				}
+				if f70iter.StatusType != nil {
+					f70elem.StatusType = f70iter.StatusType
+				}
+				f70 = append(f70, f70elem)
+			}
+			cr.Status.AtProvider.StatusInfos = f70
+		} else {
+			cr.Status.AtProvider.StatusInfos = nil
+		}
 		if elem.StorageEncrypted != nil {
 			cr.Spec.ForProvider.StorageEncrypted = elem.StorageEncrypted
 		} else {
@@ -545,34 +570,34 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.StorageType = nil
 		}
 		if elem.TagList != nil {
-			f72 := []*svcapitypes.Tag{}
-			for _, f72iter := range elem.TagList {
-				f72elem := &svcapitypes.Tag{}
-				if f72iter.Key != nil {
-					f72elem.Key = f72iter.Key
+			f73 := []*svcapitypes.Tag{}
+			for _, f73iter := range elem.TagList {
+				f73elem := &svcapitypes.Tag{}
+				if f73iter.Key != nil {
+					f73elem.Key = f73iter.Key
 				}
-				if f72iter.Value != nil {
-					f72elem.Value = f72iter.Value
+				if f73iter.Value != nil {
+					f73elem.Value = f73iter.Value
 				}
-				f72 = append(f72, f72elem)
+				f73 = append(f73, f73elem)
 			}
-			cr.Status.AtProvider.TagList = f72
+			cr.Status.AtProvider.TagList = f73
 		} else {
 			cr.Status.AtProvider.TagList = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f73 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f73iter := range elem.VpcSecurityGroups {
-				f73elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f73iter.Status != nil {
-					f73elem.Status = f73iter.Status
+			f74 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f74iter := range elem.VpcSecurityGroups {
+				f74elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f74iter.Status != nil {
+					f74elem.Status = f74iter.Status
 				}
-				if f73iter.VpcSecurityGroupId != nil {
-					f73elem.VPCSecurityGroupID = f73iter.VpcSecurityGroupId
+				if f74iter.VpcSecurityGroupId != nil {
+					f74elem.VPCSecurityGroupID = f74iter.VpcSecurityGroupId
 				}
-				f73 = append(f73, f73elem)
+				f74 = append(f74, f74elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f73
+			cr.Status.AtProvider.VPCSecurityGroups = f74
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}
@@ -729,6 +754,9 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 		f41 := &svcsdk.RdsCustomClusterConfiguration{}
 		if cr.Spec.ForProvider.RdsCustomClusterConfiguration.InterconnectSubnetID != nil {
 			f41.SetInterconnectSubnetId(*cr.Spec.ForProvider.RdsCustomClusterConfiguration.InterconnectSubnetID)
+		}
+		if cr.Spec.ForProvider.RdsCustomClusterConfiguration.ReplicaMode != nil {
+			f41.SetReplicaMode(*cr.Spec.ForProvider.RdsCustomClusterConfiguration.ReplicaMode)
 		}
 		if cr.Spec.ForProvider.RdsCustomClusterConfiguration.TransitGatewayMulticastDomainID != nil {
 			f41.SetTransitGatewayMulticastDomainId(*cr.Spec.ForProvider.RdsCustomClusterConfiguration.TransitGatewayMulticastDomainID)

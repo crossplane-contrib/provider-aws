@@ -202,7 +202,7 @@ type UserPoolObservation struct {
 	// To learn how to move your Amazon Web Services account out of the sandbox,
 	// see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html).
 	SmsConfigurationFailure *string `json:"smsConfigurationFailure,omitempty"`
-	// The status of a user pool.
+	// This parameter is no longer used.
 	Status *string `json:"status,omitempty"`
 
 	CustomUserPoolObservation `json:",inline"`

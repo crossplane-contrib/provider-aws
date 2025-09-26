@@ -901,6 +901,21 @@ spec:
                   region:
                     description: Region is which region the Server will be created.
                     type: string
+                  s3StorageOptions:
+                    description: |-
+                      Specifies whether or not performance for your Amazon S3 directories is optimized.
+                      This is disabled by default.
+
+                      By default, home directory mappings have a TYPE of DIRECTORY. If you enable
+                      this option, you would then need to explicitly set the HomeDirectoryMapEntry
+                      Type to FILE if you want a mapping to have a file target.
+                    properties:
+                      directoryListingOptimization:
+                        description: |-
+                          Indicates whether optimization to directory listing on S3 servers is used.
+                          Disabled by default for compatibility.
+                        type: string
+                    type: object
                   securityPolicyName:
                     description: Specifies the name of the security policy that is
                       attached to the server.

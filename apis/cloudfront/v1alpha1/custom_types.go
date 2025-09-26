@@ -45,3 +45,9 @@ type CustomResponseHeadersPolicyParameters struct{}
 
 // CustomResponseHeadersPolicyObservation includes the custom status fields of ResponseHeadersPolicy.
 type CustomResponseHeadersPolicyObservation struct{}
+
+// CustomKeyValueStoreParameters includes the custom fields of KeyValueStore.
+type CustomKeyValueStoreParameters struct{}
+
+// CustomKeyValueStoreObservation includes the custom status fields of KeyValueStore.
+type CustomKeyValueStoreObservation struct{}

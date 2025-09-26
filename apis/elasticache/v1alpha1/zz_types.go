@@ -41,7 +41,15 @@ type AvailabilityZone struct {
 type CacheCluster struct {
 	ARN *string `json:"arn,omitempty"`
 
+	AtRestEncryptionEnabled *bool `json:"atRestEncryptionEnabled,omitempty"`
+
+	AuthTokenEnabled *bool `json:"authTokenEnabled,omitempty"`
+
+	AuthTokenLastModifiedDate *metav1.Time `json:"authTokenLastModifiedDate,omitempty"`
+
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
+
+	CacheClusterCreateTime *metav1.Time `json:"cacheClusterCreateTime,omitempty"`
 
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -52,6 +60,9 @@ type CacheCluster struct {
 	CacheSubnetGroupName *string `json:"cacheSubnetGroupName,omitempty"`
 
 	ClientDownloadLandingPage *string `json:"clientDownloadLandingPage,omitempty"`
+	// Represents the information required for client programs to connect to a cache
+	// node.
+	ConfigurationEndpoint *Endpoint `json:"configurationEndpoint,omitempty"`
 
 	Engine *string `json:"engine,omitempty"`
 
@@ -72,6 +83,8 @@ type CacheCluster struct {
 	SnapshotRetentionLimit *int64 `json:"snapshotRetentionLimit,omitempty"`
 
 	SnapshotWindow *string `json:"snapshotWindow,omitempty"`
+
+	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -89,6 +102,8 @@ type CacheEngineVersion struct {
 
 // +kubebuilder:skipversion
 type CacheNode struct {
+	CacheNodeCreateTime *metav1.Time `json:"cacheNodeCreateTime,omitempty"`
+
 	CacheNodeID *string `json:"cacheNodeID,omitempty"`
 
 	CacheNodeStatus *string `json:"cacheNodeStatus,omitempty"`
@@ -96,6 +111,9 @@ type CacheNode struct {
 	CustomerAvailabilityZone *string `json:"customerAvailabilityZone,omitempty"`
 
 	CustomerOutpostARN *string `json:"customerOutpostARN,omitempty"`
+	// Represents the information required for client programs to connect to a cache
+	// node.
+	Endpoint *Endpoint `json:"endpoint,omitempty"`
 
 	ParameterGroupStatus *string `json:"parameterGroupStatus,omitempty"`
 
@@ -129,6 +147,16 @@ type CacheNodeTypeSpecificValue struct {
 // +kubebuilder:skipversion
 type CacheNodeUpdateStatus struct {
 	CacheNodeID *string `json:"cacheNodeID,omitempty"`
+
+	NodeDeletionDate *metav1.Time `json:"nodeDeletionDate,omitempty"`
+
+	NodeUpdateEndDate *metav1.Time `json:"nodeUpdateEndDate,omitempty"`
+
+	NodeUpdateInitiatedDate *metav1.Time `json:"nodeUpdateInitiatedDate,omitempty"`
+
+	NodeUpdateStartDate *metav1.Time `json:"nodeUpdateStartDate,omitempty"`
+
+	NodeUpdateStatusModifiedDate *metav1.Time `json:"nodeUpdateStatusModifiedDate,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -181,8 +209,22 @@ type CacheSubnetGroup struct {
 }
 
 // +kubebuilder:skipversion
+type CacheUsageLimits struct {
+	// The data storage limit.
+	DataStorage *DataStorage `json:"dataStorage,omitempty"`
+	// The configuration for the number of ElastiCache Processing Units (ECPU) the
+	// cache can consume per second.
+	ECPUPerSecond *ECPUPerSecond `json:"eCPUPerSecond,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CloudWatchLogsDestinationDetails struct {
 	LogGroup *string `json:"logGroup,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ConfigureShard struct {
+	NewReplicaCount *int64 `json:"newReplicaCount,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -190,6 +232,13 @@ type CustomerNodeEndpoint struct {
 	Address *string `json:"address,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DataStorage struct {
+	Maximum *int64 `json:"maximum,omitempty"`
+
+	Unit *string `json:"unit,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -202,8 +251,15 @@ type EC2SecurityGroup struct {
 }
 
 // +kubebuilder:skipversion
+type ECPUPerSecond struct {
+	Maximum *int64 `json:"maximum,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Endpoint struct {
 	Address *string `json:"address,omitempty"`
+
+	Port *int64 `json:"port,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -215,6 +271,8 @@ type EngineDefaults struct {
 
 // +kubebuilder:skipversion
 type Event struct {
+	Date *metav1.Time `json:"date,omitempty"`
+
 	Message *string `json:"message,omitempty"`
 
 	SourceIdentifier *string `json:"sourceIdentifier,omitempty"`
@@ -231,7 +289,13 @@ type GlobalNodeGroup struct {
 type GlobalReplicationGroup struct {
 	ARN *string `json:"arn,omitempty"`
 
+	AtRestEncryptionEnabled *bool `json:"atRestEncryptionEnabled,omitempty"`
+
+	AuthTokenEnabled *bool `json:"authTokenEnabled,omitempty"`
+
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
+
+	ClusterEnabled *bool `json:"clusterEnabled,omitempty"`
 
 	Engine *string `json:"engine,omitempty"`
 
@@ -242,6 +306,8 @@ type GlobalReplicationGroup struct {
 	GlobalReplicationGroupID *string `json:"globalReplicationGroupID,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+
+	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -273,8 +339,19 @@ type LogDeliveryConfiguration struct {
 }
 
 // +kubebuilder:skipversion
+type LogDeliveryConfigurationRequest struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type NodeGroup struct {
 	NodeGroupID *string `json:"nodeGroupID,omitempty"`
+	// Represents the information required for client programs to connect to a cache
+	// node.
+	PrimaryEndpoint *Endpoint `json:"primaryEndpoint,omitempty"`
+	// Represents the information required for client programs to connect to a cache
+	// node.
+	ReaderEndpoint *Endpoint `json:"readerEndpoint,omitempty"`
 
 	Slots *string `json:"slots,omitempty"`
 
@@ -303,6 +380,9 @@ type NodeGroupMember struct {
 	PreferredAvailabilityZone *string `json:"preferredAvailabilityZone,omitempty"`
 
 	PreferredOutpostARN *string `json:"preferredOutpostARN,omitempty"`
+	// Represents the information required for client programs to connect to a cache
+	// node.
+	ReadEndpoint *Endpoint `json:"readEndpoint,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -310,6 +390,16 @@ type NodeGroupMemberUpdateStatus struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
 	CacheNodeID *string `json:"cacheNodeID,omitempty"`
+
+	NodeDeletionDate *metav1.Time `json:"nodeDeletionDate,omitempty"`
+
+	NodeUpdateEndDate *metav1.Time `json:"nodeUpdateEndDate,omitempty"`
+
+	NodeUpdateInitiatedDate *metav1.Time `json:"nodeUpdateInitiatedDate,omitempty"`
+
+	NodeUpdateStartDate *metav1.Time `json:"nodeUpdateStartDate,omitempty"`
+
+	NodeUpdateStatusModifiedDate *metav1.Time `json:"nodeUpdateStatusModifiedDate,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -321,11 +411,15 @@ type NodeGroupUpdateStatus struct {
 type NodeSnapshot struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
+	CacheNodeCreateTime *metav1.Time `json:"cacheNodeCreateTime,omitempty"`
+
 	CacheNodeID *string `json:"cacheNodeID,omitempty"`
 
 	CacheSize *string `json:"cacheSize,omitempty"`
 
 	NodeGroupID *string `json:"nodeGroupID,omitempty"`
+
+	SnapshotCreateTime *metav1.Time `json:"snapshotCreateTime,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -368,6 +462,8 @@ type PendingModifiedValues struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	NumCacheNodes *int64 `json:"numCacheNodes,omitempty"`
+
+	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -395,13 +491,26 @@ type RegionalConfiguration struct {
 type ReplicationGroup struct {
 	ARN *string `json:"arn,omitempty"`
 
+	AtRestEncryptionEnabled *bool `json:"atRestEncryptionEnabled,omitempty"`
+
+	AuthTokenEnabled *bool `json:"authTokenEnabled,omitempty"`
+
+	AuthTokenLastModifiedDate *metav1.Time `json:"authTokenLastModifiedDate,omitempty"`
+
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
 
+	ClusterEnabled *bool `json:"clusterEnabled,omitempty"`
+	// Represents the information required for client programs to connect to a cache
+	// node.
+	ConfigurationEndpoint *Endpoint `json:"configurationEndpoint,omitempty"`
+
 	Description *string `json:"description,omitempty"`
 
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	ReplicationGroupCreateTime *metav1.Time `json:"replicationGroupCreateTime,omitempty"`
 
 	ReplicationGroupID *string `json:"replicationGroupID,omitempty"`
 
@@ -412,16 +521,24 @@ type ReplicationGroup struct {
 	SnapshottingClusterID *string `json:"snapshottingClusterID,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+
+	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type ReplicationGroupPendingModifiedValues struct {
 	PrimaryClusterID *string `json:"primaryClusterID,omitempty"`
+
+	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type ReservedCacheNode struct {
+	CacheNodeCount *int64 `json:"cacheNodeCount,omitempty"`
+
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
+
+	Duration *int64 `json:"duration,omitempty"`
 
 	OfferingType *string `json:"offeringType,omitempty"`
 
@@ -433,12 +550,16 @@ type ReservedCacheNode struct {
 
 	ReservedCacheNodesOfferingID *string `json:"reservedCacheNodesOfferingID,omitempty"`
 
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+
 	State *string `json:"state,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type ReservedCacheNodesOffering struct {
 	CacheNodeType *string `json:"cacheNodeType,omitempty"`
+
+	Duration *int64 `json:"duration,omitempty"`
 
 	OfferingType *string `json:"offeringType,omitempty"`
 
@@ -455,7 +576,78 @@ type SecurityGroupMembership struct {
 }
 
 // +kubebuilder:skipversion
+type ServerlessCacheConfiguration struct {
+	Engine *string `json:"engine,omitempty"`
+
+	MajorEngineVersion *string `json:"majorEngineVersion,omitempty"`
+
+	ServerlessCacheName *string `json:"serverlessCacheName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServerlessCacheSnapshot_SDK struct {
+	ARN *string `json:"arn,omitempty"`
+
+	BytesUsedForCache *string `json:"bytesUsedForCache,omitempty"`
+
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
+	ExpiryTime *metav1.Time `json:"expiryTime,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+	// The configuration settings for a specific serverless cache.
+	ServerlessCacheConfiguration *ServerlessCacheConfiguration `json:"serverlessCacheConfiguration,omitempty"`
+
+	ServerlessCacheSnapshotName *string `json:"serverlessCacheSnapshotName,omitempty"`
+
+	SnapshotType *string `json:"snapshotType,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServerlessCache_SDK struct {
+	ARN *string `json:"arn,omitempty"`
+	// The usage limits for storage and ElastiCache Processing Units for the cache.
+	CacheUsageLimits *CacheUsageLimits `json:"cacheUsageLimits,omitempty"`
+
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
+	DailySnapshotTime *string `json:"dailySnapshotTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+	// Represents the information required for client programs to connect to a cache
+	// node.
+	Endpoint *Endpoint `json:"endpoint,omitempty"`
+
+	Engine *string `json:"engine,omitempty"`
+
+	FullEngineVersion *string `json:"fullEngineVersion,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	MajorEngineVersion *string `json:"majorEngineVersion,omitempty"`
+	// Represents the information required for client programs to connect to a cache
+	// node.
+	ReaderEndpoint *Endpoint `json:"readerEndpoint,omitempty"`
+
+	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
+
+	ServerlessCacheName *string `json:"serverlessCacheName,omitempty"`
+
+	SnapshotRetentionLimit *int64 `json:"snapshotRetentionLimit,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+
+	UserGroupID *string `json:"userGroupID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ServiceUpdate struct {
+	AutoUpdateAfterRecommendedApplyByDate *bool `json:"autoUpdateAfterRecommendedApplyByDate,omitempty"`
+
 	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
@@ -464,7 +656,13 @@ type ServiceUpdate struct {
 
 	ServiceUpdateDescription *string `json:"serviceUpdateDescription,omitempty"`
 
+	ServiceUpdateEndDate *metav1.Time `json:"serviceUpdateEndDate,omitempty"`
+
 	ServiceUpdateName *string `json:"serviceUpdateName,omitempty"`
+
+	ServiceUpdateRecommendedApplyByDate *metav1.Time `json:"serviceUpdateRecommendedApplyByDate,omitempty"`
+
+	ServiceUpdateReleaseDate *metav1.Time `json:"serviceUpdateReleaseDate,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -472,6 +670,8 @@ type Snapshot struct {
 	ARN *string `json:"arn,omitempty"`
 
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
+
+	CacheClusterCreateTime *metav1.Time `json:"cacheClusterCreateTime,omitempty"`
 
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -536,6 +736,13 @@ type Tag struct {
 }
 
 // +kubebuilder:skipversion
+type TimeRangeFilter struct {
+	EndTime *metav1.Time `json:"endTime,omitempty"`
+
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type UnprocessedUpdateAction struct {
 	CacheClusterID *string `json:"cacheClusterID,omitempty"`
 
@@ -561,6 +768,14 @@ type UpdateAction struct {
 	ReplicationGroupID *string `json:"replicationGroupID,omitempty"`
 
 	ServiceUpdateName *string `json:"serviceUpdateName,omitempty"`
+
+	ServiceUpdateRecommendedApplyByDate *metav1.Time `json:"serviceUpdateRecommendedApplyByDate,omitempty"`
+
+	ServiceUpdateReleaseDate *metav1.Time `json:"serviceUpdateReleaseDate,omitempty"`
+
+	UpdateActionAvailableDate *metav1.Time `json:"updateActionAvailableDate,omitempty"`
+
+	UpdateActionStatusModifiedDate *metav1.Time `json:"updateActionStatusModifiedDate,omitempty"`
 }
 
 // +kubebuilder:skipversion

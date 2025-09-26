@@ -32,6 +32,8 @@ type WorkspaceParameters struct {
 	// An optional user-assigned alias for this workspace. This alias is for user
 	// reference and does not need to be unique.
 	Alias *string `json:"alias,omitempty"`
+	// Optional, customer managed KMS key used to encrypt data for this workspace
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 	// Optional, user-provided tags for this workspace.
 	Tags                      map[string]*string `json:"tags,omitempty"`
 	CustomWorkspaceParameters `json:",inline"`

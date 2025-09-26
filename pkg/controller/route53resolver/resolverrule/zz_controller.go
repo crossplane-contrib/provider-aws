@@ -185,6 +185,9 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.ResolverRule) (ma
 			if f13iter.Port != nil {
 				f13elem.Port = f13iter.Port
 			}
+			if f13iter.Protocol != nil {
+				f13elem.Protocol = f13iter.Protocol
+			}
 			f13 = append(f13, f13elem)
 		}
 		cr.Spec.ForProvider.TargetIPs = f13

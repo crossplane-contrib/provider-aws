@@ -432,8 +432,9 @@ const (
 type TLSSecurityPolicy string
 
 const (
-	TLSSecurityPolicy_Policy_Min_TLS_1_0_2019_07 TLSSecurityPolicy = "Policy-Min-TLS-1-0-2019-07"
-	TLSSecurityPolicy_Policy_Min_TLS_1_2_2019_07 TLSSecurityPolicy = "Policy-Min-TLS-1-2-2019-07"
+	TLSSecurityPolicy_Policy_Min_TLS_1_0_2019_07     TLSSecurityPolicy = "Policy-Min-TLS-1-0-2019-07"
+	TLSSecurityPolicy_Policy_Min_TLS_1_2_2019_07     TLSSecurityPolicy = "Policy-Min-TLS-1-2-2019-07"
+	TLSSecurityPolicy_Policy_Min_TLS_1_2_PFS_2023_10 TLSSecurityPolicy = "Policy-Min-TLS-1-2-PFS-2023-10"
 )
 
 type TimeUnit string
