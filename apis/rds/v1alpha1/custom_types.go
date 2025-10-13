@@ -355,6 +355,14 @@ type CustomDBClusterParameters struct {
 	// RestoreFrom specifies the details of the backup to restore when creating a new DBCluster.
 	// +optional
 	RestoreFrom *RestoreDBClusterBackupConfiguration `json:"restoreFrom,omitempty"`
+
+	// DeleteAutomatedBackups indicates whether to remove automated backups
+	// immediately after the DB cluster is deleted. The default is to
+	// remove automated backups immediately after the DB cluster is
+	// deleted, unless the Amazon Web Services Backup policy specifies
+	// a point-in-time restore rule.
+	// +optional
+	DeleteAutomatedBackups *bool `json:"deleteAutomatedBackups,omitempty"`
 }
 
 // CustomDBClusterObservation includes the custom status fields of DBCluster.
