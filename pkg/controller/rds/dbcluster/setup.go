@@ -587,6 +587,10 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 		return false, "", nil
 	}
 
+	if !isStorageTypeUpToDate(cr, out) {
+		return false, "", nil
+	}
+
 	if !isBackupRetentionPeriodUpToDate(cr, out) {
 		return false, "", nil
 	}
@@ -630,6 +634,22 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 		return false, "", nil
 	}
 	return true, "", nil
+}
+
+func isStorageTypeUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
+	// If StorageType is not set by user, we do not need to check and accept AWS set default (or the current value)
+	if cr.Spec.ForProvider.StorageType == nil {
+		return true
+	}
+
+	// AWS returns "" when StorageType is explicitly "aurora" (default for DBClusters with aurora engines)
+	// see also note in AWS docs: https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_CreateDBCluster.html
+	if pointer.StringValue(cr.Spec.ForProvider.StorageType) == "aurora" &&
+		pointer.StringValue(out.DBClusters[0].StorageType) == "" {
+		return true
+	}
+
+	return pointer.StringValue(cr.Spec.ForProvider.StorageType) == pointer.StringValue(out.DBClusters[0].StorageType)
 }
 
 func isPreferredMaintenanceWindowUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
