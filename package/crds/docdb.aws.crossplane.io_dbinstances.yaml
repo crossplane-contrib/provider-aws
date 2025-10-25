@@ -592,6 +592,8 @@ spec:
                       Specifies the daily time range during which automated backups are created
                       if automated backups are enabled, as determined by the BackupRetentionPeriod.
                     type: string
+                  preferredMaintenanceWindow:
+                    type: string
                   publiclyAccessible:
                     description: |-
                       Not supported. Amazon DocumentDB does not currently support public endpoints.
