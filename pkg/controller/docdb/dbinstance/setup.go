@@ -106,6 +106,10 @@ func postObserve(_ context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.Des
 		return managed.ExternalObservation{}, err
 	}
 
+	if len(resp.DBInstances) > 0 {
+		cr.Status.AtProvider.PreferredMaintenanceWindow = resp.DBInstances[0].PreferredMaintenanceWindow
+	}
+
 	switch pointer.StringValue(cr.Status.AtProvider.DBInstanceStatus) {
 	case svcapitypes.DocDBInstanceStateAvailable:
 		cr.Status.SetConditions(xpv1.Available())
