@@ -10,8 +10,8 @@ on:
 
 env:
   # Common versions
-  GO_VERSION: '1.23.5'
-  GOLANGCI_VERSION: 'v1.63.4'
+  GO_VERSION: '1.25.5'
+  GOLANGCI_VERSION: 'v1.64.8'
   DOCKER_BUILDX_VERSION: 'v0.14.1'
 
   # Common users. We can't run a step 'if secrets.AWS_USR != ""' but we can run
@@ -27,31 +27,31 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           submodules: true
 
       - name: Setup Go
-        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Install goimports
-        run: go install golang.org/x/tools/cmd/goimports
+        run: go install golang.org/x/tools/cmd/goimports@latest
 
       - name: Find the Go Build Cache
         id: go
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-check-diff-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-check-diff-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -83,7 +83,7 @@ jobs:
     if: needs.detect-noop.outputs.noop != 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           submodules: true
 
@@ -107,12 +107,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           submodules: true
 
       - name: Setup Go
-        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -121,14 +121,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-lint-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-lint-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -153,7 +153,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           submodules: true
 
@@ -161,7 +161,7 @@ jobs:
         run: git fetch --prune --unshallow
 
       - name: Setup Go
-        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -170,14 +170,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-unit-tests-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-unit-tests-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -212,7 +212,7 @@ jobs:
           install: true
 
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           submodules: true
 
@@ -220,7 +220,7 @@ jobs:
         run: git fetch --prune --unshallow
 
       - name: Setup Go
-        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -229,14 +229,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-e2e-tests-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-e2e-tests-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
@@ -284,7 +284,7 @@ jobs:
           install: true
 
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           submodules: true
 
@@ -292,7 +292,7 @@ jobs:
         run: git fetch --prune --unshallow
 
       - name: Setup Go
-        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -301,14 +301,14 @@ jobs:
         run: echo "cache=$(make go.cachedir)" >> $GITHUB_OUTPUT
 
       - name: Cache the Go Build Cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: ${{ steps.go.outputs.cache }}
           key: ${{ runner.os }}-build-publish-artifacts-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-build-publish-artifacts-
 
       - name: Cache Go Dependencies
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: .work/pkg
           key: ${{ runner.os }}-pkg-${{ hashFiles('**/go.sum') }}
