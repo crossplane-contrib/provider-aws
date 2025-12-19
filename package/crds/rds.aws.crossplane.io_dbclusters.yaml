@@ -394,6 +394,14 @@ spec:
                   dbSystemID:
                     description: Reserved for future use.
                     type: string
+                  deleteAutomatedBackups:
+                    description: |-
+                      DeleteAutomatedBackups indicates whether to remove automated backups
+                      immediately after the DB cluster is deleted. The default is to
+                      remove automated backups immediately after the DB cluster is
+                      deleted, unless the Amazon Web Services Backup policy specifies
+                      a point-in-time restore rule.
+                    type: boolean
                   deletionProtection:
                     description: |-
                       Specifies whether the DB cluster has deletion protection enabled. The database
