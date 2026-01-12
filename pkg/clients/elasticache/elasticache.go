@@ -138,15 +138,17 @@ func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 
 // NewModifyReplicationGroupInput returns ElastiCache replication group
 // modification input suitable for use with the AWS API.
-func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string) *elasticache.ModifyReplicationGroupInput {
-	return &elasticache.ModifyReplicationGroupInput{
+func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string, token *string) *elasticache.ModifyReplicationGroupInput {
+	input := &elasticache.ModifyReplicationGroupInput{
 		ReplicationGroupId:          aws.String(id),
 		ApplyImmediately:            &g.ApplyModificationsImmediately,
+		AuthTokenUpdateStrategy:     elasticachetypes.AuthTokenUpdateStrategyType(g.AuthTokenUpdateStrategy),
 		AutomaticFailoverEnabled:    g.AutomaticFailoverEnabled,
 		CacheNodeType:               aws.String(g.CacheNodeType),
 		CacheParameterGroupName:     g.CacheParameterGroupName,
 		CacheSecurityGroupNames:     g.CacheSecurityGroupNames,
 		EngineVersion:               g.EngineVersion,
+		LogDeliveryConfigurations:   generateLogDeliveryConfigurationsRequest(g.LogDeliveryConfiguration),
 		MultiAZEnabled:              g.MultiAZEnabled,
 		NotificationTopicArn:        g.NotificationTopicARN,
 		NotificationTopicStatus:     g.NotificationTopicStatus,
@@ -158,6 +160,10 @@ func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		SnapshotWindow:              g.SnapshotWindow,
 		SnapshottingClusterId:       g.SnapshottingClusterID,
 	}
+	if token != nil && *token != "" {
+		input.AuthToken = token
+	}
+	return input
 }
 
 // NewModifyReplicationGroupShardConfigurationInput returns ElastiCache replication group
@@ -278,6 +284,7 @@ func ReplicationGroupShardConfigurationNeedsUpdate(kube v1beta1.ReplicationGroup
 // ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
 // the configuration of its member clusters differ from given desired state.
 func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticachetypes.ReplicationGroup, ccList []elasticachetypes.CacheCluster) string {
+	diffLogDeliveryConfigurations := compareLogsDeliveryConfigurations(kube.LogDeliveryConfiguration, GenerateLogDeliveryConfigurations(rg.LogDeliveryConfigurations))
 	switch {
 	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
 		return "AutomaticFailover"
@@ -291,6 +298,8 @@ func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg ela
 		return "MultiAZ"
 	case ReplicationGroupNumCacheClustersNeedsUpdate(kube, ccList):
 		return "NumCacheClusters"
+	case diffLogDeliveryConfigurations != "":
+		return "LogDeliveryConfigurations: diff: " + diffLogDeliveryConfigurations
 	}
 
 	for _, cc := range ccList {
@@ -574,6 +583,103 @@ func generateReplicationGroupPendingModifiedValues(in elasticachetypes.Replicati
 		}
 	}
 	return r
+}
+
+func setLogDeliveryConfigurationController(extConf elasticachetypes.LogDeliveryConfiguration) *v1beta1.LogsConf {
+	extEngineLogConf := v1beta1.LogsConf{}
+	if extConf.DestinationDetails != nil {
+		destinationDetails := v1beta1.DestinationDetails{}
+		if extConf.DestinationDetails.CloudWatchLogsDetails != nil {
+			cloudWatchLogsDetails := v1beta1.CloudWatchLogsDestinationDetails{}
+			if extConf.DestinationDetails.CloudWatchLogsDetails.LogGroup != nil {
+				cloudWatchLogsDetails.LogGroup = extConf.DestinationDetails.CloudWatchLogsDetails.LogGroup
+				destinationDetails.CloudWatchLogsDetails = &cloudWatchLogsDetails
+			}
+		}
+		if extConf.DestinationDetails.KinesisFirehoseDetails != nil {
+			kinesisFirehoseDetails := v1beta1.KinesisFirehoseDestinationDetails{}
+			if extConf.DestinationDetails.KinesisFirehoseDetails.DeliveryStream != nil {
+				kinesisFirehoseDetails.DeliveryStream = extConf.DestinationDetails.KinesisFirehoseDetails.DeliveryStream
+				destinationDetails.KinesisFirehoseDetails = &kinesisFirehoseDetails
+			}
+		}
+		extEngineLogConf.DestinationDetails = &destinationDetails
+	}
+	if extConf.Status == "active" || extConf.Status == "modifying" {
+		extEngineLogConf.Enabled = aws.Bool(true)
+	}
+	if extConf.Status == "disabling" {
+		extEngineLogConf.Enabled = aws.Bool(false)
+	}
+	if extConf.LogFormat != "" {
+		extEngineLogConf.LogFormat = string(extConf.LogFormat)
+	}
+	return &extEngineLogConf
+}
+
+// GenerateLogDeliveryConfigurations converts AWS SDK LogDeliveryConfiguration to controllers LogDeliveryConfigurations
+func GenerateLogDeliveryConfigurations(resp []elasticachetypes.LogDeliveryConfiguration) v1beta1.LogDeliveryConfiguration {
+	var external v1beta1.LogDeliveryConfiguration
+	for _, logConf := range resp {
+		if logConf.LogType == elasticachetypes.LogTypeEngineLog {
+			external.EngineLogs = setLogDeliveryConfigurationController(logConf)
+
+		}
+		if logConf.LogType == elasticachetypes.LogTypeSlowLog {
+			external.SlowLogs = setLogDeliveryConfigurationController(logConf)
+		}
+	}
+	return external
+}
+
+func setLogDeliveryConfigurationSDK(ds *v1beta1.LogsConf, logType elasticachetypes.LogType) elasticachetypes.LogDeliveryConfigurationRequest {
+	logConf := elasticachetypes.LogDeliveryConfigurationRequest{LogType: logType}
+	if ds.Enabled != nil {
+		logConf.Enabled = ds.Enabled
+		// Disabling of logs requires strictly setting Enabled to false and set LogType
+		if !*ds.Enabled {
+			return logConf
+		}
+	}
+	if ds.LogFormat != "" {
+		logConf.LogFormat = elasticachetypes.LogFormat(ds.LogFormat)
+	}
+	if ds.DestinationDetails != nil {
+		destinationDetails := elasticachetypes.DestinationDetails{}
+		if ds.DestinationDetails.CloudWatchLogsDetails != nil {
+			logConf.DestinationType = elasticachetypes.DestinationTypeCloudWatchLogs
+			cloudWatchLogsDetails := elasticachetypes.CloudWatchLogsDestinationDetails{}
+			if ds.DestinationDetails.CloudWatchLogsDetails.LogGroup != nil {
+				cloudWatchLogsDetails.LogGroup = ds.DestinationDetails.CloudWatchLogsDetails.LogGroup
+				destinationDetails.CloudWatchLogsDetails = &cloudWatchLogsDetails
+			}
+		}
+		if ds.DestinationDetails.KinesisFirehoseDetails != nil {
+			logConf.DestinationType = elasticachetypes.DestinationTypeKinesisFirehose
+			kinesisFirehoseDetails := elasticachetypes.KinesisFirehoseDestinationDetails{}
+			if ds.DestinationDetails.KinesisFirehoseDetails.DeliveryStream != nil {
+				kinesisFirehoseDetails.DeliveryStream = ds.DestinationDetails.KinesisFirehoseDetails.DeliveryStream
+				destinationDetails.KinesisFirehoseDetails = &kinesisFirehoseDetails
+			}
+		}
+		logConf.DestinationDetails = &destinationDetails
+	}
+
+	return logConf
+}
+
+// generateLogDeliveryConfigurationsRequest converts controllers LogDeliveryConfigurations to AWS SDK type
+func generateLogDeliveryConfigurationsRequest(ds v1beta1.LogDeliveryConfiguration) []elasticachetypes.LogDeliveryConfigurationRequest {
+	var desired []elasticachetypes.LogDeliveryConfigurationRequest
+	if ds.EngineLogs != nil {
+		engineLogConf := setLogDeliveryConfigurationSDK(ds.EngineLogs, elasticachetypes.LogTypeEngineLog)
+		desired = append(desired, engineLogConf)
+	}
+	if ds.SlowLogs != nil {
+		slowLogConf := setLogDeliveryConfigurationSDK(ds.SlowLogs, elasticachetypes.LogTypeSlowLog)
+		desired = append(desired, slowLogConf)
+	}
+	return desired
 }
 
 // newEndpoint returns the endpoint end users should use to connect to this cluster.
@@ -893,4 +999,48 @@ func getVersion(version *string) (*string, error) {
 		versionOut += "." + strconv.Itoa(version2)
 	}
 	return &versionOut, nil
+}
+
+// compareLogsDeliveryConfigurations compares desired state with external representation
+func compareLogsDeliveryConfigurations(ds v1beta1.LogDeliveryConfiguration, cr v1beta1.LogDeliveryConfiguration) string { //nolint: gocyclo
+	diff := cmp.Diff(ds, cr, cmpopts.EquateEmpty(),
+		cmp.Comparer(func(a, b *v1beta1.LogsConf) bool {
+			// Treat desired(a) explicitly disabled and current(b) nil as equal
+			if a != nil && a.Enabled != nil && !aws.ToBool(a.Enabled) && b == nil {
+				a = nil
+			}
+			// Treat nil and true as equal for Enabled
+			enabledA := a != nil && (a.Enabled == nil || aws.ToBool(a.Enabled))
+			enabledB := b != nil && (b.Enabled == nil || aws.ToBool(b.Enabled))
+			if enabledA != enabledB {
+				return false
+			}
+			// Treat LogFormat case-insensitively
+			logFormatA, logFormatB := "", ""
+			if a != nil {
+				logFormatA = a.LogFormat
+			}
+			if b != nil {
+				logFormatB = b.LogFormat
+			}
+			if !strings.EqualFold(logFormatA, logFormatB) {
+				return false
+			}
+			// Compare other fields normally
+			aCopy := v1beta1.LogsConf{}
+			bCopy := v1beta1.LogsConf{}
+			if a != nil {
+				aCopy = *a
+				aCopy.Enabled = nil
+				aCopy.LogFormat = ""
+			}
+			if b != nil {
+				bCopy = *b
+				bCopy.Enabled = nil
+				bCopy.LogFormat = ""
+			}
+			return cmp.Equal(aCopy, bCopy, cmpopts.EquateEmpty())
+		}),
+	)
+	return diff
 }
