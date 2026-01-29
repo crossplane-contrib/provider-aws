@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -60,36 +61,6 @@ func TestCreate(t *testing.T) {
 				},
 			},
 		},
-		"CreateStandaloneInstance": {
-			args: args{
-				cr: &svcapitypes.DBInstance{
-					Spec: svcapitypes.DBInstanceSpec{
-						ForProvider: svcapitypes.DBInstanceParameters{
-							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
-								AutogeneratePassword: true,
-							},
-						},
-					},
-					Status: svcapitypes.DBInstanceStatus{
-						AtProvider: svcapitypes.DBInstanceObservation{},
-					},
-				},
-				kube: test.NewMockClient(),
-				awsRDSClient: fake.MockRDSClient{
-					MockCreateDBInstanceWithContext: func(ctx context.Context, input *svcsdk.CreateDBInstanceInput, optFns ...request.Option) (*svcsdk.CreateDBInstanceOutput, error) {
-						return &svcsdk.CreateDBInstanceOutput{DBInstance: &svcsdk.DBInstance{}}, nil
-					},
-					MockCreateDBInstanceReadReplicaWithContext: func(ctx context.Context, input *svcsdk.CreateDBInstanceReadReplicaInput, optFns ...request.Option) (*svcsdk.CreateDBInstanceReadReplicaOutput, error) {
-						return &svcsdk.CreateDBInstanceReadReplicaOutput{}, nil
-					},
-				},
-			},
-			want: want{
-				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
-					DatabaseRole: aws.String(databaseRoleStandalone),
-				},
-			},
-		},
 	}
 
 	for name, tc := range cases {
@@ -108,15 +79,15 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestIsUpToDate(t *testing.T) {
+func TestPostObserve(t *testing.T) {
 	type args struct {
-		kube client.Client
-		cr   *svcapitypes.DBInstance
-		out  *svcsdk.DescribeDBInstancesOutput
+		awsRDSClient fake.MockRDSClient
+		cr           *svcapitypes.DBInstance
+		out          *svcsdk.DescribeDBInstancesOutput
+		kube         client.Client
 	}
 
 	type want struct {
-		upToDate         bool
 		err              error
 		statusAtProvider *svcapitypes.CustomDBInstanceObservation
 	}
@@ -125,14 +96,10 @@ func TestIsUpToDate(t *testing.T) {
 		args
 		want
 	}{
-		"UpToDateReadReplicaWithReplicatedMasterCredentials": {
+		"databaseRoleReplica": {
 			args: args{
 				cr: &svcapitypes.DBInstance{
-					Spec: svcapitypes.DBInstanceSpec{
-						ForProvider: svcapitypes.DBInstanceParameters{
-							DeletionProtection: aws.Bool(true),
-						},
-					},
+					Status: svcapitypes.DBInstanceStatus{},
 				},
 				out: &svcsdk.DescribeDBInstancesOutput{
 					DBInstances: []*svcsdk.DBInstance{
@@ -142,6 +109,11 @@ func TestIsUpToDate(t *testing.T) {
 						},
 					},
 				},
+				awsRDSClient: fake.MockRDSClient{
+					MockDescribeDBClustersWithContext: func(ctx context.Context, input *svcsdk.DescribeDBClustersInput, optFns ...request.Option) (*svcsdk.DescribeDBClustersOutput, error) {
+						return &svcsdk.DescribeDBClustersOutput{}, nil
+					},
+				},
 				kube: &test.MockClient{
 					MockGet: func(ctx context.Context, key client.ObjectKey, obj client.Object) error {
 						return errors.New("not found")
@@ -149,8 +121,7 @@ func TestIsUpToDate(t *testing.T) {
 				},
 			},
 			want: want{
-				upToDate: true,
-				err:      nil,
+				err: nil,
 				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
 					DatabaseRole: aws.String(databaseRoleReadReplica),
 				},
@@ -159,12 +130,9 @@ func TestIsUpToDate(t *testing.T) {
 		"databaseRolePrimary": {
 			args: args{
 				cr: &svcapitypes.DBInstance{
-					Spec: svcapitypes.DBInstanceSpec{
-						ForProvider: svcapitypes.DBInstanceParameters{
-							DeletionProtection: aws.Bool(true),
-						},
-					},
+					Status: svcapitypes.DBInstanceStatus{},
 				},
+				kube: test.NewMockClient(),
 				out: &svcsdk.DescribeDBInstancesOutput{
 					DBInstances: []*svcsdk.DBInstance{
 						{
@@ -173,24 +141,104 @@ func TestIsUpToDate(t *testing.T) {
 						},
 					},
 				},
-				kube: test.NewMockClient(),
 			},
 			want: want{
-				upToDate: true,
-				err:      nil,
+				err: nil,
 				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
 					DatabaseRole: aws.String(databaseRolePrimary),
 				},
 			},
 		},
-		"UpToDateStandaloneInstance": {
+		"databaseRoleClusterWriter": {
 			args: args{
 				cr: &svcapitypes.DBInstance{
-					Spec: svcapitypes.DBInstanceSpec{
-						ForProvider: svcapitypes.DBInstanceParameters{
-							DeletionProtection: aws.Bool(true),
+					Status: svcapitypes.DBInstanceStatus{},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DBClusterIdentifier:  aws.String("db-cluster-id"),
+							DBInstanceIdentifier: aws.String("db-instance-id"),
+							DeletionProtection:   aws.Bool(true),
 						},
 					},
+				},
+				awsRDSClient: fake.MockRDSClient{
+					MockDescribeDBClustersWithContext: func(ctx context.Context, input *svcsdk.DescribeDBClustersInput, optFns ...request.Option) (*svcsdk.DescribeDBClustersOutput, error) {
+						return &svcsdk.DescribeDBClustersOutput{
+							DBClusters: []*svcsdk.DBCluster{
+								{
+									DBClusterIdentifier: aws.String("db-cluster-id"),
+									DeletionProtection:  aws.Bool(true),
+									DBClusterMembers: []*svcsdk.DBClusterMember{
+										{
+											DBInstanceIdentifier: aws.String("db-instance-id"),
+											IsClusterWriter:      aws.Bool(true),
+										},
+									},
+								},
+							},
+						}, nil
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				err: nil,
+				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
+					DatabaseRole: aws.String(databaseRoleClusterWriter),
+				},
+			},
+		},
+		"databaseRoleClusterReader": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Status: svcapitypes.DBInstanceStatus{},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DBClusterIdentifier:  aws.String("db-cluster-id"),
+							DBInstanceIdentifier: aws.String("db-instance-id"),
+							DeletionProtection:   aws.Bool(true),
+						},
+					},
+				},
+				awsRDSClient: fake.MockRDSClient{
+					MockDescribeDBClustersWithContext: func(ctx context.Context, input *svcsdk.DescribeDBClustersInput, optFns ...request.Option) (*svcsdk.DescribeDBClustersOutput, error) {
+						return &svcsdk.DescribeDBClustersOutput{
+							DBClusters: []*svcsdk.DBCluster{
+								{
+									DBClusterIdentifier: aws.String("db-cluster-id"),
+									DeletionProtection:  aws.Bool(true),
+									DBClusterMembers: []*svcsdk.DBClusterMember{
+										{
+											DBInstanceIdentifier: aws.String("another-db-instance-id"),
+											IsClusterWriter:      aws.Bool(true),
+										},
+										{
+											DBInstanceIdentifier: aws.String("db-instance-id"),
+											IsClusterWriter:      aws.Bool(false),
+										},
+									},
+								},
+							},
+						}, nil
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				err: nil,
+				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
+					DatabaseRole: aws.String(databaseRoleClusterReader),
+				},
+			},
+		},
+		"upToDateStandaloneInstance": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Status: svcapitypes.DBInstanceStatus{},
 				},
 				out: &svcsdk.DescribeDBInstancesOutput{
 					DBInstances: []*svcsdk.DBInstance{
@@ -202,8 +250,7 @@ func TestIsUpToDate(t *testing.T) {
 				kube: test.NewMockClient(),
 			},
 			want: want{
-				upToDate: true,
-				err:      nil,
+				err: nil,
 				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
 					DatabaseRole: aws.String(databaseRoleStandalone),
 				},
@@ -214,14 +261,11 @@ func TestIsUpToDate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			cr := tc.args.cr
-			ce := newCustomExternal(tc.kube, nil)
-			upToDate, _, err := ce.isUpToDate(context.TODO(), cr, tc.args.out)
+			ce := newCustomExternal(tc.kube, &tc.awsRDSClient)
+			_, err := ce.postObserve(context.TODO(), cr, tc.args.out, managed.ExternalObservation{}, nil)
 
 			if diff := cmp.Diff(tc.want.err, err); diff != "" {
 				t.Errorf("r: -want, +got error: \n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.upToDate, upToDate); diff != "" {
-				t.Errorf("r: -want, +got: \n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.statusAtProvider.DatabaseRole, cr.Status.AtProvider.DatabaseRole); diff != "" {
 				t.Errorf("r: -want, +got: \n%s", diff)
