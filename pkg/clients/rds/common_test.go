@@ -1172,7 +1172,7 @@ func Test_PasswordUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, err := PasswordUpToDate(context.Background(), tc.args.kube, tc.args.cr)
+			got, _, err := PasswordUpToDate(context.Background(), tc.args.kube, tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.upToDate, got); diff != "" {
 				t.Errorf("\n%s\nPasswordUpToDate(...): -want, +got:\n", diff)

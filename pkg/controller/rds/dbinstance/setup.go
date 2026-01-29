@@ -25,6 +25,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -116,17 +117,21 @@ type customExternal struct {
 
 type shared struct {
 	external
-	cache *cache
+	observeCache *observeCache
 }
 
-type cache struct {
-	addTags         []*svcsdk.Tag
-	removeTags      []*string
-	desiredPassword string
+type observeCache struct {
+	addTags                       []*svcsdk.Tag
+	removeTags                    []*string
+	desiredPassword               string
+	passwordChanged               bool
+	backupWindowChanged           bool
+	backupRetentionPeriodUpToDate bool
+	engineVersionUpToDate         bool
 }
 
 func newCustomExternal(kube client.Client, client svcsdkapi.RDSAPI) *customExternal {
-	s := &shared{cache: &cache{}}
+	s := &shared{observeCache: &observeCache{}}
 	e := external{
 		kube:           kube,
 		client:         client,
@@ -136,7 +141,7 @@ func newCustomExternal(kube client.Client, client svcsdkapi.RDSAPI) *customExter
 		preUpdate:      s.preUpdate,
 		postUpdate:     s.postUpdate,
 		preCreate:      s.preCreate,
-		postCreate:     nopPostCreate,
+		postCreate:     s.postCreate,
 		preDelete:      s.preDelete,
 		postDelete:     s.postDelete,
 		filterList:     filterList,
@@ -277,20 +282,30 @@ func (s *shared) preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	return nil
 }
 
+func (s *shared) postCreate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.CreateDBInstanceOutput, extCreation managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	cd, err := s.updateConnectionDetails(ctx, cr, managed.ConnectionDetails{})
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	extCreation.ConnectionDetails = cd
+	return extCreation, nil
+}
+
 func (s *shared) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DBInstance, details managed.ConnectionDetails) (managed.ConnectionDetails, error) {
 	if details == nil {
 		details = managed.ConnectionDetails{}
 	}
 
 	details[xpv1.ResourceCredentialsSecretUserKey] = []byte(pointer.StringValue(cr.Spec.ForProvider.MasterUsername))
-	if s.cache.desiredPassword == "" {
+	password := s.observeCache.desiredPassword
+	if password == "" {
 		pw, err := dbinstance.GetDesiredPassword(ctx, s.kube, cr)
 		if err != nil && pointer.StringValue(cr.Status.AtProvider.DatabaseRole) != databaseRoleReadReplica {
 			return details, errors.Wrap(err, dbinstance.ErrGetCachedPassword)
 		}
-		s.cache.desiredPassword = pw
+		password = pw
 	}
-	details[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(s.cache.desiredPassword)
+	details[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(password)
 
 	if cr.Status.AtProvider.Endpoint == nil {
 		return details, nil
@@ -305,10 +320,14 @@ func (s *shared) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DB
 	return details, nil
 }
 
-func (s *shared) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) (err error) { //nolint:gocyclo
+func (s *shared) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) (err error) {
 	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
-	obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(s.cache.desiredPassword)
+	// Only set MasterUserPassword if it has changed, otherwise it triggers "Resetting master password" on aws side,
+	// it happens because aws doesn't know current password, so any set causes a change.
+	if s.observeCache.passwordChanged {
+		obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(s.observeCache.desiredPassword)
+	}
 
 	// VpcSecurityGroupIds cannot be set on an instance that belongs to a DBCluster
 	if cr.Status.AtProvider.DBClusterIdentifier == nil {
@@ -330,26 +349,16 @@ func (s *shared) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 		obj.StorageThroughput = nil
 	}
 
-	input := GenerateDescribeDBInstancesInput(cr)
-
-	out, err := s.client.DescribeDBInstancesWithContext(ctx, input)
-	if err != nil {
-		return errors.Wrap(err, dbinstance.ErrDescribe)
-	}
-	if !isEngineVersionUpToDate(cr, out) && cr.Spec.ForProvider.EngineVersion != nil {
+	if !s.observeCache.engineVersionUpToDate && cr.Spec.ForProvider.EngineVersion != nil {
 		obj.EngineVersion = cr.Spec.ForProvider.EngineVersion // add EngineVersion if changed and no downgrade
 	}
 
 	// AWS Backup takes ownership of BackupRetentionPeriod and PreferredBackupWindow if it is in use.
 	// Therefore we only set these fields in the ModifyDBInstanceInput if they are changed and not in use by AWS Backup.
-	backupWindowChanged, err := hasPreferredBackupWindowChanged(cr, out.DBInstances[0])
-	if err != nil {
-		return err
-	}
-	if !backupWindowChanged {
+	if !s.observeCache.backupWindowChanged {
 		obj.PreferredBackupWindow = nil
 	}
-	if isBackupRetentionPeriodUpToDate(cr, out.DBInstances[0]) {
+	if s.observeCache.backupRetentionPeriodUpToDate {
 		obj.BackupRetentionPeriod = nil
 	}
 
@@ -363,9 +372,9 @@ func (s *shared) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, out
 
 	upd.ConnectionDetails, err = s.updateConnectionDetails(ctx, cr, upd.ConnectionDetails)
 
-	if s.cache.desiredPassword != "" {
+	if s.observeCache.passwordChanged {
 		_, err = dbinstance.Cache(ctx, s.kube, cr, map[string]string{
-			dbinstance.PasswordCacheKey:    s.cache.desiredPassword,
+			dbinstance.PasswordCacheKey:    s.observeCache.desiredPassword,
 			dbinstance.RestoreFlagCacheKay: "", // reset restore flag
 		})
 		if err != nil {
@@ -374,19 +383,19 @@ func (s *shared) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	}
 
 	// Update tags if necessary
-	if len(s.cache.addTags) > 0 {
+	if len(s.observeCache.addTags) > 0 {
 		_, err := s.client.AddTagsToResourceWithContext(ctx, &svcsdk.AddTagsToResourceInput{
 			ResourceName: out.DBInstance.DBInstanceArn,
-			Tags:         s.cache.addTags,
+			Tags:         s.observeCache.addTags,
 		})
 		if err != nil {
 			return upd, errors.Wrap(err, errAddTags)
 		}
 	}
-	if len(s.cache.removeTags) > 0 {
+	if len(s.observeCache.removeTags) > 0 {
 		_, err := s.client.RemoveTagsFromResourceWithContext(ctx, &svcsdk.RemoveTagsFromResourceInput{
 			ResourceName: out.DBInstance.DBInstanceArn,
-			TagKeys:      s.cache.removeTags,
+			TagKeys:      s.observeCache.removeTags,
 		})
 		if err != nil {
 			return upd, errors.Wrap(err, errRemoveTags)
@@ -558,9 +567,65 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	return nil
 }
 
-func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (upToDate bool, diff string, err error) { //nolint:gocyclo
-	db := out.DBInstances[0]
+// setPendingModifiedValues updates the DescribeDBInstancesOutput with any
+// PendingModifiedValues so that they are considered during isUpToDate checks. Exception is Engine version, which is handled separately.
+func setPendingModifiedValues(cr *svcsdk.DescribeDBInstancesOutput) { //nolint:gocyclo
+	if len(cr.DBInstances) > 0 {
+		if cr.DBInstances[0].PendingModifiedValues != nil {
+			if cr.DBInstances[0].PendingModifiedValues.AllocatedStorage != nil {
+				cr.DBInstances[0].AllocatedStorage = cr.DBInstances[0].PendingModifiedValues.AllocatedStorage
+			}
+			if cr.DBInstances[0].PendingModifiedValues.BackupRetentionPeriod != nil {
+				cr.DBInstances[0].BackupRetentionPeriod = cr.DBInstances[0].PendingModifiedValues.BackupRetentionPeriod
+			}
+			if cr.DBInstances[0].PendingModifiedValues.CACertificateIdentifier != nil {
+				cr.DBInstances[0].CACertificateIdentifier = cr.DBInstances[0].PendingModifiedValues.CACertificateIdentifier
+			}
+			if cr.DBInstances[0].PendingModifiedValues.DBInstanceClass != nil {
+				cr.DBInstances[0].DBInstanceClass = cr.DBInstances[0].PendingModifiedValues.DBInstanceClass
+			}
+			if cr.DBInstances[0].PendingModifiedValues.DBSubnetGroupName != nil {
+				cr.DBInstances[0].DBSubnetGroup = &svcsdk.DBSubnetGroup{
+					DBSubnetGroupName: cr.DBInstances[0].PendingModifiedValues.DBSubnetGroupName,
+				}
+			}
+			if cr.DBInstances[0].PendingModifiedValues.DedicatedLogVolume != nil {
+				cr.DBInstances[0].DedicatedLogVolume = cr.DBInstances[0].PendingModifiedValues.DedicatedLogVolume
+			}
+			if cr.DBInstances[0].PendingModifiedValues.Iops != nil {
+				cr.DBInstances[0].Iops = cr.DBInstances[0].PendingModifiedValues.Iops
+			}
+			if cr.DBInstances[0].PendingModifiedValues.LicenseModel != nil {
+				cr.DBInstances[0].LicenseModel = cr.DBInstances[0].PendingModifiedValues.LicenseModel
+			}
+			if cr.DBInstances[0].PendingModifiedValues.MultiAZ != nil {
+				cr.DBInstances[0].MultiAZ = cr.DBInstances[0].PendingModifiedValues.MultiAZ
+			}
+			if cr.DBInstances[0].PendingModifiedValues.Port != nil {
+				if cr.DBInstances[0].Endpoint == nil {
+					cr.DBInstances[0].Endpoint = &svcsdk.Endpoint{}
+				}
+				cr.DBInstances[0].Endpoint.Port = cr.DBInstances[0].PendingModifiedValues.Port
+			}
+			if cr.DBInstances[0].PendingModifiedValues.ProcessorFeatures != nil {
+				cr.DBInstances[0].ProcessorFeatures = cr.DBInstances[0].PendingModifiedValues.ProcessorFeatures
+			}
+			if cr.DBInstances[0].PendingModifiedValues.StorageThroughput != nil {
+				cr.DBInstances[0].StorageThroughput = cr.DBInstances[0].PendingModifiedValues.StorageThroughput
+			}
+			if cr.DBInstances[0].PendingModifiedValues.StorageType != nil {
+				cr.DBInstances[0].StorageType = cr.DBInstances[0].PendingModifiedValues.StorageType
+			}
+		}
+	}
+}
 
+func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (upToDate bool, diff string, err error) { //nolint:gocyclo
+	// If ApplyImmediately is not true we update external state of db instance with pending modified values to prevent redundant updates
+	if !ptr.Deref(cr.Spec.ForProvider.ApplyImmediately, false) {
+		setPendingModifiedValues(out)
+	}
+	db := out.DBInstances[0]
 	patch, err := createPatch(out, &cr.Spec.ForProvider)
 	if err != nil {
 		return false, "", err
@@ -589,15 +654,15 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	// default, a read replica has the same credentials as the primary instance.
 	if !(pointer.StringValue(cr.Status.AtProvider.DatabaseRole) == databaseRoleReadReplica &&
 		!autogenerate && masterUserPasswordSecretRef == nil && !cachedMasterPasswordExist) {
+		passwordIsUpToDate, desiredPassword, err := dbinstance.PasswordUpToDate(ctx, s.kube, cr)
+		s.observeCache.desiredPassword = desiredPassword
+		s.observeCache.passwordChanged = !passwordIsUpToDate
 
-		passwordUpToDate, err := dbinstance.PasswordUpToDate(ctx, s.kube, cr)
 		if err != nil {
 			return false, "", errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
 		}
-		if !passwordUpToDate {
-			return false, "", nil
-		}
 	}
+	passwordChanged := s.observeCache.passwordChanged
 
 	// (PocketMobsters): AWS reformats our preferred time windows for backups and maintenance,
 	// so we can't rely on automatic equality checks for them
@@ -605,20 +670,22 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	if err != nil {
 		return false, "", err
 	}
-	backupWindowChanged, err := hasPreferredBackupWindowChanged(cr, db)
+	s.observeCache.backupWindowChanged, err = hasPreferredBackupWindowChanged(cr, db)
 	if err != nil {
 		return false, "", err
 	}
+	backupWindowChanged := s.observeCache.backupWindowChanged
 
-	backupRetentionPeriodChanged := !isBackupRetentionPeriodUpToDate(cr, db)
+	s.observeCache.backupRetentionPeriodUpToDate = isBackupRetentionPeriodUpToDate(cr, db)
+	backupRetentionPeriodChanged := !s.observeCache.backupRetentionPeriodUpToDate
 
 	// Depending on whether the instance was created as gp2 or modified from another type (s.g. gp3) to gp2,
 	// AWS provides different responses for IOPS/StorageThroughput (either 0 or nil).
 	// Therefore, we consider both 0 and nil to be equivalent.
 	iopsChanged := !(pointer.Int64Value(cr.Spec.ForProvider.IOPS) == pointer.Int64Value(db.Iops))
 	storageThroughputChanged := !(pointer.Int64Value(cr.Spec.ForProvider.StorageThroughput) == pointer.Int64Value(db.StorageThroughput))
-
-	versionChanged := !isEngineVersionUpToDate(cr, out)
+	s.observeCache.engineVersionUpToDate = isEngineVersionUpToDate(cr, out)
+	versionChanged := !s.observeCache.engineVersionUpToDate
 
 	vpcSGsChanged := !areVPCSecurityGroupIDsUpToDate(cr, db)
 	dbParameterGroupChanged := !isDBParameterGroupNameUpToDate(cr, db)
@@ -650,10 +717,12 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 			"SourceDBInstanceID", "SourceDBInstanceIDRef", "SourceDBInstanceIDSelector"),
 	)
 
-	s.cache.addTags, s.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, db.TagList)
-	tagsChanged := len(s.cache.addTags) != 0 || len(s.cache.removeTags) != 0
+	s.observeCache.addTags, s.observeCache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, db.TagList)
+	tagsChanged := len(s.observeCache.addTags) != 0 || len(s.observeCache.removeTags) != 0
 
-	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !backupRetentionPeriodChanged && !iopsChanged && !storageThroughputChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged && !tagsChanged {
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !backupRetentionPeriodChanged &&
+		!iopsChanged && !storageThroughputChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged &&
+		!optionGroupChanged && !tagsChanged && !passwordChanged {
 		return true, diff, nil
 	}
 
@@ -677,7 +746,11 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		diff += fmt.Sprintf("\ndesired storageThroughput: %d \nobserved storageThroughput: %d ", pointer.Int64Value(cr.Spec.ForProvider.StorageThroughput), pointer.Int64Value(db.StorageThroughput))
 	}
 	if versionChanged {
-		diff += fmt.Sprintf("\ndesired engineVersion: %s \nobserved engineVersion: %s ", pointer.StringValue(cr.Spec.ForProvider.EngineVersion), pointer.StringValue(db.EngineVersion))
+		if ptr.Deref(cr.Spec.ForProvider.EngineVersion, "") == ptr.Deref(db.EngineVersion, "") && db.PendingModifiedValues != nil && ptr.Deref(db.PendingModifiedValues.EngineVersion, "") != "" {
+			diff += fmt.Sprintf("\ndesired engineVersion: %s \npending modified engineVersion: %s ", pointer.StringValue(cr.Spec.ForProvider.EngineVersion), pointer.StringValue(db.PendingModifiedValues.EngineVersion))
+		} else {
+			diff += fmt.Sprintf("\ndesired engineVersion: %s \nobserved engineVersion: %s ", pointer.StringValue(cr.Spec.ForProvider.EngineVersion), pointer.StringValue(db.EngineVersion))
+		}
 	}
 	if vpcSGsChanged {
 		diff += fmt.Sprintf("\ndesired vpcSecurityGroupIDs: %v \nobserved vpcSecurityGroupIDs: ", cr.Spec.ForProvider.VPCSecurityGroupIDs)
@@ -692,7 +765,10 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		diff += fmt.Sprintf("\ndesired optionGroupName: %s \nobserved optionGroupName: %s ", pointer.StringValue(cr.Spec.ForProvider.OptionGroupName), pointer.StringValue(db.OptionGroupMemberships[0].OptionGroupName))
 	}
 	if tagsChanged {
-		diff += fmt.Sprintf("\nadd %d tag(s) and remove %d tag(s)", len(s.cache.addTags), len(s.cache.removeTags))
+		diff += fmt.Sprintf("\nadd %d tag(s) and remove %d tag(s)", len(s.observeCache.addTags), len(s.observeCache.removeTags))
+	}
+	if passwordChanged {
+		diff += "\nmaster user password changed"
 	}
 
 	log.Println(diff)
@@ -730,13 +806,29 @@ func isEngineVersionUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBI
 	// If EngineVersion is not set, AWS sets a default value,
 	// so we do not try to update in this case
 	if cr.Spec.ForProvider.EngineVersion != nil {
-		if out.DBInstances[0].EngineVersion == nil {
+		if len(out.DBInstances) == 0 || out.DBInstances[0].EngineVersion == nil {
 			return false
+		}
+
+		desiredEngineVersion := ptr.Deref(cr.Spec.ForProvider.EngineVersion, "")
+		currentEngineVersion := ptr.Deref(out.DBInstances[0].EngineVersion, "")
+		pendingEngineVersion := ""
+		if out.DBInstances[0].PendingModifiedValues != nil {
+			pendingEngineVersion = ptr.Deref(out.DBInstances[0].PendingModifiedValues.EngineVersion, "")
+		}
+		// If the desired version matches the current version and pending version is set means an upgrade should be reverted
+		// so controller should send an update request with the current version again to cancel the pending upgrade
+		if desiredEngineVersion == currentEngineVersion && pendingEngineVersion != "" {
+			return false
+		}
+		// If ApplyImmediately is false and there is a pending version, consider that as the current version for comparison
+		if !ptr.Deref(cr.Spec.ForProvider.ApplyImmediately, false) && pendingEngineVersion != "" {
+			currentEngineVersion = pendingEngineVersion
 		}
 
 		// Upgrade is only necessary if the spec version is higher.
 		// Downgrades are not possible in pointer.
-		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *out.DBInstances[0].EngineVersion)
+		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, currentEngineVersion)
 		return c <= 0
 	}
 	return true
