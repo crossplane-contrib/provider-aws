@@ -563,7 +563,7 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 		return true, "", nil
 	}
 
-	passwordUpToDate, err := dbinstance.PasswordUpToDate(ctx, e.kube, cr)
+	passwordUpToDate, _, err := dbinstance.PasswordUpToDate(ctx, e.kube, cr)
 	if err != nil {
 		return false, "", errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
 	}
