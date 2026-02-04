@@ -621,17 +621,6 @@ func (in *Addon_SDK) DeepCopyInto(out *Addon_SDK) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.PodIdentityAssociations != nil {
-		in, out := &in.PodIdentityAssociations, &out.PodIdentityAssociations
-		*out = make([]*string, len(*in))
-		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(string)
-				**out = **in
-			}
-		}
-	}
 	if in.Publisher != nil {
 		in, out := &in.Publisher, &out.Publisher
 		*out = new(string)

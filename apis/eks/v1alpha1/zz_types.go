@@ -158,8 +158,6 @@ type Addon_SDK struct {
 
 	Owner *string `json:"owner,omitempty"`
 
-	PodIdentityAssociations []*string `json:"podIdentityAssociations,omitempty"`
-
 	Publisher *string `json:"publisher,omitempty"`
 
 	ServiceAccountRoleARN *string `json:"serviceAccountRoleARN,omitempty"`

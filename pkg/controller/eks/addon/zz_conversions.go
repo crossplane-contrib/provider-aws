@@ -126,17 +126,6 @@ func GenerateAddon(resp *svcsdk.DescribeAddonOutput) *svcapitypes.Addon {
 	} else {
 		cr.Status.AtProvider.Owner = nil
 	}
-	if resp.Addon.PodIdentityAssociations != nil {
-		f10 := []*svcapitypes.AddonPodIdentityAssociations{}
-		for _, f10iter := range resp.Addon.PodIdentityAssociations {
-			f10elem := &svcapitypes.AddonPodIdentityAssociations{}
-			f10elem = *f10iter
-			f10 = append(f10, f10elem)
-		}
-		cr.Spec.ForProvider.PodIdentityAssociations = f10
-	} else {
-		cr.Spec.ForProvider.PodIdentityAssociations = nil
-	}
 	if resp.Addon.Publisher != nil {
 		cr.Status.AtProvider.Publisher = resp.Addon.Publisher
 	} else {
@@ -153,13 +142,13 @@ func GenerateAddon(resp *svcsdk.DescribeAddonOutput) *svcapitypes.Addon {
 		cr.Status.AtProvider.Status = nil
 	}
 	if resp.Addon.Tags != nil {
-		f14 := map[string]*string{}
-		for f14key, f14valiter := range resp.Addon.Tags {
-			var f14val string
-			f14val = *f14valiter
-			f14[f14key] = &f14val
+		f13 := map[string]*string{}
+		for f13key, f13valiter := range resp.Addon.Tags {
+			var f13val string
+			f13val = *f13valiter
+			f13[f13key] = &f13val
 		}
-		cr.Spec.ForProvider.Tags = f14
+		cr.Spec.ForProvider.Tags = f13
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}

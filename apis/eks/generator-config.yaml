@@ -12,11 +12,12 @@ ignore:
     - FargateProfile
     - IdentityProviderConfig
   field_paths:
-    - DescribeAddonInput.ClusterName
+    - Addon.PodIdentityAssociations
     - CreateAddonInput.ClusterName
-    - UpdateAddonInput.ClusterName
-    - DeleteAddonInput.ClusterName
-    - DescribeAddonInput.ClientRequestToken
     - CreateAddonInput.ClientRequestToken
-    - UpdateAddonInput.ClientRequestToken
+    - DeleteAddonInput.ClusterName
     - DeleteAddonInput.ClientRequestToken
+    - DescribeAddonInput.ClusterName
+    - DescribeAddonInput.ClientRequestToken
+    - UpdateAddonInput.ClusterName
+    - UpdateAddonInput.ClientRequestToken
