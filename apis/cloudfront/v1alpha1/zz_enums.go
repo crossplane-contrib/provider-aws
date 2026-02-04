@@ -126,6 +126,12 @@ const (
 	ICPRecordalStatus_PENDING   ICPRecordalStatus = "PENDING"
 )
 
+type ImportSourceType string
+
+const (
+	ImportSourceType_S3 ImportSourceType = "S3"
+)
+
 type ItemSelection string
 
 const (
@@ -161,8 +167,10 @@ const (
 type OriginAccessControlOriginTypes string
 
 const (
-	OriginAccessControlOriginTypes_s3         OriginAccessControlOriginTypes = "s3"
-	OriginAccessControlOriginTypes_mediastore OriginAccessControlOriginTypes = "mediastore"
+	OriginAccessControlOriginTypes_s3             OriginAccessControlOriginTypes = "s3"
+	OriginAccessControlOriginTypes_mediastore     OriginAccessControlOriginTypes = "mediastore"
+	OriginAccessControlOriginTypes_mediapackagev2 OriginAccessControlOriginTypes = "mediapackagev2"
+	OriginAccessControlOriginTypes_lambda         OriginAccessControlOriginTypes = "lambda"
 )
 
 type OriginAccessControlSigningBehaviors string

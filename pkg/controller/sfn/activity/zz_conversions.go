@@ -55,6 +55,21 @@ func GenerateActivity(resp *svcsdk.DescribeActivityOutput) *svcapitypes.Activity
 	} else {
 		cr.Status.AtProvider.CreationDate = nil
 	}
+	if resp.EncryptionConfiguration != nil {
+		f2 := &svcapitypes.EncryptionConfiguration{}
+		if resp.EncryptionConfiguration.KmsDataKeyReusePeriodSeconds != nil {
+			f2.KMSDataKeyReusePeriodSeconds = resp.EncryptionConfiguration.KmsDataKeyReusePeriodSeconds
+		}
+		if resp.EncryptionConfiguration.KmsKeyId != nil {
+			f2.KMSKeyID = resp.EncryptionConfiguration.KmsKeyId
+		}
+		if resp.EncryptionConfiguration.Type != nil {
+			f2.Type = resp.EncryptionConfiguration.Type
+		}
+		cr.Spec.ForProvider.EncryptionConfiguration = f2
+	} else {
+		cr.Spec.ForProvider.EncryptionConfiguration = nil
+	}
 	if resp.Name != nil {
 		cr.Spec.ForProvider.Name = resp.Name
 	} else {
@@ -68,22 +83,35 @@ func GenerateActivity(resp *svcsdk.DescribeActivityOutput) *svcapitypes.Activity
 func GenerateCreateActivityInput(cr *svcapitypes.Activity) *svcsdk.CreateActivityInput {
 	res := &svcsdk.CreateActivityInput{}
 
+	if cr.Spec.ForProvider.EncryptionConfiguration != nil {
+		f0 := &svcsdk.EncryptionConfiguration{}
+		if cr.Spec.ForProvider.EncryptionConfiguration.KMSDataKeyReusePeriodSeconds != nil {
+			f0.SetKmsDataKeyReusePeriodSeconds(*cr.Spec.ForProvider.EncryptionConfiguration.KMSDataKeyReusePeriodSeconds)
+		}
+		if cr.Spec.ForProvider.EncryptionConfiguration.KMSKeyID != nil {
+			f0.SetKmsKeyId(*cr.Spec.ForProvider.EncryptionConfiguration.KMSKeyID)
+		}
+		if cr.Spec.ForProvider.EncryptionConfiguration.Type != nil {
+			f0.SetType(*cr.Spec.ForProvider.EncryptionConfiguration.Type)
+		}
+		res.SetEncryptionConfiguration(f0)
+	}
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f1 := []*svcsdk.Tag{}
-		for _, f1iter := range cr.Spec.ForProvider.Tags {
-			f1elem := &svcsdk.Tag{}
-			if f1iter.Key != nil {
-				f1elem.SetKey(*f1iter.Key)
+		f2 := []*svcsdk.Tag{}
+		for _, f2iter := range cr.Spec.ForProvider.Tags {
+			f2elem := &svcsdk.Tag{}
+			if f2iter.Key != nil {
+				f2elem.SetKey(*f2iter.Key)
 			}
-			if f1iter.Value != nil {
-				f1elem.SetValue(*f1iter.Value)
+			if f2iter.Value != nil {
+				f2elem.SetValue(*f2iter.Value)
 			}
-			f1 = append(f1, f1elem)
+			f2 = append(f2, f2elem)
 		}
-		res.SetTags(f1)
+		res.SetTags(f2)
 	}
 
 	return res

@@ -73,6 +73,17 @@ spec:
               forProvider:
                 description: ActivityParameters defines the desired state of Activity
                 properties:
+                  encryptionConfiguration:
+                    description: Settings to configure server-side encryption.
+                    properties:
+                      kmsDataKeyReusePeriodSeconds:
+                        format: int64
+                        type: integer
+                      kmsKeyID:
+                        type: string
+                      type_:
+                        type: string
+                    type: object
                   name:
                     description: |-
                       The name of the activity to create. This name must be unique for your Amazon

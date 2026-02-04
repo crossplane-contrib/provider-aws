@@ -147,6 +147,15 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.FileSystem) (mana
 	} else {
 		cr.Status.AtProvider.FileSystemID = nil
 	}
+	if resp.FileSystemProtection != nil {
+		f7 := &svcapitypes.FileSystemProtectionDescription{}
+		if resp.FileSystemProtection.ReplicationOverwriteProtection != nil {
+			f7.ReplicationOverwriteProtection = resp.FileSystemProtection.ReplicationOverwriteProtection
+		}
+		cr.Status.AtProvider.FileSystemProtection = f7
+	} else {
+		cr.Status.AtProvider.FileSystemProtection = nil
+	}
 	if resp.KmsKeyId != nil {
 		cr.Spec.ForProvider.KMSKeyID = resp.KmsKeyId
 	} else {
@@ -178,36 +187,39 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.FileSystem) (mana
 		cr.Spec.ForProvider.PerformanceMode = nil
 	}
 	if resp.SizeInBytes != nil {
-		f13 := &svcapitypes.FileSystemSize{}
+		f14 := &svcapitypes.FileSystemSize{}
 		if resp.SizeInBytes.Timestamp != nil {
-			f13.Timestamp = &metav1.Time{*resp.SizeInBytes.Timestamp}
+			f14.Timestamp = &metav1.Time{*resp.SizeInBytes.Timestamp}
 		}
 		if resp.SizeInBytes.Value != nil {
-			f13.Value = resp.SizeInBytes.Value
+			f14.Value = resp.SizeInBytes.Value
+		}
+		if resp.SizeInBytes.ValueInArchive != nil {
+			f14.ValueInArchive = resp.SizeInBytes.ValueInArchive
 		}
 		if resp.SizeInBytes.ValueInIA != nil {
-			f13.ValueInIA = resp.SizeInBytes.ValueInIA
+			f14.ValueInIA = resp.SizeInBytes.ValueInIA
 		}
 		if resp.SizeInBytes.ValueInStandard != nil {
-			f13.ValueInStandard = resp.SizeInBytes.ValueInStandard
+			f14.ValueInStandard = resp.SizeInBytes.ValueInStandard
 		}
-		cr.Status.AtProvider.SizeInBytes = f13
+		cr.Status.AtProvider.SizeInBytes = f14
 	} else {
 		cr.Status.AtProvider.SizeInBytes = nil
 	}
 	if resp.Tags != nil {
-		f14 := []*svcapitypes.Tag{}
-		for _, f14iter := range resp.Tags {
-			f14elem := &svcapitypes.Tag{}
-			if f14iter.Key != nil {
-				f14elem.Key = f14iter.Key
+		f15 := []*svcapitypes.Tag{}
+		for _, f15iter := range resp.Tags {
+			f15elem := &svcapitypes.Tag{}
+			if f15iter.Key != nil {
+				f15elem.Key = f15iter.Key
 			}
-			if f14iter.Value != nil {
-				f14elem.Value = f14iter.Value
+			if f15iter.Value != nil {
+				f15elem.Value = f15iter.Value
 			}
-			f14 = append(f14, f14elem)
+			f15 = append(f15, f15elem)
 		}
-		cr.Spec.ForProvider.Tags = f14
+		cr.Spec.ForProvider.Tags = f15
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}

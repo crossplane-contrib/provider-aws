@@ -90,7 +90,7 @@ type BlockDeviceMapping struct {
 type DesiredConfiguration struct {
 	// Describes the launch template and the version of the launch template that
 	// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
-	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 	// Use this structure to launch multiple instance types and On-Demand Instances
@@ -157,13 +157,18 @@ type Group struct {
 	HealthCheckGracePeriod *int64 `json:"healthCheckGracePeriod,omitempty"`
 
 	HealthCheckType *string `json:"healthCheckType,omitempty"`
+	// Describes an instance maintenance policy.
+	//
+	// For more information, see Set instance maintenance policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `json:"instanceMaintenancePolicy,omitempty"`
 
 	Instances []*Instance `json:"instances,omitempty"`
 
 	LaunchConfigurationName *string `json:"launchConfigurationName,omitempty"`
 	// Describes the launch template and the version of the launch template that
 	// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
-	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 
@@ -224,7 +229,7 @@ type Instance struct {
 	LaunchConfigurationName *string `json:"launchConfigurationName,omitempty"`
 	// Describes the launch template and the version of the launch template that
 	// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
-	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 
@@ -250,7 +255,7 @@ type InstanceDetails struct {
 	LaunchConfigurationName *string `json:"launchConfigurationName,omitempty"`
 	// Describes the launch template and the version of the launch template that
 	// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
-	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 
@@ -259,6 +264,13 @@ type InstanceDetails struct {
 	ProtectedFromScaleIn *bool `json:"protectedFromScaleIn,omitempty"`
 
 	WeightedCapacity *string `json:"weightedCapacity,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type InstanceMaintenancePolicy struct {
+	MaxHealthyPercentage *int64 `json:"maxHealthyPercentage,omitempty"`
+
+	MinHealthyPercentage *int64 `json:"minHealthyPercentage,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -305,6 +317,8 @@ type InstanceRequirements struct {
 	LocalStorage *string `json:"localStorage,omitempty"`
 
 	LocalStorageTypes []*string `json:"localStorageTypes,omitempty"`
+
+	MaxSpotPriceAsPercentageOfOptimalOnDemandPrice *int64 `json:"maxSpotPriceAsPercentageOfOptimalOnDemandPrice,omitempty"`
 	// Specifies the minimum and maximum for the MemoryGiBPerVCpu object when you
 	// specify InstanceRequirements for an Auto Scaling group.
 	MemoryGiBPerVCPU *MemoryGiBPerVCPURequest `json:"memoryGiBPerVCPU,omitempty"`
@@ -385,7 +399,7 @@ type LaunchConfiguration struct {
 type LaunchTemplate struct {
 	// Describes the launch template and the version of the launch template that
 	// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
-	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplateSpecification *LaunchTemplateSpecification `json:"launchTemplateSpecification,omitempty"`
 
@@ -416,8 +430,8 @@ type LaunchTemplateOverrides struct {
 	// You must specify VCpuCount and MemoryMiB. All other attributes are optional.
 	// Any unspecified optional attribute is set to its default.
 	//
-	// For more information, see Creating an Auto Scaling group using attribute-based
-	// instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
+	// For more information, see Create a mixed instances group using attribute-based
+	// instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
 	// in the Amazon EC2 Auto Scaling User Guide. For help determining which instance
 	// types match your attributes before you apply them to your Auto Scaling group,
 	// see Preview instance types with specified attributes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html#ec2fleet-get-instance-types-from-instance-requirements)
@@ -427,7 +441,7 @@ type LaunchTemplateOverrides struct {
 	InstanceType *string `json:"instanceType,omitempty"`
 	// Describes the launch template and the version of the launch template that
 	// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
-	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplateSpecification *LaunchTemplateSpecification `json:"launchTemplateSpecification,omitempty"`
 
@@ -656,13 +670,6 @@ type TagDescription struct {
 	ResourceType *string `json:"resourceType,omitempty"`
 
 	Value *string `json:"value,omitempty"`
-}
-
-// +kubebuilder:skipversion
-type TargetTrackingMetricDataQuery struct {
-	Expression *string `json:"expression,omitempty"`
-
-	ID *string `json:"id,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -58,13 +58,15 @@ type GroupSpec struct {
 
 // GroupObservation defines the observed state of Group
 type GroupObservation struct {
-	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-	// format, when the item was created.
+	// The date and time when the item was created. Amazon Cognito returns this
+	// timestamp in UNIX epoch time format. Your SDK might render the output in
+	// a human-readable format like ISO 8601 or a Java Date object.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 	// The name of the group.
 	GroupName *string `json:"groupName,omitempty"`
-	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-	// format, when the item was modified.
+	// The date and time when the item was modified. Amazon Cognito returns this
+	// timestamp in UNIX epoch time format. Your SDK might render the output in
+	// a human-readable format like ISO 8601 or a Java Date object.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The role Amazon Resource Name (ARN) for the group.
 	RoleARN *string `json:"roleARN,omitempty"`

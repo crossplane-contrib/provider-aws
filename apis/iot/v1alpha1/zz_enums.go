@@ -196,6 +196,12 @@ const (
 	CertificateMode_SNI_ONLY CertificateMode = "SNI_ONLY"
 )
 
+type CertificateProviderOperation string
+
+const (
+	CertificateProviderOperation_CreateCertificateFromCsr CertificateProviderOperation = "CreateCertificateFromCsr"
+)
+
 type CertificateStatus string
 
 const (
@@ -442,13 +448,11 @@ const (
 type LogTargetType string
 
 const (
-	LogTargetType_DEFAULT         LogTargetType = "DEFAULT"
-	LogTargetType_THING_GROUP     LogTargetType = "THING_GROUP"
-	LogTargetType_CLIENT_ID       LogTargetType = "CLIENT_ID"
-	LogTargetType_SOURCE_IP       LogTargetType = "SOURCE_IP"
-	LogTargetType_PRINCIPAL_ID    LogTargetType = "PRINCIPAL_ID"
-	LogTargetType_EVENT_TYPE      LogTargetType = "EVENT_TYPE"
-	LogTargetType_DEVICE_DEFENDER LogTargetType = "DEVICE_DEFENDER"
+	LogTargetType_DEFAULT      LogTargetType = "DEFAULT"
+	LogTargetType_THING_GROUP  LogTargetType = "THING_GROUP"
+	LogTargetType_CLIENT_ID    LogTargetType = "CLIENT_ID"
+	LogTargetType_SOURCE_IP    LogTargetType = "SOURCE_IP"
+	LogTargetType_PRINCIPAL_ID LogTargetType = "PRINCIPAL_ID"
 )
 
 type MessageFormat string
@@ -575,6 +579,13 @@ const (
 	Status_Failed     Status = "Failed"
 	Status_Cancelled  Status = "Cancelled"
 	Status_Cancelling Status = "Cancelling"
+)
+
+type TargetFieldOrder string
+
+const (
+	TargetFieldOrder_LatLon TargetFieldOrder = "LatLon"
+	TargetFieldOrder_LonLat TargetFieldOrder = "LonLat"
 )
 
 type TargetSelection string

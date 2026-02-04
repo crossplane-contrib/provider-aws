@@ -1,20 +1,21 @@
 ignore:
   resource_names:
     - Blueprint
+    - CustomEntityType
+    - DataQualityRuleset
     - DevEndpoint
     - MLTransform
+    - Partition
     - PartitionIndex
     - Registry
     - Schema
     - Script
+    - Session
     - Table
     - TableOptimizer
+    - UsageProfile
     - UserDefinedFunction
     - Workflow
-    - Partition
-    - Session
-    - CustomEntityType
-    - DataQualityRuleset
   field_paths:
     - CreateJobInput.Name
     - CreateJobInput.Role

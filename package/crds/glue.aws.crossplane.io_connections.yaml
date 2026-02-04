@@ -506,8 +506,15 @@ spec:
               atProvider:
                 description: ConnectionObservation defines the observed state of Connection
                 properties:
+                  createConnectionStatus:
+                    description: |-
+                      The status of the connection creation request. The request can take some
+                      time for certain authentication types, for example when creating an OAuth
+                      connection with token exchange over VPC.
+                    type: string
                   creationTime:
-                    description: The time that this connection definition was created.
+                    description: The timestamp of the time that this connection definition
+                      was created.
                     format: date-time
                     type: string
                   lastUpdatedBy:
@@ -515,8 +522,8 @@ spec:
                       definition.
                     type: string
                   lastUpdatedTime:
-                    description: The last time that this connection definition was
-                      updated.
+                    description: The timestamp of the last time the connection definition
+                      was updated.
                     format: date-time
                     type: string
                 type: object

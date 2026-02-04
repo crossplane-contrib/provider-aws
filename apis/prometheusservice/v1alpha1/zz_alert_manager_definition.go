@@ -29,7 +29,11 @@ type AlertManagerDefinitionParameters struct {
 	// Region is which region the AlertManagerDefinition will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The alert manager definition data.
+	// The alert manager definition to add. A base64-encoded version of the YAML
+	// alert manager definition file.
+	//
+	// For details about the alert manager definition, see AlertManagedDefinitionData
+	// (https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-AlertManagerDefinitionData.html).
 	// +kubebuilder:validation:Required
 	Data                                   []byte `json:"data"`
 	CustomAlertManagerDefinitionParameters `json:",inline"`
@@ -43,9 +47,9 @@ type AlertManagerDefinitionSpec struct {
 
 // AlertManagerDefinitionObservation defines the observed state of AlertManagerDefinition
 type AlertManagerDefinitionObservation struct {
-	// Status code of this definition.
+	// The current status of the alert manager.
 	StatusCode *string `json:"statusCode,omitempty"`
-	// The reason for failure if any.
+	// If there is a failure, the reason for the failure.
 	StatusReason *string `json:"statusReason,omitempty"`
 
 	CustomAlertManagerDefinitionObservation `json:",inline"`

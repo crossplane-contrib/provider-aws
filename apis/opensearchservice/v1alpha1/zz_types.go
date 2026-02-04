@@ -28,6 +28,27 @@ var (
 )
 
 // +kubebuilder:skipversion
+type AIMLOptionsInput struct {
+	// Container for parameters required to enable the natural language query generation
+	// feature.
+	NATuralLanguageQueryGenerationOptions *NATuralLanguageQueryGenerationOptionsInput `json:"naturalLanguageQueryGenerationOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AIMLOptionsOutput struct {
+	// Container for parameters representing the state of the natural language query
+	// generation feature on the specified domain.
+	NATuralLanguageQueryGenerationOptions *NATuralLanguageQueryGenerationOptionsOutput `json:"naturalLanguageQueryGenerationOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AIMLOptionsStatus struct {
+	// Container for parameters representing the state of machine learning features
+	// on the specified domain.
+	Options *AIMLOptionsOutput `json:"options,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type AWSDomainInformation struct {
 	// The name of an OpenSearch Service domain. Domain names are unique across
 	// the domains owned by an account within an Amazon Web Services Region.
@@ -66,6 +87,8 @@ type AdvancedSecurityOptions struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	InternalUserDatabaseEnabled *bool `json:"internalUserDatabaseEnabled,omitempty"`
+	// Describes the JWT options configured for the domain.
+	JWTOptions *JWTOptionsOutput `json:"jwtOptions,omitempty"`
 	// Describes the SAML application configured for the domain.
 	SAMLOptions *SAMLOptionsOutput `json:"sAMLOptions,omitempty"`
 }
@@ -77,6 +100,9 @@ type AdvancedSecurityOptionsInput struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	InternalUserDatabaseEnabled *bool `json:"internalUserDatabaseEnabled,omitempty"`
+	// The JWT authentication and authorization configuration for an Amazon OpenSearch
+	// Service domain.
+	JWTOptions *JWTOptionsInput `json:"jwtOptions,omitempty"`
 	// Credentials for the master user for a domain.
 	MasterUserOptions *MasterUserOptions `json:"masterUserOptions,omitempty"`
 	// The SAML authentication configuration for an Amazon OpenSearch Service domain.
@@ -136,19 +162,40 @@ type AutoTuneOptionsOutput struct {
 
 // +kubebuilder:skipversion
 type AutoTuneStatus struct {
+	CreationDate *metav1.Time `json:"creationDate,omitempty"`
+
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 
 	PendingDeletion *bool `json:"pendingDeletion,omitempty"`
 	// The Auto-Tune state for the domain. For valid states see Auto-Tune for Amazon
 	// OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html).
 	State *string `json:"state,omitempty"`
+
+	UpdateDate *metav1.Time `json:"updateDate,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type CancelledChangeProperty struct {
+	ActiveValue *string `json:"activeValue,omitempty"`
+
+	CancelledValue *string `json:"cancelledValue,omitempty"`
+
+	PropertyName *string `json:"propertyName,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type ChangeProgressDetails struct {
 	ChangeID *string `json:"changeID,omitempty"`
 
+	ConfigChangeStatus *string `json:"configChangeStatus,omitempty"`
+
+	InitiatedBy *string `json:"initiatedBy,omitempty"`
+
+	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
+
 	Message *string `json:"message,omitempty"`
+
+	StartTime *metav1.Time `json:"startTime,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -157,7 +204,15 @@ type ChangeProgressStatusDetails struct {
 
 	CompletedProperties []*string `json:"completedProperties,omitempty"`
 
+	ConfigChangeStatus *string `json:"configChangeStatus,omitempty"`
+
+	InitiatedBy *string `json:"initiatedBy,omitempty"`
+
+	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
+
 	PendingProperties []*string `json:"pendingProperties,omitempty"`
+
+	StartTime *metav1.Time `json:"startTime,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -231,14 +286,16 @@ type CompatibleVersionsMap struct {
 type DomainConfig struct {
 	// Container for information about a configuration change happening on a domain.
 	ChangeProgressDetails *ChangeProgressDetails `json:"changeProgressDetails,omitempty"`
+
+	ModifyingProperties []*ModifyingProperties `json:"modifyingProperties,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type DomainEndpointOptions struct {
 	CustomEndpoint *string `json:"customEndpoint,omitempty"`
 	// The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-	// Identity and Access Management for more information.
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+	// Web Services Identity and Access Management for more information.
 	CustomEndpointCertificateARN *string `json:"customEndpointCertificateARN,omitempty"`
 
 	CustomEndpointEnabled *bool `json:"customEndpointEnabled,omitempty"`
@@ -263,9 +320,12 @@ type DomainInfo struct {
 
 // +kubebuilder:skipversion
 type DomainMaintenanceDetails struct {
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 	// The name of an OpenSearch Service domain. Domain names are unique across
 	// the domains owned by an account within an Amazon Web Services Region.
 	DomainName *string `json:"domainName,omitempty"`
+
+	UpdatedAt *metav1.Time `json:"updatedAt,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -285,9 +345,12 @@ type DomainPackageDetails struct {
 
 // +kubebuilder:skipversion
 type DomainStatus_SDK struct {
+	// Container for parameters representing the state of machine learning features
+	// on the specified domain.
+	AIMLOptions *AIMLOptionsOutput `json:"aIMLOptions,omitempty"`
 	// The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-	// Identity and Access Management for more information.
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+	// Web Services Identity and Access Management for more information.
 	ARN *string `json:"arn,omitempty"`
 	// Access policy rules for an Amazon OpenSearch Service domain endpoint. For
 	// more information, see Configuring access policies (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomain-configure-access-policies).
@@ -325,17 +388,22 @@ type DomainStatus_SDK struct {
 	Deleted *bool `json:"deleted,omitempty"`
 	// Options to configure a custom endpoint for an OpenSearch Service domain.
 	DomainEndpointOptions *DomainEndpointOptions `json:"domainEndpointOptions,omitempty"`
+
+	DomainEndpointV2HostedZoneID *string `json:"domainEndpointV2HostedZoneID,omitempty"`
 	// Unique identifier for an OpenSearch Service domain.
 	DomainID *string `json:"domainID,omitempty"`
 	// The name of an OpenSearch Service domain. Domain names are unique across
 	// the domains owned by an account within an Amazon Web Services Region.
 	DomainName *string `json:"domainName,omitempty"`
+
+	DomainProcessingStatus *string `json:"domainProcessingStatus,omitempty"`
 	// Container for the parameters required to enable EBS-based storage for an
 	// OpenSearch Service domain.
 	EBSOptions *EBSOptions `json:"ebsOptions,omitempty"`
 	// Specifies whether the domain should encrypt data at rest, and if so, the
-	// Key Management Service (KMS) key to use. Can be used only to create a new
-	// domain, not update an existing one.
+	// Key Management Service (KMS) key to use. Can only be used when creating a
+	// new domain or enabling encryption at rest for the first time on an existing
+	// domain. You can't modify this parameter after it's already been specified.
 	EncryptionAtRestOptions *EncryptionAtRestOptions `json:"encryptionAtRestOptions,omitempty"`
 	// The domain endpoint to which index and search requests are submitted. For
 	// example, search-imdb-movies-oopcnjfn6ugo.eu-west-1.es.amazonaws.com or doc-imdb-movies-oopcnjfn6u.eu-west-1.es.amazonaws.com.
@@ -351,6 +419,8 @@ type DomainStatus_SDK struct {
 	IPAddressType *string `json:"iPAddressType,omitempty"`
 
 	LogPublishingOptions map[string]*LogPublishingOption `json:"logPublishingOptions,omitempty"`
+
+	ModifyingProperties []*ModifyingProperties `json:"modifyingProperties,omitempty"`
 	// Enables or disables node-to-node encryption. For more information, see Node-to-node
 	// encryption for Amazon OpenSearch Service (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/ntn.html).
 	NodeToNodeEncryptionOptions *NodeToNodeEncryptionOptions `json:"nodeToNodeEncryptionOptions,omitempty"`
@@ -434,8 +504,9 @@ type EncryptionAtRestOptions struct {
 // +kubebuilder:skipversion
 type EncryptionAtRestOptionsStatus struct {
 	// Specifies whether the domain should encrypt data at rest, and if so, the
-	// Key Management Service (KMS) key to use. Can be used only to create a new
-	// domain, not update an existing one.
+	// Key Management Service (KMS) key to use. Can only be used when creating a
+	// new domain or enabling encryption at rest for the first time on an existing
+	// domain. You can't modify this parameter after it's already been specified.
 	Options *EncryptionAtRestOptions `json:"options,omitempty"`
 }
 
@@ -460,6 +531,28 @@ type InstanceTypeDetails struct {
 }
 
 // +kubebuilder:skipversion
+type JWTOptionsInput struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	PublicKey *string `json:"publicKey,omitempty"`
+
+	RolesKey *string `json:"rolesKey,omitempty"`
+
+	SubjectKey *string `json:"subjectKey,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type JWTOptionsOutput struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	PublicKey *string `json:"publicKey,omitempty"`
+
+	RolesKey *string `json:"rolesKey,omitempty"`
+
+	SubjectKey *string `json:"subjectKey,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LogPublishingOption struct {
 	// ARN of the Cloudwatch log group to publish logs to.
 	CloudWatchLogsLogGroupARN *string `json:"cloudWatchLogsLogGroupARN,omitempty"`
@@ -475,13 +568,36 @@ type LogPublishingOptionsStatus struct {
 // +kubebuilder:skipversion
 type MasterUserOptions struct {
 	// The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
-	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using AWS
-	// Identity and Access Management for more information.
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
+	// Web Services Identity and Access Management for more information.
 	MasterUserARN *string `json:"masterUserARN,omitempty"`
 
 	MasterUserName *string `json:"masterUserName,omitempty"`
 
 	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ModifyingProperties struct {
+	ActiveValue *string `json:"activeValue,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	PendingValue *string `json:"pendingValue,omitempty"`
+
+	ValueType *string `json:"valueType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type NATuralLanguageQueryGenerationOptionsInput struct {
+	DesiredState *string `json:"desiredState,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type NATuralLanguageQueryGenerationOptionsOutput struct {
+	CurrentState *string `json:"currentState,omitempty"`
+
+	DesiredState *string `json:"desiredState,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -529,7 +645,11 @@ type OffPeakWindowOptionsStatus struct {
 
 // +kubebuilder:skipversion
 type OptionStatus struct {
+	CreationDate *metav1.Time `json:"creationDate,omitempty"`
+
 	PendingDeletion *bool `json:"pendingDeletion,omitempty"`
+
+	UpdateDate *metav1.Time `json:"updateDate,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -547,6 +667,8 @@ type ReservedInstance struct {
 
 	ReservedInstanceOfferingID *string `json:"reservedInstanceOfferingID,omitempty"`
 
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+
 	State *string `json:"state,omitempty"`
 }
 
@@ -557,6 +679,11 @@ type ReservedInstanceOffering struct {
 	InstanceType *string `json:"instanceType,omitempty"`
 
 	ReservedInstanceOfferingID *string `json:"reservedInstanceOfferingID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type S3GlueDataCatalog struct {
+	RoleARN *string `json:"roleARN,omitempty"`
 }
 
 // +kubebuilder:skipversion

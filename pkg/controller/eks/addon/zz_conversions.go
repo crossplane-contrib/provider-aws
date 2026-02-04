@@ -126,6 +126,17 @@ func GenerateAddon(resp *svcsdk.DescribeAddonOutput) *svcapitypes.Addon {
 	} else {
 		cr.Status.AtProvider.Owner = nil
 	}
+	if resp.Addon.PodIdentityAssociations != nil {
+		f10 := []*svcapitypes.AddonPodIdentityAssociations{}
+		for _, f10iter := range resp.Addon.PodIdentityAssociations {
+			f10elem := &svcapitypes.AddonPodIdentityAssociations{}
+			f10elem = *f10iter
+			f10 = append(f10, f10elem)
+		}
+		cr.Spec.ForProvider.PodIdentityAssociations = f10
+	} else {
+		cr.Spec.ForProvider.PodIdentityAssociations = nil
+	}
 	if resp.Addon.Publisher != nil {
 		cr.Status.AtProvider.Publisher = resp.Addon.Publisher
 	} else {
@@ -142,13 +153,13 @@ func GenerateAddon(resp *svcsdk.DescribeAddonOutput) *svcapitypes.Addon {
 		cr.Status.AtProvider.Status = nil
 	}
 	if resp.Addon.Tags != nil {
-		f13 := map[string]*string{}
-		for f13key, f13valiter := range resp.Addon.Tags {
-			var f13val string
-			f13val = *f13valiter
-			f13[f13key] = &f13val
+		f14 := map[string]*string{}
+		for f14key, f14valiter := range resp.Addon.Tags {
+			var f14val string
+			f14val = *f14valiter
+			f14[f14key] = &f14val
 		}
-		cr.Spec.ForProvider.Tags = f13
+		cr.Spec.ForProvider.Tags = f14
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -169,6 +180,20 @@ func GenerateCreateAddonInput(cr *svcapitypes.Addon) *svcsdk.CreateAddonInput {
 	if cr.Spec.ForProvider.ConfigurationValues != nil {
 		res.SetConfigurationValues(*cr.Spec.ForProvider.ConfigurationValues)
 	}
+	if cr.Spec.ForProvider.PodIdentityAssociations != nil {
+		f3 := []*svcsdk.AddonPodIdentityAssociations{}
+		for _, f3iter := range cr.Spec.ForProvider.PodIdentityAssociations {
+			f3elem := &svcsdk.AddonPodIdentityAssociations{}
+			if f3iter.RoleARN != nil {
+				f3elem.SetRoleArn(*f3iter.RoleARN)
+			}
+			if f3iter.ServiceAccount != nil {
+				f3elem.SetServiceAccount(*f3iter.ServiceAccount)
+			}
+			f3 = append(f3, f3elem)
+		}
+		res.SetPodIdentityAssociations(f3)
+	}
 	if cr.Spec.ForProvider.ResolveConflicts != nil {
 		res.SetResolveConflicts(*cr.Spec.ForProvider.ResolveConflicts)
 	}
@@ -176,13 +201,13 @@ func GenerateCreateAddonInput(cr *svcapitypes.Addon) *svcsdk.CreateAddonInput {
 		res.SetServiceAccountRoleArn(*cr.Spec.ForProvider.ServiceAccountRoleARN)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f5 := map[string]*string{}
-		for f5key, f5valiter := range cr.Spec.ForProvider.Tags {
-			var f5val string
-			f5val = *f5valiter
-			f5[f5key] = &f5val
+		f6 := map[string]*string{}
+		for f6key, f6valiter := range cr.Spec.ForProvider.Tags {
+			var f6val string
+			f6val = *f6valiter
+			f6[f6key] = &f6val
 		}
-		res.SetTags(f5)
+		res.SetTags(f6)
 	}
 
 	return res
@@ -200,6 +225,20 @@ func GenerateUpdateAddonInput(cr *svcapitypes.Addon) *svcsdk.UpdateAddonInput {
 	}
 	if cr.Spec.ForProvider.ConfigurationValues != nil {
 		res.SetConfigurationValues(*cr.Spec.ForProvider.ConfigurationValues)
+	}
+	if cr.Spec.ForProvider.PodIdentityAssociations != nil {
+		f3 := []*svcsdk.AddonPodIdentityAssociations{}
+		for _, f3iter := range cr.Spec.ForProvider.PodIdentityAssociations {
+			f3elem := &svcsdk.AddonPodIdentityAssociations{}
+			if f3iter.RoleARN != nil {
+				f3elem.SetRoleArn(*f3iter.RoleARN)
+			}
+			if f3iter.ServiceAccount != nil {
+				f3elem.SetServiceAccount(*f3iter.ServiceAccount)
+			}
+			f3 = append(f3, f3elem)
+		}
+		res.SetPodIdentityAssociations(f3)
 	}
 	if cr.Spec.ForProvider.ResolveConflicts != nil {
 		res.SetResolveConflicts(*cr.Spec.ForProvider.ResolveConflicts)

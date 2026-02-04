@@ -33,8 +33,7 @@ type ResolverRuleParameters struct {
 	// specify in TargetIps. If a query matches multiple Resolver rules (example.com
 	// and www.example.com), outbound DNS queries are routed using the Resolver
 	// rule that contains the most specific domain name (www.example.com).
-	// +kubebuilder:validation:Required
-	DomainName *string `json:"domainName"`
+	DomainName *string `json:"domainName,omitempty"`
 	// A friendly name that lets you easily find a rule in the Resolver dashboard
 	// in the Route 53 console.
 	Name *string `json:"name,omitempty"`

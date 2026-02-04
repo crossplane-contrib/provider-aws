@@ -47,6 +47,33 @@ type ResolverEndpointParameters struct {
 	// The instance type. If you specify this, you must also specify a value for
 	// the OutpostArn.
 	PreferredInstanceType *string `json:"preferredInstanceType,omitempty"`
+	// The protocols you want to use for the endpoint. DoH-FIPS is applicable for
+	// inbound endpoints only.
+	//
+	// For an inbound endpoint you can apply the protocols as follows:
+	//
+	//    * Do53 and DoH in combination.
+	//
+	//    * Do53 and DoH-FIPS in combination.
+	//
+	//    * Do53 alone.
+	//
+	//    * DoH alone.
+	//
+	//    * DoH-FIPS alone.
+	//
+	//    * None, which is treated as Do53.
+	//
+	// For an outbound endpoint you can apply the protocols as follows:
+	//
+	//    * Do53 and DoH in combination.
+	//
+	//    * Do53 alone.
+	//
+	//    * DoH alone.
+	//
+	//    * None, which is treated as Do53.
+	Protocols []*string `json:"protocols,omitempty"`
 	// For the endpoint type you can choose either IPv4, IPv6, or dual-stack. A
 	// dual-stack endpoint means that it will resolve via both IPv4 and IPv6. This
 	// endpoint type is applied to all IP addresses.

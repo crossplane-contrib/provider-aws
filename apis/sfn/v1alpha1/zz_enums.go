@@ -18,6 +18,13 @@ limitations under the License.
 
 package v1alpha1
 
+type EncryptionType string
+
+const (
+	EncryptionType_AWS_OWNED_KEY            EncryptionType = "AWS_OWNED_KEY"
+	EncryptionType_CUSTOMER_MANAGED_KMS_KEY EncryptionType = "CUSTOMER_MANAGED_KMS_KEY"
+)
+
 type ExecutionRedriveFilter string
 
 const (
@@ -110,6 +117,31 @@ const (
 	HistoryEventType_MapRunRedriven               HistoryEventType = "MapRunRedriven"
 )
 
+type IncludedData string
+
+const (
+	IncludedData_ALL_DATA      IncludedData = "ALL_DATA"
+	IncludedData_METADATA_ONLY IncludedData = "METADATA_ONLY"
+)
+
+type InspectionLevel string
+
+const (
+	InspectionLevel_INFO  InspectionLevel = "INFO"
+	InspectionLevel_DEBUG InspectionLevel = "DEBUG"
+	InspectionLevel_TRACE InspectionLevel = "TRACE"
+)
+
+type KMSKeyState string
+
+const (
+	KMSKeyState_DISABLED         KMSKeyState = "DISABLED"
+	KMSKeyState_PENDING_DELETION KMSKeyState = "PENDING_DELETION"
+	KMSKeyState_PENDING_IMPORT   KMSKeyState = "PENDING_IMPORT"
+	KMSKeyState_UNAVAILABLE      KMSKeyState = "UNAVAILABLE"
+	KMSKeyState_CREATING         KMSKeyState = "CREATING"
+)
+
 type LogLevel string
 
 const (
@@ -148,6 +180,28 @@ const (
 	SyncExecutionStatus_SUCCEEDED SyncExecutionStatus = "SUCCEEDED"
 	SyncExecutionStatus_FAILED    SyncExecutionStatus = "FAILED"
 	SyncExecutionStatus_TIMED_OUT SyncExecutionStatus = "TIMED_OUT"
+)
+
+type TestExecutionStatus string
+
+const (
+	TestExecutionStatus_SUCCEEDED    TestExecutionStatus = "SUCCEEDED"
+	TestExecutionStatus_FAILED       TestExecutionStatus = "FAILED"
+	TestExecutionStatus_RETRIABLE    TestExecutionStatus = "RETRIABLE"
+	TestExecutionStatus_CAUGHT_ERROR TestExecutionStatus = "CAUGHT_ERROR"
+)
+
+type ValidateStateMachineDefinitionResultCode string
+
+const (
+	ValidateStateMachineDefinitionResultCode_OK   ValidateStateMachineDefinitionResultCode = "OK"
+	ValidateStateMachineDefinitionResultCode_FAIL ValidateStateMachineDefinitionResultCode = "FAIL"
+)
+
+type ValidateStateMachineDefinitionSeverity string
+
+const (
+	ValidateStateMachineDefinitionSeverity_ERROR ValidateStateMachineDefinitionSeverity = "ERROR"
 )
 
 type ValidationExceptionReason string

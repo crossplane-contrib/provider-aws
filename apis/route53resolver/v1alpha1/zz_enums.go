@@ -64,6 +64,13 @@ const (
 	FirewallDomainListStatus_UPDATING               FirewallDomainListStatus = "UPDATING"
 )
 
+type FirewallDomainRedirectionAction string
+
+const (
+	FirewallDomainRedirectionAction_INSPECT_REDIRECTION_DOMAIN FirewallDomainRedirectionAction = "INSPECT_REDIRECTION_DOMAIN"
+	FirewallDomainRedirectionAction_TRUST_REDIRECTION_DOMAIN   FirewallDomainRedirectionAction = "TRUST_REDIRECTION_DOMAIN"
+)
+
 type FirewallDomainUpdateOperation string
 
 const (
@@ -130,6 +137,14 @@ const (
 	OutpostResolverStatus_ACTION_NEEDED   OutpostResolverStatus = "ACTION_NEEDED"
 	OutpostResolverStatus_FAILED_CREATION OutpostResolverStatus = "FAILED_CREATION"
 	OutpostResolverStatus_FAILED_DELETION OutpostResolverStatus = "FAILED_DELETION"
+)
+
+type Protocol string
+
+const (
+	Protocol_DoH      Protocol = "DoH"
+	Protocol_Do53     Protocol = "Do53"
+	Protocol_DoH_FIPS Protocol = "DoH-FIPS"
 )
 
 type ResolverAutodefinedReverseStatus string

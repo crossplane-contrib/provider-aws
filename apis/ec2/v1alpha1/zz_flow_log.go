@@ -30,7 +30,7 @@ type FlowLogParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request. For more information, see How to ensure idempotency (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Run_Instance_Idempotency.html).
+	// of the request. For more information, see How to ensure idempotency (https://docs.aws.amazon.com/ec2/latest/devguide/ec2-api-idempotency.html).
 	ClientToken *string `json:"clientToken,omitempty"`
 	// The ARN of the IAM role that allows Amazon EC2 to publish flow logs across
 	// accounts.
@@ -75,7 +75,7 @@ type FlowLogParameters struct {
 	// minute) or 600 seconds (10 minutes). This parameter must be 60 seconds for
 	// transit gateway resource types.
 	//
-	// When a network interface is attached to a Nitro-based instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances),
+	// When a network interface is attached to a Nitro-based instance (https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-nitro-instances.html),
 	// the aggregation interval is always 60 seconds or less, regardless of the
 	// value that you specify.
 	//
