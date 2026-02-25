@@ -59,9 +59,11 @@ const (
 
 // database roles
 const (
-	databaseRoleStandalone  = "Instance"
-	databaseRolePrimary     = "Primary"
-	databaseRoleReadReplica = "Replica"
+	databaseRoleStandalone    = "Instance"
+	databaseRolePrimary       = "Primary"
+	databaseRoleReadReplica   = "Replica"
+	databaseRoleClusterWriter = "Writer Instance"
+	databaseRoleClusterReader = "Reader Instance"
 )
 
 // other
@@ -171,7 +173,6 @@ func (c *customExternal) Create(ctx context.Context, cr *svcapitypes.DBInstance)
 		}
 		return managed.ExternalCreation{}, nil
 	}
-	cr.Status.AtProvider.DatabaseRole = aws.String(databaseRoleStandalone)
 	return c.external.Create(ctx, cr)
 }
 
@@ -403,7 +404,7 @@ func (s *shared) postDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj
 	return managed.ExternalDelete{}, dbinstance.DeleteCache(ctx, s.kube, cr)
 }
 
-func (s *shared) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBInstancesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (s *shared) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, resp *svcsdk.DescribeDBInstancesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) { //nolint:gocyclo
 	if err != nil {
 		return obs, err
 	}
@@ -423,6 +424,31 @@ func (s *shared) postObserve(ctx context.Context, cr *svcapitypes.DBInstance, re
 		cr.SetConditions(xpv1.Creating())
 	default:
 		cr.SetConditions(xpv1.Unavailable().WithMessage("DB Instance is " + pointer.StringValue(resp.DBInstances[0].DBInstanceStatus)))
+	}
+
+	db := resp.DBInstances[0]
+	switch {
+	case db.ReadReplicaDBClusterIdentifiers != nil || db.ReadReplicaDBInstanceIdentifiers != nil:
+		cr.Status.AtProvider.DatabaseRole = aws.String(databaseRolePrimary)
+	case db.ReadReplicaSourceDBClusterIdentifier != nil || db.ReadReplicaSourceDBInstanceIdentifier != nil:
+		cr.Status.AtProvider.DatabaseRole = aws.String(databaseRoleReadReplica)
+	case db.DBClusterIdentifier != nil:
+		inputCluster := &svcsdk.DescribeDBClustersInput{DBClusterIdentifier: db.DBClusterIdentifier}
+		outputCluster, err := s.client.DescribeDBClustersWithContext(ctx, inputCluster)
+		if err != nil {
+			return obs, err
+		}
+		for _, c := range outputCluster.DBClusters[0].DBClusterMembers {
+			if pointer.StringValue(c.DBInstanceIdentifier) == pointer.StringValue(db.DBInstanceIdentifier) {
+				if pointer.BoolValue(c.IsClusterWriter) {
+					cr.Status.AtProvider.DatabaseRole = aws.String(databaseRoleClusterWriter)
+				} else {
+					cr.Status.AtProvider.DatabaseRole = aws.String(databaseRoleClusterReader)
+				}
+			}
+		}
+	default:
+		cr.Status.AtProvider.DatabaseRole = aws.String(databaseRoleStandalone)
 	}
 
 	obs.ConnectionDetails, err = s.updateConnectionDetails(ctx, cr, obs.ConnectionDetails)
@@ -535,14 +561,6 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	status := pointer.StringValue(out.DBInstances[0].DBInstanceStatus)
 	if status == "modifying" || status == "upgrading" || status == "rebooting" || status == "creating" || status == "deleting" {
 		return true, "", nil
-	}
-	switch {
-	case db.ReadReplicaDBClusterIdentifiers != nil || db.ReadReplicaDBInstanceIdentifiers != nil:
-		cr.Status.AtProvider.DatabaseRole = aws.String(databaseRolePrimary)
-	case db.ReadReplicaSourceDBClusterIdentifier != nil || db.ReadReplicaSourceDBInstanceIdentifier != nil:
-		cr.Status.AtProvider.DatabaseRole = aws.String(databaseRoleReadReplica)
-	default:
-		cr.Status.AtProvider.DatabaseRole = aws.String(databaseRoleStandalone)
 	}
 
 	autogenerate := cr.Spec.ForProvider.AutogeneratePassword

@@ -26,6 +26,11 @@ type MockRDSClient struct {
 		input *svcsdk.DescribeDBInstancesInput,
 		optFns ...request.Option,
 	) (*svcsdk.DescribeDBInstancesOutput, error)
+	MockDescribeDBClustersWithContext func(
+		ctx context.Context,
+		input *svcsdk.DescribeDBClustersInput,
+		optFns ...request.Option,
+	) (*svcsdk.DescribeDBClustersOutput, error)
 }
 
 // CreateDBInstanceReadReplicaWithContext mocks CreateDBInstanceReadReplicaWithContext method for aws-sdk client
@@ -53,4 +58,13 @@ func (m *MockRDSClient) DescribeDBInstancesWithContext(
 	optFns ...request.Option,
 ) (*svcsdk.DescribeDBInstancesOutput, error) {
 	return m.MockDescribeDBInstancesWithContext(ctx, input, optFns...)
+}
+
+// DescribeDBClustersWithContext mocks DescribeDBClustersWithContext method for aws-sdk client
+func (m *MockRDSClient) DescribeDBClustersWithContext(
+	ctx context.Context,
+	input *svcsdk.DescribeDBClustersInput,
+	optFns ...request.Option,
+) (*svcsdk.DescribeDBClustersOutput, error) {
+	return m.MockDescribeDBClustersWithContext(ctx, input, optFns...)
 }
