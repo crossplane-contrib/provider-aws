@@ -79,6 +79,89 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestIsUpToDate(t *testing.T) {
+	type args struct {
+		cr   *svcapitypes.DBInstance
+		out  *svcsdk.DescribeDBInstancesOutput
+		kube client.Client
+	}
+
+	type want struct {
+		upToDate bool
+		err      error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+
+		"PreferredBackupWindowNotUpToDate": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							PreferredBackupWindow: aws.String("01:00-02:00"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							PreferredBackupWindow: aws.String("02:00-03:00"),
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
+		"PreferredBackupWindowAndBackupRetentionPeriodIgnoredDueToAWSBackup": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							BackupRetentionPeriod: aws.Int64(1),
+							PreferredBackupWindow: aws.String("01:00-02:00"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							AwsBackupRecoveryPointArn: aws.String("arn:aws:backup:eu-central-1:123456789012:recovery-point:continuous:db-random-string-hash"),
+							BackupRetentionPeriod:     aws.Int64(7),
+							PreferredBackupWindow:     aws.String("02:00-03:00"),
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			cr := tc.args.cr
+			ce := newCustomExternal(tc.kube, nil)
+			upToDate, _, err := ce.isUpToDate(context.TODO(), cr, tc.args.out)
+
+			if diff := cmp.Diff(tc.want.err, err); diff != "" {
+				t.Errorf("r: -want, +got error: \n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.upToDate, upToDate); diff != "" {
+				t.Errorf("r: -want, +got: \n%s", diff)
+			}
+		})
+	}
+}
+
 func TestPostObserve(t *testing.T) {
 	type args struct {
 		awsRDSClient fake.MockRDSClient
@@ -251,61 +334,6 @@ func TestPostObserve(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
-					DatabaseRole: aws.String(databaseRoleStandalone),
-				},
-			},
-		},
-		"PreferredBackupWindowNotUpToDate": {
-			args: args{
-				cr: &svcapitypes.DBInstance{
-					Spec: svcapitypes.DBInstanceSpec{
-						ForProvider: svcapitypes.DBInstanceParameters{
-							PreferredBackupWindow: aws.String("01:00-02:00"),
-						},
-					},
-				},
-				out: &svcsdk.DescribeDBInstancesOutput{
-					DBInstances: []*svcsdk.DBInstance{
-						{
-							PreferredBackupWindow: aws.String("02:00-03:00"),
-						},
-					},
-				},
-				kube: test.NewMockClient(),
-			},
-			want: want{
-				upToDate: false,
-				err:      nil,
-				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
-					DatabaseRole: aws.String(databaseRoleStandalone),
-				},
-			},
-		},
-		"PreferredBackupWindowAndBackupRetentionPeriodIgnoredDueToAWSBackup": {
-			args: args{
-				cr: &svcapitypes.DBInstance{
-					Spec: svcapitypes.DBInstanceSpec{
-						ForProvider: svcapitypes.DBInstanceParameters{
-							BackupRetentionPeriod: aws.Int64(1),
-							PreferredBackupWindow: aws.String("01:00-02:00"),
-						},
-					},
-				},
-				out: &svcsdk.DescribeDBInstancesOutput{
-					DBInstances: []*svcsdk.DBInstance{
-						{
-							AwsBackupRecoveryPointArn: aws.String("arn:aws:backup:eu-central-1:123456789012:recovery-point:continuous:db-random-string-hash"),
-							BackupRetentionPeriod:     aws.Int64(7),
-							PreferredBackupWindow:     aws.String("02:00-03:00"),
-						},
-					},
-				},
-				kube: test.NewMockClient(),
-			},
-			want: want{
-				upToDate: true,
-				err:      nil,
 				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
 					DatabaseRole: aws.String(databaseRoleStandalone),
 				},
