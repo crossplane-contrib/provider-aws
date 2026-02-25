@@ -667,9 +667,12 @@ func isPreferredMaintenanceWindowUpToDate(cr *svcapitypes.DBCluster, out *svcsdk
 }
 
 func isPreferredBackupWindowUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
-	// If PreferredBackupWindow is not set, aws sets a random window
+	// 1. If PreferredBackupWindow is not set, AWS sets a random window
 	// so we do not try to update in this case
-	if cr.Spec.ForProvider.PreferredBackupWindow != nil {
+	// 2. AWS Backup takes ownership of PreferredBackupWindow if it is in use.
+	// So we only check PreferredBackupWindow, if there is no associated RecoveryPoint.
+	if cr.Spec.ForProvider.PreferredBackupWindow != nil &&
+		out.DBClusters[0].AwsBackupRecoveryPointArn == nil {
 		if pointer.StringValue(cr.Spec.ForProvider.PreferredBackupWindow) != pointer.StringValue(out.DBClusters[0].PreferredBackupWindow) {
 			return false
 		}
@@ -678,9 +681,12 @@ func isPreferredBackupWindowUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.Desc
 }
 
 func isBackupRetentionPeriodUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
-	// If BackupRetentionPeriod is not set, aws sets a default value
+	// 1. If BackupRetentionPeriod is not set, AWS sets a default value
 	// so we do not try to update in this case
-	if cr.Spec.ForProvider.BackupRetentionPeriod != nil {
+	// 2. AWS Backup takes ownership of BackupRetentionPeriod if it is in use.
+	// So we only check BackupRetentionPeriod, if there is no associated RecoveryPoint.
+	if cr.Spec.ForProvider.BackupRetentionPeriod != nil &&
+		out.DBClusters[0].AwsBackupRecoveryPointArn == nil {
 		if pointer.Int64Value(cr.Spec.ForProvider.BackupRetentionPeriod) != pointer.Int64Value(out.DBClusters[0].BackupRetentionPeriod) {
 			return false
 		}
@@ -792,6 +798,12 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 	// EngineVersion and DBClusterParameterGroupName are in the same ModifyDBCluster()-call
 	obj.DBClusterParameterGroupName = nil
 
+	// AWS Backup takes ownership of BackupRetentionPeriod and PreferredBackupWindow if it is in use.
+	// So we need to check there is no associated RecoveryPoint, before trying to update these fields.
+	// Therefore we only add some in postUpdate, where we have the DescribeDBClustersOutput available.
+	obj.BackupRetentionPeriod = nil
+	obj.PreferredBackupWindow = nil
+
 	return nil
 }
 
@@ -826,7 +838,9 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj 
 
 	needsEngineVersionUpdate := !isEngineVersionUpToDate(cr, resp)
 	needsDBClusterParamGroupUpdate := !isDBClusterParameterGroupNameUpToDate(cr, resp)
-	needsPostUpdate := needsEngineVersionUpdate || needsDBClusterParamGroupUpdate
+	needsPreferredBackupWindowUpdate := !isPreferredBackupWindowUpToDate(cr, resp)
+	needsBackupRetentionPeriodUpdate := !isBackupRetentionPeriodUpToDate(cr, resp)
+	needsPostUpdate := needsEngineVersionUpdate || needsDBClusterParamGroupUpdate || needsPreferredBackupWindowUpdate || needsBackupRetentionPeriodUpdate
 
 	if needsPostUpdate {
 		modifyInput := &svcsdk.ModifyDBClusterInput{
@@ -837,6 +851,12 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj 
 		if needsEngineVersionUpdate {
 			modifyInput.EngineVersion = cr.Spec.ForProvider.EngineVersion
 			modifyInput.AllowMajorVersionUpgrade = cr.Spec.ForProvider.AllowMajorVersionUpgrade
+		}
+		if needsPreferredBackupWindowUpdate {
+			modifyInput.PreferredBackupWindow = cr.Spec.ForProvider.PreferredBackupWindow
+		}
+		if needsBackupRetentionPeriodUpdate {
+			modifyInput.BackupRetentionPeriod = cr.Spec.ForProvider.BackupRetentionPeriod
 		}
 
 		if _, err = e.client.ModifyDBClusterWithContext(ctx, modifyInput); err != nil {
@@ -856,10 +876,6 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj 
 
 	if !isPreferredMaintenanceWindowUpToDate(cr, resp) {
 		return upd, errors.New("PreferredMaintenanceWindow not matching aws data")
-	}
-
-	if !isPreferredBackupWindowUpToDate(cr, resp) {
-		return upd, errors.New("PreferredBackupWindow not matching aws data")
 	}
 
 	return upd, err

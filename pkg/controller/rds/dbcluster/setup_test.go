@@ -463,6 +463,272 @@ func TestIsDBClusterParameterGroupNameUpToDate(t *testing.T) {
 	}
 }
 
+func TestIsPreferredBackupWindowUpToDate(t *testing.T) {
+	type args struct {
+		cr  *svcapitypes.DBCluster
+		out *svcsdk.DescribeDBClustersOutput
+	}
+
+	type want struct {
+		isUpToDate bool
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Nil": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							PreferredBackupWindow: nil,
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							PreferredBackupWindow: nil,
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"Default": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							PreferredBackupWindow: nil,
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							PreferredBackupWindow: ptr.To("03:00-04:00"), // some AWS "default" value
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"Identical": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							PreferredBackupWindow: ptr.To("03:00-04:00"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							PreferredBackupWindow: ptr.To("03:00-04:00"),
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"Different": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							PreferredBackupWindow: ptr.To("04:00-05:00"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							PreferredBackupWindow: ptr.To("03:00-04:00"),
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"DifferentButAWSBackupManaged": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							PreferredBackupWindow: ptr.To("04:00-05:00"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							AwsBackupRecoveryPointArn: ptr.To("arn:aws:backup:eu-central-1:123456789012:recovery-point:continuous:cluster-random-string-hash"),
+							PreferredBackupWindow:     ptr.To("03:00-04:00"),
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true, // we consider it up to date, because AWS Backup takes ownership of PreferredBackupWindow if AwsBackupRecoveryPointArn is set
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			isUpToDate := isPreferredBackupWindowUpToDate(tc.args.cr, tc.args.out)
+
+			if diff := cmp.Diff(tc.want.isUpToDate, isUpToDate); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsBackupRetentionPeriodUpToDate(t *testing.T) {
+	type args struct {
+		cr  *svcapitypes.DBCluster
+		out *svcsdk.DescribeDBClustersOutput
+	}
+
+	type want struct {
+		isUpToDate bool
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Nil": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							BackupRetentionPeriod: nil,
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							BackupRetentionPeriod: nil,
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"Default": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							BackupRetentionPeriod: nil,
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							BackupRetentionPeriod: ptr.To(int64(7)), // some AWS "default" value
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"Identical": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							BackupRetentionPeriod: ptr.To(int64(7)),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							BackupRetentionPeriod: ptr.To(int64(7)),
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"Different": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							BackupRetentionPeriod: ptr.To(int64(14)),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							BackupRetentionPeriod: ptr.To(int64(7)),
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"DifferentButAWSBackupManaged": {
+			args: args{
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							BackupRetentionPeriod: ptr.To(int64(14)),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							AwsBackupRecoveryPointArn: ptr.To("arn:aws:backup:eu-central-1:123456789012:recovery-point:continuous:cluster-random-string-hash"),
+							BackupRetentionPeriod:     ptr.To(int64(7)),
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true, // we consider it up to date, because AWS Backup takes ownership of BackupRetentionPeriod if AwsBackupRecoveryPointArn is set
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			isUpToDate := isBackupRetentionPeriodUpToDate(tc.args.cr, tc.args.out)
+
+			if diff := cmp.Diff(tc.want.isUpToDate, isUpToDate); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestIsUpToDate(t *testing.T) {
 	type args struct {
 		cr   *svcapitypes.DBCluster
