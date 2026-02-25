@@ -209,6 +209,61 @@ func TestIsUpToDate(t *testing.T) {
 				},
 			},
 		},
+		"PreferredBackupWindowNotUpToDate": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							PreferredBackupWindow: aws.String("01:00-02:00"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							PreferredBackupWindow: aws.String("02:00-03:00"),
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
+					DatabaseRole: aws.String(databaseRoleStandalone),
+				},
+			},
+		},
+		"PreferredBackupWindowAndBackupRetentionPeriodIgnoredDueToAWSBackup": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							BackupRetentionPeriod: aws.Int64(1),
+							PreferredBackupWindow: aws.String("01:00-02:00"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							AwsBackupRecoveryPointArn: aws.String("arn:aws:backup:eu-central-1:123456789012:recovery-point:continuous:db-random-string-hash"),
+							BackupRetentionPeriod:     aws.Int64(7),
+							PreferredBackupWindow:     aws.String("02:00-03:00"),
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+				statusAtProvider: &svcapitypes.CustomDBInstanceObservation{
+					DatabaseRole: aws.String(databaseRoleStandalone),
+				},
+			},
+		},
 	}
 
 	for name, tc := range cases {

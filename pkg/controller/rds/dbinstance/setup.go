@@ -304,7 +304,7 @@ func (s *shared) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DB
 	return details, nil
 }
 
-func (s *shared) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) (err error) {
+func (s *shared) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.ModifyDBInstanceInput) (err error) { //nolint:gocyclo
 	obj.DBInstanceIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 	obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(s.cache.desiredPassword)
@@ -337,6 +337,19 @@ func (s *shared) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	}
 	if !isEngineVersionUpToDate(cr, out) && cr.Spec.ForProvider.EngineVersion != nil {
 		obj.EngineVersion = cr.Spec.ForProvider.EngineVersion // add EngineVersion if changed and no downgrade
+	}
+
+	// AWS Backup takes ownership of BackupRetentionPeriod and PreferredBackupWindow if it is in use.
+	// Therefore we only set these fields in the ModifyDBInstanceInput if they are changed and not in use by AWS Backup.
+	backupWindowChanged, err := hasPreferredBackupWindowChanged(cr, out.DBInstances[0])
+	if err != nil {
+		return err
+	}
+	if !backupWindowChanged {
+		obj.PreferredBackupWindow = nil
+	}
+	if isBackupRetentionPeriodUpToDate(cr, out.DBInstances[0]) {
+		obj.BackupRetentionPeriod = nil
 	}
 
 	return nil
@@ -574,10 +587,12 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	if err != nil {
 		return false, "", err
 	}
-	backupWindowChanged, err := compareTimeRanges(backupWindowFormat, cr.Spec.ForProvider.PreferredBackupWindow, db.PreferredBackupWindow)
+	backupWindowChanged, err := hasPreferredBackupWindowChanged(cr, db)
 	if err != nil {
 		return false, "", err
 	}
+
+	backupRetentionPeriodChanged := !isBackupRetentionPeriodUpToDate(cr, db)
 
 	// Depending on whether the instance was created as gp2 or modified from another type (s.g. gp3) to gp2,
 	// AWS provides different responses for IOPS/StorageThroughput (either 0 or nil).
@@ -595,6 +610,7 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Region"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "AllowMajorVersionUpgrade"),
+		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "BackupRetentionPeriod"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "DBParameterGroupName"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "EngineVersion"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "IOPS"),
@@ -619,7 +635,7 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	s.cache.addTags, s.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, db.TagList)
 	tagsChanged := len(s.cache.addTags) != 0 || len(s.cache.removeTags) != 0
 
-	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !iopsChanged && !storageThroughputChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged && !tagsChanged {
+	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !backupRetentionPeriodChanged && !iopsChanged && !storageThroughputChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged && !optionGroupChanged && !tagsChanged {
 		return true, diff, nil
 	}
 
@@ -664,6 +680,32 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	log.Println(diff)
 
 	return false, diff, nil
+}
+
+func hasPreferredBackupWindowChanged(cr *svcapitypes.DBInstance, out *svcsdk.DBInstance) (bool, error) {
+	// 1. If PreferredBackupWindow is not set, AWS sets a random window
+	// so we do not try to update in this case
+	// 2. AWS Backup takes ownership of PreferredBackupWindow if it is in use.
+	// So we only check PreferredBackupWindow, if there is no associated RecoveryPoint.
+	if cr.Spec.ForProvider.PreferredBackupWindow != nil &&
+		out.AwsBackupRecoveryPointArn == nil {
+		return compareTimeRanges(backupWindowFormat, cr.Spec.ForProvider.PreferredBackupWindow, out.PreferredBackupWindow)
+	}
+	return false, nil
+}
+
+func isBackupRetentionPeriodUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DBInstance) bool {
+	// 1. If BackupRetentionPeriod is not set, AWS sets a default value
+	// so we do not try to update in this case
+	// 2. AWS Backup takes ownership of BackupRetentionPeriod if it is in use.
+	// So we only check BackupRetentionPeriod, if there is no associated RecoveryPoint.
+	if cr.Spec.ForProvider.BackupRetentionPeriod != nil &&
+		out.AwsBackupRecoveryPointArn == nil {
+		if pointer.Int64Value(cr.Spec.ForProvider.BackupRetentionPeriod) != pointer.Int64Value(out.BackupRetentionPeriod) {
+			return false
+		}
+	}
+	return true
 }
 
 func isEngineVersionUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) bool {
@@ -745,6 +787,8 @@ func parseTimeWindowSpan(span, format string) (string, time.Time, error) {
 	return day, t, nil
 }
 
+// compareTimeRanges returns true if the expected window and actual window are different or if the actual window is empty.
+// It returns false if they are the same or if the expected window is not set (since AWS sets a default).
 func compareTimeRanges(format string, expectedWindow *string, actualWindow *string) (bool, error) {
 	if pointer.StringValue(expectedWindow) == "" {
 		return false, nil
