@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"context"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -117,4 +118,8 @@ func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Read
 	mg.Spec.ForProvider.NotificationTopicARNRef = rsp.ResolvedReference
 
 	return nil
+}
+
+func (mg *ReplicationGroup) GetAuthTokenSecretRef() *xpv1.SecretKeySelector {
+	return mg.Spec.ForProvider.AuthTokenSecretRef
 }

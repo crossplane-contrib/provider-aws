@@ -113,7 +113,57 @@ spec:
                       group object as closely as possible, we expose a boolean here rather than
                       requiring the operator pass in a string authentication token. Crossplane
                       will generate a token automatically and expose it via a Secret.
+                      If AuthTokenSecretRef is specified, this field is ignored.
                     type: boolean
+                  authTokenSecretRef:
+                    description: |-
+                      The password used to access a password protected server.
+                      This parameter works with the AuthTokenUpdateStrategy(has "ROTATE" value by default)
+                      Attention: AuthTokenUpdateStrategy "ROTATE" adds a new auth token, while the old one remains working.
+                      If auth token wasn't specified or generated, unauthenticated access will remain possible until you set AuthTokenUpdateStrategy to "SET",
+                      which will remove the old auth token and allow only the new one to work.
+
+                      Password constraints:
+
+                        - Must be only printable ASCII characters
+
+                        - Must be at least 16 characters and no more than 128 characters in length
+
+                        - Cannot contain any of the following characters: '/', '"', or '@', '%'
+
+                      For more information, see AUTH password at [AUTH].
+
+                      [AUTH]: http://redis.io/commands/AUTH
+                    properties:
+                      key:
+                        description: The key to select.
+                        type: string
+                      name:
+                        description: Name of the secret.
+                        type: string
+                      namespace:
+                        description: Namespace of the secret.
+                        type: string
+                    required:
+                    - key
+                    - name
+                    - namespace
+                    type: object
+                  authTokenUpdateStrategy:
+                    description: |-
+                      Specifies the strategy to use to update the AUTH token. This parameter must be
+                      specified with the auth-token parameter. Possible values:
+
+                        - ROTATE - default, if no update strategy is provided
+
+                        - SET - allowed only after ROTATE
+
+                        - DELETE - allowed only when transitioning to RBAC
+
+                      For more information, see [Authenticating Users with AUTH]
+
+                      [Authenticating Users with AUTH]: http://docs.aws.amazon.com/AmazonElastiCache/latest/dg/auth.html
+                    type: string
                   automaticFailoverEnabled:
                     description: |-
                       AutomaticFailoverEnabled specifies whether a read-only replica is
@@ -384,6 +434,92 @@ spec:
                       existing cluster or replication group and create it anew with the earlier
                       engine version.
                     type: string
+                  logDeliveryConfiguration:
+                    description: Specifies the destination and format of the logs.
+                    properties:
+                      engineLogs:
+                        description: Configuration for engine logs.
+                        properties:
+                          destinationDetails:
+                            description: Configuration details of either a CloudWatch
+                              Logs destination or Kinesis Data
+                            properties:
+                              cloudWatchLogsDetails:
+                                description: The configuration details of the CloudWatch
+                                  Logs destination.
+                                properties:
+                                  logGroup:
+                                    description: The name of the CloudWatch Logs log
+                                      group.
+                                    type: string
+                                required:
+                                - logGroup
+                                type: object
+                              kinesisFirehoseDetails:
+                                description: The configuration details of the Kinesis
+                                  Data Firehose destination.
+                                properties:
+                                  deliveryStream:
+                                    description: The name of the Kinesis Data Firehose
+                                      delivery stream.
+                                    type: string
+                                required:
+                                - deliveryStream
+                                type: object
+                            type: object
+                          enabled:
+                            description: Specify if log delivery is enabled. Default
+                              true .
+                            type: boolean
+                          logFormat:
+                            description: Specifies either JSON or TEXT
+                            type: string
+                        required:
+                        - destinationDetails
+                        - logFormat
+                        type: object
+                      slowLogs:
+                        description: Configuration for slow logs.
+                        properties:
+                          destinationDetails:
+                            description: Configuration details of either a CloudWatch
+                              Logs destination or Kinesis Data
+                            properties:
+                              cloudWatchLogsDetails:
+                                description: The configuration details of the CloudWatch
+                                  Logs destination.
+                                properties:
+                                  logGroup:
+                                    description: The name of the CloudWatch Logs log
+                                      group.
+                                    type: string
+                                required:
+                                - logGroup
+                                type: object
+                              kinesisFirehoseDetails:
+                                description: The configuration details of the Kinesis
+                                  Data Firehose destination.
+                                properties:
+                                  deliveryStream:
+                                    description: The name of the Kinesis Data Firehose
+                                      delivery stream.
+                                    type: string
+                                required:
+                                - deliveryStream
+                                type: object
+                            type: object
+                          enabled:
+                            description: Specify if log delivery is enabled. Default
+                              true .
+                            type: boolean
+                          logFormat:
+                            description: Specifies either JSON or TEXT
+                            type: string
+                        required:
+                        - destinationDetails
+                        - logFormat
+                        type: object
+                    type: object
                   multiAZEnabled:
                     description: |-
                       MultiAZEnabled specifies if Multi-AZ is enabled to enhance fault tolerance
@@ -980,6 +1116,8 @@ spec:
                           on.
                         type: integer
                     type: object
+                  lastAppliedAuthTokenUpdateStrategy:
+                    type: string
                   memberClusters:
                     description: |-
                       MemberClusters is the list of names of all the cache clusters that are

@@ -18,6 +18,7 @@ package replicationgroup
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -34,6 +35,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -54,6 +57,7 @@ const (
 	errNotReplicationGroup                 = "managed resource is not an ElastiCache replication group"
 	errDescribeReplicationGroup            = "cannot describe ElastiCache replication group"
 	errGenerateAuthToken                   = "cannot generate ElastiCache auth token"
+	errGetPasswordSecret                   = "cannot get ElastiCache auth password from secret"
 	errCreateReplicationGroup              = "cannot create ElastiCache replication group"
 	errModifyReplicationGroup              = "cannot modify ElastiCache replication group"
 	errDeleteReplicationGroup              = "cannot delete ElastiCache replication group"
@@ -116,12 +120,18 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{c.newClientFn(*cfg), c.kube}, nil
+	return &external{&cache{}, c.newClientFn(*cfg), c.kube}, nil
 }
 
 type external struct {
+	cache  *cache
 	client elasticache.Client
 	kube   client.Client
+}
+
+type cache struct {
+	currentAuthToken string
+	desiredAuthToken string
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { //nolint:gocyclo
@@ -147,6 +157,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		oneCC = ccList[0]
 	}
 
+	// keep track of last applied auth token strategy from the previous reconciliation loop
+	lastAppliedAuthTokenUpdateStrategy := cr.Status.AtProvider.DeepCopy().LastAppliedAuthTokenUpdateStrategy
+
 	current := cr.Spec.ForProvider.DeepCopy()
 	elasticache.LateInitialize(&cr.Spec.ForProvider, rg, oneCC)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
@@ -155,6 +168,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}
 	}
 	cr.Status.AtProvider = elasticache.GenerateObservation(rg)
+	// AuthTokenUpdateStrategy is not a declarative parameter from the AWS API's perspective,
+	// so there's no API call to determine whether it's up to date.
+	// We store the last applied strategy in status to compare it to the desired value in spec.
+	cr.Status.AtProvider.LastAppliedAuthTokenUpdateStrategy = lastAppliedAuthTokenUpdateStrategy
 
 	switch cr.Status.AtProvider.Status {
 	case v1beta1.StatusAvailable:
@@ -177,13 +194,37 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	rgDiff := elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList)
+	// retrieve current pass from the connection secret
+	crPass, err := getCurrentPassword(ctx, e.kube, cr)
+	if err != nil {
+		return managed.ExternalObservation{}, errorutils.Wrap(err, errGetPasswordSecret)
+	}
+	e.cache.currentAuthToken = crPass
+	// retrieve desired pass from the spec secret ref(if exists)
+	if cr.GetAuthTokenSecretRef() != nil {
+		dsPass, err := getSecretPassword(ctx, e.kube, cr.GetAuthTokenSecretRef())
+		e.cache.desiredAuthToken = dsPass
+		if err != nil {
+			return managed.ExternalObservation{}, errorutils.Wrap(err, errGetPasswordSecret)
+		}
+	}
+	// If authTokenSecretRef is not set and auth is enabled, we want to keep using the
+	// current password.
+	if e.cache.desiredAuthToken == "" && aws.ToBool(cr.Spec.ForProvider.AuthEnabled) {
+		e.cache.desiredAuthToken = e.cache.currentAuthToken
+	}
+
+	pwChanged := e.cache.currentAuthToken != e.cache.desiredAuthToken || cr.Status.AtProvider.LastAppliedAuthTokenUpdateStrategy != cr.Spec.ForProvider.AuthTokenUpdateStrategy
+	diff := fmt.Sprintf("ReplicationGroup diff: '%s', Tags need update: %t, AuthToken changed: %t", rgDiff, tagsNeedUpdate, pwChanged)
+
 	return managed.ExternalObservation{
 		ResourceExists: true,
 		ResourceUpToDate: rgDiff == "" &&
 			!elasticache.ReplicationGroupShardConfigurationNeedsUpdate(cr.Spec.ForProvider, rg) &&
-			!tagsNeedUpdate,
+			!tagsNeedUpdate &&
+			!pwChanged,
 		ConnectionDetails: elasticache.ConnectionEndpoint(rg),
-		Diff:              rgDiff,
+		Diff:              diff,
 	}, nil
 }
 
@@ -200,23 +241,29 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	// submit the request as the operator intended and let the reconcile fail
 	// with an explanatory message from AWS explaining that transit encryption
 	// is required.
-	var token *string
-	if aws.ToBool(cr.Spec.ForProvider.AuthEnabled) {
+	var token string
+	if cr.Spec.ForProvider.AuthTokenSecretRef != nil {
+		t, err := getSecretPassword(ctx, e.kube, cr.GetAuthTokenSecretRef())
+		if err != nil {
+			return managed.ExternalCreation{}, errorutils.Wrap(err, errGetPasswordSecret)
+		}
+		token = t
+	} else if aws.ToBool(cr.Spec.ForProvider.AuthEnabled) {
 		t, err := password.Generate()
 		if err != nil {
 			return managed.ExternalCreation{}, errorutils.Wrap(err, errGenerateAuthToken)
 		}
-		token = &t
+		token = t
 	}
-	_, err := e.client.CreateReplicationGroup(ctx, elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), token))
+	_, err := e.client.CreateReplicationGroup(ctx, elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), &token))
 	if err != nil {
 		return managed.ExternalCreation{}, errorutils.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
-	if token != nil {
+	if token != "" {
 		return managed.ExternalCreation{
 
 			ConnectionDetails: managed.ConnectionDetails{
-				xpv1.ResourceCredentialsSecretPasswordKey: []byte(*token),
+				xpv1.ResourceCredentialsSecretPasswordKey: []byte(token),
 			},
 		}, nil
 	}
@@ -270,16 +317,21 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 	}
 
-	if diff := elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList); diff != "" {
-		_, err = e.client.ModifyReplicationGroup(ctx, elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
+	if diff := elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList); diff != "" ||
+		e.cache.currentAuthToken != e.cache.desiredAuthToken ||
+		cr.Status.AtProvider.LastAppliedAuthTokenUpdateStrategy != cr.Spec.ForProvider.AuthTokenUpdateStrategy {
+
+		_, err = e.client.ModifyReplicationGroup(ctx,
+			elasticache.NewModifyReplicationGroupInput(alignLogDeliveryConfigurations(cr, rg), meta.GetExternalName(cr), &e.cache.desiredAuthToken),
+		)
 		if err != nil {
 			return managed.ExternalUpdate{}, errorutils.Wrap(err, errModifyReplicationGroup)
 		}
-		return managed.ExternalUpdate{}, nil
-
+		cr.Status.AtProvider.LastAppliedAuthTokenUpdateStrategy = cr.Spec.ForProvider.AuthTokenUpdateStrategy
 	}
-	err = e.updateTags(ctx, cr.Spec.ForProvider.Tags, rg.ARN)
-	return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdateReplicationGroupTags)
+	return managed.ExternalUpdate{ConnectionDetails: managed.ConnectionDetails{
+		xpv1.ResourceCredentialsSecretPasswordKey: []byte(e.cache.desiredAuthToken),
+	}}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
@@ -380,4 +432,52 @@ func getVersion(version *string) (*string, error) {
 		}
 	}
 	return &versionOut, nil
+}
+
+// GetSecretValue retrieves the value of a secret key from a Kubernetes Secret.
+func getSecretPassword(ctx context.Context, kube client.Client, sks *xpv1.SecretKeySelector) (pw string, err error) {
+	secret := new(corev1.Secret)
+	secret.SetName(sks.Name) // TODO(teeverr): it is needed only for mock testing functions, will be overwritten by Get. didn't find a better way.
+	ref := sks.SecretReference
+	err = kube.Get(ctx, types.NamespacedName{Name: ref.Name, Namespace: ref.Namespace}, secret)
+	if err != nil {
+		return "", err
+	}
+	pwdRaw := secret.Data[sks.Key]
+	return string(pwdRaw), nil
+}
+
+// GetCurrentPassword retrieves the current password from the connection secret of the managed resource.
+func getCurrentPassword(ctx context.Context, kube client.Client, mg resource.Managed) (pw string, err error) {
+	secretKeyRef := &xpv1.SecretKeySelector{
+		SecretReference: *mg.GetWriteConnectionSecretToReference(),
+		Key:             xpv1.ResourceCredentialsSecretPasswordKey,
+	}
+	return getSecretPassword(ctx, kube, secretKeyRef)
+}
+
+// alignLogDeliveryConfigurations aligns desired log delivery configuration based on external configuration before converting to aws sdk input
+func alignLogDeliveryConfigurations(desired *v1beta1.ReplicationGroup, resp awselasticachetypes.ReplicationGroup) v1beta1.ReplicationGroupParameters { //nolint: gocyclo
+	ds := desired.Spec.ForProvider.DeepCopy()
+	crLDC := elasticache.GenerateLogDeliveryConfigurations(resp.LogDeliveryConfigurations)
+
+	// If in the desired state log delivery configuration is nil but in the current state it is enabled,
+	// we need to explicitly set it to disabled to avoid aws sdk ignoring the change
+	if ds.LogDeliveryConfiguration.EngineLogs == nil && crLDC.EngineLogs != nil && crLDC.EngineLogs.Enabled != nil && *crLDC.EngineLogs.Enabled {
+		ds.LogDeliveryConfiguration.EngineLogs = &v1beta1.LogsConf{Enabled: aws.Bool(false)}
+	}
+	if ds.LogDeliveryConfiguration.SlowLogs == nil && crLDC.SlowLogs != nil && crLDC.SlowLogs.Enabled != nil && *crLDC.SlowLogs.Enabled {
+		ds.LogDeliveryConfiguration.SlowLogs = &v1beta1.LogsConf{Enabled: aws.Bool(false)}
+	}
+
+	// If log delivery is explicitly disabled in the desired config but the current state is nil,
+	// unset the desired configuration. Otherwise, the AWS API fails because this update isn't idempotent
+	// when the log delivery config is not set on the AWS side.
+	if (ds.LogDeliveryConfiguration.EngineLogs != nil && ds.LogDeliveryConfiguration.EngineLogs.Enabled != nil && !*ds.LogDeliveryConfiguration.EngineLogs.Enabled) && crLDC.EngineLogs == nil {
+		ds.LogDeliveryConfiguration.EngineLogs = &v1beta1.LogsConf{}
+	}
+	if (ds.LogDeliveryConfiguration.SlowLogs != nil && ds.LogDeliveryConfiguration.SlowLogs.Enabled != nil && !*ds.LogDeliveryConfiguration.SlowLogs.Enabled) && crLDC.SlowLogs == nil {
+		ds.LogDeliveryConfiguration.SlowLogs = &v1beta1.LogsConf{}
+	}
+	return *ds
 }
