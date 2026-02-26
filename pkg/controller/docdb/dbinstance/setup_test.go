@@ -158,6 +158,12 @@ func withPreferredMaintenanceWindow(value string) docDBModifier {
 	}
 }
 
+func withStatusPreferredMaintenanceWindow(value string) docDBModifier {
+	return func(o *svcapitypes.DBInstance) {
+		o.Status.AtProvider.PreferredMaintenanceWindow = pointer.ToOrNilIfZeroValue(value)
+	}
+}
+
 func withPromotionTier(value int) docDBModifier {
 	return func(o *svcapitypes.DBInstance) {
 		o.Spec.ForProvider.PromotionTier = pointer.ToIntAsInt64(value)
@@ -501,6 +507,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withStatusPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
 				),
 			},
 			want: want{
@@ -515,6 +522,7 @@ func TestObserve(t *testing.T) {
 						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withStatusPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -1013,6 +1021,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withStatusPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
 				),
 			},
 			want: want{
@@ -1026,6 +1035,7 @@ func TestObserve(t *testing.T) {
 						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withStatusPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -1526,6 +1536,7 @@ func TestObserve(t *testing.T) {
 					withExternalName(testDBIdentifier),
 					withDBIdentifier(testDBIdentifier),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withStatusPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
 				),
 			},
 			want: want{
@@ -1539,6 +1550,7 @@ func TestObserve(t *testing.T) {
 						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withStatusPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -2052,6 +2064,7 @@ func TestObserve(t *testing.T) {
 						Port:    pointer.ToIntAsInt64(testPort),
 					}),
 					withPreferredMaintenanceWindow(testOtherPreferredMaintenanceWindow),
+					withStatusPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
