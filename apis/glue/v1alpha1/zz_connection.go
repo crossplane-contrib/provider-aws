@@ -45,11 +45,15 @@ type ConnectionSpec struct {
 
 // ConnectionObservation defines the observed state of Connection
 type ConnectionObservation struct {
-	// The time that this connection definition was created.
+	// The status of the connection creation request. The request can take some
+	// time for certain authentication types, for example when creating an OAuth
+	// connection with token exchange over VPC.
+	CreateConnectionStatus *string `json:"createConnectionStatus,omitempty"`
+	// The timestamp of the time that this connection definition was created.
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 	// The user, group, or role that last updated this connection definition.
 	LastUpdatedBy *string `json:"lastUpdatedBy,omitempty"`
-	// The last time that this connection definition was updated.
+	// The timestamp of the last time the connection definition was updated.
 	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
 
 	CustomConnectionObservation `json:",inline"`

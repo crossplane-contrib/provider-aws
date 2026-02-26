@@ -185,6 +185,9 @@ spec:
                             The health check is designed to make sure that your containers survive agent
                             restarts, upgrades, or temporary unavailability.
 
+                            Amazon ECS performs health checks on containers with the default that launched
+                            the container instance or the task.
+
                             The following describes the possible healthStatus values for a container:
 
                                * HEALTHY-The container health check has passed successfully.
@@ -249,12 +252,14 @@ spec:
 
                             The following are notes about container health check support:
 
-                               * When the Amazon ECS agent cannot connect to the Amazon ECS service,
-                               the service reports the container as UNHEALTHY.
-
-                               * The health check statuses are the "last heard from" response from the
-                               Amazon ECS agent. There are no assumptions made about the status of the
-                               container health checks.
+                               * If the Amazon ECS container agent becomes disconnected from the Amazon
+                               ECS service, this won't cause a container to transition to an UNHEALTHY
+                               status. This is by design, to ensure that containers remain running during
+                               agent restarts or temporary unavailability. The health check status is
+                               the "last heard from" response from the Amazon ECS agent, so if the container
+                               was considered HEALTHY prior to the disconnect, that status will remain
+                               until the agent reconnects and another health check occurs. There are
+                               no assumptions made about the status of the container health checks.
 
                                * Container health checks require version 1.17.0 or greater of the Amazon
                                ECS container agent. For more information, see Updating the Amazon ECS
@@ -301,8 +306,8 @@ spec:
                           properties:
                             capabilities:
                               description: |-
-                                The Linux capabilities for the container that are added to or dropped from
-                                the default configuration provided by Docker. For more information about
+                                The Linux capabilities to add or remove from the default Docker configuration
+                                for a container defined in the task definition. For more information about
                                 the default capabilities and the non-default available capabilities, see
                                 Runtime privilege and Linux capabilities (https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities)
                                 in the Docker run reference. For more detailed information about these Linux
@@ -571,8 +576,8 @@ spec:
                       The amount of ephemeral storage to allocate for the task. This parameter
                       is used to expand the total amount of ephemeral storage available, beyond
                       the default amount, for tasks hosted on Fargate. For more information, see
-                      Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
-                      in the Amazon ECS User Guide for Fargate.
+                      Using data volumes in tasks (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html)
+                      in the Amazon ECS Developer Guide.
 
                       For tasks using the Fargate launch type, the task requires the following
                       platforms:
@@ -875,9 +880,6 @@ spec:
                     description: |-
                       The operating system that your tasks definitions run on. A platform family
                       is specified only for tasks using the Fargate launch type.
-
-                      When you specify a task definition in a service, this value must match the
-                      runtimePlatform value of the service.
                     properties:
                       cpuArchitecture:
                         type: string
@@ -1557,6 +1559,9 @@ spec:
                                 The health check is designed to make sure that your containers survive agent
                                 restarts, upgrades, or temporary unavailability.
 
+                                Amazon ECS performs health checks on containers with the default that launched
+                                the container instance or the task.
+
                                 The following describes the possible healthStatus values for a container:
 
                                    * HEALTHY-The container health check has passed successfully.
@@ -1621,12 +1626,14 @@ spec:
 
                                 The following are notes about container health check support:
 
-                                   * When the Amazon ECS agent cannot connect to the Amazon ECS service,
-                                   the service reports the container as UNHEALTHY.
-
-                                   * The health check statuses are the "last heard from" response from the
-                                   Amazon ECS agent. There are no assumptions made about the status of the
-                                   container health checks.
+                                   * If the Amazon ECS container agent becomes disconnected from the Amazon
+                                   ECS service, this won't cause a container to transition to an UNHEALTHY
+                                   status. This is by design, to ensure that containers remain running during
+                                   agent restarts or temporary unavailability. The health check status is
+                                   the "last heard from" response from the Amazon ECS agent, so if the container
+                                   was considered HEALTHY prior to the disconnect, that status will remain
+                                   until the agent reconnects and another health check occurs. There are
+                                   no assumptions made about the status of the container health checks.
 
                                    * Container health checks require version 1.17.0 or greater of the Amazon
                                    ECS container agent. For more information, see Updating the Amazon ECS
@@ -1673,8 +1680,8 @@ spec:
                               properties:
                                 capabilities:
                                   description: |-
-                                    The Linux capabilities for the container that are added to or dropped from
-                                    the default configuration provided by Docker. For more information about
+                                    The Linux capabilities to add or remove from the default Docker configuration
+                                    for a container defined in the task definition. For more information about
                                     the default capabilities and the non-default available capabilities, see
                                     Runtime privilege and Linux capabilities (https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities)
                                     in the Docker run reference. For more detailed information about these Linux
@@ -1906,8 +1913,8 @@ spec:
                           The amount of ephemeral storage to allocate for the task. This parameter
                           is used to expand the total amount of ephemeral storage available, beyond
                           the default amount, for tasks hosted on Fargate. For more information, see
-                          Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
-                          in the Amazon ECS User Guide for Fargate.
+                          Using data volumes in tasks (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html)
+                          in the Amazon ECS Developer Guide;.
 
                           For tasks using the Fargate launch type, the task requires the following
                           platforms:
@@ -2021,6 +2028,8 @@ spec:
                       volumes:
                         items:
                           properties:
+                            configuredAtLaunch:
+                              type: boolean
                             dockerVolumeConfiguration:
                               description: |-
                                 This parameter is specified when you're using Docker volumes. Docker volumes

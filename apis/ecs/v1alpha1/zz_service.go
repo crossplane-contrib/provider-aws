@@ -86,8 +86,8 @@ type ServiceParameters struct {
 	//
 	// Fargate Spot infrastructure is available for use but a capacity provider
 	// strategy must be used. For more information, see Fargate capacity providers
-	// (https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-capacity-providers.html)
-	// in the Amazon ECS User Guide for Fargate.
+	// (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html)
+	// in the Amazon ECS Developer Guide.
 	//
 	// The EC2 launch type runs your tasks on Amazon EC2 instances registered to
 	// your cluster.
@@ -117,6 +117,10 @@ type ServiceParameters struct {
 	// to the task during task creation. To add tags to a task after task creation,
 	// use the TagResource (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_TagResource.html)
 	// API action.
+	//
+	// You must set this to a value other than NONE when you use Cost Explorer.
+	// For more information, see Amazon ECS usage reports (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/usage-reports.html)
+	// in the Amazon Elastic Container Service Developer Guide.
 	//
 	// The default is NONE.
 	PropagateTags *string `json:"propagateTags,omitempty"`
@@ -208,7 +212,11 @@ type ServiceParameters struct {
 	//    as a prefix for either keys or values as it is reserved for Amazon Web
 	//    Services use. You cannot edit or delete tag keys or values with this prefix.
 	//    Tags with this prefix do not count against your tags per resource limit.
-	Tags                    []*Tag `json:"tags,omitempty"`
+	Tags []*Tag `json:"tags,omitempty"`
+	// The configuration for a volume specified in the task definition as a volume
+	// that is configured at launch time. Currently, the only supported volume type
+	// is an Amazon EBS volume.
+	VolumeConfigurations    []*ServiceVolumeConfiguration `json:"volumeConfigurations,omitempty"`
 	CustomServiceParameters `json:",inline"`
 }
 

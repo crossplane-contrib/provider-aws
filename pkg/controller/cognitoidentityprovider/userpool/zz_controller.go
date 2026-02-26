@@ -304,6 +304,16 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.UserPool) (manage
 		if resp.UserPool.LambdaConfig.PreTokenGeneration != nil {
 			f16.PreTokenGeneration = resp.UserPool.LambdaConfig.PreTokenGeneration
 		}
+		if resp.UserPool.LambdaConfig.PreTokenGenerationConfig != nil {
+			f16f11 := &svcapitypes.PreTokenGenerationVersionConfigType{}
+			if resp.UserPool.LambdaConfig.PreTokenGenerationConfig.LambdaArn != nil {
+				f16f11.LambdaARN = resp.UserPool.LambdaConfig.PreTokenGenerationConfig.LambdaArn
+			}
+			if resp.UserPool.LambdaConfig.PreTokenGenerationConfig.LambdaVersion != nil {
+				f16f11.LambdaVersion = resp.UserPool.LambdaConfig.PreTokenGenerationConfig.LambdaVersion
+			}
+			f16.PreTokenGenerationConfig = f16f11
+		}
 		if resp.UserPool.LambdaConfig.UserMigration != nil {
 			f16.UserMigration = resp.UserPool.LambdaConfig.UserMigration
 		}

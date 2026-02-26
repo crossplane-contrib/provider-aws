@@ -32,6 +32,8 @@ type VirtualClusterParameters struct {
 	// The container provider of the virtual cluster.
 	// +kubebuilder:validation:Required
 	ContainerProvider *ContainerProvider `json:"containerProvider"`
+	// The ID of the security configuration.
+	SecurityConfigurationID *string `json:"securityConfigurationID,omitempty"`
 	// The tags assigned to the virtual cluster.
 	Tags                           map[string]*string `json:"tags,omitempty"`
 	CustomVirtualClusterParameters `json:",inline"`

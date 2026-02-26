@@ -145,6 +145,9 @@ type DBInstanceObservation struct {
 	// Specifies that changes to the instance are pending. This element is included
 	// only when changes are pending. Specific changes are identified by subelements.
 	PendingModifiedValues *PendingModifiedValues `json:"pendingModifiedValues,omitempty"`
+	// Set to true if Amazon RDS Performance Insights is enabled for the DB instance,
+	// and otherwise false.
+	PerformanceInsightsEnabled *bool `json:"performanceInsightsEnabled,omitempty"`
 	// Specifies the daily time range during which automated backups are created
 	// if automated backups are enabled, as determined by the BackupRetentionPeriod.
 	PreferredBackupWindow *string `json:"preferredBackupWindow,omitempty"`

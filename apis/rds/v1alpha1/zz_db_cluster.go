@@ -52,14 +52,17 @@ type DBClusterParameters struct {
 	//
 	// Valid for Cluster Type: Multi-AZ DB clusters only
 	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
-	// A list of Availability Zones (AZs) where DB instances in the DB cluster can
-	// be created.
+	// A list of Availability Zones (AZs) where you specifically want to create
+	// DB instances in the DB cluster.
 	//
-	// For information on Amazon Web Services Regions and Availability Zones, see
-	// Choosing the Regions and Availability Zones (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.RegionsAndAvailabilityZones.html)
+	// For information on AZs, see Availability Zones (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.RegionsAndAvailabilityZones.html#Concepts.RegionsAndAvailabilityZones.AvailabilityZones)
 	// in the Amazon Aurora User Guide.
 	//
 	// Valid for Cluster Type: Aurora DB clusters only
+	//
+	// Constraints:
+	//
+	//    * Can't specify more than three AZs.
 	AvailabilityZones []*string `json:"availabilityZones,omitempty"`
 	// The target backtrack window, in seconds. To disable backtracking, set this
 	// value to 0.
@@ -83,6 +86,14 @@ type DBClusterParameters struct {
 	//
 	//    * Must be a value from 1 to 35.
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+	// The CA certificate identifier to use for the DB cluster's server certificate.
+	//
+	// For more information, see Using SSL/TLS to encrypt a connection to a DB instance
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
+	// in the Amazon RDS User Guide.
+	//
+	// Valid for Cluster Type: Multi-AZ DB clusters
+	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
 	// The name of the character set (CharacterSet) to associate the DB cluster
 	// with.
 	//
@@ -126,15 +137,13 @@ type DBClusterParameters struct {
 	//
 	//    * Must match the name of an existing DB subnet group.
 	//
-	//    * Must not be default.
-	//
 	// Example: mydbsubnetgroup
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
 	// Reserved for future use.
 	DBSystemID *string `json:"dbSystemID,omitempty"`
-	// The name for your database of up to 64 alphanumeric characters. If you don't
-	// provide a name, Amazon RDS doesn't create a database in the DB cluster you
-	// are creating.
+	// The name for your database of up to 64 alphanumeric characters. A database
+	// named postgres is always created. If this parameter is specified, an additional
+	// database with this name is created.
 	//
 	// Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
 	DatabaseName *string `json:"databaseName,omitempty"`
@@ -197,14 +206,20 @@ type DBClusterParameters struct {
 	//
 	// Valid for Cluster Type: Aurora DB clusters only
 	EnableGlobalWriteForwarding *bool `json:"enableGlobalWriteForwarding,omitempty"`
-	// Specifies whether to enable the HTTP endpoint for an Aurora Serverless v1
-	// DB cluster. By default, the HTTP endpoint is disabled.
+	// Specifies whether to enable the HTTP endpoint for the DB cluster. By default,
+	// the HTTP endpoint isn't enabled.
 	//
 	// When enabled, the HTTP endpoint provides a connectionless web service API
-	// for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
-	// query your database from inside the RDS console with the query editor.
+	// (RDS Data API) for running SQL queries on the DB cluster. You can also query
+	// your database from inside the RDS console with the RDS query editor.
 	//
-	// For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+	// RDS Data API is supported with the following DB clusters:
+	//
+	//    * Aurora PostgreSQL Serverless v2 and provisioned
+	//
+	//    * Aurora PostgreSQL and Aurora MySQL Serverless v1
+	//
+	// For more information, see Using RDS Data API (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 	// in the Amazon Aurora User Guide.
 	//
 	// Valid for Cluster Type: Aurora DB clusters only
@@ -218,6 +233,11 @@ type DBClusterParameters struct {
 	//
 	// Valid for Cluster Type: Aurora DB clusters only
 	EnableIAMDatabaseAuthentication *bool `json:"enableIAMDatabaseAuthentication,omitempty"`
+	// Specifies whether to enable Aurora Limitless Database. You must enable Aurora
+	// Limitless Database to create a DB shard group.
+	//
+	// Valid for: Aurora DB clusters only
+	EnableLimitlessDatabase *bool `json:"enableLimitlessDatabase,omitempty"`
 	// Specifies whether read replicas can forward write operations to the writer
 	// DB instance in the DB cluster. By default, write operations aren't allowed
 	// on reader DB instances.
@@ -235,12 +255,51 @@ type DBClusterParameters struct {
 	//
 	// Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
 	//
-	// Valid Values: aurora-mysql | aurora-postgresql | mysql | postgres
+	// Valid Values:
+	//
+	//    * aurora-mysql
+	//
+	//    * aurora-postgresql
+	//
+	//    * mysql
+	//
+	//    * postgres
+	//
+	//    * neptune - For information about using Amazon Neptune, see the Amazon
+	//    Neptune User Guide (https://docs.aws.amazon.com/neptune/latest/userguide/intro.html).
 	// +kubebuilder:validation:Required
 	Engine *string `json:"engine"`
+	// The life cycle type for this DB cluster.
+	//
+	// By default, this value is set to open-source-rds-extended-support, which
+	// enrolls your DB cluster into Amazon RDS Extended Support. At the end of standard
+	// support, you can avoid charges for Extended Support by setting the value
+	// to open-source-rds-extended-support-disabled. In this case, creating the
+	// DB cluster will fail if the DB major version is past its end of standard
+	// support date.
+	//
+	// You can use this setting to enroll your DB cluster into Amazon RDS Extended
+	// Support. With RDS Extended Support, you can run the selected major engine
+	// version on your DB cluster past the end of standard support for that engine
+	// version. For more information, see the following sections:
+	//
+	//    * Amazon Aurora (PostgreSQL only) - Using Amazon RDS Extended Support
+	//    (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/extended-support.html)
+	//    in the Amazon Aurora User Guide
+	//
+	//    * Amazon RDS - Using Amazon RDS Extended Support (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/extended-support.html)
+	//    in the Amazon RDS User Guide
+	//
+	// Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
+	//
+	// Valid Values: open-source-rds-extended-support | open-source-rds-extended-support-disabled
+	//
+	// Default: open-source-rds-extended-support
+	EngineLifecycleSupport *string `json:"engineLifecycleSupport,omitempty"`
 	// The DB engine mode of the DB cluster, either provisioned or serverless.
 	//
 	// The serverless engine mode only applies for Aurora Serverless v1 DB clusters.
+	// Aurora Serverless v2 DB clusters use the provisioned engine mode.
 	//
 	// For information about limitations and requirements for Serverless DB clusters,
 	// see the following sections in the Amazon Aurora User Guide:
@@ -514,12 +573,13 @@ type DBClusterParameters struct {
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
 	// Specifies whether the DB cluster is publicly accessible.
 	//
-	// When the DB cluster is publicly accessible, its Domain Name System (DNS)
-	// endpoint resolves to the private IP address from within the DB cluster's
-	// virtual private cloud (VPC). It resolves to the public IP address from outside
-	// of the DB cluster's VPC. Access to the DB cluster is ultimately controlled
-	// by the security group it uses. That public access isn't permitted if the
-	// security group assigned to the DB cluster doesn't permit it.
+	// When the DB cluster is publicly accessible and you connect from outside of
+	// the DB cluster's virtual private cloud (VPC), its Domain Name System (DNS)
+	// endpoint resolves to the public IP address. When you connect from within
+	// the same VPC as the DB cluster, the endpoint resolves to the private IP address.
+	// Access to the DB cluster is ultimately controlled by the security group it
+	// uses. That public access isn't permitted if the security group assigned to
+	// the DB cluster doesn't permit it.
 	//
 	// When the DB cluster isn't publicly accessible, it is an internal DB cluster
 	// with a DNS name that resolves to a private IP address.
@@ -587,7 +647,7 @@ type DBClusterParameters struct {
 	//
 	//    * Aurora DB clusters - aurora | aurora-iopt1
 	//
-	//    * Multi-AZ DB clusters - io1
+	//    * Multi-AZ DB clusters - io1 | io2 | gp3
 	//
 	// Default:
 	//
@@ -648,6 +708,8 @@ type DBClusterObservation struct {
 	// Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html)
 	// in the Amazon Aurora User Guide.
 	Capacity *int64 `json:"capacity,omitempty"`
+
+	CertificateDetails *CertificateDetails `json:"certificateDetails,omitempty"`
 	// The ID of the clone group with which the DB cluster is associated.
 	CloneGroupID *string `json:"cloneGroupID,omitempty"`
 	// The time when the DB cluster was created, in Universal Coordinated Time (UTC).
@@ -703,14 +765,13 @@ type DBClusterObservation struct {
 	GlobalWriteForwardingStatus *string `json:"globalWriteForwardingStatus,omitempty"`
 	// The ID that Amazon Route 53 assigns when you create a hosted zone.
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
-	// Indicates whether the HTTP endpoint for an Aurora Serverless v1 DB cluster
-	// is enabled.
+	// Indicates whether the HTTP endpoint is enabled for an Aurora DB cluster.
 	//
 	// When enabled, the HTTP endpoint provides a connectionless web service API
-	// for running SQL queries on the Aurora Serverless v1 DB cluster. You can also
-	// query your database from inside the RDS console with the query editor.
+	// (RDS Data API) for running SQL queries on the DB cluster. You can also query
+	// your database from inside the RDS console with the RDS query editor.
 	//
-	// For more information, see Using the Data API for Aurora Serverless v1 (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
+	// For more information, see Using RDS Data API (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 	// in the Amazon Aurora User Guide.
 	HTTPEndpointEnabled *bool `json:"httpEndpointEnabled,omitempty"`
 	// Indicates whether the mapping of Amazon Web Services Identity and Access
@@ -729,6 +790,8 @@ type DBClusterObservation struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The latest time to which a database can be restored with point-in-time restore.
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
+	// The details for Aurora Limitless Database.
+	LimitlessDatabase *LimitlessDatabase `json:"limitlessDatabase,omitempty"`
 	// Indicates whether an Aurora DB cluster has in-cluster write forwarding enabled,
 	// not enabled, requested, or is in the process of enabling it.
 	LocalWriteForwardingStatus *string `json:"localWriteForwardingStatus,omitempty"`
@@ -770,6 +833,13 @@ type DBClusterObservation struct {
 	ScalingConfigurationInfo *ScalingConfigurationInfo `json:"scalingConfigurationInfo,omitempty"`
 	// The current state of this DB cluster.
 	Status *string `json:"status,omitempty"`
+	// Reserved for future use.
+	StatusInfos []*DBClusterStatusInfo `json:"statusInfos,omitempty"`
+	// The storage throughput for the DB cluster. The throughput is automatically
+	// set based on the IOPS that you provision, and is not configurable.
+	//
+	// This setting is only for non-Aurora Multi-AZ DB clusters.
+	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
 
 	TagList []*Tag `json:"tagList,omitempty"`
 	// The list of VPC security groups that the DB cluster belongs to.

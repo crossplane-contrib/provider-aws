@@ -73,6 +73,9 @@ func GenerateCreateUserInput(cr *svcapitypes.User) *svcsdk.CreateUserInput {
 			if f1iter.Target != nil {
 				f1elem.SetTarget(*f1iter.Target)
 			}
+			if f1iter.Type != nil {
+				f1elem.SetType(*f1iter.Type)
+			}
 			f1 = append(f1, f1elem)
 		}
 		res.SetHomeDirectoryMappings(f1)
@@ -136,6 +139,9 @@ func GenerateUpdateUserInput(cr *svcapitypes.User) *svcsdk.UpdateUserInput {
 			}
 			if f1iter.Target != nil {
 				f1elem.SetTarget(*f1iter.Target)
+			}
+			if f1iter.Type != nil {
+				f1elem.SetType(*f1iter.Type)
 			}
 			f1 = append(f1, f1elem)
 		}

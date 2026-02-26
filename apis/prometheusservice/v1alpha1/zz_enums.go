@@ -51,6 +51,16 @@ const (
 	RuleGroupsNamespaceStatusCode_UPDATE_FAILED   RuleGroupsNamespaceStatusCode = "UPDATE_FAILED"
 )
 
+type ScraperStatusCode string
+
+const (
+	ScraperStatusCode_CREATING        ScraperStatusCode = "CREATING"
+	ScraperStatusCode_ACTIVE          ScraperStatusCode = "ACTIVE"
+	ScraperStatusCode_DELETING        ScraperStatusCode = "DELETING"
+	ScraperStatusCode_CREATION_FAILED ScraperStatusCode = "CREATION_FAILED"
+	ScraperStatusCode_DELETION_FAILED ScraperStatusCode = "DELETION_FAILED"
+)
+
 type ValidationExceptionReason string
 
 const (

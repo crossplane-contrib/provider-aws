@@ -237,6 +237,16 @@ func GenerateUserPool(resp *svcsdk.DescribeUserPoolOutput) *svcapitypes.UserPool
 		if resp.UserPool.LambdaConfig.PreTokenGeneration != nil {
 			f16.PreTokenGeneration = resp.UserPool.LambdaConfig.PreTokenGeneration
 		}
+		if resp.UserPool.LambdaConfig.PreTokenGenerationConfig != nil {
+			f16f11 := &svcapitypes.PreTokenGenerationVersionConfigType{}
+			if resp.UserPool.LambdaConfig.PreTokenGenerationConfig.LambdaArn != nil {
+				f16f11.LambdaARN = resp.UserPool.LambdaConfig.PreTokenGenerationConfig.LambdaArn
+			}
+			if resp.UserPool.LambdaConfig.PreTokenGenerationConfig.LambdaVersion != nil {
+				f16f11.LambdaVersion = resp.UserPool.LambdaConfig.PreTokenGenerationConfig.LambdaVersion
+			}
+			f16.PreTokenGenerationConfig = f16f11
+		}
 		if resp.UserPool.LambdaConfig.UserMigration != nil {
 			f16.UserMigration = resp.UserPool.LambdaConfig.UserMigration
 		}
@@ -600,6 +610,16 @@ func GenerateCreateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.CreateUserPoo
 		if cr.Spec.ForProvider.LambdaConfig.PreTokenGeneration != nil {
 			f9.SetPreTokenGeneration(*cr.Spec.ForProvider.LambdaConfig.PreTokenGeneration)
 		}
+		if cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig != nil {
+			f9f11 := &svcsdk.PreTokenGenerationVersionConfigType{}
+			if cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig.LambdaARN != nil {
+				f9f11.SetLambdaArn(*cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig.LambdaARN)
+			}
+			if cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig.LambdaVersion != nil {
+				f9f11.SetLambdaVersion(*cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig.LambdaVersion)
+			}
+			f9.SetPreTokenGenerationConfig(f9f11)
+		}
 		if cr.Spec.ForProvider.LambdaConfig.UserMigration != nil {
 			f9.SetUserMigration(*cr.Spec.ForProvider.LambdaConfig.UserMigration)
 		}
@@ -910,6 +930,16 @@ func GenerateUpdateUserPoolInput(cr *svcapitypes.UserPool) *svcsdk.UpdateUserPoo
 		}
 		if cr.Spec.ForProvider.LambdaConfig.PreTokenGeneration != nil {
 			f8.SetPreTokenGeneration(*cr.Spec.ForProvider.LambdaConfig.PreTokenGeneration)
+		}
+		if cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig != nil {
+			f8f11 := &svcsdk.PreTokenGenerationVersionConfigType{}
+			if cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig.LambdaARN != nil {
+				f8f11.SetLambdaArn(*cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig.LambdaARN)
+			}
+			if cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig.LambdaVersion != nil {
+				f8f11.SetLambdaVersion(*cr.Spec.ForProvider.LambdaConfig.PreTokenGenerationConfig.LambdaVersion)
+			}
+			f8.SetPreTokenGenerationConfig(f8f11)
 		}
 		if cr.Spec.ForProvider.LambdaConfig.UserMigration != nil {
 			f8.SetUserMigration(*cr.Spec.ForProvider.LambdaConfig.UserMigration)

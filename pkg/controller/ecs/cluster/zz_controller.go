@@ -202,6 +202,16 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Cluster) (managed
 			}
 			f6.ExecuteCommandConfiguration = f6f0
 		}
+		if resp.Cluster.Configuration.ManagedStorageConfiguration != nil {
+			f6f1 := &svcapitypes.ManagedStorageConfiguration{}
+			if resp.Cluster.Configuration.ManagedStorageConfiguration.FargateEphemeralStorageKmsKeyId != nil {
+				f6f1.FargateEphemeralStorageKMSKeyID = resp.Cluster.Configuration.ManagedStorageConfiguration.FargateEphemeralStorageKmsKeyId
+			}
+			if resp.Cluster.Configuration.ManagedStorageConfiguration.KmsKeyId != nil {
+				f6f1.KMSKeyID = resp.Cluster.Configuration.ManagedStorageConfiguration.KmsKeyId
+			}
+			f6.ManagedStorageConfiguration = f6f1
+		}
 		cr.Spec.ForProvider.Configuration = f6
 	} else {
 		cr.Spec.ForProvider.Configuration = nil

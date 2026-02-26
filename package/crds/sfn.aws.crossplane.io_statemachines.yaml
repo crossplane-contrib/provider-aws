@@ -78,6 +78,17 @@ spec:
                       The Amazon States Language definition of the state machine. See Amazon States
                       Language (https://docs.aws.amazon.com/step-functions/latest/dg/concepts-amazon-states-language.html).
                     type: string
+                  encryptionConfiguration:
+                    description: Settings to configure server-side encryption.
+                    properties:
+                      kmsDataKeyReusePeriodSeconds:
+                        format: int64
+                        type: integer
+                      kmsKeyID:
+                        type: string
+                      type_:
+                        type: string
+                    type: object
                   loggingConfiguration:
                     description: |-
                       Defines what execution history events are logged and where they are logged.

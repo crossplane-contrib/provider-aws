@@ -16,7 +16,7 @@ require (
 	github.com/alecthomas/kingpin/v2 v2.4.0 // indirect
 	github.com/alecthomas/units v0.0.0-20240927000941-0f3dac36c52b // indirect
 	github.com/aws-controllers-k8s/pkg v0.0.4 // indirect
-	github.com/aws/aws-sdk-go v1.47.11 // indirect
+	github.com/aws/aws-sdk-go v1.55.8 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/dave/jennifer v1.7.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

@@ -39,8 +39,8 @@ type KeyParameters struct {
 	// in the Key Management Service Developer Guide.
 	//
 	// Use this parameter only when you intend to prevent the principal that is
-	// making the request from making a subsequent PutKeyPolicy request on the KMS
-	// key.
+	// making the request from making a subsequent PutKeyPolicy (https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html)
+	// request on the KMS key.
 	BypassPolicyLockoutSafetyCheck *bool `json:"bypassPolicyLockoutSafetyCheck,omitempty"`
 	// Creates the KMS key in the specified custom key store (https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html).
 	// The ConnectionState of the custom key store must be CONNECTED. To find the
@@ -97,15 +97,18 @@ type KeyParameters struct {
 	//
 	//    * HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
 	//
-	//    * Asymmetric RSA key pairs RSA_2048 RSA_3072 RSA_4096
+	//    * Asymmetric RSA key pairs (encryption and decryption -or- signing and
+	//    verification) RSA_2048 RSA_3072 RSA_4096
 	//
-	//    * Asymmetric NIST-recommended elliptic curve key pairs ECC_NIST_P256 (secp256r1)
-	//    ECC_NIST_P384 (secp384r1) ECC_NIST_P521 (secp521r1)
+	//    * Asymmetric NIST-recommended elliptic curve key pairs (signing and verification
+	//    -or- deriving shared secrets) ECC_NIST_P256 (secp256r1) ECC_NIST_P384
+	//    (secp384r1) ECC_NIST_P521 (secp521r1)
 	//
-	//    * Other asymmetric elliptic curve key pairs ECC_SECG_P256K1 (secp256k1),
-	//    commonly used for cryptocurrencies.
+	//    * Other asymmetric elliptic curve key pairs (signing and verification)
+	//    ECC_SECG_P256K1 (secp256k1), commonly used for cryptocurrencies.
 	//
-	//    * SM2 key pairs (China Regions only) SM2
+	//    * SM2 key pairs (encryption and decryption -or- signing and verification
+	//    -or- deriving shared secrets) SM2 (China Regions only)
 	KeySpec *string `json:"keySpec,omitempty"`
 	// Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
 	// for which you can use the KMS key. The default value is ENCRYPT_DECRYPT.
@@ -119,13 +122,16 @@ type KeyParameters struct {
 	//
 	//    * For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
 	//
-	//    * For asymmetric KMS keys with RSA key material, specify ENCRYPT_DECRYPT
+	//    * For asymmetric KMS keys with RSA key pairs, specify ENCRYPT_DECRYPT
 	//    or SIGN_VERIFY.
 	//
-	//    * For asymmetric KMS keys with ECC key material, specify SIGN_VERIFY.
+	//    * For asymmetric KMS keys with NIST-recommended elliptic curve key pairs,
+	//    specify SIGN_VERIFY or KEY_AGREEMENT.
 	//
-	//    * For asymmetric KMS keys with SM2 key material (China Regions only),
-	//    specify ENCRYPT_DECRYPT or SIGN_VERIFY.
+	//    * For asymmetric KMS keys with ECC_SECG_P256K1 key pairs specify SIGN_VERIFY.
+	//
+	//    * For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
+	//    ENCRYPT_DECRYPT, SIGN_VERIFY, or KEY_AGREEMENT.
 	KeyUsage *string `json:"keyUsage,omitempty"`
 	// Creates a multi-Region primary key that you can replicate into other Amazon
 	// Web Services Regions. You cannot change this value after you create the KMS
@@ -294,6 +300,8 @@ type KeyObservation struct {
 	// Specifies whether the KMS key's key material expires. This value is present
 	// only when Origin is EXTERNAL, otherwise this value is omitted.
 	ExpirationModel *string `json:"expirationModel,omitempty"`
+	// The key agreement algorithm used to derive a shared secret.
+	KeyAgreementAlgorithms []*string `json:"keyAgreementAlgorithms,omitempty"`
 	// The globally unique identifier for the KMS key.
 	KeyID *string `json:"keyID,omitempty"`
 	// The manager of the KMS key. KMS keys in your Amazon Web Services account

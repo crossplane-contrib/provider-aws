@@ -36,6 +36,14 @@ const (
 	PerformanceMode_maxIO          PerformanceMode = "maxIO"
 )
 
+type ReplicationOverwriteProtection string
+
+const (
+	ReplicationOverwriteProtection_ENABLED     ReplicationOverwriteProtection = "ENABLED"
+	ReplicationOverwriteProtection_DISABLED    ReplicationOverwriteProtection = "DISABLED"
+	ReplicationOverwriteProtection_REPLICATING ReplicationOverwriteProtection = "REPLICATING"
+)
+
 type ReplicationStatus string
 
 const (
@@ -78,15 +86,32 @@ const (
 	ThroughputMode_elastic     ThroughputMode = "elastic"
 )
 
+type TransitionToArchiveRules string
+
+const (
+	TransitionToArchiveRules_AFTER_1_DAY    TransitionToArchiveRules = "AFTER_1_DAY"
+	TransitionToArchiveRules_AFTER_7_DAYS   TransitionToArchiveRules = "AFTER_7_DAYS"
+	TransitionToArchiveRules_AFTER_14_DAYS  TransitionToArchiveRules = "AFTER_14_DAYS"
+	TransitionToArchiveRules_AFTER_30_DAYS  TransitionToArchiveRules = "AFTER_30_DAYS"
+	TransitionToArchiveRules_AFTER_60_DAYS  TransitionToArchiveRules = "AFTER_60_DAYS"
+	TransitionToArchiveRules_AFTER_90_DAYS  TransitionToArchiveRules = "AFTER_90_DAYS"
+	TransitionToArchiveRules_AFTER_180_DAYS TransitionToArchiveRules = "AFTER_180_DAYS"
+	TransitionToArchiveRules_AFTER_270_DAYS TransitionToArchiveRules = "AFTER_270_DAYS"
+	TransitionToArchiveRules_AFTER_365_DAYS TransitionToArchiveRules = "AFTER_365_DAYS"
+)
+
 type TransitionToIARules string
 
 const (
-	TransitionToIARules_AFTER_7_DAYS  TransitionToIARules = "AFTER_7_DAYS"
-	TransitionToIARules_AFTER_14_DAYS TransitionToIARules = "AFTER_14_DAYS"
-	TransitionToIARules_AFTER_30_DAYS TransitionToIARules = "AFTER_30_DAYS"
-	TransitionToIARules_AFTER_60_DAYS TransitionToIARules = "AFTER_60_DAYS"
-	TransitionToIARules_AFTER_90_DAYS TransitionToIARules = "AFTER_90_DAYS"
-	TransitionToIARules_AFTER_1_DAY   TransitionToIARules = "AFTER_1_DAY"
+	TransitionToIARules_AFTER_7_DAYS   TransitionToIARules = "AFTER_7_DAYS"
+	TransitionToIARules_AFTER_14_DAYS  TransitionToIARules = "AFTER_14_DAYS"
+	TransitionToIARules_AFTER_30_DAYS  TransitionToIARules = "AFTER_30_DAYS"
+	TransitionToIARules_AFTER_60_DAYS  TransitionToIARules = "AFTER_60_DAYS"
+	TransitionToIARules_AFTER_90_DAYS  TransitionToIARules = "AFTER_90_DAYS"
+	TransitionToIARules_AFTER_1_DAY    TransitionToIARules = "AFTER_1_DAY"
+	TransitionToIARules_AFTER_180_DAYS TransitionToIARules = "AFTER_180_DAYS"
+	TransitionToIARules_AFTER_270_DAYS TransitionToIARules = "AFTER_270_DAYS"
+	TransitionToIARules_AFTER_365_DAYS TransitionToIARules = "AFTER_365_DAYS"
 )
 
 type TransitionToPrimaryStorageClassRules string

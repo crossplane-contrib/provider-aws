@@ -4,6 +4,7 @@ ignore:
     - Authorizer
     - BillingGroup
     - CertificateFromCsr
+    - CertificateProvider
     - CustomMetric
     - Dimension
     - DomainConfiguration
@@ -14,6 +15,8 @@ ignore:
     - KeysAndCertificate
     - MitigationAction
     - OTAUpdate
+    - Package
+    - PackageVersion
     - PolicyVersion
     - ProvisioningClaim
     - ProvisioningTemplate
@@ -26,8 +29,6 @@ ignore:
     - ThingType
     - TopicRule
     - TopicRuleDestination
-    - Package
-    - PackageVersion
   field_paths:
     - CreatePolicyInput.PolicyName
     - CreatePolicyOutput.PolicyName

@@ -131,6 +131,14 @@ spec:
                           logging:
                             type: string
                         type: object
+                      managedStorageConfiguration:
+                        description: The managed storage configuration for the cluster.
+                        properties:
+                          fargateEphemeralStorageKMSKeyID:
+                            type: string
+                          kmsKeyID:
+                            type: string
+                        type: object
                     type: object
                   defaultCapacityProviderStrategy:
                     description: |-

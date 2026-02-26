@@ -110,6 +110,8 @@ spec:
                           type: string
                         target:
                           type: string
+                        type_:
+                          type: string
                       type: object
                     type: array
                   homeDirectoryType:
