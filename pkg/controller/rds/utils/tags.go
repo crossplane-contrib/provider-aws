@@ -19,6 +19,7 @@ package utils
 import (
 	"context"
 	"sort"
+	"strings"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
@@ -34,6 +35,33 @@ const (
 	errRemoveTags          = "cannot remove tags"
 	errCreateTags          = "cannot create tags"
 )
+
+// ShouldIgnore returns true if key matches any supplied rule. A rule may be:
+//   - exact key match (e.g. "c7n:policy")
+//   - prefix* glob where * is only allowed as the last character (e.g. "c7n:*" or "prefix*")
+//
+// No other wildcard forms are supported.
+func ShouldIgnore(key string, rules []string) bool { // intentionally simple, no regex
+	for _, r := range rules {
+		if r == "" { // skip empty
+			continue
+		}
+		if strings.HasSuffix(r, "*") {
+			prefix := strings.TrimSuffix(r, "*")
+			if prefix == "" { // guard against blanket "*" wildcard
+				continue
+			}
+			if strings.HasPrefix(key, prefix) {
+				return true
+			}
+			continue
+		}
+		if key == r { // exact
+			return true
+		}
+	}
+	return false
+}
 
 // AreTagsUpToDate for spec and resourceName
 func AreTagsUpToDate(ctx context.Context, client rdsiface.RDSAPI, spec []*svcapitypes.Tag, resourceName *string) (bool, []*svcsdk.Tag, []*string, error) {
