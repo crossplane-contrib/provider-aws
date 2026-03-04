@@ -45,23 +45,22 @@ type custom struct {
 	client svcsdkapi.RDSAPI
 }
 
+func setupExternal(e *external) {
+	h := &custom{client: e.client, kube: e.kube}
+	e.preObserve = preObserve
+	e.postObserve = h.postObserve
+	e.isUpToDate = h.isUpToDate
+	e.preUpdate = h.preUpdate
+	e.postUpdate = h.postUpdate
+	e.preCreate = h.preCreate
+	e.preDelete = preDelete
+	e.filterList = filterList
+}
+
 // SetupDBCluster adds a controller that reconciles DbCluster.
 func SetupDBCluster(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.DBClusterGroupKind)
-	opts := []option{
-		func(e *external) {
-			c := &custom{client: e.client, kube: e.kube}
-			e.preObserve = preObserve
-			e.postObserve = c.postObserve
-			e.isUpToDate = c.isUpToDate
-			e.preUpdate = c.preUpdate
-			e.postUpdate = c.postUpdate
-			e.preCreate = c.preCreate
-			e.preDelete = preDelete
-			e.postDelete = c.postDelete
-			e.filterList = filterList
-		},
-	}
+	opts := []option{setupExternal}
 
 	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
 	if o.Features.Enabled(features.EnableAlphaExternalSecretStores) {
@@ -615,6 +614,10 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 		return false, "", nil
 	}
 
+	if !areSameElements(cr.Spec.ForProvider.EnableCloudwatchLogsExports, out.DBClusters[0].EnabledCloudwatchLogsExports) {
+		return false, "", nil
+	}
+
 	if cr.Spec.ForProvider.DBClusterParameterGroupName != nil &&
 		pointer.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) != pointer.StringValue(out.DBClusters[0].DBClusterParameterGroup) {
 		return false, "", nil
@@ -774,6 +777,10 @@ func areVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.Descr
 func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
 	obj.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
+
+	obj.CloudwatchLogsExportConfiguration = generateCloudWatchExportConfiguration(
+		cr.Spec.ForProvider.EnableCloudwatchLogsExports,
+		cr.Status.AtProvider.EnabledCloudwatchLogsExports)
 
 	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
 	if err != nil {
@@ -966,4 +973,55 @@ func (e *custom) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, addT
 	}
 	return nil
 
+}
+
+func generateCloudWatchExportConfiguration(spec, current []*string) *svcsdk.CloudwatchLogsExportConfiguration {
+	toEnable := []*string{}
+	toDisable := []*string{}
+
+	currentMap := make(map[string]struct{}, len(current))
+	for _, currentID := range current {
+		currentMap[pointer.StringValue(currentID)] = struct{}{}
+	}
+
+	specMap := make(map[string]struct{}, len(spec))
+	for _, specID := range spec {
+		key := pointer.StringValue(specID)
+		specMap[key] = struct{}{}
+
+		if _, exists := currentMap[key]; !exists {
+			toEnable = append(toEnable, specID)
+		}
+	}
+
+	for _, currentID := range current {
+		if _, exists := specMap[pointer.StringValue(currentID)]; !exists {
+			toDisable = append(toDisable, currentID)
+		}
+	}
+
+	return &svcsdk.CloudwatchLogsExportConfiguration{
+		EnableLogTypes:  toEnable,
+		DisableLogTypes: toDisable,
+	}
+}
+
+func areSameElements(a1, a2 []*string) bool {
+	if len(a1) != len(a2) {
+		return false
+	}
+
+	m2 := make(map[string]struct{}, len(a2))
+	for _, s2 := range a2 {
+		m2[pointer.StringValue(s2)] = struct{}{}
+	}
+
+	for _, s1 := range a1 {
+		v1 := pointer.StringValue(s1)
+		if _, exists := m2[v1]; !exists {
+			return false
+		}
+	}
+
+	return true
 }
