@@ -835,6 +835,84 @@ func TestIsUpToDate(t *testing.T) {
 				isUpToDate: false,
 			},
 		},
+		"SameEnableCloudwatchLogsExports": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							DBClusterParameterGroupName: ptr.To("default.aurora-postgresql15"),
+							EnableCloudwatchLogsExports: []*string{
+								ptr.To("postgresql"),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql15"),
+							EnabledCloudwatchLogsExports: []*string{
+								ptr.To("postgresql"),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"DifferentEnableCloudwatchLogsExportsAddExports": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							DBClusterParameterGroupName: ptr.To("default.aurora-postgresql15"),
+							EnableCloudwatchLogsExports: []*string{
+								ptr.To("postgresql"),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql14"),
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"DifferentEnableCloudwatchLogsExportsRemoveExports": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							DBClusterParameterGroupName: ptr.To("default.aurora-postgresql15"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DBClusterParameterGroup: ptr.To("default.aurora-postgresql14"),
+							EnabledCloudwatchLogsExports: []*string{
+								ptr.To("postgresql"),
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
 	}
 
 	for name, tc := range cases {
