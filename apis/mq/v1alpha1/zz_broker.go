@@ -32,8 +32,7 @@ type BrokerParameters struct {
 
 	AuthenticationStrategy *string `json:"authenticationStrategy,omitempty"`
 
-	// +kubebuilder:validation:Required
-	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade"`
+	AutoMinorVersionUpgrade *bool `json:"autoMinorVersionUpgrade,omitempty"`
 
 	Configuration *ConfigurationID `json:"configuration,omitempty"`
 
@@ -51,8 +50,7 @@ type BrokerParameters struct {
 	// +kubebuilder:validation:Required
 	EngineType *string `json:"engineType"`
 
-	// +kubebuilder:validation:Required
-	EngineVersion *string `json:"engineVersion"`
+	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	// +kubebuilder:validation:Required
 	HostInstanceType *string `json:"hostInstanceType"`

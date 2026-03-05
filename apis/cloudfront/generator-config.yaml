@@ -3,6 +3,7 @@ ignore:
     - FieldLevelEncryptionProfile
     - Invalidation
     - KeyGroup
+    - KeyValueStore
     - OriginRequestPolicy
     - PublicKey
     - StreamingDistribution

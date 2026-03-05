@@ -153,6 +153,13 @@ const (
 	HTTPEndpointS3BackupMode_AllData        HTTPEndpointS3BackupMode = "AllData"
 )
 
+type IcebergS3BackupMode string
+
+const (
+	IcebergS3BackupMode_FailedDataOnly IcebergS3BackupMode = "FailedDataOnly"
+	IcebergS3BackupMode_AllData        IcebergS3BackupMode = "AllData"
+)
+
 type KeyType string
 
 const (
@@ -209,6 +216,7 @@ const (
 	ProcessorParameterName_SubRecordType           ProcessorParameterName = "SubRecordType"
 	ProcessorParameterName_Delimiter               ProcessorParameterName = "Delimiter"
 	ProcessorParameterName_CompressionFormat       ProcessorParameterName = "CompressionFormat"
+	ProcessorParameterName_DataMessageExtraction   ProcessorParameterName = "DataMessageExtraction"
 )
 
 type ProcessorType string
@@ -216,6 +224,7 @@ type ProcessorType string
 const (
 	ProcessorType_RecordDeAggregation     ProcessorType = "RecordDeAggregation"
 	ProcessorType_Decompression           ProcessorType = "Decompression"
+	ProcessorType_CloudWatchLogProcessing ProcessorType = "CloudWatchLogProcessing"
 	ProcessorType_Lambda                  ProcessorType = "Lambda"
 	ProcessorType_MetadataExtraction      ProcessorType = "MetadataExtraction"
 	ProcessorType_AppendDelimiterToRecord ProcessorType = "AppendDelimiterToRecord"
@@ -233,6 +242,21 @@ type S3BackupMode string
 const (
 	S3BackupMode_Disabled S3BackupMode = "Disabled"
 	S3BackupMode_Enabled  S3BackupMode = "Enabled"
+)
+
+type SnowflakeDataLoadingOption string
+
+const (
+	SnowflakeDataLoadingOption_JSON_MAPPING                         SnowflakeDataLoadingOption = "JSON_MAPPING"
+	SnowflakeDataLoadingOption_VARIANT_CONTENT_MAPPING              SnowflakeDataLoadingOption = "VARIANT_CONTENT_MAPPING"
+	SnowflakeDataLoadingOption_VARIANT_CONTENT_AND_METADATA_MAPPING SnowflakeDataLoadingOption = "VARIANT_CONTENT_AND_METADATA_MAPPING"
+)
+
+type SnowflakeS3BackupMode string
+
+const (
+	SnowflakeS3BackupMode_FailedDataOnly SnowflakeS3BackupMode = "FailedDataOnly"
+	SnowflakeS3BackupMode_AllData        SnowflakeS3BackupMode = "AllData"
 )
 
 type SplunkS3BackupMode string

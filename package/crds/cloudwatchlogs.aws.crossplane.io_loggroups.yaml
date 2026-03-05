@@ -155,8 +155,24 @@ spec:
                             type: string
                         type: object
                     type: object
+                  logGroupClass:
+                    description: |-
+                      Use this parameter to specify the log group class for this log group. There
+                      are two classes:
+
+                         * The Standard log class supports all CloudWatch Logs features.
+
+                         * The Infrequent Access log class supports a subset of CloudWatch Logs
+                         features and incurs lower costs.
+
+                      If you omit this parameter, the default of STANDARD is used.
+
+                      The value of logGroupClass can't be changed after a log group is created.
+
+                      For details about the features supported by each class, see Log classes (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CloudWatch_Logs_Log_Classes.html)
+                    type: string
                   logGroupName:
-                    description: The name of the log group.
+                    description: A name for the log group.
                     type: string
                   region:
                     description: Region is which region the LogGroup will be created.
@@ -379,7 +395,17 @@ spec:
                 description: LogGroupObservation defines the observed state of LogGroup
                 properties:
                   arn:
-                    description: The Amazon Resource Name (ARN) of the log group.
+                    description: |-
+                      The Amazon Resource Name (ARN) of the log group. This version of the ARN
+                      includes a trailing :* after the log group name.
+
+                      Use this version to refer to the ARN in IAM policies when specifying permissions
+                      for most API actions. The exception is when specifying permissions for TagResource
+                      (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_TagResource.html),
+                      UntagResource (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_UntagResource.html),
+                      and ListTagsForResource (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_ListTagsForResource.html).
+                      The permissions for those three actions require the ARN version that doesn't
+                      include a trailing :*.
                     type: string
                   creationTime:
                     description: |-

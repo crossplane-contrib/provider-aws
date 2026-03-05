@@ -49,7 +49,7 @@ type AutoScalingGroupParameters struct {
 	//
 	// The amount of time, in seconds, between one scaling activity ending and another
 	// one starting due to simple scaling policies. For more information, see Scaling
-	// cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html)
+	// cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Default: 300 seconds
@@ -84,8 +84,8 @@ type AutoScalingGroupParameters struct {
 	DesiredCapacity *int64 `json:"desiredCapacity,omitempty"`
 	// The unit of measurement for the value specified for desired capacity. Amazon
 	// EC2 Auto Scaling supports DesiredCapacityType for attribute-based instance
-	// type selection only. For more information, see Creating an Auto Scaling group
-	// using attribute-based instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
+	// type selection only. For more information, see Create a mixed instances group
+	// using attribute-based instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// By default, Amazon EC2 Auto Scaling specifies units, which translates into
@@ -107,7 +107,7 @@ type AutoScalingGroupParameters struct {
 	//
 	// The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
 	// check and cannot be disabled. For more information, see Health checks for
-	// Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+	// instances in an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Only specify EC2 if you must clear a value that was previously set.
@@ -116,10 +116,14 @@ type AutoScalingGroupParameters struct {
 	// Amazon EC2 Auto Scaling uses the configuration values from the specified
 	// instance to create a new launch configuration. To get the instance ID, use
 	// the Amazon EC2 DescribeInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
-	// API operation. For more information, see Creating an Auto Scaling group using
-	// an EC2 instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-from-instance.html)
+	// API operation. For more information, see Create an Auto Scaling group using
+	// parameters from an existing instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-from-instance.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	InstanceID *string `json:"instanceID,omitempty"`
+	// An instance maintenance policy. For more information, see Set instance maintenance
+	// policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `json:"instanceMaintenancePolicy,omitempty"`
 	// The name of the launch configuration to use to launch instances.
 	//
 	// Conditional: You must specify either a launch template (LaunchTemplate or
@@ -134,8 +138,8 @@ type AutoScalingGroupParameters struct {
 	// or InstanceId).
 	//
 	// The launch template that is specified must be configured for use with an
-	// Auto Scaling group. For more information, see Creating a launch template
-	// for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-template.html)
+	// Auto Scaling group. For more information, see Create a launch template for
+	// an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-template.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 	// One or more lifecycle hooks to add to the Auto Scaling group before instances
@@ -148,7 +152,7 @@ type AutoScalingGroupParameters struct {
 	// The maximum amount of time, in seconds, that an instance can be in service.
 	// The default is null. If specified, the value must be either 0 or a number
 	// equal to or greater than 86,400 seconds (1 day). For more information, see
-	// Replacing Auto Scaling instances based on maximum instance lifetime (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html)
+	// Replace Auto Scaling instances based on maximum instance lifetime (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	MaxInstanceLifetime *int64 `json:"maxInstanceLifetime,omitempty"`
 	// The maximum size of the group.
@@ -169,7 +173,7 @@ type AutoScalingGroupParameters struct {
 	MixedInstancesPolicy *MixedInstancesPolicy `json:"mixedInstancesPolicy,omitempty"`
 	// Indicates whether newly launched instances are protected from termination
 	// by Amazon EC2 Auto Scaling when scaling in. For more information about preventing
-	// instances from terminating on scale in, see Using instance scale-in protection
+	// instances from terminating on scale in, see Use instance scale-in protection
 	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	NewInstancesProtectedFromScaleIn *bool `json:"newInstancesProtectedFromScaleIn,omitempty"`
@@ -208,7 +212,7 @@ type AutoScalingGroupParameters struct {
 	TargetGroupARNs []*string `json:"targetGroupARNs,omitempty"`
 	// A policy or a list of policies that are used to select the instance to terminate.
 	// These policies are executed in the order that you list them. For more information,
-	// see Work with Amazon EC2 Auto Scaling termination policies (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
+	// see Configure termination policies for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Valid values: Default | AllocationStrategy | ClosestToNextInstanceHour |

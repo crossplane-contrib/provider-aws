@@ -33,6 +33,8 @@ type StateMachineParameters struct {
 	// Language (https://docs.aws.amazon.com/step-functions/latest/dg/concepts-amazon-states-language.html).
 	// +kubebuilder:validation:Required
 	Definition *string `json:"definition"`
+	// Settings to configure server-side encryption.
+	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 	// Defines what execution history events are logged and where they are logged.
 	//
 	// By default, the level is set to OFF. For more information see Log Levels

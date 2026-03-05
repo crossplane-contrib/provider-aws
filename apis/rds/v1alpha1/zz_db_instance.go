@@ -43,8 +43,17 @@ type DBInstanceParameters struct {
 	//    * General Purpose (SSD) storage (gp2, gp3): Must be an integer from 40
 	//    to 65536 for RDS Custom for Oracle, 16384 for RDS Custom for SQL Server.
 	//
-	//    * Provisioned IOPS storage (io1): Must be an integer from 40 to 65536
+	//    * Provisioned IOPS storage (io1, io2): Must be an integer from 40 to 65536
 	//    for RDS Custom for Oracle, 16384 for RDS Custom for SQL Server.
+	//
+	// RDS for Db2
+	//
+	// Constraints to the amount of storage for each storage type are the following:
+	//
+	//    * General Purpose (SSD) storage (gp3): Must be an integer from 20 to 65536.
+	//
+	//    * Provisioned IOPS storage (io1, io2): Must be an integer from 100 to
+	//    65536.
 	//
 	// RDS for MariaDB
 	//
@@ -53,7 +62,8 @@ type DBInstanceParameters struct {
 	//    * General Purpose (SSD) storage (gp2, gp3): Must be an integer from 20
 	//    to 65536.
 	//
-	//    * Provisioned IOPS storage (io1): Must be an integer from 100 to 65536.
+	//    * Provisioned IOPS storage (io1, io2): Must be an integer from 100 to
+	//    65536.
 	//
 	//    * Magnetic storage (standard): Must be an integer from 5 to 3072.
 	//
@@ -64,7 +74,8 @@ type DBInstanceParameters struct {
 	//    * General Purpose (SSD) storage (gp2, gp3): Must be an integer from 20
 	//    to 65536.
 	//
-	//    * Provisioned IOPS storage (io1): Must be an integer from 100 to 65536.
+	//    * Provisioned IOPS storage (io1, io2): Must be an integer from 100 to
+	//    65536.
 	//
 	//    * Magnetic storage (standard): Must be an integer from 5 to 3072.
 	//
@@ -75,7 +86,8 @@ type DBInstanceParameters struct {
 	//    * General Purpose (SSD) storage (gp2, gp3): Must be an integer from 20
 	//    to 65536.
 	//
-	//    * Provisioned IOPS storage (io1): Must be an integer from 100 to 65536.
+	//    * Provisioned IOPS storage (io1, io2): Must be an integer from 100 to
+	//    65536.
 	//
 	//    * Magnetic storage (standard): Must be an integer from 10 to 3072.
 	//
@@ -86,7 +98,8 @@ type DBInstanceParameters struct {
 	//    * General Purpose (SSD) storage (gp2, gp3): Must be an integer from 20
 	//    to 65536.
 	//
-	//    * Provisioned IOPS storage (io1): Must be an integer from 100 to 65536.
+	//    * Provisioned IOPS storage (io1, io2): Must be an integer from 100 to
+	//    65536.
 	//
 	//    * Magnetic storage (standard): Must be an integer from 5 to 3072.
 	//
@@ -98,9 +111,9 @@ type DBInstanceParameters struct {
 	//    Must be an integer from 20 to 16384. Web and Express editions: Must be
 	//    an integer from 20 to 16384.
 	//
-	//    * Provisioned IOPS storage (io1): Enterprise and Standard editions: Must
-	//    be an integer from 100 to 16384. Web and Express editions: Must be an
-	//    integer from 100 to 16384.
+	//    * Provisioned IOPS storage (io1, io2): Enterprise and Standard editions:
+	//    Must be an integer from 100 to 16384. Web and Express editions: Must be
+	//    an integer from 100 to 16384.
 	//
 	//    * Magnetic storage (standard): Enterprise and Standard editions: Must
 	//    be an integer from 20 to 1024. Web and Express editions: Must be an integer
@@ -166,7 +179,7 @@ type DBInstanceParameters struct {
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 	// The location for storing automated backups and manual snapshots.
 	//
-	// Valie Values:
+	// Valid Values:
 	//
 	//    * outposts (Amazon Web Services Outposts)
 	//
@@ -240,60 +253,33 @@ type DBInstanceParameters struct {
 	// The meaning of this parameter differs according to the database engine you
 	// use.
 	//
-	// MySQL
+	// Amazon Aurora MySQL
 	//
-	// The name of the database to create when the DB instance is created. If this
-	// parameter isn't specified, no database is created in the DB instance.
+	// The name of the database to create when the primary DB instance of the Aurora
+	// MySQL DB cluster is created. If this parameter isn't specified for an Aurora
+	// MySQL DB cluster, no database is created in the DB cluster.
 	//
 	// Constraints:
 	//
-	//    * Must contain 1 to 64 letters or numbers.
+	//    * Must contain 1 to 64 alphanumeric characters.
+	//
+	//    * Can't be a word reserved by the database engine.
+	//
+	// Amazon Aurora PostgreSQL
+	//
+	// The name of the database to create when the primary DB instance of the Aurora
+	// PostgreSQL DB cluster is created. A database named postgres is always created.
+	// If this parameter is specified, an additional database with this name is
+	// created.
+	//
+	// Constraints:
+	//
+	//    * It must contain 1 to 63 alphanumeric characters.
 	//
 	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
-	//    or digits (0-9).
+	//    or digits (0 to 9).
 	//
-	//    * Can't be a word reserved by the specified database engine
-	//
-	// MariaDB
-	//
-	// The name of the database to create when the DB instance is created. If this
-	// parameter isn't specified, no database is created in the DB instance.
-	//
-	// Constraints:
-	//
-	//    * Must contain 1 to 64 letters or numbers.
-	//
-	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
-	//    or digits (0-9).
-	//
-	//    * Can't be a word reserved by the specified database engine
-	//
-	// PostgreSQL
-	//
-	// The name of the database to create when the DB instance is created. If this
-	// parameter isn't specified, a database named postgres is created in the DB
-	// instance.
-	//
-	// Constraints:
-	//
-	//    * Must contain 1 to 63 letters, numbers, or underscores.
-	//
-	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
-	//    or digits (0-9).
-	//
-	//    * Can't be a word reserved by the specified database engine
-	//
-	// Oracle
-	//
-	// The Oracle System ID (SID) of the created DB instance. If you don't specify
-	// a value, the default value is ORCL. You can't specify the string null, or
-	// any other reserved word, for DBName.
-	//
-	// Default: ORCL
-	//
-	// Constraints:
-	//
-	//    * Can't be longer than 8 characters
+	//    * Can't be a word reserved by the database engine.
 	//
 	// Amazon RDS Custom for Oracle
 	//
@@ -305,47 +291,91 @@ type DBInstanceParameters struct {
 	//
 	// Constraints:
 	//
-	//    * It must contain 1 to 8 alphanumeric characters.
+	//    * Must contain 1 to 8 alphanumeric characters.
 	//
-	//    * It must contain a letter.
+	//    * Must contain a letter.
 	//
-	//    * It can't be a word reserved by the database engine.
+	//    * Can't be a word reserved by the database engine.
 	//
 	// Amazon RDS Custom for SQL Server
 	//
 	// Not applicable. Must be null.
 	//
-	// SQL Server
+	// RDS for Db2
+	//
+	// The name of the database to create when the DB instance is created. If this
+	// parameter isn't specified, no database is created in the DB instance. In
+	// some cases, we recommend that you don't add a database name. For more information,
+	// see Additional considerations (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/db2-db-instance-prereqs.html#db2-prereqs-additional-considerations)
+	// in the Amazon RDS User Guide.
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 64 letters or numbers.
+	//
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
+	//    or digits (0-9).
+	//
+	//    * Can't be a word reserved by the specified database engine.
+	//
+	// RDS for MariaDB
+	//
+	// The name of the database to create when the DB instance is created. If this
+	// parameter isn't specified, no database is created in the DB instance.
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 64 letters or numbers.
+	//
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
+	//    or digits (0-9).
+	//
+	//    * Can't be a word reserved by the specified database engine.
+	//
+	// RDS for MySQL
+	//
+	// The name of the database to create when the DB instance is created. If this
+	// parameter isn't specified, no database is created in the DB instance.
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 64 letters or numbers.
+	//
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
+	//    or digits (0-9).
+	//
+	//    * Can't be a word reserved by the specified database engine.
+	//
+	// RDS for Oracle
+	//
+	// The Oracle System ID (SID) of the created DB instance. If you don't specify
+	// a value, the default value is ORCL. You can't specify the string null, or
+	// any other reserved word, for DBName.
+	//
+	// Default: ORCL
+	//
+	// Constraints:
+	//
+	//    * Can't be longer than 8 characters.
+	//
+	// RDS for PostgreSQL
+	//
+	// The name of the database to create when the DB instance is created. A database
+	// named postgres is always created. If this parameter is specified, an additional
+	// database with this name is created.
+	//
+	// Constraints:
+	//
+	//    * Must contain 1 to 63 letters, numbers, or underscores.
+	//
+	//    * Must begin with a letter. Subsequent characters can be letters, underscores,
+	//    or digits (0-9).
+	//
+	//    * Can't be a word reserved by the specified database engine.
+	//
+	// RDS for SQL Server
 	//
 	// Not applicable. Must be null.
-	//
-	// Amazon Aurora MySQL
-	//
-	// The name of the database to create when the primary DB instance of the Aurora
-	// MySQL DB cluster is created. If this parameter isn't specified for an Aurora
-	// MySQL DB cluster, no database is created in the DB cluster.
-	//
-	// Constraints:
-	//
-	//    * It must contain 1 to 64 alphanumeric characters.
-	//
-	//    * It can't be a word reserved by the database engine.
-	//
-	// Amazon Aurora PostgreSQL
-	//
-	// The name of the database to create when the primary DB instance of the Aurora
-	// PostgreSQL DB cluster is created. If this parameter isn't specified for an
-	// Aurora PostgreSQL DB cluster, a database named postgres is created in the
-	// DB cluster.
-	//
-	// Constraints:
-	//
-	//    * It must contain 1 to 63 alphanumeric characters.
-	//
-	//    * It must begin with a letter. Subsequent characters can be letters, underscores,
-	//    or digits (0 to 9).
-	//
-	//    * It can't be a word reserved by the database engine.
 	DBName *string `json:"dbName,omitempty"`
 	// The name of the DB parameter group to associate with this DB instance. If
 	// you don't specify a value, then Amazon RDS uses the default DB parameter
@@ -390,8 +420,8 @@ type DBInstanceParameters struct {
 	// deletion protection is enabled for the DB cluster.
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
 	// The Active Directory directory ID to create the DB instance in. Currently,
-	// only Microsoft SQL Server, MySQL, Oracle, and PostgreSQL DB instances can
-	// be created in an Active Directory Domain.
+	// you can create only Db2, MySQL, Microsoft SQL Server, Oracle, and PostgreSQL
+	// DB instances in an Active Directory Domain.
 	//
 	// For more information, see Kerberos Authentication (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/kerberos-authentication.html)
 	// in the Amazon RDS User Guide.
@@ -444,9 +474,8 @@ type DBInstanceParameters struct {
 	//
 	// Example: OU=mymanagedADtestOU,DC=mymanagedADtest,DC=mymanagedAD,DC=mydomain
 	DomainOu *string `json:"domainOu,omitempty"`
-	// The list of log types that need to be enabled for exporting to CloudWatch
-	// Logs. For more information, see Publishing Database Logs to Amazon CloudWatch
-	// Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+	// The list of log types to enable for exporting to CloudWatch Logs. For more
+	// information, see Publishing Database Logs to Amazon CloudWatch Logs (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
 	// in the Amazon RDS User Guide.
 	//
 	// This setting doesn't apply to the following DB instances:
@@ -456,6 +485,8 @@ type DBInstanceParameters struct {
 	//    * RDS Custom
 	//
 	// The following values are valid for each DB engine:
+	//
+	//    * RDS for Db2 - diag.log | notify.log
 	//
 	//    * RDS for MariaDB - audit | error | general | slowquery
 	//
@@ -517,11 +548,19 @@ type DBInstanceParameters struct {
 	//
 	//    * custom-oracle-ee-cdb (for RDS Custom for Oracle DB instances)
 	//
+	//    * custom-oracle-se2 (for RDS Custom for Oracle DB instances)
+	//
+	//    * custom-oracle-se2-cdb (for RDS Custom for Oracle DB instances)
+	//
 	//    * custom-sqlserver-ee (for RDS Custom for SQL Server DB instances)
 	//
 	//    * custom-sqlserver-se (for RDS Custom for SQL Server DB instances)
 	//
 	//    * custom-sqlserver-web (for RDS Custom for SQL Server DB instances)
+	//
+	//    * db2-ae
+	//
+	//    * db2-se
 	//
 	//    * mariadb
 	//
@@ -546,6 +585,28 @@ type DBInstanceParameters struct {
 	//    * sqlserver-web
 	// +kubebuilder:validation:Required
 	Engine *string `json:"engine"`
+	// The life cycle type for this DB instance.
+	//
+	// By default, this value is set to open-source-rds-extended-support, which
+	// enrolls your DB instance into Amazon RDS Extended Support. At the end of
+	// standard support, you can avoid charges for Extended Support by setting the
+	// value to open-source-rds-extended-support-disabled. In this case, creating
+	// the DB instance will fail if the DB major version is past its end of standard
+	// support date.
+	//
+	// This setting applies only to RDS for MySQL and RDS for PostgreSQL. For Amazon
+	// Aurora DB instances, the life cycle type is managed by the DB cluster.
+	//
+	// You can use this setting to enroll your DB instance into Amazon RDS Extended
+	// Support. With RDS Extended Support, you can run the selected major engine
+	// version on your DB instance past the end of standard support for that engine
+	// version. For more information, see Using Amazon RDS Extended Support (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/extended-support.html)
+	// in the Amazon RDS User Guide.
+	//
+	// Valid Values: open-source-rds-extended-support | open-source-rds-extended-support-disabled
+	//
+	// Default: open-source-rds-extended-support
+	EngineLifecycleSupport *string `json:"engineLifecycleSupport,omitempty"`
 	// The amount of Provisioned IOPS (input/output operations per second) to initially
 	// allocate for the DB instance. For information about valid IOPS values, see
 	// Amazon RDS DB instance storage (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html)
@@ -556,8 +617,8 @@ type DBInstanceParameters struct {
 	//
 	// Constraints:
 	//
-	//    * For RDS for MariaDB, MySQL, Oracle, and PostgreSQL - Must be a multiple
-	//    between .5 and 50 of the storage amount for the DB instance.
+	//    * For RDS for Db2, MariaDB, MySQL, Oracle, and PostgreSQL - Must be a
+	//    multiple between .5 and 50 of the storage amount for the DB instance.
 	//
 	//    * For RDS for SQL Server - Must be a multiple between 1 and 50 of the
 	//    storage amount for the DB instance.
@@ -584,9 +645,20 @@ type DBInstanceParameters struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The license model information for this DB instance.
 	//
+	// License models for RDS for Db2 require additional configuration. The Bring
+	// Your Own License (BYOL) model requires a custom parameter group. The Db2
+	// license through Amazon Web Services Marketplace model requires an Amazon
+	// Web Services Marketplace subscription. For more information, see RDS for
+	// Db2 licensing options (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/db2-licensing.html)
+	// in the Amazon RDS User Guide.
+	//
+	// The default for RDS for Db2 is bring-your-own-license.
+	//
 	// This setting doesn't apply to Amazon Aurora or RDS Custom DB instances.
 	//
 	// Valid Values:
+	//
+	//    * RDS for Db2 - bring-your-own-license | marketplace-license
 	//
 	//    * RDS for MariaDB - general-public-license
 	//
@@ -769,6 +841,8 @@ type DBInstanceParameters struct {
 	//
 	// Default:
 	//
+	//    * RDS for Db2 - 50000
+	//
 	//    * RDS for MariaDB - 3306
 	//
 	//    * RDS for Microsoft SQL Server - 1433
@@ -842,12 +916,13 @@ type DBInstanceParameters struct {
 	PromotionTier *int64 `json:"promotionTier,omitempty"`
 	// Specifies whether the DB instance is publicly accessible.
 	//
-	// When the DB instance is publicly accessible, its Domain Name System (DNS)
-	// endpoint resolves to the private IP address from within the DB instance's
-	// virtual private cloud (VPC). It resolves to the public IP address from outside
-	// of the DB instance's VPC. Access to the DB instance is ultimately controlled
-	// by the security group it uses. That public access is not permitted if the
-	// security group assigned to the DB instance doesn't permit it.
+	// When the DB instance is publicly accessible and you connect from outside
+	// of the DB instance's virtual private cloud (VPC), its Domain Name System
+	// (DNS) endpoint resolves to the public IP address. When you connect from within
+	// the same VPC as the DB instance, the endpoint resolves to the private IP
+	// address. Access to the DB instance is ultimately controlled by the security
+	// group it uses. That public access is not permitted if the security group
+	// assigned to the DB instance doesn't permit it.
 	//
 	// When the DB instance isn't publicly accessible, it is an internal DB instance
 	// with a DNS name that resolves to a private IP address.
@@ -889,12 +964,13 @@ type DBInstanceParameters struct {
 	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
 	// The storage type to associate with the DB instance.
 	//
-	// If you specify io1 or gp3, you must also include a value for the Iops parameter.
+	// If you specify io1, io2, or gp3, you must also include a value for the Iops
+	// parameter.
 	//
 	// This setting doesn't apply to Amazon Aurora DB instances. Storage is managed
 	// by the DB cluster.
 	//
-	// Valid Values: gp2 | gp3 | io1 | standard
+	// Valid Values: gp2 | gp3 | io1 | io2 | standard
 	//
 	// Default: io1, if the Iops parameter is specified. Otherwise, gp2.
 	StorageType *string `json:"storageType,omitempty"`
@@ -910,7 +986,8 @@ type DBInstanceParameters struct {
 	// This setting doesn't apply to RDS Custom DB instances.
 	TDECredentialPassword *string `json:"tdeCredentialPassword,omitempty"`
 	// The time zone of the DB instance. The time zone parameter is currently supported
-	// only by Microsoft SQL Server (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.TimeZone).
+	// only by RDS for Db2 (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/db2-time-zone)
+	// and RDS for SQL Server (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.TimeZone).
 	Timezone                   *string `json:"timezone,omitempty"`
 	CustomDBInstanceParameters `json:",inline"`
 }

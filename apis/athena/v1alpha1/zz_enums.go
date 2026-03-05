@@ -18,6 +18,12 @@ limitations under the License.
 
 package v1alpha1
 
+type AuthenticationType string
+
+const (
+	AuthenticationType_DIRECTORY_IDENTITY AuthenticationType = "DIRECTORY_IDENTITY"
+)
+
 type CalculationExecutionState string
 
 const (

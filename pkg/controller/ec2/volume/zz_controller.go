@@ -116,6 +116,9 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Volume) (managed.
 		f0 := []*svcapitypes.VolumeAttachment{}
 		for _, f0iter := range resp.Attachments {
 			f0elem := &svcapitypes.VolumeAttachment{}
+			if f0iter.AssociatedResource != nil {
+				f0elem.AssociatedResource = f0iter.AssociatedResource
+			}
 			if f0iter.AttachTime != nil {
 				f0elem.AttachTime = &metav1.Time{*f0iter.AttachTime}
 			}
@@ -127,6 +130,9 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Volume) (managed.
 			}
 			if f0iter.InstanceId != nil {
 				f0elem.InstanceID = f0iter.InstanceId
+			}
+			if f0iter.InstanceOwningService != nil {
+				f0elem.InstanceOwningService = f0iter.InstanceOwningService
 			}
 			if f0iter.State != nil {
 				f0elem.State = f0iter.State

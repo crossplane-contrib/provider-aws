@@ -52,6 +52,28 @@ func GenerateJobQueue(resp *svcsdk.DescribeJobQueuesOutput) *svcapitypes.JobQueu
 		} else {
 			cr.Status.AtProvider.JobQueueName = nil
 		}
+		if elem.JobStateTimeLimitActions != nil {
+			f3 := []*svcapitypes.JobStateTimeLimitAction{}
+			for _, f3iter := range elem.JobStateTimeLimitActions {
+				f3elem := &svcapitypes.JobStateTimeLimitAction{}
+				if f3iter.Action != nil {
+					f3elem.Action = f3iter.Action
+				}
+				if f3iter.MaxTimeSeconds != nil {
+					f3elem.MaxTimeSeconds = f3iter.MaxTimeSeconds
+				}
+				if f3iter.Reason != nil {
+					f3elem.Reason = f3iter.Reason
+				}
+				if f3iter.State != nil {
+					f3elem.State = f3iter.State
+				}
+				f3 = append(f3, f3elem)
+			}
+			cr.Spec.ForProvider.JobStateTimeLimitActions = f3
+		} else {
+			cr.Spec.ForProvider.JobStateTimeLimitActions = nil
+		}
 		if elem.Priority != nil {
 			cr.Spec.ForProvider.Priority = elem.Priority
 		} else {
@@ -73,13 +95,13 @@ func GenerateJobQueue(resp *svcsdk.DescribeJobQueuesOutput) *svcapitypes.JobQueu
 			cr.Status.AtProvider.Status = nil
 		}
 		if elem.Tags != nil {
-			f8 := map[string]*string{}
-			for f8key, f8valiter := range elem.Tags {
-				var f8val string
-				f8val = *f8valiter
-				f8[f8key] = &f8val
+			f9 := map[string]*string{}
+			for f9key, f9valiter := range elem.Tags {
+				var f9val string
+				f9val = *f9valiter
+				f9[f9key] = &f9val
 			}
-			cr.Spec.ForProvider.Tags = f8
+			cr.Spec.ForProvider.Tags = f9
 		} else {
 			cr.Spec.ForProvider.Tags = nil
 		}
@@ -97,6 +119,26 @@ func GenerateJobQueue(resp *svcsdk.DescribeJobQueuesOutput) *svcapitypes.JobQueu
 func GenerateCreateJobQueueInput(cr *svcapitypes.JobQueue) *svcsdk.CreateJobQueueInput {
 	res := &svcsdk.CreateJobQueueInput{}
 
+	if cr.Spec.ForProvider.JobStateTimeLimitActions != nil {
+		f0 := []*svcsdk.JobStateTimeLimitAction{}
+		for _, f0iter := range cr.Spec.ForProvider.JobStateTimeLimitActions {
+			f0elem := &svcsdk.JobStateTimeLimitAction{}
+			if f0iter.Action != nil {
+				f0elem.SetAction(*f0iter.Action)
+			}
+			if f0iter.MaxTimeSeconds != nil {
+				f0elem.SetMaxTimeSeconds(*f0iter.MaxTimeSeconds)
+			}
+			if f0iter.Reason != nil {
+				f0elem.SetReason(*f0iter.Reason)
+			}
+			if f0iter.State != nil {
+				f0elem.SetState(*f0iter.State)
+			}
+			f0 = append(f0, f0elem)
+		}
+		res.SetJobStateTimeLimitActions(f0)
+	}
 	if cr.Spec.ForProvider.Priority != nil {
 		res.SetPriority(*cr.Spec.ForProvider.Priority)
 	}
@@ -104,13 +146,13 @@ func GenerateCreateJobQueueInput(cr *svcapitypes.JobQueue) *svcsdk.CreateJobQueu
 		res.SetSchedulingPolicyArn(*cr.Spec.ForProvider.SchedulingPolicyARN)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f2 := map[string]*string{}
-		for f2key, f2valiter := range cr.Spec.ForProvider.Tags {
-			var f2val string
-			f2val = *f2valiter
-			f2[f2key] = &f2val
+		f3 := map[string]*string{}
+		for f3key, f3valiter := range cr.Spec.ForProvider.Tags {
+			var f3val string
+			f3val = *f3valiter
+			f3[f3key] = &f3val
 		}
-		res.SetTags(f2)
+		res.SetTags(f3)
 	}
 
 	return res
@@ -120,6 +162,26 @@ func GenerateCreateJobQueueInput(cr *svcapitypes.JobQueue) *svcsdk.CreateJobQueu
 func GenerateUpdateJobQueueInput(cr *svcapitypes.JobQueue) *svcsdk.UpdateJobQueueInput {
 	res := &svcsdk.UpdateJobQueueInput{}
 
+	if cr.Spec.ForProvider.JobStateTimeLimitActions != nil {
+		f2 := []*svcsdk.JobStateTimeLimitAction{}
+		for _, f2iter := range cr.Spec.ForProvider.JobStateTimeLimitActions {
+			f2elem := &svcsdk.JobStateTimeLimitAction{}
+			if f2iter.Action != nil {
+				f2elem.SetAction(*f2iter.Action)
+			}
+			if f2iter.MaxTimeSeconds != nil {
+				f2elem.SetMaxTimeSeconds(*f2iter.MaxTimeSeconds)
+			}
+			if f2iter.Reason != nil {
+				f2elem.SetReason(*f2iter.Reason)
+			}
+			if f2iter.State != nil {
+				f2elem.SetState(*f2iter.State)
+			}
+			f2 = append(f2, f2elem)
+		}
+		res.SetJobStateTimeLimitActions(f2)
+	}
 	if cr.Spec.ForProvider.Priority != nil {
 		res.SetPriority(*cr.Spec.ForProvider.Priority)
 	}

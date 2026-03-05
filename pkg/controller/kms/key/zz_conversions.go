@@ -106,6 +106,17 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 	} else {
 		cr.Status.AtProvider.ExpirationModel = nil
 	}
+	if resp.KeyMetadata.KeyAgreementAlgorithms != nil {
+		f11 := []*string{}
+		for _, f11iter := range resp.KeyMetadata.KeyAgreementAlgorithms {
+			var f11elem string
+			f11elem = *f11iter
+			f11 = append(f11, &f11elem)
+		}
+		cr.Status.AtProvider.KeyAgreementAlgorithms = f11
+	} else {
+		cr.Status.AtProvider.KeyAgreementAlgorithms = nil
+	}
 	if resp.KeyMetadata.KeyId != nil {
 		cr.Status.AtProvider.KeyID = resp.KeyMetadata.KeyId
 	} else {
@@ -132,13 +143,13 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 		cr.Spec.ForProvider.KeyUsage = nil
 	}
 	if resp.KeyMetadata.MacAlgorithms != nil {
-		f16 := []*string{}
-		for _, f16iter := range resp.KeyMetadata.MacAlgorithms {
-			var f16elem string
-			f16elem = *f16iter
-			f16 = append(f16, &f16elem)
+		f17 := []*string{}
+		for _, f17iter := range resp.KeyMetadata.MacAlgorithms {
+			var f17elem string
+			f17elem = *f17iter
+			f17 = append(f17, &f17elem)
 		}
-		cr.Status.AtProvider.MacAlgorithms = f16
+		cr.Status.AtProvider.MacAlgorithms = f17
 	} else {
 		cr.Status.AtProvider.MacAlgorithms = nil
 	}
@@ -148,35 +159,35 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 		cr.Spec.ForProvider.MultiRegion = nil
 	}
 	if resp.KeyMetadata.MultiRegionConfiguration != nil {
-		f18 := &svcapitypes.MultiRegionConfiguration{}
+		f19 := &svcapitypes.MultiRegionConfiguration{}
 		if resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType != nil {
-			f18.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
+			f19.MultiRegionKeyType = resp.KeyMetadata.MultiRegionConfiguration.MultiRegionKeyType
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey != nil {
-			f18f1 := &svcapitypes.MultiRegionKey{}
+			f19f1 := &svcapitypes.MultiRegionKey{}
 			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn != nil {
-				f18f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
+				f19f1.ARN = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Arn
 			}
 			if resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region != nil {
-				f18f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
+				f19f1.Region = resp.KeyMetadata.MultiRegionConfiguration.PrimaryKey.Region
 			}
-			f18.PrimaryKey = f18f1
+			f19.PrimaryKey = f19f1
 		}
 		if resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys != nil {
-			f18f2 := []*svcapitypes.MultiRegionKey{}
-			for _, f18f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
-				f18f2elem := &svcapitypes.MultiRegionKey{}
-				if f18f2iter.Arn != nil {
-					f18f2elem.ARN = f18f2iter.Arn
+			f19f2 := []*svcapitypes.MultiRegionKey{}
+			for _, f19f2iter := range resp.KeyMetadata.MultiRegionConfiguration.ReplicaKeys {
+				f19f2elem := &svcapitypes.MultiRegionKey{}
+				if f19f2iter.Arn != nil {
+					f19f2elem.ARN = f19f2iter.Arn
 				}
-				if f18f2iter.Region != nil {
-					f18f2elem.Region = f18f2iter.Region
+				if f19f2iter.Region != nil {
+					f19f2elem.Region = f19f2iter.Region
 				}
-				f18f2 = append(f18f2, f18f2elem)
+				f19f2 = append(f19f2, f19f2elem)
 			}
-			f18.ReplicaKeys = f18f2
+			f19.ReplicaKeys = f19f2
 		}
-		cr.Status.AtProvider.MultiRegionConfiguration = f18
+		cr.Status.AtProvider.MultiRegionConfiguration = f19
 	} else {
 		cr.Status.AtProvider.MultiRegionConfiguration = nil
 	}
@@ -191,13 +202,13 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 		cr.Status.AtProvider.PendingDeletionWindowInDays = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
-		f21 := []*string{}
-		for _, f21iter := range resp.KeyMetadata.SigningAlgorithms {
-			var f21elem string
-			f21elem = *f21iter
-			f21 = append(f21, &f21elem)
+		f22 := []*string{}
+		for _, f22iter := range resp.KeyMetadata.SigningAlgorithms {
+			var f22elem string
+			f22elem = *f22iter
+			f22 = append(f22, &f22elem)
 		}
-		cr.Status.AtProvider.SigningAlgorithms = f21
+		cr.Status.AtProvider.SigningAlgorithms = f22
 	} else {
 		cr.Status.AtProvider.SigningAlgorithms = nil
 	}
@@ -207,11 +218,11 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 		cr.Status.AtProvider.ValidTo = nil
 	}
 	if resp.KeyMetadata.XksKeyConfiguration != nil {
-		f23 := &svcapitypes.XksKeyConfigurationType{}
+		f24 := &svcapitypes.XksKeyConfigurationType{}
 		if resp.KeyMetadata.XksKeyConfiguration.Id != nil {
-			f23.ID = resp.KeyMetadata.XksKeyConfiguration.Id
+			f24.ID = resp.KeyMetadata.XksKeyConfiguration.Id
 		}
-		cr.Status.AtProvider.XksKeyConfiguration = f23
+		cr.Status.AtProvider.XksKeyConfiguration = f24
 	} else {
 		cr.Status.AtProvider.XksKeyConfiguration = nil
 	}
