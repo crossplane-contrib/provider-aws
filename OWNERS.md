@@ -17,3 +17,4 @@ guidelines and responsibilities for the steering committee and maintainers.
 * Nico Andres ([AndresNico](https://github.com/AndresNico))
 * Kevin Kendzia ([kkendzia](https://github.com/kkendzia))
 * Gosha Khromov ([ggkhrmv](https://github.com/ggkhrmv))
+* Kirill Sushkov ([teeverr](https://github.com/teeverr))
