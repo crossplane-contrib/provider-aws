@@ -815,6 +815,14 @@ type CustomDBInstanceParameters struct {
 	// deleted.
 	// +optional
 	DeleteAutomatedBackups *bool `json:"deleteAutomatedBackups,omitempty"`
+
+	// TagsIgnore contains rules that tell the reconciler to pretend matching
+	// tags don't exist during diff/updates. A rule key supports either exact
+	// match (e.g. "c7n:policy") or a simple prefix glob using a trailing *
+	// (e.g. "c7n:*" or "prefix*"). In all cases tags starting with the
+	// prefix "aws:" are always ignored (implicit rule "aws:*").
+	// +optional
+	TagsIgnore []TagIgnoreRule `json:"tagsIgnore,omitempty"`
 }
 
 // CustomDBInstanceObservation includes the custom status fields of DBInstance.
@@ -824,6 +832,19 @@ type CustomDBInstanceObservation struct {
 
 	// The database role may be Standalone, Primary or Replica.
 	DatabaseRole *string `json:"databaseRole,omitempty"`
+
+	// ObservedTags exposes the full, unfiltered set of external tags returned
+	// by AWS for observability. These are never used for diffing directly.
+	// +optional
+	ObservedTags []*Tag `json:"observedTags,omitempty"`
+}
+
+// TagIgnoreRule defines a single rule for ignoring a tag during diffing.
+// The Key may be an exact tag key or a prefix pattern that ends with *.
+type TagIgnoreRule struct {
+	// Key of the ignore rule. Supports exact key match or prefix* glob.
+	// +kubebuilder:validation:Required
+	Key string `json:"key"`
 }
 
 // CustomDBInstanceRoleAssociationParameters are custom parameters for the DBInstanceRoleAssociation
