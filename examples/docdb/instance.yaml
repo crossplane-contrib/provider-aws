@@ -13,3 +13,21 @@ spec:
         value: "my-cluster"
   providerConfigRef:
     name: example
+---
+apiVersion: docdb.aws.crossplane.io/v1alpha1
+kind: DBInstance
+metadata:
+  name: sample-test-docdb
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    autoMinorVersionUpgrade: true
+    dbClusterIdentifier: sample-test
+    dbInstanceClass: db.t3.medium
+    engine: docdb
+    preferredMaintenanceWindow: wed:12:46-wed:13:16
+    region: ap-south-1
+  managementPolicies:
+    - '*'
+  providerConfigRef:
+    name: aws-local
