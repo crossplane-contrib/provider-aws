@@ -502,7 +502,7 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.RestoreTime != nil {
 		res.RestoreToTime = &p.RestoreFrom.PointInTime.RestoreTime.Time
 	}
-	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.RestoreTime != nil {
+	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.RestoreType != nil {
 		res.RestoreType = p.RestoreFrom.PointInTime.RestoreType
 	}
 	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.SourceDBClusterIdentifier != nil {
