@@ -1187,14 +1187,21 @@ spec:
                               SourceDBClusterIdentifier specifies the identifier of the source DB cluster from which to restore. Constraints:
                               Must match the identifier of an existing DB instance.
                             type: string
+                          sourceDBClusterResourceId:
+                            description: |-
+                              The resource ID of the source DB cluster from which to restore.
+                              e.g. "cluster-EXAMPLE1234567890"
+                            type: string
                           sourceDBInstanceAutomatedBackupsArn:
                             description: |-
+                              Deprecated: Use SourceDBClusterResourceID instead. This field never had any effect.
                               SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
                               from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE
                             type: string
                           sourceDbiResourceId:
-                            description: SourceDbiResourceID specifies the resource
-                              ID of the source DB instance from which to restore.
+                            description: |-
+                              Deprecated: Use SourceDBClusterResourceID instead. This field never had any effect.
+                              The resource ID of the source DB instance from which to restore.
                             type: string
                           useLatestRestorableTime:
                             description: |-

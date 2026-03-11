@@ -438,6 +438,7 @@ type PointInTimeRestoreDBClusterBackupConfiguration struct {
 	// +optional
 	UseLatestRestorableTime bool `json:"useLatestRestorableTime"`
 
+	// Deprecated: Use SourceDBClusterResourceID instead. This field never had any effect.
 	// SourceDBInstanceAutomatedBackupsArn specifies the Amazon Resource Name (ARN) of the replicated automated backups
 	// from which to restore. Example: arn:aws:rds:useast-1:123456789012:auto-backup:ab-L2IJCEXJP7XQ7HOJ4SIEXAMPLE
 	// +optional
@@ -448,7 +449,13 @@ type PointInTimeRestoreDBClusterBackupConfiguration struct {
 	// +optional
 	SourceDBClusterIdentifier *string `json:"sourceDBClusterIdentifier,omitempty"`
 
-	// SourceDbiResourceID specifies the resource ID of the source DB instance from which to restore.
+	// The resource ID of the source DB cluster from which to restore.
+	// e.g. "cluster-EXAMPLE1234567890"
+	// +optional
+	SourceDBClusterResourceID *string `json:"sourceDBClusterResourceId,omitempty"`
+
+	// Deprecated: Use SourceDBClusterResourceID instead. This field never had any effect.
+	// The resource ID of the source DB instance from which to restore.
 	// +optional
 	SourceDbiResourceID *string `json:"sourceDbiResourceId,omitempty"`
 
