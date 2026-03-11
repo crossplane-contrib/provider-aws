@@ -7720,6 +7720,11 @@ func (in *PointInTimeRestoreDBClusterBackupConfiguration) DeepCopyInto(out *Poin
 		*out = new(string)
 		**out = **in
 	}
+	if in.SourceDBClusterResourceID != nil {
+		in, out := &in.SourceDBClusterResourceID, &out.SourceDBClusterResourceID
+		*out = new(string)
+		**out = **in
+	}
 	if in.SourceDbiResourceID != nil {
 		in, out := &in.SourceDbiResourceID, &out.SourceDbiResourceID
 		*out = new(string)
