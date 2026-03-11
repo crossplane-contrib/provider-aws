@@ -508,6 +508,9 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.SourceDBClusterIdentifier != nil {
 		res.SourceDBClusterIdentifier = p.RestoreFrom.PointInTime.SourceDBClusterIdentifier
 	}
+	if p.RestoreFrom.PointInTime != nil && p.RestoreFrom.PointInTime.SourceDBClusterResourceID != nil {
+		res.SourceDbClusterResourceId = p.RestoreFrom.PointInTime.SourceDBClusterResourceID
+	}
 	if cr.Spec.ForProvider.Tags != nil {
 		var tags []*svcsdk.Tag
 		for _, tag := range cr.Spec.ForProvider.Tags {
