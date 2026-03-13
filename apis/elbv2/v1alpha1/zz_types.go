@@ -134,6 +134,11 @@ type Certificate struct {
 }
 
 // +kubebuilder:skipversion
+type DescribeTrustStoreRevocation struct {
+	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FixedResponseActionConfig struct {
 	ContentType *string `json:"contentType,omitempty"`
 
@@ -178,6 +183,8 @@ type Listener_SDK struct {
 	ListenerARN *string `json:"listenerARN,omitempty"`
 
 	LoadBalancerARN *string `json:"loadBalancerARN,omitempty"`
+	// Information about the mutual authentication attributes of a listener.
+	MutualAuthentication *MutualAuthenticationAttributes `json:"mutualAuthentication,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
 
@@ -240,6 +247,17 @@ type Matcher struct {
 	GrpcCode *string `json:"grpcCode,omitempty"`
 
 	HTTPCode *string `json:"httpCode,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MutualAuthenticationAttributes struct {
+	IgnoreClientCertificateExpiry *bool `json:"ignoreClientCertificateExpiry,omitempty"`
+
+	Mode *string `json:"mode,omitempty"`
+
+	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
+
+	TrustStoreAssociationStatus *string `json:"trustStoreAssociationStatus,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -427,4 +445,14 @@ type TargetGroup_SDK struct {
 // +kubebuilder:skipversion
 type TargetHealthDescription struct {
 	HealthCheckPort *string `json:"healthCheckPort,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TrustStore struct {
+	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TrustStoreRevocation struct {
+	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
 }

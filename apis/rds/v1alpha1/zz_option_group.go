@@ -29,10 +29,13 @@ type OptionGroupParameters struct {
 	// Region is which region the OptionGroup will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Specifies the name of the engine that this option group should be associated
-	// with.
+	// The name of the engine to associate this option group with.
 	//
 	// Valid Values:
+	//
+	//    * db2-ae
+	//
+	//    * db2-se
 	//
 	//    * mariadb
 	//

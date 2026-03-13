@@ -20,6 +20,9 @@ type MockWAFV2Client struct {
 	MockCreateAPIKey                                     func(input *svcsdk.CreateAPIKeyInput) (*svcsdk.CreateAPIKeyOutput, error)
 	MockCreateAPIKeyWithContext                          func(input *svcsdk.CreateAPIKeyInput) (*svcsdk.CreateAPIKeyOutput, error)
 	MockCreateAPIKeyRequest                              func(input *svcsdk.CreateAPIKeyInput) (*request.Request, *svcsdk.CreateAPIKeyOutput)
+	MockDeleteAPIKey                                     func(input *svcsdk.DeleteAPIKeyInput) (*svcsdk.DeleteAPIKeyOutput, error)
+	MockDeleteAPIKeyWithContext                          func(input *svcsdk.DeleteAPIKeyInput) (*svcsdk.DeleteAPIKeyOutput, error)
+	MockDeleteAPIKeyRequest                              func(input *svcsdk.DeleteAPIKeyInput) (*request.Request, *svcsdk.DeleteAPIKeyOutput)
 	MockCreateIPSet                                      func(input *svcsdk.CreateIPSetInput) (*svcsdk.CreateIPSetOutput, error)
 	MockCreateIPSetWithContext                           func(input *svcsdk.CreateIPSetInput) (*svcsdk.CreateIPSetOutput, error)
 	MockCreateIPSetRequest                               func(input *svcsdk.CreateIPSetInput) (*request.Request, *svcsdk.CreateIPSetOutput)
@@ -206,6 +209,18 @@ func (m *MockWAFV2Client) CreateAPIKeyWithContext(context aws.Context, input *sv
 
 func (m *MockWAFV2Client) CreateAPIKeyRequest(input *svcsdk.CreateAPIKeyInput) (*request.Request, *svcsdk.CreateAPIKeyOutput) {
 	return m.MockCreateAPIKeyRequest(input)
+}
+
+func (m *MockWAFV2Client) DeleteAPIKey(input *svcsdk.DeleteAPIKeyInput) (*svcsdk.DeleteAPIKeyOutput, error) {
+	return m.MockDeleteAPIKey(input)
+}
+
+func (m *MockWAFV2Client) DeleteAPIKeyWithContext(context aws.Context, input *svcsdk.DeleteAPIKeyInput, option ...request.Option) (*svcsdk.DeleteAPIKeyOutput, error) {
+	return m.MockDeleteAPIKeyWithContext(input)
+}
+
+func (m *MockWAFV2Client) DeleteAPIKeyRequest(input *svcsdk.DeleteAPIKeyInput) (*request.Request, *svcsdk.DeleteAPIKeyOutput) {
+	return m.MockDeleteAPIKeyRequest(input)
 }
 
 func (m *MockWAFV2Client) CreateIPSet(input *svcsdk.CreateIPSetInput) (*svcsdk.CreateIPSetOutput, error) {

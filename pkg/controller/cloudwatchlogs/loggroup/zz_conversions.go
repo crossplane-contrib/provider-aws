@@ -33,6 +33,10 @@ import (
 func GenerateDescribeLogGroupsInput(cr *svcapitypes.LogGroup) *svcsdk.DescribeLogGroupsInput {
 	res := &svcsdk.DescribeLogGroupsInput{}
 
+	if cr.Spec.ForProvider.LogGroupClass != nil {
+		res.SetLogGroupClass(*cr.Spec.ForProvider.LogGroupClass)
+	}
+
 	return res
 }
 
@@ -51,6 +55,11 @@ func GenerateLogGroup(resp *svcsdk.DescribeLogGroupsOutput) *svcapitypes.LogGrou
 			cr.Status.AtProvider.KMSKeyID = elem.KmsKeyId
 		} else {
 			cr.Status.AtProvider.KMSKeyID = nil
+		}
+		if elem.LogGroupClass != nil {
+			cr.Spec.ForProvider.LogGroupClass = elem.LogGroupClass
+		} else {
+			cr.Spec.ForProvider.LogGroupClass = nil
 		}
 		if elem.LogGroupName != nil {
 			cr.Spec.ForProvider.LogGroupName = elem.LogGroupName
@@ -86,17 +95,20 @@ func GenerateLogGroup(resp *svcsdk.DescribeLogGroupsOutput) *svcapitypes.LogGrou
 func GenerateCreateLogGroupInput(cr *svcapitypes.LogGroup) *svcsdk.CreateLogGroupInput {
 	res := &svcsdk.CreateLogGroupInput{}
 
+	if cr.Spec.ForProvider.LogGroupClass != nil {
+		res.SetLogGroupClass(*cr.Spec.ForProvider.LogGroupClass)
+	}
 	if cr.Spec.ForProvider.LogGroupName != nil {
 		res.SetLogGroupName(*cr.Spec.ForProvider.LogGroupName)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f1 := map[string]*string{}
-		for f1key, f1valiter := range cr.Spec.ForProvider.Tags {
-			var f1val string
-			f1val = *f1valiter
-			f1[f1key] = &f1val
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.Tags {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
 		}
-		res.SetTags(f1)
+		res.SetTags(f2)
 	}
 
 	return res

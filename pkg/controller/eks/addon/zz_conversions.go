@@ -169,6 +169,20 @@ func GenerateCreateAddonInput(cr *svcapitypes.Addon) *svcsdk.CreateAddonInput {
 	if cr.Spec.ForProvider.ConfigurationValues != nil {
 		res.SetConfigurationValues(*cr.Spec.ForProvider.ConfigurationValues)
 	}
+	if cr.Spec.ForProvider.PodIdentityAssociations != nil {
+		f3 := []*svcsdk.AddonPodIdentityAssociations{}
+		for _, f3iter := range cr.Spec.ForProvider.PodIdentityAssociations {
+			f3elem := &svcsdk.AddonPodIdentityAssociations{}
+			if f3iter.RoleARN != nil {
+				f3elem.SetRoleArn(*f3iter.RoleARN)
+			}
+			if f3iter.ServiceAccount != nil {
+				f3elem.SetServiceAccount(*f3iter.ServiceAccount)
+			}
+			f3 = append(f3, f3elem)
+		}
+		res.SetPodIdentityAssociations(f3)
+	}
 	if cr.Spec.ForProvider.ResolveConflicts != nil {
 		res.SetResolveConflicts(*cr.Spec.ForProvider.ResolveConflicts)
 	}
@@ -176,13 +190,13 @@ func GenerateCreateAddonInput(cr *svcapitypes.Addon) *svcsdk.CreateAddonInput {
 		res.SetServiceAccountRoleArn(*cr.Spec.ForProvider.ServiceAccountRoleARN)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f5 := map[string]*string{}
-		for f5key, f5valiter := range cr.Spec.ForProvider.Tags {
-			var f5val string
-			f5val = *f5valiter
-			f5[f5key] = &f5val
+		f6 := map[string]*string{}
+		for f6key, f6valiter := range cr.Spec.ForProvider.Tags {
+			var f6val string
+			f6val = *f6valiter
+			f6[f6key] = &f6val
 		}
-		res.SetTags(f5)
+		res.SetTags(f6)
 	}
 
 	return res
@@ -200,6 +214,20 @@ func GenerateUpdateAddonInput(cr *svcapitypes.Addon) *svcsdk.UpdateAddonInput {
 	}
 	if cr.Spec.ForProvider.ConfigurationValues != nil {
 		res.SetConfigurationValues(*cr.Spec.ForProvider.ConfigurationValues)
+	}
+	if cr.Spec.ForProvider.PodIdentityAssociations != nil {
+		f3 := []*svcsdk.AddonPodIdentityAssociations{}
+		for _, f3iter := range cr.Spec.ForProvider.PodIdentityAssociations {
+			f3elem := &svcsdk.AddonPodIdentityAssociations{}
+			if f3iter.RoleARN != nil {
+				f3elem.SetRoleArn(*f3iter.RoleARN)
+			}
+			if f3iter.ServiceAccount != nil {
+				f3elem.SetServiceAccount(*f3iter.ServiceAccount)
+			}
+			f3 = append(f3, f3elem)
+		}
+		res.SetPodIdentityAssociations(f3)
 	}
 	if cr.Spec.ForProvider.ResolveConflicts != nil {
 		res.SetResolveConflicts(*cr.Spec.ForProvider.ResolveConflicts)

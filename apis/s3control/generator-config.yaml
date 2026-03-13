@@ -1,9 +1,13 @@
 ignore:
   resource_names:
+    - AccessGrant
+    - AccessGrantsInstance
+    - AccessGrantsLocation
     - AccessPointForObjectLambda
     - Bucket
     - Job
     - MultiRegionAccessPoint
+    - StorageLensGroup
   field_paths:
     - CreateAccessPointInput.Name
     - CreateAccessPointInput.Bucket

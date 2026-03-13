@@ -14,9 +14,10 @@ ignore:
     - DeleteLifecyclePolicyInput.RepositoryName
     - GetLifecyclePolicyInput.RepositoryName
   resource_names:
-    - Repository
-    - RepositoryPolicy
     - PullThroughCacheRule
+    - Repository
+    - RepositoryCreationTemplate
+    - RepositoryPolicy
   shape_names:
     - Image
     - ImageDetail

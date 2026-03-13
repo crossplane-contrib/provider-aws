@@ -51,7 +51,9 @@ type UserPoolDomainSpec struct {
 // UserPoolDomainObservation defines the observed state of UserPoolDomain
 type UserPoolDomainObservation struct {
 	// The Amazon CloudFront endpoint that you use as the target of the alias that
-	// you set up with your Domain Name Service (DNS) provider.
+	// you set up with your Domain Name Service (DNS) provider. Amazon Cognito returns
+	// this value if you set a custom domain with CustomDomainConfig. If you set
+	// an Amazon Cognito prefix domain, this operation returns a blank response.
 	CloudFrontDomain *string `json:"cloudFrontDomain,omitempty"`
 
 	CustomUserPoolDomainObservation `json:",inline"`

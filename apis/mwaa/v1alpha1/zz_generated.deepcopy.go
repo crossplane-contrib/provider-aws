@@ -294,6 +294,11 @@ func (in *EnvironmentParameters) DeepCopyInto(out *EnvironmentParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EndpointManagement != nil {
+		in, out := &in.EndpointManagement, &out.EndpointManagement
+		*out = new(string)
+		**out = **in
+	}
 	if in.EnvironmentClass != nil {
 		in, out := &in.EnvironmentClass, &out.EnvironmentClass
 		*out = new(string)
@@ -304,8 +309,18 @@ func (in *EnvironmentParameters) DeepCopyInto(out *EnvironmentParameters) {
 		*out = new(LoggingConfigurationInput)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.MaxWebservers != nil {
+		in, out := &in.MaxWebservers, &out.MaxWebservers
+		*out = new(int64)
+		**out = **in
+	}
 	if in.MaxWorkers != nil {
 		in, out := &in.MaxWorkers, &out.MaxWorkers
+		*out = new(int64)
+		**out = **in
+	}
+	if in.MinWebservers != nil {
+		in, out := &in.MinWebservers, &out.MinWebservers
 		*out = new(int64)
 		**out = **in
 	}
@@ -451,12 +466,27 @@ func (in *Environment_SDK) DeepCopyInto(out *Environment_SDK) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CeleryExecutorQueue != nil {
+		in, out := &in.CeleryExecutorQueue, &out.CeleryExecutorQueue
+		*out = new(string)
+		**out = **in
+	}
 	if in.CreatedAt != nil {
 		in, out := &in.CreatedAt, &out.CreatedAt
 		*out = (*in).DeepCopy()
 	}
 	if in.DagS3Path != nil {
 		in, out := &in.DagS3Path, &out.DagS3Path
+		*out = new(string)
+		**out = **in
+	}
+	if in.DatabaseVPCEndpointService != nil {
+		in, out := &in.DatabaseVPCEndpointService, &out.DatabaseVPCEndpointService
+		*out = new(string)
+		**out = **in
+	}
+	if in.EndpointManagement != nil {
+		in, out := &in.EndpointManagement, &out.EndpointManagement
 		*out = new(string)
 		**out = **in
 	}
@@ -485,8 +515,18 @@ func (in *Environment_SDK) DeepCopyInto(out *Environment_SDK) {
 		*out = new(LoggingConfiguration)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.MaxWebservers != nil {
+		in, out := &in.MaxWebservers, &out.MaxWebservers
+		*out = new(int64)
+		**out = **in
+	}
 	if in.MaxWorkers != nil {
 		in, out := &in.MaxWorkers, &out.MaxWorkers
+		*out = new(int64)
+		**out = **in
+	}
+	if in.MinWebservers != nil {
+		in, out := &in.MinWebservers, &out.MinWebservers
 		*out = new(int64)
 		**out = **in
 	}
@@ -573,6 +613,11 @@ func (in *Environment_SDK) DeepCopyInto(out *Environment_SDK) {
 	}
 	if in.WebserverURL != nil {
 		in, out := &in.WebserverURL, &out.WebserverURL
+		*out = new(string)
+		**out = **in
+	}
+	if in.WebserverVPCEndpointService != nil {
+		in, out := &in.WebserverVPCEndpointService, &out.WebserverVPCEndpointService
 		*out = new(string)
 		**out = **in
 	}

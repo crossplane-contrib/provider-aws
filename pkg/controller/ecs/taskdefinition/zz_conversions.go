@@ -674,89 +674,92 @@ func GenerateTaskDefinition(resp *svcsdk.DescribeTaskDefinitionOutput) *svcapity
 			f1f23 := []*svcapitypes.Volume{}
 			for _, f1f23iter := range resp.TaskDefinition.Volumes {
 				f1f23elem := &svcapitypes.Volume{}
+				if f1f23iter.ConfiguredAtLaunch != nil {
+					f1f23elem.ConfiguredAtLaunch = f1f23iter.ConfiguredAtLaunch
+				}
 				if f1f23iter.DockerVolumeConfiguration != nil {
-					f1f23elemf0 := &svcapitypes.DockerVolumeConfiguration{}
+					f1f23elemf1 := &svcapitypes.DockerVolumeConfiguration{}
 					if f1f23iter.DockerVolumeConfiguration.Autoprovision != nil {
-						f1f23elemf0.Autoprovision = f1f23iter.DockerVolumeConfiguration.Autoprovision
+						f1f23elemf1.Autoprovision = f1f23iter.DockerVolumeConfiguration.Autoprovision
 					}
 					if f1f23iter.DockerVolumeConfiguration.Driver != nil {
-						f1f23elemf0.Driver = f1f23iter.DockerVolumeConfiguration.Driver
+						f1f23elemf1.Driver = f1f23iter.DockerVolumeConfiguration.Driver
 					}
 					if f1f23iter.DockerVolumeConfiguration.DriverOpts != nil {
-						f1f23elemf0f2 := map[string]*string{}
-						for f1f23elemf0f2key, f1f23elemf0f2valiter := range f1f23iter.DockerVolumeConfiguration.DriverOpts {
-							var f1f23elemf0f2val string
-							f1f23elemf0f2val = *f1f23elemf0f2valiter
-							f1f23elemf0f2[f1f23elemf0f2key] = &f1f23elemf0f2val
+						f1f23elemf1f2 := map[string]*string{}
+						for f1f23elemf1f2key, f1f23elemf1f2valiter := range f1f23iter.DockerVolumeConfiguration.DriverOpts {
+							var f1f23elemf1f2val string
+							f1f23elemf1f2val = *f1f23elemf1f2valiter
+							f1f23elemf1f2[f1f23elemf1f2key] = &f1f23elemf1f2val
 						}
-						f1f23elemf0.DriverOpts = f1f23elemf0f2
+						f1f23elemf1.DriverOpts = f1f23elemf1f2
 					}
 					if f1f23iter.DockerVolumeConfiguration.Labels != nil {
-						f1f23elemf0f3 := map[string]*string{}
-						for f1f23elemf0f3key, f1f23elemf0f3valiter := range f1f23iter.DockerVolumeConfiguration.Labels {
-							var f1f23elemf0f3val string
-							f1f23elemf0f3val = *f1f23elemf0f3valiter
-							f1f23elemf0f3[f1f23elemf0f3key] = &f1f23elemf0f3val
+						f1f23elemf1f3 := map[string]*string{}
+						for f1f23elemf1f3key, f1f23elemf1f3valiter := range f1f23iter.DockerVolumeConfiguration.Labels {
+							var f1f23elemf1f3val string
+							f1f23elemf1f3val = *f1f23elemf1f3valiter
+							f1f23elemf1f3[f1f23elemf1f3key] = &f1f23elemf1f3val
 						}
-						f1f23elemf0.Labels = f1f23elemf0f3
+						f1f23elemf1.Labels = f1f23elemf1f3
 					}
 					if f1f23iter.DockerVolumeConfiguration.Scope != nil {
-						f1f23elemf0.Scope = f1f23iter.DockerVolumeConfiguration.Scope
+						f1f23elemf1.Scope = f1f23iter.DockerVolumeConfiguration.Scope
 					}
-					f1f23elem.DockerVolumeConfiguration = f1f23elemf0
+					f1f23elem.DockerVolumeConfiguration = f1f23elemf1
 				}
 				if f1f23iter.EfsVolumeConfiguration != nil {
-					f1f23elemf1 := &svcapitypes.EFSVolumeConfiguration{}
+					f1f23elemf2 := &svcapitypes.EFSVolumeConfiguration{}
 					if f1f23iter.EfsVolumeConfiguration.AuthorizationConfig != nil {
-						f1f23elemf1f0 := &svcapitypes.EFSAuthorizationConfig{}
+						f1f23elemf2f0 := &svcapitypes.EFSAuthorizationConfig{}
 						if f1f23iter.EfsVolumeConfiguration.AuthorizationConfig.AccessPointId != nil {
-							f1f23elemf1f0.AccessPointID = f1f23iter.EfsVolumeConfiguration.AuthorizationConfig.AccessPointId
+							f1f23elemf2f0.AccessPointID = f1f23iter.EfsVolumeConfiguration.AuthorizationConfig.AccessPointId
 						}
 						if f1f23iter.EfsVolumeConfiguration.AuthorizationConfig.Iam != nil {
-							f1f23elemf1f0.IAM = f1f23iter.EfsVolumeConfiguration.AuthorizationConfig.Iam
-						}
-						f1f23elemf1.AuthorizationConfig = f1f23elemf1f0
-					}
-					if f1f23iter.EfsVolumeConfiguration.FileSystemId != nil {
-						f1f23elemf1.FileSystemID = f1f23iter.EfsVolumeConfiguration.FileSystemId
-					}
-					if f1f23iter.EfsVolumeConfiguration.RootDirectory != nil {
-						f1f23elemf1.RootDirectory = f1f23iter.EfsVolumeConfiguration.RootDirectory
-					}
-					if f1f23iter.EfsVolumeConfiguration.TransitEncryption != nil {
-						f1f23elemf1.TransitEncryption = f1f23iter.EfsVolumeConfiguration.TransitEncryption
-					}
-					if f1f23iter.EfsVolumeConfiguration.TransitEncryptionPort != nil {
-						f1f23elemf1.TransitEncryptionPort = f1f23iter.EfsVolumeConfiguration.TransitEncryptionPort
-					}
-					f1f23elem.EFSVolumeConfiguration = f1f23elemf1
-				}
-				if f1f23iter.FsxWindowsFileServerVolumeConfiguration != nil {
-					f1f23elemf2 := &svcapitypes.FSxWindowsFileServerVolumeConfiguration{}
-					if f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig != nil {
-						f1f23elemf2f0 := &svcapitypes.FSxWindowsFileServerAuthorizationConfig{}
-						if f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig.CredentialsParameter != nil {
-							f1f23elemf2f0.CredentialsParameter = f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig.CredentialsParameter
-						}
-						if f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig.Domain != nil {
-							f1f23elemf2f0.Domain = f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig.Domain
+							f1f23elemf2f0.IAM = f1f23iter.EfsVolumeConfiguration.AuthorizationConfig.Iam
 						}
 						f1f23elemf2.AuthorizationConfig = f1f23elemf2f0
 					}
+					if f1f23iter.EfsVolumeConfiguration.FileSystemId != nil {
+						f1f23elemf2.FileSystemID = f1f23iter.EfsVolumeConfiguration.FileSystemId
+					}
+					if f1f23iter.EfsVolumeConfiguration.RootDirectory != nil {
+						f1f23elemf2.RootDirectory = f1f23iter.EfsVolumeConfiguration.RootDirectory
+					}
+					if f1f23iter.EfsVolumeConfiguration.TransitEncryption != nil {
+						f1f23elemf2.TransitEncryption = f1f23iter.EfsVolumeConfiguration.TransitEncryption
+					}
+					if f1f23iter.EfsVolumeConfiguration.TransitEncryptionPort != nil {
+						f1f23elemf2.TransitEncryptionPort = f1f23iter.EfsVolumeConfiguration.TransitEncryptionPort
+					}
+					f1f23elem.EFSVolumeConfiguration = f1f23elemf2
+				}
+				if f1f23iter.FsxWindowsFileServerVolumeConfiguration != nil {
+					f1f23elemf3 := &svcapitypes.FSxWindowsFileServerVolumeConfiguration{}
+					if f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig != nil {
+						f1f23elemf3f0 := &svcapitypes.FSxWindowsFileServerAuthorizationConfig{}
+						if f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig.CredentialsParameter != nil {
+							f1f23elemf3f0.CredentialsParameter = f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig.CredentialsParameter
+						}
+						if f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig.Domain != nil {
+							f1f23elemf3f0.Domain = f1f23iter.FsxWindowsFileServerVolumeConfiguration.AuthorizationConfig.Domain
+						}
+						f1f23elemf3.AuthorizationConfig = f1f23elemf3f0
+					}
 					if f1f23iter.FsxWindowsFileServerVolumeConfiguration.FileSystemId != nil {
-						f1f23elemf2.FileSystemID = f1f23iter.FsxWindowsFileServerVolumeConfiguration.FileSystemId
+						f1f23elemf3.FileSystemID = f1f23iter.FsxWindowsFileServerVolumeConfiguration.FileSystemId
 					}
 					if f1f23iter.FsxWindowsFileServerVolumeConfiguration.RootDirectory != nil {
-						f1f23elemf2.RootDirectory = f1f23iter.FsxWindowsFileServerVolumeConfiguration.RootDirectory
+						f1f23elemf3.RootDirectory = f1f23iter.FsxWindowsFileServerVolumeConfiguration.RootDirectory
 					}
-					f1f23elem.FsxWindowsFileServerVolumeConfiguration = f1f23elemf2
+					f1f23elem.FsxWindowsFileServerVolumeConfiguration = f1f23elemf3
 				}
 				if f1f23iter.Host != nil {
-					f1f23elemf3 := &svcapitypes.HostVolumeProperties{}
+					f1f23elemf4 := &svcapitypes.HostVolumeProperties{}
 					if f1f23iter.Host.SourcePath != nil {
-						f1f23elemf3.SourcePath = f1f23iter.Host.SourcePath
+						f1f23elemf4.SourcePath = f1f23iter.Host.SourcePath
 					}
-					f1f23elem.Host = f1f23elemf3
+					f1f23elem.Host = f1f23elemf4
 				}
 				if f1f23iter.Name != nil {
 					f1f23elem.Name = f1f23iter.Name

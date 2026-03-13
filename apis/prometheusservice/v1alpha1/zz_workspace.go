@@ -29,10 +29,18 @@ type WorkspaceParameters struct {
 	// Region is which region the Workspace will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// An optional user-assigned alias for this workspace. This alias is for user
-	// reference and does not need to be unique.
+	// An alias that you assign to this workspace to help you identify it. It does
+	// not need to be unique.
+	//
+	// Blank spaces at the beginning or end of the alias that you specify will be
+	// trimmed from the value used.
 	Alias *string `json:"alias,omitempty"`
-	// Optional, user-provided tags for this workspace.
+	// (optional) The ARN for a customer managed KMS key to use for encrypting data
+	// within your workspace. For more information about using your own key in your
+	// workspace, see Encryption at rest (https://docs.aws.amazon.com/prometheus/latest/userguide/encryption-at-rest-Amazon-Service-Prometheus.html)
+	// in the Amazon Managed Service for Prometheus User Guide.
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
+	// The list of tag keys and values to associate with the workspace.
 	Tags                      map[string]*string `json:"tags,omitempty"`
 	CustomWorkspaceParameters `json:",inline"`
 }
@@ -45,13 +53,14 @@ type WorkspaceSpec struct {
 
 // WorkspaceObservation defines the observed state of Workspace
 type WorkspaceObservation struct {
-	// The ARN of the workspace that was just created.
+	// The ARN for the new workspace.
 	ARN *string `json:"arn,omitempty"`
-	// Prometheus endpoint URI.
+	// The Prometheus endpoint available for this workspace.
 	PrometheusEndpoint *string `json:"prometheusEndpoint,omitempty"`
-	// The status of the workspace that was just created (usually CREATING).
+	// The current status of the new workspace. Immediately after you create the
+	// workspace, the status is usually CREATING.
 	Status *WorkspaceStatus_SDK `json:"status,omitempty"`
-	// The generated ID of the workspace that was just created.
+	// The unique ID for the new workspace.
 	WorkspaceID *string `json:"workspaceID,omitempty"`
 
 	CustomWorkspaceObservation `json:",inline"`

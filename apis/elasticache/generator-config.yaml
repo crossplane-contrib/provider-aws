@@ -8,8 +8,10 @@ ignore:
     - CacheCluster
     - CacheSecurityGroup
     - CacheSubnetGroup
+    - GlobalReplicationGroup
+    - ReplicationGroup
+    - ServerlessCache
+    - ServerlessCacheSnapshot
+    - Snapshot
     - User
     - UserGroup
-    - ReplicationGroup
-    - GlobalReplicationGroup
-    - Snapshot

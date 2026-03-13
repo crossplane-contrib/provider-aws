@@ -37,6 +37,11 @@ type AccountPolicy struct {
 }
 
 // +kubebuilder:skipversion
+type AnomalyDetector struct {
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Delivery struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -100,6 +105,18 @@ type InputLogEvent struct {
 }
 
 // +kubebuilder:skipversion
+type LiveTailSessionLogEvent struct {
+	IngestionTime *int64 `json:"ingestionTime,omitempty"`
+
+	Timestamp *int64 `json:"timestamp,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LogEvent struct {
+	Timestamp *int64 `json:"timestamp,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LogGroup_SDK struct {
 	ARN *string `json:"arn,omitempty"`
 
@@ -110,6 +127,10 @@ type LogGroup_SDK struct {
 	InheritedProperties []*string `json:"inheritedProperties,omitempty"`
 
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	LogGroupARN *string `json:"logGroupARN,omitempty"`
+
+	LogGroupClass *string `json:"logGroupClass,omitempty"`
 
 	LogGroupName *string `json:"logGroupName,omitempty"`
 

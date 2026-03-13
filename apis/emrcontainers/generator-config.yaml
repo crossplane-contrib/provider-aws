@@ -10,8 +10,9 @@ ignore:
     - CancelJobRunInput.VirtualClusterId
     - Configuration.Configurations
   resource_names:
-    - ManagedEndpoint
     - JobTemplate
+    - ManagedEndpoint
+    - SecurityConfiguration
   shape_names: null
 sdk_names:
   model_name: emr-containers

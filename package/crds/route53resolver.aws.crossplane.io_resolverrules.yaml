@@ -215,10 +215,11 @@ spec:
                         port:
                           format: int64
                           type: integer
+                        protocol:
+                          type: string
                       type: object
                     type: array
                 required:
-                - domainName
                 - region
                 - ruleType
                 type: object

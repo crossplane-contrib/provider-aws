@@ -36,10 +36,11 @@ type TableParameters struct {
 	// capacity. This setting can be changed later.
 	//
 	//    * PROVISIONED - We recommend using PROVISIONED for predictable workloads.
-	//    PROVISIONED sets the billing mode to Provisioned Mode (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadWriteCapacityMode.html#HowItWorks.ProvisionedThroughput.Manual).
+	//    PROVISIONED sets the billing mode to Provisioned capacity mode (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/provisioned-capacity-mode.html).
 	//
 	//    * PAY_PER_REQUEST - We recommend using PAY_PER_REQUEST for unpredictable
-	//    workloads. PAY_PER_REQUEST sets the billing mode to On-Demand Mode (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadWriteCapacityMode.html#HowItWorks.OnDemand).
+	//    workloads. PAY_PER_REQUEST sets the billing mode to On-demand capacity
+	//    mode (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/on-demand-capacity-mode.html).
 	BillingMode *string `json:"billingMode,omitempty"`
 	// Indicates whether deletion protection is to be enabled (true) or disabled
 	// (false) on the table.
@@ -128,6 +129,10 @@ type TableParameters struct {
 	//    the same attribute into two different indexes, this counts as two distinct
 	//    attributes when determining the total.
 	LocalSecondaryIndexes []*LocalSecondaryIndex `json:"localSecondaryIndexes,omitempty"`
+	// Sets the maximum number of read and write units for the specified table in
+	// on-demand capacity mode. If you use this parameter, you must specify MaxReadRequestUnits,
+	// MaxWriteRequestUnits, or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Indicates whether point in time recovery is enabled (true) or disabled (false)
 	// on the table.
 	PointInTimeRecoveryEnabled *bool `json:"pointInTimeRecoveryEnabled,omitempty"`
@@ -141,6 +146,20 @@ type TableParameters struct {
 	// Account, and Table Quotas (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html)
 	// in the Amazon DynamoDB Developer Guide.
 	ProvisionedThroughput *ProvisionedThroughput `json:"provisionedThroughput,omitempty"`
+	// An Amazon Web Services resource-based policy document in JSON format that
+	// will be attached to the table.
+	//
+	// When you attach a resource-based policy while creating a table, the policy
+	// application is strongly consistent.
+	//
+	// The maximum size supported for a resource-based policy document is 20 KB.
+	// DynamoDB counts whitespaces when calculating the size of a policy against
+	// this limit. For a full list of all considerations that apply for resource-based
+	// policies, see Resource-based policy considerations (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/rbac-considerations.html).
+	//
+	// You need to specify the CreateTable and PutResourcePolicy IAM actions for
+	// authorizing a user to create a table with a resource-based policy.
+	ResourcePolicy *string `json:"resourcePolicy,omitempty"`
 	// Represents the settings used to enable server-side encryption.
 	SSESpecification *SSESpecification `json:"sseSpecification,omitempty"`
 	// The settings for DynamoDB Streams on the table. These settings consist of:

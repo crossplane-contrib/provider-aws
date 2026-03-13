@@ -1,8 +1,9 @@
 ignore:
   resource_names:
-    - LogStream
-    - ExportTask
     - Delivery
+    - ExportTask
+    - LogAnomalyDetector
+    - LogStream
   field_paths:
     - CreateLogGroupInput.KmsKeyId
     - PutResourcePolicyInput.PolicyName
