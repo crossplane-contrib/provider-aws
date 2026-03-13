@@ -7,6 +7,10 @@ metadata:
     example: "true"
 spec:
   forProvider:
+    authTokenSecretRef:
+      name: ec-token
+      namespace: default
+      key: password
     region: us-east-1
     replicationGroupDescription: "An example replication group"
     applyModificationsImmediately: true
@@ -15,6 +19,18 @@ spec:
     port: 6379
     cacheSubnetGroupNameRef:
       name: sample-cache-subnet-group
+    logDeliveryConfiguration:
+      engineLogs:
+        destinationDetails:
+          cloudWatchLogsDetails:
+            logGroup: elasticache-engine-logs
+        logFormat: JSON
+        enabled: true
+      slowLogs:
+        destinationDetails:
+          cloudWatchLogsDetails:
+            logGroup: elasticache-slow-logs
+        logFormat: JSON
     numCacheClusters: 3
     cacheParameterGroupName: default.redis6.x
     cacheNodeType: cache.t3.medium
