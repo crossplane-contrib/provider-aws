@@ -62,7 +62,9 @@ type CustomDBInstanceParameters struct {
 }
 
 // CustomDBInstanceObservation for DBInstance
-type CustomDBInstanceObservation struct{}
+type CustomDBInstanceObservation struct {
+	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
+}
 
 // CustomDBSubnetGroupParameters for DBSubnetGroupParameters
 type CustomDBSubnetGroupParameters struct {
