@@ -8,15 +8,49 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/rds/v1alpha1"
+	rds "github.com/crossplane-contrib/provider-aws/pkg/clients/rds"
 	"github.com/crossplane-contrib/provider-aws/pkg/clients/rds/fake"
 )
+
+type objectFnCustom func(obj client.Object, diff bool) error
+
+// NewMockGetFn returns a MockGetFn that returns the supplied error.
+func newMockGetFnCustomWithDiff(diff bool, err error, ofn []objectFnCustom) test.MockGetFn {
+	return func(_ context.Context, _ client.ObjectKey, obj client.Object) error {
+		for _, fn := range ofn {
+			if err := fn(obj, diff); err != nil {
+				return err
+			}
+		}
+		return err
+	}
+}
+func mockGettingSecretData(obj client.Object, diff bool) error {
+	secret, ok := obj.(*corev1.Secret)
+	if !ok {
+		return errors.New("the mock function only supports secret objects")
+	}
+	secret.Data = map[string][]byte{
+		rds.PasswordCacheKey:    []byte("cachedPassword"),
+		rds.RestoreFlagCacheKay: []byte(""),
+	}
+	if diff {
+		secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte("differentPassword")
+	} else {
+		secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte("cachedPassword")
+
+	}
+	return nil
+}
 
 func TestCreate(t *testing.T) {
 	type args struct {
@@ -145,18 +179,264 @@ func TestIsUpToDate(t *testing.T) {
 				err:      nil,
 			},
 		},
+		"UpToDatePendingModifiedValue": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							DBInstanceClass: aws.String("db.t4.small"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DBInstanceClass: aws.String("db.t4.micro"),
+							PendingModifiedValues: &svcsdk.PendingModifiedValues{
+								DBInstanceClass: aws.String("db.t4.small"),
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+			},
+		},
+		"IsNoTUpToDatePendingModifiedValue": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							DBInstanceClass: aws.String("db.t4.medium"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DBInstanceClass: aws.String("db.t4.micro"),
+							PendingModifiedValues: &svcsdk.PendingModifiedValues{
+								DBInstanceClass: aws.String("db.t4.small"),
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
+		"IsNoTUpToDatePendingModifiedValueApplyImmediately": { // Instance class is already scheduled to be updated, but we want to update it immediately
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							DBInstanceClass: aws.String("db.t4.medium"),
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								ApplyImmediately: aws.Bool(true),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DBInstanceClass: aws.String("db.t4.micro"),
+							PendingModifiedValues: &svcsdk.PendingModifiedValues{
+								DBInstanceClass: aws.String("db.t4.medium"),
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
+		"UpToDatePendingModifiedValueEngineVersion": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							Engine: aws.String("mariadb"),
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								EngineVersion: aws.String("11.8.5"),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							Engine:        aws.String("mariadb"),
+							EngineVersion: aws.String("11.8.3"),
+							PendingModifiedValues: &svcsdk.PendingModifiedValues{
+								EngineVersion: aws.String("11.8.5"),
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+			},
+		},
+		"IsNoTUpToDatePendingModifiedValueEngineVersionRevert": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							Engine: aws.String("mariadb"),
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								EngineVersion: aws.String("11.8.3"),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							Engine:        aws.String("mariadb"),
+							EngineVersion: aws.String("11.8.3"),
+							PendingModifiedValues: &svcsdk.PendingModifiedValues{
+								EngineVersion: aws.String("11.8.5"),
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
+		"IsNoTUpToDatePendingModifiedValueEngineVersionApplyImmediately": { // Engine version is already scheduled to be updated, but we want to update it immediately
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							Engine: aws.String("mariadb"),
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								ApplyImmediately: aws.Bool(true),
+								EngineVersion:    aws.String("11.8.5"),
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							Engine:        aws.String("mariadb"),
+							EngineVersion: aws.String("11.8.3"),
+							PendingModifiedValues: &svcsdk.PendingModifiedValues{
+								EngineVersion: aws.String("11.8.5"),
+							},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
+		"UpToDateMasterPassword": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							Engine: aws.String("mariadb"),
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								EngineVersion: aws.String("10.5.12"),
+								MasterUserPasswordSecretRef: &xpv1.SecretKeySelector{
+									SecretReference: xpv1.SecretReference{
+										Name:      "masterUserPassword",
+										Namespace: "default",
+									},
+									Key: "password",
+								},
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							Engine:        aws.String("mariadb"),
+							EngineVersion: aws.String("10.5.12"),
+						},
+					},
+				},
+				kube: &test.MockClient{
+					// This mock returns the same password for both secrets(masterUserPasswordSecretRef and cached secret)
+					MockGet: newMockGetFnCustomWithDiff(false, nil, []objectFnCustom{mockGettingSecretData}),
+				},
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+			},
+		},
+		"ChangedMasterPassword": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							Engine: aws.String("mariadb"),
+							CustomDBInstanceParameters: svcapitypes.CustomDBInstanceParameters{
+								EngineVersion: aws.String("10.5.12"),
+								MasterUserPasswordSecretRef: &xpv1.SecretKeySelector{
+									SecretReference: xpv1.SecretReference{
+										Name:      "masterUserPassword",
+										Namespace: "default",
+									},
+									Key: "password",
+								},
+							},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							Engine:        aws.String("mariadb"),
+							EngineVersion: aws.String("10.5.12"),
+						},
+					},
+				},
+				kube: &test.MockClient{
+					// This mock returns different passwords from masterUserPasswordSecretRef and cached secret
+					MockGet: newMockGetFnCustomWithDiff(true, nil, []objectFnCustom{mockGettingSecretData}),
+				},
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			cr := tc.args.cr
 			ce := newCustomExternal(tc.kube, nil)
-			upToDate, _, err := ce.isUpToDate(context.TODO(), cr, tc.args.out)
+			upToDate, diffMsg, err := ce.isUpToDate(context.TODO(), cr, tc.args.out)
 
 			if diff := cmp.Diff(tc.want.err, err); diff != "" {
 				t.Errorf("r: -want, +got error: \n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.upToDate, upToDate); diff != "" {
-				t.Errorf("r: -want, +got: \n%s", diff)
+				t.Errorf("r: -want, +got: \n%s\ndiff message: %s", diff, diffMsg)
 			}
 		})
 	}
@@ -318,7 +598,7 @@ func TestPostObserve(t *testing.T) {
 				},
 			},
 		},
-		"upToDateStandaloneInstance": {
+		"databaseRoleInstance": {
 			args: args{
 				cr: &svcapitypes.DBInstance{
 					Status: svcapitypes.DBInstanceStatus{},
