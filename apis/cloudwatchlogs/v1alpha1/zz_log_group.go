@@ -29,7 +29,21 @@ type LogGroupParameters struct {
 	// Region is which region the LogGroup will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The name of the log group.
+	// Use this parameter to specify the log group class for this log group. There
+	// are two classes:
+	//
+	//    * The Standard log class supports all CloudWatch Logs features.
+	//
+	//    * The Infrequent Access log class supports a subset of CloudWatch Logs
+	//    features and incurs lower costs.
+	//
+	// If you omit this parameter, the default of STANDARD is used.
+	//
+	// The value of logGroupClass can't be changed after a log group is created.
+	//
+	// For details about the features supported by each class, see Log classes (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CloudWatch_Logs_Log_Classes.html)
+	LogGroupClass *string `json:"logGroupClass,omitempty"`
+	// A name for the log group.
 	// +kubebuilder:validation:Required
 	LogGroupName *string `json:"logGroupName"`
 	// The key-value pairs to use for the tags.
@@ -54,7 +68,16 @@ type LogGroupSpec struct {
 
 // LogGroupObservation defines the observed state of LogGroup
 type LogGroupObservation struct {
-	// The Amazon Resource Name (ARN) of the log group.
+	// The Amazon Resource Name (ARN) of the log group. This version of the ARN
+	// includes a trailing :* after the log group name.
+	//
+	// Use this version to refer to the ARN in IAM policies when specifying permissions
+	// for most API actions. The exception is when specifying permissions for TagResource
+	// (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_TagResource.html),
+	// UntagResource (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_UntagResource.html),
+	// and ListTagsForResource (https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_ListTagsForResource.html).
+	// The permissions for those three actions require the ARN version that doesn't
+	// include a trailing :*.
 	ARN *string `json:"arn,omitempty"`
 	// The creation time of the log group, expressed as the number of milliseconds
 	// after Jan 1, 1970 00:00:00 UTC.

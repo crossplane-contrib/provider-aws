@@ -236,11 +236,11 @@ type IdentityProviderType struct {
 // +kubebuilder:skipversion
 type LambdaConfigType struct {
 	CreateAuthChallenge *string `json:"createAuthChallenge,omitempty"`
-	// A custom email sender Lambda configuration type.
+	// The properties of a custom email sender Lambda trigger.
 	CustomEmailSender *CustomEmailLambdaVersionConfigType `json:"customEmailSender,omitempty"`
 
 	CustomMessage *string `json:"customMessage,omitempty"`
-	// A custom SMS sender Lambda configuration type.
+	// The properties of a custom SMS sender Lambda trigger.
 	CustomSMSSender *CustomSMSLambdaVersionConfigType `json:"customSMSSender,omitempty"`
 
 	DefineAuthChallenge *string `json:"defineAuthChallenge,omitempty"`
@@ -256,6 +256,8 @@ type LambdaConfigType struct {
 	PreSignUp *string `json:"preSignUp,omitempty"`
 
 	PreTokenGeneration *string `json:"preTokenGeneration,omitempty"`
+	// The properties of a pre token generation Lambda trigger.
+	PreTokenGenerationConfig *PreTokenGenerationVersionConfigType `json:"preTokenGenerationConfig,omitempty"`
 
 	UserMigration *string `json:"userMigration,omitempty"`
 
@@ -310,6 +312,13 @@ type PasswordPolicyType struct {
 	RequireUppercase *bool `json:"requireUppercase,omitempty"`
 
 	TemporaryPasswordValidityDays *int64 `json:"temporaryPasswordValidityDays,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PreTokenGenerationVersionConfigType struct {
+	LambdaARN *string `json:"lambdaARN,omitempty"`
+
+	LambdaVersion *string `json:"lambdaVersion,omitempty"`
 }
 
 // +kubebuilder:skipversion

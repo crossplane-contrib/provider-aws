@@ -94,8 +94,27 @@ type JobParameters struct {
 	//
 	// Jobs that are created without specifying a Glue version default to Glue 0.9.
 	GlueVersion *string `json:"glueVersion,omitempty"`
+	// A mode that describes how a job was created. Valid values are:
+	//
+	//    * SCRIPT - The job was created using the Glue Studio script editor.
+	//
+	//    * VISUAL - The job was created using the Glue Studio visual editor.
+	//
+	//    * NOTEBOOK - The job was created using an interactive sessions notebook.
+	//
+	// When the JobMode field is missing or null, SCRIPT is assigned as the default
+	// value.
+	JobMode *string `json:"jobMode,omitempty"`
 	// This field is reserved for future use.
 	LogURI *string `json:"logURI,omitempty"`
+	// This field specifies a day of the week and hour for a maintenance window
+	// for streaming jobs. Glue periodically performs maintenance activities. During
+	// these maintenance windows, Glue will need to restart your streaming jobs.
+	//
+	// Glue will restart the job within 3 hours of the specified maintenance window.
+	// For instance, if you set up the maintenance window for Monday at 10:00AM
+	// GMT, your jobs will be restarted between 10:00AM GMT to 1:00PM GMT.
+	MaintenanceWindow *string `json:"maintenanceWindow,omitempty"`
 	// For Glue version 1.0 or earlier jobs, using the standard worker type, the
 	// number of Glue data processing units (DPUs) that can be allocated when this
 	// job runs. A DPU is a relative measure of processing power that consists of
@@ -139,7 +158,12 @@ type JobParameters struct {
 	Tags map[string]*string `json:"tags,omitempty"`
 	// The job timeout in minutes. This is the maximum time that a job run can consume
 	// resources before it is terminated and enters TIMEOUT status. The default
-	// is 2,880 minutes (48 hours).
+	// is 2,880 minutes (48 hours) for batch jobs.
+	//
+	// Streaming jobs must have timeout values less than 7 days or 10080 minutes.
+	// When the value is left blank, the job will be restarted after 7 days based
+	// if you have not setup a maintenance window. If you have setup maintenance
+	// window, it will be restarted during the maintenance window after 7 days.
 	Timeout *int64 `json:"timeout,omitempty"`
 	// The type of predefined worker that is allocated when a job runs. Accepts
 	// a value of G.1X, G.2X, G.4X, G.8X or G.025X for Spark jobs. Accepts the value

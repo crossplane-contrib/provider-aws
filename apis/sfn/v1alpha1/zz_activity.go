@@ -29,6 +29,8 @@ type ActivityParameters struct {
 	// Region is which region the Activity will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// Settings to configure server-side encryption.
+	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 	// The name of the activity to create. This name must be unique for your Amazon
 	// Web Services account and region for 90 days. For more information, see Limits
 	// Related to State Machine Executions (https://docs.aws.amazon.com/step-functions/latest/dg/limits.html#service-limits-state-machine-executions)

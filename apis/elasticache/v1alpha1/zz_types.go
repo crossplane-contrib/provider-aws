@@ -193,12 +193,26 @@ type CustomerNodeEndpoint struct {
 }
 
 // +kubebuilder:skipversion
+type DataStorage struct {
+	Maximum *int64 `json:"maximum,omitempty"`
+
+	Minimum *int64 `json:"minimum,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EC2SecurityGroup struct {
 	EC2SecurityGroupName *string `json:"ec2SecurityGroupName,omitempty"`
 
 	EC2SecurityGroupOwnerID *string `json:"ec2SecurityGroupOwnerID,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ECPUPerSecond struct {
+	Maximum *int64 `json:"maximum,omitempty"`
+
+	Minimum *int64 `json:"minimum,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -450,6 +464,55 @@ type ReservedCacheNodesOffering struct {
 // +kubebuilder:skipversion
 type SecurityGroupMembership struct {
 	SecurityGroupID *string `json:"securityGroupID,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServerlessCache struct {
+	ARN *string `json:"arn,omitempty"`
+
+	DailySnapshotTime *string `json:"dailySnapshotTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	Engine *string `json:"engine,omitempty"`
+
+	FullEngineVersion *string `json:"fullEngineVersion,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	MajorEngineVersion *string `json:"majorEngineVersion,omitempty"`
+
+	ServerlessCacheName *string `json:"serverlessCacheName,omitempty"`
+
+	SnapshotRetentionLimit *int64 `json:"snapshotRetentionLimit,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	UserGroupID *string `json:"userGroupID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServerlessCacheConfiguration struct {
+	Engine *string `json:"engine,omitempty"`
+
+	MajorEngineVersion *string `json:"majorEngineVersion,omitempty"`
+
+	ServerlessCacheName *string `json:"serverlessCacheName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServerlessCacheSnapshot struct {
+	ARN *string `json:"arn,omitempty"`
+
+	BytesUsedForCache *string `json:"bytesUsedForCache,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	ServerlessCacheSnapshotName *string `json:"serverlessCacheSnapshotName,omitempty"`
+
+	SnapshotType *string `json:"snapshotType,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }

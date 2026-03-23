@@ -107,6 +107,12 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Connection) (mana
 		return managed.ExternalCreation{}, errorutils.Wrap(err, errCreate)
 	}
 
+	if resp.CreateConnectionStatus != nil {
+		cr.Status.AtProvider.CreateConnectionStatus = resp.CreateConnectionStatus
+	} else {
+		cr.Status.AtProvider.CreateConnectionStatus = nil
+	}
+
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
 

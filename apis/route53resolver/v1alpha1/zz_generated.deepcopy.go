@@ -868,6 +868,17 @@ func (in *ResolverEndpointParameters) DeepCopyInto(out *ResolverEndpointParamete
 		*out = new(string)
 		**out = **in
 	}
+	if in.Protocols != nil {
+		in, out := &in.Protocols, &out.Protocols
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	if in.ResolverEndpointType != nil {
 		in, out := &in.ResolverEndpointType, &out.ResolverEndpointType
 		*out = new(string)
@@ -988,6 +999,17 @@ func (in *ResolverEndpoint_SDK) DeepCopyInto(out *ResolverEndpoint_SDK) {
 		in, out := &in.PreferredInstanceType, &out.PreferredInstanceType
 		*out = new(string)
 		**out = **in
+	}
+	if in.Protocols != nil {
+		in, out := &in.Protocols, &out.Protocols
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
 	}
 	if in.ResolverEndpointType != nil {
 		in, out := &in.ResolverEndpointType, &out.ResolverEndpointType
@@ -1487,6 +1509,11 @@ func (in *TargetAddress) DeepCopyInto(out *TargetAddress) {
 	if in.Port != nil {
 		in, out := &in.Port, &out.Port
 		*out = new(int64)
+		**out = **in
+	}
+	if in.Protocol != nil {
+		in, out := &in.Protocol, &out.Protocol
+		*out = new(string)
 		**out = **in
 	}
 }

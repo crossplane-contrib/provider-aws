@@ -92,6 +92,7 @@ ignore:
     - RemoveRoleFromDBInstanceInput.RoleArn
     - CreateOptionGroupInput.OptionGroupName
   resource_names:
+    - BlueGreenDeployment
     - CustomAvailabilityZone
     - CustomDBEngineVersion
     - DBClusterEndpoint
@@ -100,9 +101,9 @@ ignore:
     - DBProxy
     - DBProxyEndpoint
     - DBSecurityGroup
+    - DBShardGroup
     - DBSnapshot
     - DBSubnetGroup
     - EventSubscription
-    - BlueGreenDeployment
     - Integration
     - TenantDatabase

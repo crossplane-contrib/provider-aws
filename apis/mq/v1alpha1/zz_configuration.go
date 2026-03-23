@@ -35,8 +35,7 @@ type ConfigurationParameters struct {
 	// +kubebuilder:validation:Required
 	EngineType *string `json:"engineType"`
 
-	// +kubebuilder:validation:Required
-	EngineVersion *string `json:"engineVersion"`
+	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`

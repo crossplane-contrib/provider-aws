@@ -72,6 +72,12 @@ const (
 	ClusterMode_compatible ClusterMode = "compatible"
 )
 
+type DataStorageUnit string
+
+const (
+	DataStorageUnit_GB DataStorageUnit = "GB"
+)
+
 type DataTieringStatus string
 
 const (
@@ -206,13 +212,15 @@ const (
 type SourceType string
 
 const (
-	SourceType_cache_cluster         SourceType = "cache-cluster"
-	SourceType_cache_parameter_group SourceType = "cache-parameter-group"
-	SourceType_cache_security_group  SourceType = "cache-security-group"
-	SourceType_cache_subnet_group    SourceType = "cache-subnet-group"
-	SourceType_replication_group     SourceType = "replication-group"
-	SourceType_user                  SourceType = "user"
-	SourceType_user_group            SourceType = "user-group"
+	SourceType_cache_cluster             SourceType = "cache-cluster"
+	SourceType_cache_parameter_group     SourceType = "cache-parameter-group"
+	SourceType_cache_security_group      SourceType = "cache-security-group"
+	SourceType_cache_subnet_group        SourceType = "cache-subnet-group"
+	SourceType_replication_group         SourceType = "replication-group"
+	SourceType_serverless_cache          SourceType = "serverless-cache"
+	SourceType_serverless_cache_snapshot SourceType = "serverless-cache-snapshot"
+	SourceType_user                      SourceType = "user"
+	SourceType_user_group                SourceType = "user-group"
 )
 
 type TransitEncryptionMode string

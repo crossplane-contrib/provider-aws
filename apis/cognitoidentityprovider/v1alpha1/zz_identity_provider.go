@@ -47,11 +47,13 @@ type IdentityProviderSpec struct {
 
 // IdentityProviderObservation defines the observed state of IdentityProvider
 type IdentityProviderObservation struct {
-	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-	// format, when the item was created.
+	// The date and time when the item was created. Amazon Cognito returns this
+	// timestamp in UNIX epoch time format. Your SDK might render the output in
+	// a human-readable format like ISO 8601 or a Java Date object.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
-	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-	// format, when the item was modified.
+	// The date and time when the item was modified. Amazon Cognito returns this
+	// timestamp in UNIX epoch time format. Your SDK might render the output in
+	// a human-readable format like ISO 8601 or a Java Date object.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The IdP name.
 	ProviderName *string `json:"providerName,omitempty"`

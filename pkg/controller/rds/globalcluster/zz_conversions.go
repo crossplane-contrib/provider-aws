@@ -57,26 +57,31 @@ func GenerateGlobalCluster(resp *svcsdk.DescribeGlobalClustersOutput) *svcapityp
 		} else {
 			cr.Spec.ForProvider.Engine = nil
 		}
+		if elem.EngineLifecycleSupport != nil {
+			cr.Spec.ForProvider.EngineLifecycleSupport = elem.EngineLifecycleSupport
+		} else {
+			cr.Spec.ForProvider.EngineLifecycleSupport = nil
+		}
 		if elem.EngineVersion != nil {
 			cr.Spec.ForProvider.EngineVersion = elem.EngineVersion
 		} else {
 			cr.Spec.ForProvider.EngineVersion = nil
 		}
 		if elem.FailoverState != nil {
-			f4 := &svcapitypes.FailoverState{}
+			f5 := &svcapitypes.FailoverState{}
 			if elem.FailoverState.FromDbClusterArn != nil {
-				f4.FromDBClusterARN = elem.FailoverState.FromDbClusterArn
+				f5.FromDBClusterARN = elem.FailoverState.FromDbClusterArn
 			}
 			if elem.FailoverState.IsDataLossAllowed != nil {
-				f4.IsDataLossAllowed = elem.FailoverState.IsDataLossAllowed
+				f5.IsDataLossAllowed = elem.FailoverState.IsDataLossAllowed
 			}
 			if elem.FailoverState.Status != nil {
-				f4.Status = elem.FailoverState.Status
+				f5.Status = elem.FailoverState.Status
 			}
 			if elem.FailoverState.ToDbClusterArn != nil {
-				f4.ToDBClusterARN = elem.FailoverState.ToDbClusterArn
+				f5.ToDBClusterARN = elem.FailoverState.ToDbClusterArn
 			}
-			cr.Status.AtProvider.FailoverState = f4
+			cr.Status.AtProvider.FailoverState = f5
 		} else {
 			cr.Status.AtProvider.FailoverState = nil
 		}
@@ -91,33 +96,33 @@ func GenerateGlobalCluster(resp *svcsdk.DescribeGlobalClustersOutput) *svcapityp
 			cr.Status.AtProvider.GlobalClusterIdentifier = nil
 		}
 		if elem.GlobalClusterMembers != nil {
-			f7 := []*svcapitypes.GlobalClusterMember{}
-			for _, f7iter := range elem.GlobalClusterMembers {
-				f7elem := &svcapitypes.GlobalClusterMember{}
-				if f7iter.DBClusterArn != nil {
-					f7elem.DBClusterARN = f7iter.DBClusterArn
+			f8 := []*svcapitypes.GlobalClusterMember{}
+			for _, f8iter := range elem.GlobalClusterMembers {
+				f8elem := &svcapitypes.GlobalClusterMember{}
+				if f8iter.DBClusterArn != nil {
+					f8elem.DBClusterARN = f8iter.DBClusterArn
 				}
-				if f7iter.GlobalWriteForwardingStatus != nil {
-					f7elem.GlobalWriteForwardingStatus = f7iter.GlobalWriteForwardingStatus
+				if f8iter.GlobalWriteForwardingStatus != nil {
+					f8elem.GlobalWriteForwardingStatus = f8iter.GlobalWriteForwardingStatus
 				}
-				if f7iter.IsWriter != nil {
-					f7elem.IsWriter = f7iter.IsWriter
+				if f8iter.IsWriter != nil {
+					f8elem.IsWriter = f8iter.IsWriter
 				}
-				if f7iter.Readers != nil {
-					f7elemf3 := []*string{}
-					for _, f7elemf3iter := range f7iter.Readers {
-						var f7elemf3elem string
-						f7elemf3elem = *f7elemf3iter
-						f7elemf3 = append(f7elemf3, &f7elemf3elem)
+				if f8iter.Readers != nil {
+					f8elemf3 := []*string{}
+					for _, f8elemf3iter := range f8iter.Readers {
+						var f8elemf3elem string
+						f8elemf3elem = *f8elemf3iter
+						f8elemf3 = append(f8elemf3, &f8elemf3elem)
 					}
-					f7elem.Readers = f7elemf3
+					f8elem.Readers = f8elemf3
 				}
-				if f7iter.SynchronizationStatus != nil {
-					f7elem.SynchronizationStatus = f7iter.SynchronizationStatus
+				if f8iter.SynchronizationStatus != nil {
+					f8elem.SynchronizationStatus = f8iter.SynchronizationStatus
 				}
-				f7 = append(f7, f7elem)
+				f8 = append(f8, f8elem)
 			}
-			cr.Status.AtProvider.GlobalClusterMembers = f7
+			cr.Status.AtProvider.GlobalClusterMembers = f8
 		} else {
 			cr.Status.AtProvider.GlobalClusterMembers = nil
 		}
@@ -158,6 +163,9 @@ func GenerateCreateGlobalClusterInput(cr *svcapitypes.GlobalCluster) *svcsdk.Cre
 	}
 	if cr.Spec.ForProvider.Engine != nil {
 		res.SetEngine(*cr.Spec.ForProvider.Engine)
+	}
+	if cr.Spec.ForProvider.EngineLifecycleSupport != nil {
+		res.SetEngineLifecycleSupport(*cr.Spec.ForProvider.EngineLifecycleSupport)
 	}
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
