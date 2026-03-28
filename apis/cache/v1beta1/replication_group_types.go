@@ -180,6 +180,8 @@ type ReplicationGroupObservation struct {
 	// endpoint to connect to this replication group.
 	ConfigurationEndpoint Endpoint `json:"configurationEndpoint,omitempty"`
 
+	LastAppliedAuthTokenUpdateStrategy string `json:"lastAppliedAuthTokenUpdateStrategy,omitempty"`
+
 	// MemberClusters is the list of names of all the cache clusters that are
 	// part of this replication group.
 	MemberClusters []string `json:"memberClusters,omitempty"`
@@ -206,6 +208,55 @@ type Tag struct {
 
 	// Value of the tag.
 	Value string `json:"value"`
+}
+
+type CloudWatchLogsDestinationDetails struct {
+
+	// The name of the CloudWatch Logs log group.
+	// +required
+	LogGroup *string `json:"logGroup,omitempty"`
+}
+
+type KinesisFirehoseDestinationDetails struct {
+
+	// The name of the Kinesis Data Firehose delivery stream.
+	// +required
+	DeliveryStream *string `json:"deliveryStream,omitempty"`
+}
+
+type DestinationDetails struct {
+
+	// The configuration details of the CloudWatch Logs destination.
+	// +optional
+	CloudWatchLogsDetails *CloudWatchLogsDestinationDetails `json:"cloudWatchLogsDetails,omitempty"`
+
+	// The configuration details of the Kinesis Data Firehose destination.
+	// +optional
+	KinesisFirehoseDetails *KinesisFirehoseDestinationDetails `json:"kinesisFirehoseDetails,omitempty"`
+}
+
+type LogsConf struct {
+	// Configuration details of either a CloudWatch Logs destination or Kinesis Data
+	// +required
+	DestinationDetails *DestinationDetails `json:"destinationDetails,omitempty"`
+
+	// Specify if log delivery is enabled. Default true .
+	// +optional
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Specifies either JSON or TEXT
+	// +required
+	LogFormat string `json:"logFormat,omitempty"`
+}
+
+type LogDeliveryConfiguration struct {
+	// Configuration for engine logs.
+	// +optional
+	EngineLogs *LogsConf `json:"engineLogs,omitempty"`
+
+	// Configuration for slow logs.
+	// +optional
+	SlowLogs *LogsConf `json:"slowLogs,omitempty"`
 }
 
 // A NodeGroupConfigurationSpec specifies the desired state of a node group.
@@ -278,9 +329,58 @@ type ReplicationGroupParameters struct {
 	// group object as closely as possible, we expose a boolean here rather than
 	// requiring the operator pass in a string authentication token. Crossplane
 	// will generate a token automatically and expose it via a Secret.
+	// If AuthTokenSecretRef is specified, this field is ignored.
 	// +immutable
 	// +optional
 	AuthEnabled *bool `json:"authEnabled,omitempty"`
+
+	// Specifies the strategy to use to update the AUTH token. This parameter must be
+	// specified with the auth-token parameter. Possible values:
+	//
+	//   - ROTATE - default, if no update strategy is provided
+	//
+	//   - SET - allowed only after ROTATE
+	//
+	//   - DELETE - allowed only when transitioning to RBAC
+	//
+	// For more information, see [Authenticating Users with AUTH]
+	//
+	// [Authenticating Users with AUTH]: http://docs.aws.amazon.com/AmazonElastiCache/latest/dg/auth.html
+
+	// The password used to access a password protected server.
+	// This parameter works with the AuthTokenUpdateStrategy(has "ROTATE" value by default)
+	// Attention: AuthTokenUpdateStrategy "ROTATE" adds a new auth token, while the old one remains working.
+	// If auth token wasn't specified or generated, unauthenticated access will remain possible until you set AuthTokenUpdateStrategy to "SET",
+	// which will remove the old auth token and allow only the new one to work.
+	//
+	// Password constraints:
+	//
+	//   - Must be only printable ASCII characters
+	//
+	//   - Must be at least 16 characters and no more than 128 characters in length
+	//
+	//   - Cannot contain any of the following characters: '/', '"', or '@', '%'
+	//
+	// For more information, see AUTH password at [AUTH].
+	//
+	// [AUTH]: http://redis.io/commands/AUTH
+	// +optional
+	AuthTokenSecretRef *xpv1.SecretKeySelector `json:"authTokenSecretRef,omitempty"`
+
+	// Specifies the strategy to use to update the AUTH token. This parameter must be
+	// specified with the auth-token parameter. Possible values:
+	//
+	//   - ROTATE - default, if no update strategy is provided
+	//
+	//   - SET - allowed only after ROTATE
+	//
+	//   - DELETE - allowed only when transitioning to RBAC
+	//
+	// For more information, see [Authenticating Users with AUTH]
+	//
+	// [Authenticating Users with AUTH]: http://docs.aws.amazon.com/AmazonElastiCache/latest/dg/auth.html
+	// +optional
+	AuthTokenUpdateStrategy string `json:"authTokenUpdateStrategy,omitempty"`
 
 	// AutomaticFailoverEnabled specifies whether a read-only replica is
 	// automatically promoted to read/write primary if the existing primary
@@ -384,6 +484,10 @@ type ReplicationGroupParameters struct {
 	// engine version.
 	// +optional
 	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	// Specifies the destination and format of the logs.
+	// +optional
+	LogDeliveryConfiguration LogDeliveryConfiguration `json:"logDeliveryConfiguration,omitempty"`
 
 	// MultiAZEnabled specifies if Multi-AZ is enabled to enhance fault tolerance
 	// You must have nodes across two or more Availability Zones in order to enable
