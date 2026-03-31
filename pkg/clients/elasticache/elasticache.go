@@ -147,6 +147,7 @@ func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		CacheNodeType:               aws.String(g.CacheNodeType),
 		CacheParameterGroupName:     g.CacheParameterGroupName,
 		CacheSecurityGroupNames:     g.CacheSecurityGroupNames,
+		Engine:                      pointer.ToOrNilIfZeroValue(g.Engine),
 		EngineVersion:               g.EngineVersion,
 		LogDeliveryConfigurations:   generateLogDeliveryConfigurationsRequest(g.LogDeliveryConfiguration),
 		MultiAZEnabled:              g.MultiAZEnabled,
@@ -416,6 +417,9 @@ func versionMatches(kubeVersion *string, awsVersion *string) bool { //nolint: go
 }
 
 func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) string { //nolint:gocyclo
+	if !reflect.DeepEqual(pointer.ToOrNilIfZeroValue(kube.Engine), cc.Engine) {
+		return "Engine"
+	}
 	// AWS will set and return a default version if we don't specify one.
 	if !versionMatches(kube.EngineVersion, cc.EngineVersion) {
 		return "EngineVersion"
