@@ -368,7 +368,7 @@ spec:
                     type: object
                   engine:
                     description: |-
-                      Engine is the name of the cache engine (memcached or redis) to be used
+                      Engine is the name of the cache engine (memcached, redis, or valkey) to be used
                       for the clusters in this replication group.
                     type: string
                   engineVersion:

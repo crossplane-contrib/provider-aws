@@ -34,6 +34,7 @@ const (
 // Supported cache engines.
 const (
 	CacheEngineRedis     = "redis"
+	CacheEngineValkey    = "valkey"
 	CacheEngineMemcached = "memcached"
 )
 
@@ -367,9 +368,8 @@ type ReplicationGroupParameters struct {
 	// +optional
 	CacheSubnetGroupNameSelector *xpv1.Selector `json:"cacheSubnetGroupNameSelector,omitempty"`
 
-	// Engine is the name of the cache engine (memcached or redis) to be used
+	// Engine is the name of the cache engine (memcached, redis, or valkey) to be used
 	// for the clusters in this replication group.
-	// +immutable
 	Engine string `json:"engine"`
 
 	// EngineVersion specifies the version number of the cache engine to be
