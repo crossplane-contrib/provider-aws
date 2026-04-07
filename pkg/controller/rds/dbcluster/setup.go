@@ -2,6 +2,9 @@ package dbcluster
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -18,7 +21,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -40,19 +45,32 @@ const (
 	errUnknownRestoreFromSource = "unknown restoreFrom source"
 )
 
-type custom struct {
+type shared struct {
 	kube   client.Client
 	client svcsdkapi.RDSAPI
+	cache  *cache
+}
+
+type cache struct {
+	addTags                            []*svcsdk.Tag
+	removeTags                         []*string
+	desiredPassword                    string
+	passwordChanged                    bool
+	engineVersionChanged               bool
+	dbClusterParameterGroupNameChanged bool
+	backupRetentionPeriodChanged       bool
+	backupWindowChanged                bool
 }
 
 func setupExternal(e *external) {
-	h := &custom{client: e.client, kube: e.kube}
+	s := &shared{client: e.client, kube: e.kube, cache: &cache{}}
 	e.preObserve = preObserve
-	e.postObserve = h.postObserve
-	e.isUpToDate = h.isUpToDate
-	e.preUpdate = h.preUpdate
-	e.postUpdate = h.postUpdate
-	e.preCreate = h.preCreate
+	e.postObserve = s.postObserve
+	e.isUpToDate = s.isUpToDate
+	e.preUpdate = s.preUpdate
+	e.postUpdate = s.postUpdate
+	e.preCreate = s.preCreate
+	e.postCreate = s.postCreate
 	e.preDelete = preDelete
 	e.filterList = filterList
 }
@@ -97,11 +115,11 @@ func preObserve(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.Descri
 	return nil
 }
 
-// This probably requires custom Conditions to be defined for handling all statuses
+// This probably requires shared Conditions to be defined for handling all statuses
 // described here https://docs.pointer.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Status.html
 // Need to get help from community on how to deal with this. Ideally the status should reflect
 // the true status value as described by the provider.
-func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (s *shared) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -121,24 +139,12 @@ func (e *custom) postObserve(ctx context.Context, cr *svcapitypes.DBCluster, res
 	default:
 		cr.SetConditions(xpv1.Unavailable().WithMessage("DB Cluster is " + pointer.StringValue(resp.DBClusters[0].Status)))
 	}
+	obs.ConnectionDetails, err = s.updateConnectionDetails(ctx, cr, obs.ConnectionDetails)
 
-	obs.ConnectionDetails = managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretEndpointKey: []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint)),
-		xpv1.ResourceCredentialsSecretUserKey:     []byte(pointer.StringValue(cr.Spec.ForProvider.MasterUsername)),
-		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.FormatInt(pointer.Int64Value(cr.Status.AtProvider.Port), 10)),
-		"readerEndpoint":                          []byte(pointer.StringValue(cr.Status.AtProvider.ReaderEndpoint)),
-	}
-
-	pw, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
-	if err != nil {
-		return obs, errors.Wrap(err, dbinstance.ErrGetCachedPassword)
-	}
-	obs.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
-
-	return obs, nil
+	return obs, err
 }
 
-func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) (err error) { //nolint:gocyclo
+func (s *shared) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) (err error) { //nolint:gocyclo
 	restoreFrom := cr.Spec.ForProvider.RestoreFrom
 	autogenerate := cr.Spec.ForProvider.AutogeneratePassword
 	masterUserPasswordSecretRef := cr.Spec.ForProvider.MasterUserPasswordSecretRef
@@ -151,7 +157,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 		pw, err = password.Generate()
 	case masterUserPasswordSecretRef != nil && autogenerate,
 		masterUserPasswordSecretRef != nil && !autogenerate:
-		pw, err = dbinstance.GetSecretValue(ctx, e.kube, masterUserPasswordSecretRef)
+		pw, err = dbinstance.GetSecretValue(ctx, s.kube, masterUserPasswordSecretRef)
 	}
 	if err != nil {
 		return errors.Wrap(err, dbinstance.ErrNoRetrievePasswordOrGenerate)
@@ -175,7 +181,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 			input.DBClusterIdentifier = obj.DBClusterIdentifier
 			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
 
-			if _, err = e.client.RestoreDBClusterFromS3WithContext(ctx, input); err != nil {
+			if _, err = s.client.RestoreDBClusterFromS3WithContext(ctx, input); err != nil {
 				return errors.Wrap(err, errRestore)
 			}
 		case "Snapshot":
@@ -183,7 +189,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 			input.DBClusterIdentifier = obj.DBClusterIdentifier
 			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
 
-			if _, err = e.client.RestoreDBClusterFromSnapshotWithContext(ctx, input); err != nil {
+			if _, err = s.client.RestoreDBClusterFromSnapshotWithContext(ctx, input); err != nil {
 				return errors.Wrap(err, errRestore)
 			}
 		case "PointInTime":
@@ -191,7 +197,7 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 			input.DBClusterIdentifier = obj.DBClusterIdentifier
 			input.VpcSecurityGroupIds = obj.VpcSecurityGroupIds
 
-			if _, err = e.client.RestoreDBClusterToPointInTimeWithContext(ctx, input); err != nil {
+			if _, err = s.client.RestoreDBClusterToPointInTimeWithContext(ctx, input); err != nil {
 				return errors.Wrap(err, errRestore)
 			}
 		default:
@@ -201,10 +207,19 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 
 	obj.EngineVersion = cr.Spec.ForProvider.EngineVersion
 
-	if _, err = dbinstance.Cache(ctx, e.kube, cr, passwordRestoreInfo); err != nil {
+	if _, err = dbinstance.Cache(ctx, s.kube, cr, passwordRestoreInfo); err != nil {
 		return errors.Wrap(err, dbinstance.ErrCachePassword)
 	}
 	return nil
+}
+
+func (s *shared) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, _ *svcsdk.CreateDBClusterOutput, extCreation managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	cd, err := s.updateConnectionDetails(ctx, cr, managed.ConnectionDetails{})
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	extCreation.ConnectionDetails = cd
+	return extCreation, nil
 }
 
 func generateRestoreDBClusterFromS3Input(cr *svcapitypes.DBCluster) *svcsdk.RestoreDBClusterFromS3Input { //nolint:gocyclo
@@ -557,32 +572,57 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 	return res
 }
 
-func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, string, error) { //nolint:gocyclo
-	current := GenerateDBCluster(out)
+func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) (bool, string, error) { //nolint:gocyclo
+	// If ApplyImmediately is not true we update observed state of db cluster with pending modified values to prevent redundant updates
+	if !ptr.Deref(cr.Spec.ForProvider.ApplyImmediately, false) {
+		utils.SetPmvDBCluster(out)
+	}
+	observed := GenerateDBCluster(out)
 
 	status := pointer.StringValue(out.DBClusters[0].Status)
 	if status == "modifying" || status == "upgrading" || status == "configuring-iam-database-auth" || status == "migrating" || status == "prepairing-data-migration" || status == "creating" {
 		return true, "", nil
 	}
 
-	passwordUpToDate, _, err := dbinstance.PasswordUpToDate(ctx, e.kube, cr)
+	passwordUpToDate, desiredPassword, err := dbinstance.PasswordUpToDate(ctx, s.kube, cr)
 	if err != nil {
 		return false, "", errors.Wrap(err, dbinstance.ErrNoPasswordUpToDate)
 	}
-	if !passwordUpToDate {
-		return false, "", nil
+	s.cache.desiredPassword = desiredPassword
+	s.cache.passwordChanged = !passwordUpToDate
+
+	patch, err := createPatch(&observed.Spec.ForProvider, &cr.Spec.ForProvider)
+	if err != nil {
+		return false, "", err
+	}
+	diff := cmp.Diff(&svcapitypes.DBClusterParameters{}, patch, cmpopts.EquateEmpty(),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "AllowMajorVersionUpgrade"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "BacktrackWindow"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "BackupRetentionPeriod"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "DBSubnetGroupName"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "DBClusterParameterGroupName"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "EnableCloudwatchLogsExports"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "EngineVersion"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "FinalDBSnapshotIdentifier"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "MasterUserPasswordSecretRef"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "ScalingConfiguration"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "SkipFinalSnapshot"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "StorageType"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "OptionGroupName"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "PreferredBackupWindow"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "Region"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "Tags"),
+		cmpopts.IgnoreTypes(svcapitypes.CustomDBClusterParameters{}),
+	)
+
+	if s.cache.passwordChanged {
+		diff += "\nmaster user password changed"
 	}
 
-	if pointer.BoolValue(cr.Spec.ForProvider.EnableIAMDatabaseAuthentication) != pointer.BoolValue(out.DBClusters[0].IAMDatabaseAuthenticationEnabled) {
-		return false, "", nil
-	}
-
-	if !isPreferredMaintenanceWindowUpToDate(cr, out) {
-		return false, "", nil
-	}
-
-	if !isPreferredBackupWindowUpToDate(cr, out) {
-		return false, "", nil
+	s.cache.backupWindowChanged = !isPreferredBackupWindowUpToDate(cr, out)
+	if s.cache.backupWindowChanged {
+		diff += "\ndesired preferredBackupWindow: " + pointer.StringValue(cr.Spec.ForProvider.PreferredBackupWindow) +
+			", observed preferredBackupWindow: " + pointer.StringValue(out.DBClusters[0].PreferredBackupWindow)
 	}
 
 	if pointer.Int64Value(cr.Spec.ForProvider.BacktrackWindow) != pointer.Int64Value(out.DBClusters[0].BacktrackWindow) {
@@ -590,55 +630,69 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 	}
 
 	if !isStorageTypeUpToDate(cr, out) {
-		return false, "", nil
+		diff += "\ndesired storageType: " + pointer.StringValue(cr.Spec.ForProvider.StorageType) +
+			", observed storageType: " + pointer.StringValue(out.DBClusters[0].StorageType)
 	}
 
-	if !isBackupRetentionPeriodUpToDate(cr, out) {
-		return false, "", nil
-	}
-
-	if pointer.BoolValue(cr.Spec.ForProvider.CopyTagsToSnapshot) != pointer.BoolValue(out.DBClusters[0].CopyTagsToSnapshot) {
-		return false, "", nil
-	}
-
-	if pointer.BoolValue(cr.Spec.ForProvider.DeletionProtection) != pointer.BoolValue(out.DBClusters[0].DeletionProtection) {
-		return false, "", nil
-	}
-
-	if !isEngineVersionUpToDate(cr, out) {
-		return false, "", nil
+	s.cache.backupRetentionPeriodChanged = !isBackupRetentionPeriodUpToDate(cr, out)
+	if s.cache.backupRetentionPeriodChanged {
+		diff += "\ndesired backupRetentionPeriod: " + strconv.FormatInt(pointer.Int64Value(cr.Spec.ForProvider.BackupRetentionPeriod), 10) +
+			", observed backupRetentionPeriod: " + strconv.FormatInt(pointer.Int64Value(out.DBClusters[0].BackupRetentionPeriod), 10)
 	}
 
 	if !isPortUpToDate(cr, out) {
-		return false, "", nil
+		diff += "\ndesired port: " + strconv.FormatInt(pointer.Int64Value(cr.Spec.ForProvider.Port), 10) +
+			", observed port: " + strconv.FormatInt(pointer.Int64Value(out.DBClusters[0].Port), 10)
+	}
+
+	s.cache.engineVersionChanged = !isEngineVersionUpToDate(cr, out)
+	if s.cache.engineVersionChanged {
+		if ptr.Deref(cr.Spec.ForProvider.EngineVersion, "") == ptr.Deref(out.DBClusters[0].EngineVersion, "") && out.DBClusters[0].PendingModifiedValues != nil && ptr.Deref(out.DBClusters[0].PendingModifiedValues.EngineVersion, "") != "" {
+			diff += fmt.Sprintf("\ndesired engineVersion: %s \npending modified engineVersion: %s ", pointer.StringValue(cr.Spec.ForProvider.EngineVersion), pointer.StringValue(out.DBClusters[0].PendingModifiedValues.EngineVersion))
+		} else {
+			diff += fmt.Sprintf("\ndesired engineVersion: %s \nobserved engineVersion: %s ", pointer.StringValue(cr.Spec.ForProvider.EngineVersion), pointer.StringValue(out.DBClusters[0].EngineVersion))
+		}
 	}
 
 	if !areVPCSecurityGroupIDsUpToDate(cr, out) {
-		return false, "", nil
+		observedIDs := make([]string, 0, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
+		for _, grp := range out.DBClusters[0].VpcSecurityGroups {
+			observedIDs = append(observedIDs, *grp.VpcSecurityGroupId)
+		}
+		diff += "\ndesired vpcSecurityGroupIDs: " + strings.Join(cr.Spec.ForProvider.VPCSecurityGroupIDs, ",") +
+			", observed vpcSecurityGroupIDs: " + strings.Join(observedIDs, ",")
 	}
 
 	if !areSameElements(cr.Spec.ForProvider.EnableCloudwatchLogsExports, out.DBClusters[0].EnabledCloudwatchLogsExports) {
-		return false, "", nil
+		diff += "\n enabledCloudwatchLogsExports changed"
 	}
 
-	if cr.Spec.ForProvider.DBClusterParameterGroupName != nil &&
-		pointer.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) != pointer.StringValue(out.DBClusters[0].DBClusterParameterGroup) {
-		return false, "", nil
+	s.cache.dbClusterParameterGroupNameChanged = !isDBClusterParameterGroupNameUpToDate(cr, out)
+	if s.cache.dbClusterParameterGroupNameChanged {
+		diff += "\ndesired dbClusterParameterGroupName: " + pointer.StringValue(cr.Spec.ForProvider.DBClusterParameterGroupName) +
+			", observed dbClusterParameterGroupName: " + pointer.StringValue(out.DBClusters[0].DBClusterParameterGroup)
 	}
 
 	isScalingConfigurationUpToDate, err := isScalingConfigurationUpToDate(cr.Spec.ForProvider.ScalingConfiguration, out.DBClusters[0].ScalingConfigurationInfo)
+	if err != nil {
+		return false, "", errors.Wrap(err, "failed to compare scaling configuration")
+	}
 	if !isScalingConfigurationUpToDate {
-		return false, "", err
+		diff += "\nscalingConfiguration changed"
 	}
 
-	if diff := cmp.Diff(cr.Spec.ForProvider.ServerlessV2ScalingConfiguration, current.Spec.ForProvider.ServerlessV2ScalingConfiguration); diff != "" {
-		return false, "ServerlessV2ScalingConfiguration: " + diff, nil
+	s.cache.addTags, s.cache.removeTags = utils.DiffTags(cr.Spec.ForProvider.Tags, out.DBClusters[0].TagList)
+	tagsChanged := len(s.cache.addTags) != 0 || len(s.cache.removeTags) != 0
+	if tagsChanged {
+		diff += fmt.Sprintf("\nadd %d tag(s) and remove %d tag(s)", len(s.cache.addTags), len(s.cache.removeTags))
 	}
 
-	add, remove := DiffTags(cr.Spec.ForProvider.Tags, out.DBClusters[0].TagList)
-	if len(add) > 0 || len(remove) > 0 {
-		return false, "", nil
+	if diff != "" {
+		diff = "Found observed differences in dbCluster\n" + diff
+		log.Println(diff)
+		return false, diff, nil
 	}
+
 	return true, "", nil
 }
 
@@ -720,9 +774,24 @@ func isEngineVersionUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBCl
 			return false
 		}
 
+		desiredEngineVersion := ptr.Deref(cr.Spec.ForProvider.EngineVersion, "")
+		observedEngineVersion := ptr.Deref(out.DBClusters[0].EngineVersion, "")
+		pendingEngineVersion := ""
+		if out.DBClusters[0].PendingModifiedValues != nil {
+			pendingEngineVersion = ptr.Deref(out.DBClusters[0].PendingModifiedValues.EngineVersion, "")
+		}
+		// If the desired version matches the current version and pending version is set means an upgrade should be reverted
+		// so controller should send an update request with the current version again to cancel the pending upgrade
+		if desiredEngineVersion == observedEngineVersion && pendingEngineVersion != "" {
+			return false
+		}
+		// If ApplyImmediately is false and there is a pending version, consider that as the current version for comparison
+		if !ptr.Deref(cr.Spec.ForProvider.ApplyImmediately, false) && pendingEngineVersion != "" {
+			observedEngineVersion = pendingEngineVersion
+		}
 		// Upgrade is only necessary if the spec version is higher.
 		// Downgrades are not possible in pointer.
-		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, *out.DBClusters[0].EngineVersion)
+		c := utils.CompareEngineVersions(*cr.Spec.ForProvider.EngineVersion, observedEngineVersion)
 		return c <= 0
 	}
 	return true
@@ -777,19 +846,18 @@ func areVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.Descr
 	return cmp.Equal(desiredIDs, actualIDs)
 }
 
-func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
+func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
 	obj.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 
 	obj.CloudwatchLogsExportConfiguration = generateCloudWatchExportConfiguration(
 		cr.Spec.ForProvider.EnableCloudwatchLogsExports,
 		cr.Status.AtProvider.EnabledCloudwatchLogsExports)
-
-	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
-	if err != nil {
-		return errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
+	// Only set MasterUserPassword if it has changed, otherwise it triggers "Resetting master password" on aws side,
+	// it happens because aws doesn't know current password, so any set causes a change.
+	if s.cache.passwordChanged {
+		obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(s.cache.desiredPassword)
 	}
-	obj.MasterUserPassword = pointer.ToOrNilIfZeroValue(desiredPassword)
 
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
 		obj.VpcSecurityGroupIds = make([]*string, len(cr.Spec.ForProvider.VPCSecurityGroupIDs))
@@ -804,36 +872,33 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 	// therefore EngineVersion update is entirely done separately in postUpdate
 	// Note: strangely ModifyDBInstance does not seem to behave this way
 	obj.EngineVersion = nil
-	// In case of a custom DBClusterParameterGroup, AWS requires for a major version update that
+	// In case of a shared DBClusterParameterGroup, AWS requires for a major version update that
 	// EngineVersion and DBClusterParameterGroupName are in the same ModifyDBCluster()-call
 	obj.DBClusterParameterGroupName = nil
 
 	// AWS Backup takes ownership of BackupRetentionPeriod and PreferredBackupWindow if it is in use.
 	// So we need to check there is no associated RecoveryPoint, before trying to update these fields.
-	// Therefore we only add some in postUpdate, where we have the DescribeDBClustersOutput available.
-	obj.BackupRetentionPeriod = nil
+	// Therefore we only set these fields in the ModifyDBInstanceInput if they are changed and not in use by AWS Backup.
 	obj.PreferredBackupWindow = nil
+	obj.BackupRetentionPeriod = nil
 
 	return nil
 }
 
 //nolint:gocyclo
-func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+func (s *shared) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	if err != nil {
 		return upd, err
 	}
 
-	desiredPassword, err := dbinstance.GetDesiredPassword(ctx, e.kube, cr)
-	if err != nil {
-		return upd, errors.Wrap(err, dbinstance.ErrRetrievePasswordForUpdate)
-	}
-
-	_, err = dbinstance.Cache(ctx, e.kube, cr, map[string]string{
-		dbinstance.PasswordCacheKey:    desiredPassword,
-		dbinstance.RestoreFlagCacheKay: "", // reset restore flag
-	})
-	if err != nil {
-		return upd, errors.Wrap(err, dbinstance.ErrCachePassword)
+	if s.cache.passwordChanged {
+		_, err = dbinstance.Cache(ctx, s.kube, cr, map[string]string{
+			dbinstance.PasswordCacheKey:    s.cache.desiredPassword,
+			dbinstance.RestoreFlagCacheKay: "", // reset restore flag
+		})
+		if err != nil {
+			return upd, errors.Wrap(err, dbinstance.ErrCachePassword)
+		}
 	}
 
 	input := GenerateDescribeDBClustersInput(cr)
@@ -841,16 +906,12 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj 
 	// and the function is generated by ack-generate, so we manually need to set the
 	// DBClusterIdentifier
 	input.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
-	resp, err := e.client.DescribeDBClustersWithContext(ctx, input)
+	resp, err := s.client.DescribeDBClustersWithContext(ctx, input)
 	if err != nil {
 		return managed.ExternalUpdate{}, errorutils.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 
-	needsEngineVersionUpdate := !isEngineVersionUpToDate(cr, resp)
-	needsDBClusterParamGroupUpdate := !isDBClusterParameterGroupNameUpToDate(cr, resp)
-	needsPreferredBackupWindowUpdate := !isPreferredBackupWindowUpToDate(cr, resp)
-	needsBackupRetentionPeriodUpdate := !isBackupRetentionPeriodUpToDate(cr, resp)
-	needsPostUpdate := needsEngineVersionUpdate || needsDBClusterParamGroupUpdate || needsPreferredBackupWindowUpdate || needsBackupRetentionPeriodUpdate
+	needsPostUpdate := s.cache.engineVersionChanged || s.cache.dbClusterParameterGroupNameChanged || s.cache.backupWindowChanged || s.cache.backupRetentionPeriodChanged
 
 	if needsPostUpdate {
 		modifyInput := &svcsdk.ModifyDBClusterInput{
@@ -858,27 +919,24 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj 
 			ApplyImmediately:            cr.Spec.ForProvider.ApplyImmediately,
 			DBClusterParameterGroupName: cr.Spec.ForProvider.DBClusterParameterGroupName,
 		}
-		if needsEngineVersionUpdate {
+		if s.cache.engineVersionChanged {
 			modifyInput.EngineVersion = cr.Spec.ForProvider.EngineVersion
 			modifyInput.AllowMajorVersionUpgrade = cr.Spec.ForProvider.AllowMajorVersionUpgrade
 		}
-		if needsPreferredBackupWindowUpdate {
+		if s.cache.backupWindowChanged {
 			modifyInput.PreferredBackupWindow = cr.Spec.ForProvider.PreferredBackupWindow
 		}
-		if needsBackupRetentionPeriodUpdate {
+		if s.cache.backupRetentionPeriodChanged {
 			modifyInput.BackupRetentionPeriod = cr.Spec.ForProvider.BackupRetentionPeriod
 		}
 
-		if _, err = e.client.ModifyDBClusterWithContext(ctx, modifyInput); err != nil {
+		if _, err = s.client.ModifyDBClusterWithContext(ctx, modifyInput); err != nil {
 			return managed.ExternalUpdate{}, err
 		}
 	}
 
-	tags := resp.DBClusters[0].TagList
-	add, remove := DiffTags(cr.Spec.ForProvider.Tags, tags)
-
-	if len(add) > 0 || len(remove) > 0 {
-		err := e.updateTags(ctx, cr, add, remove)
+	if len(s.cache.addTags) > 0 || len(s.cache.removeTags) > 0 {
+		err := s.updateTags(ctx, cr, s.cache.addTags, s.cache.removeTags)
 		if err != nil {
 			return managed.ExternalUpdate{}, err
 		}
@@ -903,12 +961,12 @@ func preDelete(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteD
 	return false, nil
 }
 
-func (e *custom) postDelete(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterOutput, err error) (managed.ExternalDelete, error) {
+func (s *shared) postDelete(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.DeleteDBClusterOutput, err error) (managed.ExternalDelete, error) {
 	if err != nil {
 		return managed.ExternalDelete{}, err
 	}
 
-	return managed.ExternalDelete{}, dbinstance.DeleteCache(ctx, e.kube, cr)
+	return managed.ExternalDelete{}, dbinstance.DeleteCache(ctx, s.kube, cr)
 }
 
 func filterList(cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersOutput) *svcsdk.DescribeDBClustersOutput {
@@ -923,30 +981,7 @@ func filterList(cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersOutput)
 	return resp
 }
 
-// DiffTags returns tags that should be added or removed.
-func DiffTags(spec []*svcapitypes.Tag, current []*svcsdk.Tag) (addTags []*svcsdk.Tag, remove []*string) {
-	addMap := make(map[string]string, len(spec))
-	for _, t := range spec {
-		addMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
-	}
-	removeMap := make(map[string]string, len(spec))
-	for _, t := range current {
-		if addMap[pointer.StringValue(t.Key)] == pointer.StringValue(t.Value) {
-			delete(addMap, pointer.StringValue(t.Key))
-			continue
-		}
-		removeMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
-	}
-	for k, v := range addMap {
-		addTags = append(addTags, &svcsdk.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
-	}
-	for k := range removeMap {
-		remove = append(remove, pointer.ToOrNilIfZeroValue(k))
-	}
-	return
-}
-
-func (e *custom) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, addTags []*svcsdk.Tag, removeTags []*string) error {
+func (s *shared) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, addTags []*svcsdk.Tag, removeTags []*string) error {
 
 	arn := cr.Status.AtProvider.DBClusterARN
 	if arn != nil {
@@ -956,7 +991,7 @@ func (e *custom) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, addT
 				TagKeys:      removeTags,
 			}
 
-			_, err := e.client.RemoveTagsFromResourceWithContext(ctx, inputR)
+			_, err := s.client.RemoveTagsFromResourceWithContext(ctx, inputR)
 			if err != nil {
 				return errors.New(errUpdateTags)
 			}
@@ -967,7 +1002,7 @@ func (e *custom) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, addT
 				Tags:         addTags,
 			}
 
-			_, err := e.client.AddTagsToResourceWithContext(ctx, inputC)
+			_, err := s.client.AddTagsToResourceWithContext(ctx, inputC)
 			if err != nil {
 				return errors.New(errUpdateTags)
 			}
@@ -1027,4 +1062,47 @@ func areSameElements(a1, a2 []*string) bool {
 	}
 
 	return true
+}
+func (s *shared) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DBCluster, details managed.ConnectionDetails) (managed.ConnectionDetails, error) {
+	if details == nil {
+		details = managed.ConnectionDetails{}
+	}
+
+	details[xpv1.ResourceCredentialsSecretUserKey] = []byte(pointer.StringValue(cr.Spec.ForProvider.MasterUsername))
+	password := s.cache.desiredPassword
+	if password == "" {
+		pw, err := dbinstance.GetDesiredPassword(ctx, s.kube, cr)
+		if err != nil {
+			return details, errors.Wrap(err, dbinstance.ErrGetCachedPassword)
+		}
+		password = pw
+	}
+	details[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(password)
+
+	if cr.Status.AtProvider.Endpoint == nil {
+		return details, nil
+	}
+	if pointer.StringValue(cr.Status.AtProvider.Endpoint) != "" {
+		details[xpv1.ResourceCredentialsSecretEndpointKey] = []byte(pointer.StringValue(cr.Status.AtProvider.Endpoint))
+	}
+	if pointer.Int64Value(cr.Status.AtProvider.Port) > 0 {
+		details[xpv1.ResourceCredentialsSecretPortKey] = []byte(strconv.FormatInt(*cr.Status.AtProvider.Port, 10))
+	}
+	if pointer.StringValue(cr.Status.AtProvider.ReaderEndpoint) != "" {
+		details["readerEndpoint"] = []byte(pointer.StringValue(cr.Status.AtProvider.ReaderEndpoint))
+	}
+
+	return details, nil
+}
+
+func createPatch(observed *svcapitypes.DBClusterParameters, desired *svcapitypes.DBClusterParameters) (*svcapitypes.DBClusterParameters, error) {
+	jsonPatch, err := jsonpatch.CreateJSONPatch(observed, desired)
+	if err != nil {
+		return nil, err
+	}
+	patch := &svcapitypes.DBClusterParameters{}
+	if err := json.Unmarshal(jsonPatch, patch); err != nil {
+		return nil, err
+	}
+	return patch, nil
 }

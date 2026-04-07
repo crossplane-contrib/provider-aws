@@ -567,63 +567,10 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 	return nil
 }
 
-// setPendingModifiedValues updates the DescribeDBInstancesOutput with any
-// PendingModifiedValues so that they are considered during isUpToDate checks. Exception is Engine version, which is handled separately.
-func setPendingModifiedValues(cr *svcsdk.DescribeDBInstancesOutput) { //nolint:gocyclo
-	if len(cr.DBInstances) > 0 {
-		if cr.DBInstances[0].PendingModifiedValues != nil {
-			if cr.DBInstances[0].PendingModifiedValues.AllocatedStorage != nil {
-				cr.DBInstances[0].AllocatedStorage = cr.DBInstances[0].PendingModifiedValues.AllocatedStorage
-			}
-			if cr.DBInstances[0].PendingModifiedValues.BackupRetentionPeriod != nil {
-				cr.DBInstances[0].BackupRetentionPeriod = cr.DBInstances[0].PendingModifiedValues.BackupRetentionPeriod
-			}
-			if cr.DBInstances[0].PendingModifiedValues.CACertificateIdentifier != nil {
-				cr.DBInstances[0].CACertificateIdentifier = cr.DBInstances[0].PendingModifiedValues.CACertificateIdentifier
-			}
-			if cr.DBInstances[0].PendingModifiedValues.DBInstanceClass != nil {
-				cr.DBInstances[0].DBInstanceClass = cr.DBInstances[0].PendingModifiedValues.DBInstanceClass
-			}
-			if cr.DBInstances[0].PendingModifiedValues.DBSubnetGroupName != nil {
-				cr.DBInstances[0].DBSubnetGroup = &svcsdk.DBSubnetGroup{
-					DBSubnetGroupName: cr.DBInstances[0].PendingModifiedValues.DBSubnetGroupName,
-				}
-			}
-			if cr.DBInstances[0].PendingModifiedValues.DedicatedLogVolume != nil {
-				cr.DBInstances[0].DedicatedLogVolume = cr.DBInstances[0].PendingModifiedValues.DedicatedLogVolume
-			}
-			if cr.DBInstances[0].PendingModifiedValues.Iops != nil {
-				cr.DBInstances[0].Iops = cr.DBInstances[0].PendingModifiedValues.Iops
-			}
-			if cr.DBInstances[0].PendingModifiedValues.LicenseModel != nil {
-				cr.DBInstances[0].LicenseModel = cr.DBInstances[0].PendingModifiedValues.LicenseModel
-			}
-			if cr.DBInstances[0].PendingModifiedValues.MultiAZ != nil {
-				cr.DBInstances[0].MultiAZ = cr.DBInstances[0].PendingModifiedValues.MultiAZ
-			}
-			if cr.DBInstances[0].PendingModifiedValues.Port != nil {
-				if cr.DBInstances[0].Endpoint == nil {
-					cr.DBInstances[0].Endpoint = &svcsdk.Endpoint{}
-				}
-				cr.DBInstances[0].Endpoint.Port = cr.DBInstances[0].PendingModifiedValues.Port
-			}
-			if cr.DBInstances[0].PendingModifiedValues.ProcessorFeatures != nil {
-				cr.DBInstances[0].ProcessorFeatures = cr.DBInstances[0].PendingModifiedValues.ProcessorFeatures
-			}
-			if cr.DBInstances[0].PendingModifiedValues.StorageThroughput != nil {
-				cr.DBInstances[0].StorageThroughput = cr.DBInstances[0].PendingModifiedValues.StorageThroughput
-			}
-			if cr.DBInstances[0].PendingModifiedValues.StorageType != nil {
-				cr.DBInstances[0].StorageType = cr.DBInstances[0].PendingModifiedValues.StorageType
-			}
-		}
-	}
-}
-
 func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (upToDate bool, diff string, err error) { //nolint:gocyclo
 	// If ApplyImmediately is not true we update external state of db instance with pending modified values to prevent redundant updates
 	if !ptr.Deref(cr.Spec.ForProvider.ApplyImmediately, false) {
-		setPendingModifiedValues(out)
+		utils.SetPmvDBInstance(out)
 	}
 	db := out.DBInstances[0]
 	patch, err := createPatch(out, &cr.Spec.ForProvider)
