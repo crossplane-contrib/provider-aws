@@ -445,6 +445,9 @@ type DBCluster_SDK struct {
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 
 	NetworkType *string `json:"networkType,omitempty"`
+	// This data type is used as a response element in the ModifyDBCluster operation
+	// and contains changes that will be applied during the next maintenance window.
+	PendingModifiedValues *ClusterPendingModifiedValues `json:"pendingModifiedValues,omitempty"`
 
 	PercentProgress *string `json:"percentProgress,omitempty"`
 

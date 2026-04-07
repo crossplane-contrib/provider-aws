@@ -1923,6 +1923,54 @@ spec:
                           type: string
                       type: object
                     type: array
+                  pendingModifiedValues:
+                    description: |-
+                      Information about pending changes to the DB cluster. This information is
+                      returned only when there are pending changes. Specific changes are identified
+                      by subelements.
+                    properties:
+                      allocatedStorage:
+                        format: int64
+                        type: integer
+                      backupRetentionPeriod:
+                        format: int64
+                        type: integer
+                      dbClusterIdentifier:
+                        type: string
+                      engineVersion:
+                        type: string
+                      iamDatabaseAuthenticationEnabled:
+                        type: boolean
+                      iops:
+                        format: int64
+                        type: integer
+                      masterUserPassword:
+                        type: string
+                      pendingCloudwatchLogsExports:
+                        description: |-
+                          A list of the log types whose configuration is still pending. In other words,
+                          these log types are in the process of being activated or deactivated.
+                        properties:
+                          logTypesToDisable:
+                            items:
+                              type: string
+                            type: array
+                          logTypesToEnable:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      rdsCustomClusterConfiguration:
+                        description: Reserved for future use.
+                        properties:
+                          interconnectSubnetID:
+                            type: string
+                          transitGatewayMulticastDomainID:
+                            type: string
+                        type: object
+                      storageType:
+                        type: string
+                    type: object
                   percentProgress:
                     description: The progress of the operation as a percentage.
                     type: string

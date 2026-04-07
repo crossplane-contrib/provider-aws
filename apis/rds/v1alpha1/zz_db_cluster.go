@@ -743,6 +743,10 @@ type DBClusterObservation struct {
 	MasterUserSecret *MasterUserSecret `json:"masterUserSecret,omitempty"`
 	// Indicates whether the DB cluster has instances in multiple Availability Zones.
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+	// Information about pending changes to the DB cluster. This information is
+	// returned only when there are pending changes. Specific changes are identified
+	// by subelements.
+	PendingModifiedValues *ClusterPendingModifiedValues `json:"pendingModifiedValues,omitempty"`
 	// The progress of the operation as a percentage.
 	PercentProgress *string `json:"percentProgress,omitempty"`
 	// Indicates whether Performance Insights is enabled for the DB cluster.

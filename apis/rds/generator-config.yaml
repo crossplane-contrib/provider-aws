@@ -38,7 +38,7 @@ resources:
         is_read_only: true
         from:
           operation: DescribeDBClusters
-          path: DBClusters.Port    
+          path: DBClusters.Port
   DBInstanceRoleAssociation:
     exceptions:
       errors:
@@ -56,7 +56,6 @@ ignore:
     - ModifyDBClusterInput.VpcSecurityGroupIds
     - CreateDBClusterInput.EngineVersion
     - ModifyDBClusterInput.EngineVersion
-    - DBCluster.PendingModifiedValues
     - DescribeDBInstancesInput.DBInstanceIndentifier
     - CreateDBInstanceInput.DBInstanceIdentifier
     - ModifyDBInstanceInput.DBInstanceIdentifier
