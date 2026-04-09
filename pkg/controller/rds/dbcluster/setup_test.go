@@ -913,6 +913,102 @@ func TestIsUpToDate(t *testing.T) {
 				isUpToDate: false,
 			},
 		},
+		"IgnoresTagsWithTagsIgnorePrefixGlob": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								TagsIgnore: []svcapitypes.TagIgnoreRule{{Key: "aws:*"}, {Key: "c7n:*"}},
+							},
+							Tags: []*svcapitypes.Tag{
+								{Key: ptr.To("env"), Value: ptr.To("prod")},
+							},
+							DeletionProtection: ptr.To(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DeletionProtection: ptr.To(true),
+							TagList: []*svcsdk.Tag{
+								{Key: ptr.To("aws:createdBy"), Value: ptr.To("terraform")},
+								{Key: ptr.To("c7n:policy"), Value: ptr.To("auto")},
+								{Key: ptr.To("env"), Value: ptr.To("prod")},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: true,
+			},
+		},
+		"IgnoresTagsWithTagsIgnoreExactMatch": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								TagsIgnore: []svcapitypes.TagIgnoreRule{{Key: "aws:*"}, {Key: "c7n:policy"}},
+							},
+							Tags: []*svcapitypes.Tag{
+								{Key: ptr.To("env"), Value: ptr.To("prod")},
+							},
+							DeletionProtection: ptr.To(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DeletionProtection: ptr.To(true),
+							TagList: []*svcsdk.Tag{
+								{Key: ptr.To("aws:createdBy"), Value: ptr.To("terraform")},
+								{Key: ptr.To("c7n:policy"), Value: ptr.To("auto")},
+								{Key: ptr.To("c7n:other"), Value: ptr.To("x")},
+								{Key: ptr.To("env"), Value: ptr.To("prod")},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
+		"DoesNotIgnoreAllWithBlanketStarRule": {
+			args: args{
+				kube: test.NewMockClient(),
+				cr: &svcapitypes.DBCluster{
+					Spec: svcapitypes.DBClusterSpec{
+						ForProvider: svcapitypes.DBClusterParameters{
+							CustomDBClusterParameters: svcapitypes.CustomDBClusterParameters{
+								TagsIgnore: []svcapitypes.TagIgnoreRule{{Key: "*"}},
+							},
+							Tags:               []*svcapitypes.Tag{},
+							DeletionProtection: ptr.To(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBClustersOutput{
+					DBClusters: []*svcsdk.DBCluster{
+						{
+							DeletionProtection: ptr.To(true),
+							TagList: []*svcsdk.Tag{
+								{Key: ptr.To("env"), Value: ptr.To("prod")},
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				isUpToDate: false,
+			},
+		},
 	}
 
 	for name, tc := range cases {

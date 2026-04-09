@@ -635,7 +635,23 @@ func (e *custom) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 		return false, "ServerlessV2ScalingConfiguration: " + diff, nil
 	}
 
-	add, remove := DiffTags(cr.Spec.ForProvider.Tags, out.DBClusters[0].TagList)
+	// Build ignore rules: implicit aws:* + user supplied rules
+	ignore := []string{"aws:*"}
+	for _, r := range cr.Spec.ForProvider.TagsIgnore {
+		ignore = append(ignore, r.Key)
+	}
+	cr.Status.AtProvider.ObservedTags = nil
+	var observedTags []*svcsdk.Tag
+	if out.DBClusters[0].TagList != nil {
+		for _, tag := range out.DBClusters[0].TagList {
+			cr.Status.AtProvider.ObservedTags = append(cr.Status.AtProvider.ObservedTags, &svcapitypes.Tag{Key: tag.Key, Value: tag.Value})
+			if utils.ShouldIgnore(pointer.StringValue(tag.Key), ignore) {
+				continue
+			}
+			observedTags = append(observedTags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})
+		}
+	}
+	add, remove := DiffTags(cr.Spec.ForProvider.Tags, observedTags)
 	if len(add) > 0 || len(remove) > 0 {
 		return false, "", nil
 	}
@@ -875,7 +891,19 @@ func (e *custom) postUpdate(ctx context.Context, cr *svcapitypes.DBCluster, obj 
 	}
 
 	tags := resp.DBClusters[0].TagList
-	add, remove := DiffTags(cr.Spec.ForProvider.Tags, tags)
+	// Filter tags using the same ignore rules as isUpToDate
+	updateIgnore := []string{"aws:*"}
+	for _, r := range cr.Spec.ForProvider.TagsIgnore {
+		updateIgnore = append(updateIgnore, r.Key)
+	}
+	filteredTags := make([]*svcsdk.Tag, 0, len(tags))
+	for _, tag := range tags {
+		if utils.ShouldIgnore(pointer.StringValue(tag.Key), updateIgnore) {
+			continue
+		}
+		filteredTags = append(filteredTags, tag)
+	}
+	add, remove := DiffTags(cr.Spec.ForProvider.Tags, filteredTags)
 
 	if len(add) > 0 || len(remove) > 0 {
 		err := e.updateTags(ctx, cr, add, remove)
