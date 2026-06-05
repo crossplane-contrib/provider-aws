@@ -18,3 +18,4 @@ guidelines and responsibilities for the steering committee and maintainers.
 * Kevin Kendzia ([kkendzia](https://github.com/kkendzia))
 * Gosha Khromov ([ggkhrmv](https://github.com/ggkhrmv))
 * Kirill Sushkov ([teeverr](https://github.com/teeverr))
+* Riyad Ilyasov ([ridik-il](https://github.com/ridik-il))
