@@ -972,6 +972,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			},
 			ccList: []elasticachetypes.CacheCluster{
 				{
+					Engine:                     pointer.ToOrNilIfZeroValue(engine),
 					EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
 					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
 					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
@@ -1216,6 +1217,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 				p.CacheSecurityGroupNames = nil
 			}),
 			cc: elasticachetypes.CacheCluster{
+				Engine:                     pointer.ToOrNilIfZeroValue(engine),
 				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
 				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
@@ -1231,6 +1233,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			name: "NoUpdateWhenBothSubnetAndSecurityGroupsResolved",
 			kube: replicationGroupParams(),
 			cc: elasticachetypes.CacheCluster{
+				Engine:                     pointer.ToOrNilIfZeroValue(engine),
 				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
 				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},

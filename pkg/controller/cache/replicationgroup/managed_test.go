@@ -847,7 +847,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -948,7 +948,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -999,7 +999,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -1053,7 +1053,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -1131,7 +1131,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -1228,7 +1228,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -1304,6 +1304,7 @@ func TestIsUpToDate(t *testing.T) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
 								{
+									Engine:                     aws.String(engine),
 									EngineVersion:              aws.String(engineVersion),
 									CacheParameterGroup:        &types.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
 									PreferredMaintenanceWindow: aws.String(maintenanceWindow),
@@ -1718,7 +1719,7 @@ func TestUpdate(t *testing.T) {
 func TestUpdatePassesEngineToModifyReplicationGroup(t *testing.T) {
 	var gotInput *elasticache.ModifyReplicationGroupInput
 
-	e := &external{client: &fake.MockClient{
+	e := &external{cache: &cache{}, client: &fake.MockClient{
 		MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
 			return &elasticache.DescribeReplicationGroupsOutput{
 				ReplicationGroups: []types.ReplicationGroup{{
