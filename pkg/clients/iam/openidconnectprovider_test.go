@@ -102,6 +102,13 @@ func TestIsOIDCProviderUpToDate(t *testing.T) {
 			},
 			want: false,
 		},
+		"ThumbprintListCaseInsensitive": {
+			args: args{
+				input:    v1beta1.OpenIDConnectProviderParameters{ThumbprintList: []string{"ThumbPrint1", "THUMBPRINT2"}},
+				observed: iam.GetOpenIDConnectProviderOutput{ThumbprintList: []string{"thumbprint2", "thumbprint1"}},
+			},
+			want: true,
+		},
 		"DifferentTags": {
 			args: args{
 				input: v1beta1.OpenIDConnectProviderParameters{Tags: []v1beta1.Tag{

@@ -18,6 +18,7 @@ package iam
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -69,7 +70,7 @@ func IsOIDCProviderUpToDate(in svcapitypes.OpenIDConnectProviderParameters, obse
 	if !cmp.Equal(in.ClientIDList, observed.ClientIDList, sortSlicesOpt, cmpopts.EquateEmpty()) {
 		return false
 	}
-	if !cmp.Equal(in.ThumbprintList, observed.ThumbprintList, sortSlicesOpt, cmpopts.EquateEmpty()) {
+	if !cmp.Equal(NormalizeStrings(in.ThumbprintList), NormalizeStrings(observed.ThumbprintList), sortSlicesOpt, cmpopts.EquateEmpty()) {
 		return false
 	}
 
@@ -82,6 +83,14 @@ func IsOIDCProviderUpToDate(in svcapitypes.OpenIDConnectProviderParameters, obse
 		cmpTags[i] = svcapitypes.Tag{Key: *observed.Tags[i].Key, Value: *observed.Tags[i].Value}
 	}
 	return cmp.Equal(in.Tags, cmpTags, sortSliceTags, cmpopts.EquateEmpty())
+}
+
+func NormalizeStrings(values []string) []string {
+	normalized := make([]string, len(values))
+	for i, value := range values {
+		normalized[i] = strings.ToLower(value)
+	}
+	return normalized
 }
 
 // SliceDifference returns the elements to added and removed between the
