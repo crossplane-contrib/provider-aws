@@ -201,7 +201,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errSDK)
 	}
 
-	if !cmp.Equal(cr.Spec.ForProvider.ThumbprintList, observedProvider.ThumbprintList, cmpopts.EquateEmpty(),
+	if !cmp.Equal(iam.NormalizeStrings(cr.Spec.ForProvider.ThumbprintList), iam.NormalizeStrings(observedProvider.ThumbprintList), cmpopts.EquateEmpty(),
 		cmpopts.SortSlices(func(x, y string) bool {
 			return x < y
 		})) {
