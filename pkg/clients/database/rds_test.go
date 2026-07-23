@@ -563,6 +563,24 @@ func TestIsUpToDate(t *testing.T) {
 			},
 			want: true,
 		},
+		"VPCSecurityGroupIDsSameElementsDifferentOrder": {
+			args: args{
+				db: rdstypes.DBInstance{
+					VpcSecurityGroups: []rdstypes.VpcSecurityGroupMembership{
+						{VpcSecurityGroupId: ptr.To("sg-aaaa"), Status: ptr.To("active")},
+						{VpcSecurityGroupId: ptr.To("sg-bbbb"), Status: ptr.To("active")},
+					},
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							VPCSecurityGroupIDs: []string{"sg-bbbb", "sg-aaaa"},
+						},
+					},
+				},
+			},
+			want: true,
+		},
 	}
 
 	for name, tc := range cases {
