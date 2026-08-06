@@ -494,10 +494,10 @@ func TestLateInitialize(t *testing.T) {
 						AttributeName: aws.String("N"),
 						KeyType:       aws.String("T"),
 					}},
-					ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
-						ReadCapacityUnits:  aws.Int64(42),
-						WriteCapacityUnits: aws.Int64(42),
-					},
+					// ProvisionedThroughput is NOT late-initialized when
+					// BillingMode is PAY_PER_REQUEST. AWS returns zeros for
+					// on-demand tables which would cause CreateTable to fail
+					// if the table needs to be recreated.
 					SSESpecification: &svcapitypes.SSESpecification{
 						Enabled:        aws.Bool(true),
 						KMSMasterKeyID: aws.String("some-arn"),
@@ -507,6 +507,45 @@ func TestLateInitialize(t *testing.T) {
 						StreamEnabled:  aws.Bool(true),
 						StreamViewType: aws.String("the-good-type"),
 					},
+				},
+			},
+		},
+		"EmptyParamsProvisioned": {
+			args: args{
+				p: &svcapitypes.TableParameters{},
+				in: &svcsdk.DescribeTableOutput{
+					Table: &svcsdk.TableDescription{
+						AttributeDefinitions: []*svcsdk.AttributeDefinition{{
+							AttributeName: aws.String("N"),
+							AttributeType: aws.String("T"),
+						}},
+						KeySchema: []*svcsdk.KeySchemaElement{{
+							AttributeName: aws.String("N"),
+							KeyType:       aws.String("T"),
+						}},
+						ProvisionedThroughput: &svcsdk.ProvisionedThroughputDescription{
+							ReadCapacityUnits:  aws.Int64(5),
+							WriteCapacityUnits: aws.Int64(5),
+						},
+					},
+				},
+			},
+			want: want{
+				p: &svcapitypes.TableParameters{
+					BillingMode: aws.String(svcsdk.BillingModeProvisioned),
+					AttributeDefinitions: []*svcapitypes.AttributeDefinition{{
+						AttributeName: aws.String("N"),
+						AttributeType: aws.String("T"),
+					}},
+					KeySchema: []*svcapitypes.KeySchemaElement{{
+						AttributeName: aws.String("N"),
+						KeyType:       aws.String("T"),
+					}},
+					ProvisionedThroughput: &svcapitypes.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(5),
+						WriteCapacityUnits: aws.Int64(5),
+					},
+					StreamSpecification: &svcapitypes.StreamSpecification{StreamEnabled: aws.Bool(false)},
 				},
 			},
 		},
@@ -833,6 +872,106 @@ func TestDiffGlobalSecondaryIndexes(t *testing.T) {
 			got := diffGlobalSecondaryIndexes(tc.args.spec, tc.args.obs)
 			if diff := cmp.Diff(got, tc.want.result); diff != "" {
 				t.Errorf("diffGlobalSecondaryIndexes(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestPreCreate(t *testing.T) {
+	type args struct {
+		cr  *svcapitypes.Table
+		obj *svcsdk.CreateTableInput
+	}
+	type want struct {
+		obj *svcsdk.CreateTableInput
+		err error
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"PayPerRequestStripsProvisionedThroughput": {
+			args: args{
+				cr: &svcapitypes.Table{},
+				obj: &svcsdk.CreateTableInput{
+					BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
+					ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(0),
+						WriteCapacityUnits: aws.Int64(0),
+					},
+				},
+			},
+			want: want{
+				obj: &svcsdk.CreateTableInput{
+					BillingMode:           aws.String(svcsdk.BillingModePayPerRequest),
+					ProvisionedThroughput: nil,
+				},
+			},
+		},
+		"ProvisionedKeepsProvisionedThroughput": {
+			args: args{
+				cr: &svcapitypes.Table{},
+				obj: &svcsdk.CreateTableInput{
+					BillingMode: aws.String(svcsdk.BillingModeProvisioned),
+					ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(5),
+						WriteCapacityUnits: aws.Int64(5),
+					},
+				},
+			},
+			want: want{
+				obj: &svcsdk.CreateTableInput{
+					BillingMode: aws.String(svcsdk.BillingModeProvisioned),
+					ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(5),
+						WriteCapacityUnits: aws.Int64(5),
+					},
+				},
+			},
+		},
+		"NilBillingModeKeepsProvisionedThroughput": {
+			args: args{
+				cr: &svcapitypes.Table{},
+				obj: &svcsdk.CreateTableInput{
+					ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(1),
+						WriteCapacityUnits: aws.Int64(1),
+					},
+				},
+			},
+			want: want{
+				obj: &svcsdk.CreateTableInput{
+					ProvisionedThroughput: &svcsdk.ProvisionedThroughput{
+						ReadCapacityUnits:  aws.Int64(1),
+						WriteCapacityUnits: aws.Int64(1),
+					},
+				},
+			},
+		},
+		"PayPerRequestWithNilProvisionedThroughput": {
+			args: args{
+				cr: &svcapitypes.Table{},
+				obj: &svcsdk.CreateTableInput{
+					BillingMode: aws.String(svcsdk.BillingModePayPerRequest),
+				},
+			},
+			want: want{
+				obj: &svcsdk.CreateTableInput{
+					BillingMode:           aws.String(svcsdk.BillingModePayPerRequest),
+					ProvisionedThroughput: nil,
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := preCreate(context.Background(), tc.args.cr, tc.args.obj)
+			if diff := cmp.Diff(tc.want.err, err); diff != "" {
+				t.Errorf("preCreate(...): -want error, +got error:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.obj, tc.args.obj); diff != "" {
+				t.Errorf("preCreate(...): -want, +got:\n%s", diff)
 			}
 		})
 	}
