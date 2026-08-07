@@ -157,6 +157,13 @@ func preObserve(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DescribeTa
 }
 func preCreate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.CreateTableInput) error {
 	obj.TableName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
+	// AWS rejects CreateTableInput with ProvisionedThroughput when
+	// BillingMode is PAY_PER_REQUEST. This can happen when a table was
+	// previously observed (late-initializing ProvisionedThroughput with
+	// zero values from DescribeTable) and then needs to be recreated.
+	if pointer.StringValue(obj.BillingMode) == svcsdk.BillingModePayPerRequest {
+		obj.ProvisionedThroughput = nil
+	}
 	return nil
 }
 func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) (bool, error) {
@@ -238,9 +245,17 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 		}
 	}
 	if in.ProvisionedThroughput == nil && t.Table.ProvisionedThroughput != nil {
-		in.ProvisionedThroughput = &svcapitypes.ProvisionedThroughput{
-			ReadCapacityUnits:  t.Table.ProvisionedThroughput.ReadCapacityUnits,
-			WriteCapacityUnits: t.Table.ProvisionedThroughput.WriteCapacityUnits,
+		// NOTE: AWS always returns ProvisionedThroughput in DescribeTable
+		// output, even for PAY_PER_REQUEST tables (with values of 0). We
+		// must not late-initialize these zero values because they would
+		// cause a CreateTable failure if the table needs to be recreated:
+		// AWS rejects ProvisionedThroughput in CreateTableInput when
+		// BillingMode is PAY_PER_REQUEST.
+		if pointer.StringValue(in.BillingMode) != svcsdk.BillingModePayPerRequest {
+			in.ProvisionedThroughput = &svcapitypes.ProvisionedThroughput{
+				ReadCapacityUnits:  t.Table.ProvisionedThroughput.ReadCapacityUnits,
+				WriteCapacityUnits: t.Table.ProvisionedThroughput.WriteCapacityUnits,
+			}
 		}
 	}
 	if t.Table.SSEDescription != nil {
