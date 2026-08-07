@@ -24,11 +24,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/types"
+	"github.com/aws/smithy-go/document"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,6 +51,8 @@ var (
 	cacheNodeType              = "n1.super.cool"
 	autoFailoverEnabled        = true
 	cacheParameterGroupName    = "coolParamGroup"
+	engine                     = v1beta1.CacheEngineRedis
+	alternateEngine            = v1beta1.CacheEngineValkey
 	engineVersion              = "5.0"
 	alternateEngineVersion     = "6.x"
 	port                       = 6379
@@ -170,6 +174,10 @@ func withLogDeliveryConfiguration(config v1beta1.LogDeliveryConfiguration) repli
 	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.LogDeliveryConfiguration = config }
 }
 
+func withEngine(e string) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.Engine = e }
+}
+
 func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup {
 	r := &v1beta1.ReplicationGroup{
 		ObjectMeta: objectMeta,
@@ -181,6 +189,7 @@ func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup 
 				AutomaticFailoverEnabled:   &autoFailoverEnabled,
 				CacheNodeType:              cacheNodeType,
 				CacheParameterGroupName:    &cacheParameterGroupName,
+				Engine:                     engine,
 				EngineVersion:              &engineVersion,
 				PreferredMaintenanceWindow: &maintenanceWindow,
 				SnapshotRetentionLimit:     &snapshotRetentionLimit,
@@ -644,7 +653,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -695,7 +704,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -746,7 +755,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -800,7 +809,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -878,7 +887,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -975,7 +984,7 @@ func TestIsUpToDate(t *testing.T) {
 					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
 						return &elasticache.DescribeCacheClustersOutput{
 							CacheClusters: []types.CacheCluster{
-								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+								{Engine: aws.String(engine), EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
 							},
 						}, nil
 					},
@@ -1408,6 +1417,71 @@ func TestUpdate(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestUpdatePassesEngineToModifyReplicationGroup(t *testing.T) {
+	var gotInput *elasticache.ModifyReplicationGroupInput
+
+	e := &external{cache: &cache{}, client: &fake.MockClient{
+		MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+			return &elasticache.DescribeReplicationGroupsOutput{
+				ReplicationGroups: []types.ReplicationGroup{{
+					Status:                 aws.String(v1beta1.StatusAvailable),
+					MemberClusters:         []string{cacheClusterID},
+					AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+					CacheNodeType:          aws.String(cacheNodeType),
+					SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+					SnapshotWindow:         aws.String(snapshotWindow),
+					ClusterEnabled:         aws.Bool(true),
+				}},
+			}, nil
+		},
+		MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+			return &elasticache.DescribeCacheClustersOutput{
+				CacheClusters: []types.CacheCluster{{
+					Engine:                     aws.String(engine),
+					EngineVersion:              aws.String(engineVersion),
+					CacheParameterGroup:        &types.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+					PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				}},
+			}, nil
+		},
+		MockModifyReplicationGroup: func(ctx context.Context, in *elasticache.ModifyReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupOutput, error) {
+			gotInput = in
+			return &elasticache.ModifyReplicationGroupOutput{}, nil
+		},
+	}}
+
+	r := replicationGroup(
+		withReplicationGroupID(name),
+		withProviderStatus(v1beta1.StatusAvailable),
+		withConditions(xpv1.Available()),
+		withMemberClusters([]string{cacheClusterID}),
+		withNumCacheClusters(1),
+		withEngine(alternateEngine),
+	)
+
+	if _, err := e.Update(ctx, r); err != nil {
+		t.Fatalf("e.Update(...): unexpected error: %v", err)
+	}
+
+	want := &elasticache.ModifyReplicationGroupInput{
+		ReplicationGroupId:          aws.String(name),
+		ApplyImmediately:            aws.Bool(false),
+		AutomaticFailoverEnabled:    aws.Bool(autoFailoverEnabled),
+		CacheNodeType:               aws.String(cacheNodeType),
+		CacheParameterGroupName:     aws.String(cacheParameterGroupName),
+		Engine:                      aws.String(alternateEngine),
+		EngineVersion:               aws.String(engineVersion),
+		PreferredMaintenanceWindow:  aws.String(maintenanceWindow),
+		ReplicationGroupDescription: aws.String(""),
+		SnapshotRetentionLimit:      aws.Int32(int32(snapshotRetentionLimit)),
+		SnapshotWindow:              aws.String(snapshotWindow),
+	}
+
+	if diff := cmp.Diff(want, gotInput, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
+		t.Errorf("e.Update(...) modify input: -want, +got:\n%s", diff)
 	}
 }
 
