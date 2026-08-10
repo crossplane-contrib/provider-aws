@@ -40,6 +40,7 @@ func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
 			e.preDelete = preDelete
 			e.postObserve = c.postObserve
 			e.lateInitialize = LateInitialize
+			e.isUpToDate = isUpToDate
 		},
 	}
 
@@ -180,6 +181,58 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 
 	meta.SetExternalName(cr, pointer.StringValue(obj.BrokerId))
 	return cre, nil
+}
+
+// isUpToDate compares the mutable fields accepted by UpdateBroker (see
+// GenerateUpdateBrokerRequest) against the broker's observed state. Broker's
+// generated isUpToDate defaulted to alwaysUpToDate, so changes to e.g.
+// EngineVersion or MaintenanceWindowStartTime were silently ignored.
+func isUpToDate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeBrokerResponse) (bool, string, error) {
+	p := cr.Spec.ForProvider
+
+	if pointer.StringValue(p.AuthenticationStrategy) != pointer.StringValue(obj.AuthenticationStrategy) {
+		return false, "authenticationStrategy is not up to date", nil
+	}
+	if pointer.BoolValue(p.AutoMinorVersionUpgrade) != pointer.BoolValue(obj.AutoMinorVersionUpgrade) {
+		return false, "autoMinorVersionUpgrade is not up to date", nil
+	}
+	if pointer.StringValue(p.EngineVersion) != pointer.StringValue(obj.EngineVersion) {
+		return false, "engineVersion is not up to date", nil
+	}
+	if pointer.StringValue(p.HostInstanceType) != pointer.StringValue(obj.HostInstanceType) {
+		return false, "hostInstanceType is not up to date", nil
+	}
+
+	// Only sub-fields the caller actually set are compared: like
+	// GenerateUpdateBrokerRequest, an unset sub-field is never sent to AWS,
+	// so comparing it against the observed value could flag a permanent,
+	// unfixable diff.
+	var currentAudit, currentGeneral *bool
+	if obj.Logs != nil {
+		currentAudit, currentGeneral = obj.Logs.Audit, obj.Logs.General
+	}
+	if want := p.Logs; want != nil {
+		if (want.Audit != nil && pointer.BoolValue(want.Audit) != pointer.BoolValue(currentAudit)) ||
+			(want.General != nil && pointer.BoolValue(want.General) != pointer.BoolValue(currentGeneral)) {
+			return false, "logs is not up to date", nil
+		}
+	}
+
+	var currentDayOfWeek, currentTimeOfDay, currentTimeZone *string
+	if obj.MaintenanceWindowStartTime != nil {
+		currentDayOfWeek = obj.MaintenanceWindowStartTime.DayOfWeek
+		currentTimeOfDay = obj.MaintenanceWindowStartTime.TimeOfDay
+		currentTimeZone = obj.MaintenanceWindowStartTime.TimeZone
+	}
+	if want := p.MaintenanceWindowStartTime; want != nil {
+		if (want.DayOfWeek != nil && pointer.StringValue(want.DayOfWeek) != pointer.StringValue(currentDayOfWeek)) ||
+			(want.TimeOfDay != nil && pointer.StringValue(want.TimeOfDay) != pointer.StringValue(currentTimeOfDay)) ||
+			(want.TimeZone != nil && pointer.StringValue(want.TimeZone) != pointer.StringValue(currentTimeZone)) {
+			return false, "maintenanceWindowStartTime is not up to date", nil
+		}
+	}
+
+	return true, "", nil
 }
 
 // LateInitialize fills the empty fields in *svcapitypes.BrokerParameters with
