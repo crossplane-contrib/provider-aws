@@ -22,6 +22,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/kms"
@@ -357,6 +359,81 @@ func buildLocalIndexes(indexes []*svcsdk.LocalSecondaryIndexDescription) []*svca
 	return localSecondaryIndexes
 }
 
+// tagLister is a narrow interface for fetching DynamoDB resource tags.
+// Using a narrow interface instead of the full svcsdkapi.DynamoDBAPI keeps the
+// updateClient lean and makes unit-testing the tag comparison straightforward.
+type tagLister interface {
+	ListTagsOfResourceWithContext(aws.Context, *svcsdk.ListTagsOfResourceInput, ...request.Option) (*svcsdk.ListTagsOfResourceOutput, error)
+}
+
+// sortDynamoDBTags returns a stable copy of the tag slice sorted by key then
+// value. The original slice is not modified.
+func sortDynamoDBTags(tags []*svcsdk.Tag) []*svcsdk.Tag {
+	out := make([]*svcsdk.Tag, len(tags))
+	copy(out, tags)
+	sort.Slice(out, func(i, j int) bool {
+		ki, kj := ptr.Deref(out[i].Key, ""), ptr.Deref(out[j].Key, "")
+		if ki != kj {
+			return ki < kj
+		}
+		return ptr.Deref(out[i].Value, "") < ptr.Deref(out[j].Value, "")
+	})
+	return out
+}
+
+// specTagsToSDK converts the spec tag slice (svcapitypes.Tag) into the SDK
+// wire type ([]*svcsdk.Tag) so both sides can be compared uniformly.
+func specTagsToSDK(tags []*svcapitypes.Tag) []*svcsdk.Tag {
+	out := make([]*svcsdk.Tag, 0, len(tags))
+	for _, t := range tags {
+		if t == nil {
+			continue
+		}
+		out = append(out, &svcsdk.Tag{Key: t.Key, Value: t.Value})
+	}
+	return out
+}
+
+// filterManagedTags removes AWS-managed tags (keys prefixed with "aws:") from
+// the slice. These tags are appended by AWS services and are not user-managed,
+// so including them in drift detection would cause false positives.
+func filterManagedTags(tags []*svcsdk.Tag) []*svcsdk.Tag {
+	out := make([]*svcsdk.Tag, 0, len(tags))
+	for _, t := range tags {
+		if t != nil && !strings.HasPrefix(ptr.Deref(t.Key, ""), "aws:") {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// areDynamoDBTagsEqual fetches the current tags for the table from AWS and
+// compares them (order-insensitively) with what is declared in the spec.
+// AWS-managed tags (keys prefixed with "aws:") are excluded from comparison.
+// Returns true when the user-managed tag sets are identical.
+func (e *updateClient) areDynamoDBTagsEqual(ctx aws.Context, tableArn *string, specTags []*svcapitypes.Tag) (bool, error) {
+	resp, err := e.client.ListTagsOfResourceWithContext(ctx, &svcsdk.ListTagsOfResourceInput{
+		ResourceArn: tableArn,
+	})
+	if err != nil {
+		return false, errors.Wrap(err, "cannot list DynamoDB resource tags")
+	}
+
+	observed := sortDynamoDBTags(filterManagedTags(resp.Tags))
+	desired := sortDynamoDBTags(specTagsToSDK(specTags))
+
+	if len(observed) != len(desired) {
+		return false, nil
+	}
+	for i := range observed {
+		if ptr.Deref(observed[i].Key, "") != ptr.Deref(desired[i].Key, "") ||
+			ptr.Deref(observed[i].Value, "") != ptr.Deref(desired[i].Value, "") {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
 // createPatch creates a *svcapitypes.TableParameters that has only the changed
 // values between the target *svcapitypes.TableParameters and the current
 // *dynamodb.TableDescription
@@ -406,8 +483,19 @@ func (e *updateClient) isCoreResourceUpToDate(ctx context.Context, cr *svcapityp
 		return false, err
 	}
 
-	// TODO(negz): Support updating tags if possible.
-	// https://github.com/crossplane-contrib/provider-aws/issues/945
+	// Compare tags order-insensitively. DescribeTable does not return tags;
+	// they require a separate ListTagsOfResource call. We always run this
+	// check (when we have a TableArn) so we can detect drift in both
+	// directions: tags added outside the spec or tags removed from AWS.
+	if resp.Table.TableArn != nil {
+		tagsEqual, err := e.areDynamoDBTagsEqual(ctx, resp.Table.TableArn, cr.Spec.ForProvider.Tags)
+		if err != nil {
+			return false, errors.Wrap(err, "cannot compare DynamoDB tags")
+		}
+		if !tagsEqual {
+			return false, nil
+		}
+	}
 
 	// At least one of ProvisionedThroughput, BillingMode, UpdateStreamEnabled,
 	// GlobalSecondaryIndexUpdates or SSESpecification or ReplicaUpdates is
