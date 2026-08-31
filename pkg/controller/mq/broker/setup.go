@@ -207,32 +207,53 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeB
 	// GenerateUpdateBrokerRequest, an unset sub-field is never sent to AWS,
 	// so comparing it against the observed value could flag a permanent,
 	// unfixable diff.
-	var currentAudit, currentGeneral *bool
-	if obj.Logs != nil {
-		currentAudit, currentGeneral = obj.Logs.Audit, obj.Logs.General
+	if !logsUpToDate(p.Logs, obj.Logs) {
+		return false, "logs is not up to date", nil
 	}
-	if want := p.Logs; want != nil {
-		if (want.Audit != nil && pointer.BoolValue(want.Audit) != pointer.BoolValue(currentAudit)) ||
-			(want.General != nil && pointer.BoolValue(want.General) != pointer.BoolValue(currentGeneral)) {
-			return false, "logs is not up to date", nil
-		}
-	}
-
-	var currentDayOfWeek, currentTimeOfDay, currentTimeZone *string
-	if obj.MaintenanceWindowStartTime != nil {
-		currentDayOfWeek = obj.MaintenanceWindowStartTime.DayOfWeek
-		currentTimeOfDay = obj.MaintenanceWindowStartTime.TimeOfDay
-		currentTimeZone = obj.MaintenanceWindowStartTime.TimeZone
-	}
-	if want := p.MaintenanceWindowStartTime; want != nil {
-		if (want.DayOfWeek != nil && pointer.StringValue(want.DayOfWeek) != pointer.StringValue(currentDayOfWeek)) ||
-			(want.TimeOfDay != nil && pointer.StringValue(want.TimeOfDay) != pointer.StringValue(currentTimeOfDay)) ||
-			(want.TimeZone != nil && pointer.StringValue(want.TimeZone) != pointer.StringValue(currentTimeZone)) {
-			return false, "maintenanceWindowStartTime is not up to date", nil
-		}
+	if !maintenanceWindowUpToDate(p.MaintenanceWindowStartTime, obj.MaintenanceWindowStartTime) {
+		return false, "maintenanceWindowStartTime is not up to date", nil
 	}
 
 	return true, "", nil
+}
+
+func logsUpToDate(want *svcapitypes.Logs, current *svcsdk.LogsSummary) bool {
+	if want == nil {
+		return true
+	}
+	var currentAudit, currentGeneral *bool
+	if current != nil {
+		currentAudit, currentGeneral = current.Audit, current.General
+	}
+	if want.Audit != nil && pointer.BoolValue(want.Audit) != pointer.BoolValue(currentAudit) {
+		return false
+	}
+	if want.General != nil && pointer.BoolValue(want.General) != pointer.BoolValue(currentGeneral) {
+		return false
+	}
+	return true
+}
+
+func maintenanceWindowUpToDate(want *svcapitypes.WeeklyStartTime, current *svcsdk.WeeklyStartTime) bool {
+	if want == nil {
+		return true
+	}
+	var currentDayOfWeek, currentTimeOfDay, currentTimeZone *string
+	if current != nil {
+		currentDayOfWeek = current.DayOfWeek
+		currentTimeOfDay = current.TimeOfDay
+		currentTimeZone = current.TimeZone
+	}
+	if want.DayOfWeek != nil && pointer.StringValue(want.DayOfWeek) != pointer.StringValue(currentDayOfWeek) {
+		return false
+	}
+	if want.TimeOfDay != nil && pointer.StringValue(want.TimeOfDay) != pointer.StringValue(currentTimeOfDay) {
+		return false
+	}
+	if want.TimeZone != nil && pointer.StringValue(want.TimeZone) != pointer.StringValue(currentTimeZone) {
+		return false
+	}
+	return true
 }
 
 // LateInitialize fills the empty fields in *svcapitypes.BrokerParameters with
