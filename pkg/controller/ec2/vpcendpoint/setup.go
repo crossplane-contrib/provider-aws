@@ -2,6 +2,7 @@ package vpcendpoint
 
 import (
 	"context"
+	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -101,7 +102,32 @@ func preCreate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.Creat
 		obj.SubnetIds = cr.Spec.ForProvider.SubnetIDs
 	}
 
+	// obj.TagSpecifications may already contain entries generated from
+	// spec.forProvider.tagSpecifications; append rather than overwrite so both
+	// that field and spec.forProvider.tags are honored.
+	if len(cr.Spec.ForProvider.Tags) > 0 {
+		obj.TagSpecifications = append(obj.TagSpecifications, generateTagSpecifications(cr)...)
+	}
+
 	return nil
+}
+
+// generateTagSpecifications converts the tags declared in spec.forProvider.tags
+// into a TagSpecification for the vpc-endpoint resource type, so that they are
+// applied when the VPCEndpoint is created.
+func generateTagSpecifications(cr *svcapitypes.VPCEndpoint) []*svcsdk.TagSpecification {
+	tags := make([]*svcsdk.Tag, 0, len(cr.Spec.ForProvider.Tags))
+	for k, v := range cr.Spec.ForProvider.Tags {
+		tags = append(tags, &svcsdk.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+	sort.Slice(tags, func(i, j int) bool {
+		return aws.StringValue(tags[i].Key) < aws.StringValue(tags[j].Key)
+	})
+
+	return []*svcsdk.TagSpecification{{
+		ResourceType: aws.String(svcsdk.ResourceTypeVpcEndpoint),
+		Tags:         tags,
+	}}
 }
 
 func postCreate(ctx context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.CreateVpcEndpointOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
