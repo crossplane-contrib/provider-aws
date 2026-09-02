@@ -131,6 +131,106 @@ func TestIsUpToDate(t *testing.T) {
 		want
 	}{
 
+		"ClusterMemberIgnoresClusterManagedIops": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							DBClusterIdentifier: aws.String("my-cluster"),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DBClusterIdentifier: aws.String("my-cluster"),
+							Iops:                aws.Int64(3000),
+							StorageThroughput:   aws.Int64(125),
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+			},
+		},
+		"ClusterMemberIgnoresClusterManagedMultiAZAndAutoMinor": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							DBClusterIdentifier: aws.String("my-cluster"),
+							// Values commonly planted by a composition; AWS returns nil for
+							// Aurora cluster instances, so they must not cause a diff.
+							MultiAZ:                 aws.Bool(false),
+							AutoMinorVersionUpgrade: aws.Bool(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							DBClusterIdentifier:     aws.String("my-cluster"),
+							MultiAZ:                 nil,
+							AutoMinorVersionUpgrade: nil,
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+			},
+		},
+		"StandaloneDetectsMultiAZChange": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							MultiAZ: aws.Bool(true),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							MultiAZ: aws.Bool(false),
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
+		"StandaloneDetectsAutoMinorVersionUpgradeChange": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							AutoMinorVersionUpgrade: aws.Bool(false),
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							AutoMinorVersionUpgrade: aws.Bool(true),
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
 		"PreferredBackupWindowNotUpToDate": {
 			args: args{
 				cr: &svcapitypes.DBInstance{
@@ -446,7 +546,7 @@ func TestIsUpToDate(t *testing.T) {
 						{
 							DeletionProtection: aws.Bool(true),
 							TagList: []*svcsdk.Tag{
-								{Key: aws.String("aws:createdBy"), Value: aws.String("terraform")},
+								{Key: aws.String("aws:createdBy"), Value: aws.String("value")},
 								{Key: aws.String("c7n:policy"), Value: aws.String("auto")},
 								{Key: aws.String("env"), Value: aws.String("prod")},
 							},
@@ -480,7 +580,7 @@ func TestIsUpToDate(t *testing.T) {
 						{
 							DeletionProtection: aws.Bool(true),
 							TagList: []*svcsdk.Tag{
-								{Key: aws.String("aws:createdBy"), Value: aws.String("terraform")},
+								{Key: aws.String("aws:createdBy"), Value: aws.String("value")},
 								{Key: aws.String("c7n:policy"), Value: aws.String("auto")},
 								{Key: aws.String("c7n:other"), Value: aws.String("x")},
 								{Key: aws.String("env"), Value: aws.String("prod")},
@@ -939,6 +1039,141 @@ func TestPreUpdate(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.want.obj, tc.args.obj, cmpopts.IgnoreUnexported(svcsdk.ModifyDBInstanceInput{})); diff != "" {
 				t.Errorf("ModifyDBInstanceInput: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestLateInitialize(t *testing.T) {
+	type args struct {
+		in  *svcapitypes.DBInstanceParameters
+		out *svcsdk.DescribeDBInstancesOutput
+	}
+	type want struct {
+		in *svcapitypes.DBInstanceParameters
+	}
+
+	clusterID := aws.String("my-cluster")
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		// Cluster-managed storage/network fields must not be planted into the spec for
+		// instances that belong to a cluster, otherwise they get resent on every modify.
+		"ClusterMemberDoesNotLateInitClusterManagedFields": {
+			args: args{
+				in: &svcapitypes.DBInstanceParameters{},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{{
+						DBClusterIdentifier: clusterID,
+						Iops:                aws.Int64(3000),
+						StorageThroughput:   aws.Int64(125),
+						MaxAllocatedStorage: aws.Int64(200),
+						MultiAZ:             aws.Bool(true),
+						Endpoint:            &svcsdk.Endpoint{Port: aws.Int64(5432)},
+					}},
+				},
+			},
+			want: want{
+				in: &svcapitypes.DBInstanceParameters{
+					DBClusterIdentifier: clusterID,
+				},
+			},
+		},
+		// Standalone instances still late-init those fields.
+		"StandaloneLateInitsClusterManagedFields": {
+			args: args{
+				in: &svcapitypes.DBInstanceParameters{},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{{
+						Iops:                aws.Int64(3000),
+						StorageThroughput:   aws.Int64(125),
+						MaxAllocatedStorage: aws.Int64(200),
+						MultiAZ:             aws.Bool(true),
+						Endpoint:            &svcsdk.Endpoint{Port: aws.Int64(5432)},
+					}},
+				},
+			},
+			want: want{
+				in: &svcapitypes.DBInstanceParameters{
+					IOPS:                aws.Int64(3000),
+					StorageThroughput:   aws.Int64(125),
+					MaxAllocatedStorage: aws.Int64(200),
+					MultiAZ:             aws.Bool(true),
+					Port:                aws.Int64(5432),
+				},
+			},
+		},
+		// A stale PerformanceInsightsRetentionPeriod must be cleared once PI is disabled,
+		// otherwise it sticks in the spec forever (perpetual diff / rejected modify).
+		"ClearsStalePerformanceInsightsRetentionWhenDisabled": {
+			args: args{
+				in: &svcapitypes.DBInstanceParameters{
+					EnablePerformanceInsights:          aws.Bool(false),
+					PerformanceInsightsRetentionPeriod: aws.Int64(62),
+					PerformanceInsightsKMSKeyID:        aws.String("stale-key"),
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{{
+						PerformanceInsightsEnabled: aws.Bool(false),
+					}},
+				},
+			},
+			want: want{
+				in: &svcapitypes.DBInstanceParameters{
+					EnablePerformanceInsights: aws.Bool(false),
+				},
+			},
+		},
+		// The user's desired retention must be preserved while enabling PI even though AWS
+		// still reports PI as disabled during the transition.
+		"KeepsDesiredRetentionWhileEnabling": {
+			args: args{
+				in: &svcapitypes.DBInstanceParameters{
+					EnablePerformanceInsights:          aws.Bool(true),
+					PerformanceInsightsRetentionPeriod: aws.Int64(7),
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{{
+						PerformanceInsightsEnabled: aws.Bool(false),
+					}},
+				},
+			},
+			want: want{
+				in: &svcapitypes.DBInstanceParameters{
+					EnablePerformanceInsights:          aws.Bool(true),
+					PerformanceInsightsRetentionPeriod: aws.Int64(7),
+				},
+			},
+		},
+		// When PI is enabled, retention is late-initialized from AWS.
+		"LateInitsRetentionWhenEnabled": {
+			args: args{
+				in: &svcapitypes.DBInstanceParameters{},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{{
+						PerformanceInsightsEnabled:         aws.Bool(true),
+						PerformanceInsightsRetentionPeriod: aws.Int64(7),
+					}},
+				},
+			},
+			want: want{
+				in: &svcapitypes.DBInstanceParameters{
+					EnablePerformanceInsights:          aws.Bool(true),
+					PerformanceInsightsRetentionPeriod: aws.Int64(7),
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			if err := lateInitialize(tc.args.in, tc.args.out); err != nil {
+				t.Fatalf("lateInitialize returned error: %v", err)
+			}
+			if diff := cmp.Diff(tc.want.in, tc.args.in); diff != "" {
+				t.Errorf("lateInitialize: -want, +got:\n%s", diff)
 			}
 		})
 	}

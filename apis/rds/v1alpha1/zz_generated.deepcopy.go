@@ -1652,6 +1652,11 @@ func (in *DBClusterObservation) DeepCopyInto(out *DBClusterObservation) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.PendingModifiedValues != nil {
+		in, out := &in.PendingModifiedValues, &out.PendingModifiedValues
+		*out = new(ClusterPendingModifiedValues)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.PercentProgress != nil {
 		in, out := &in.PercentProgress, &out.PercentProgress
 		*out = new(string)
@@ -2795,6 +2800,11 @@ func (in *DBCluster_SDK) DeepCopyInto(out *DBCluster_SDK) {
 		in, out := &in.NetworkType, &out.NetworkType
 		*out = new(string)
 		**out = **in
+	}
+	if in.PendingModifiedValues != nil {
+		in, out := &in.PendingModifiedValues, &out.PendingModifiedValues
+		*out = new(ClusterPendingModifiedValues)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.PercentProgress != nil {
 		in, out := &in.PercentProgress, &out.PercentProgress
