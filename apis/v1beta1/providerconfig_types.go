@@ -91,6 +91,14 @@ type AssumeRoleOptions struct {
 	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html#id_session-tags_role-chaining).
 	// +optional
 	TransitiveTagKeys []string `json:"transitiveTagKeys,omitempty"`
+
+	// SourceIdentity is the identity to set as the SourceIdentity in the assumed
+	// role session, so actions taken through the role are attributed to the
+	// requesting principal in CloudTrail and can be gated with the
+	// aws:SourceIdentity IAM condition key.
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_control-access_monitor.html)
+	// +optional
+	SourceIdentity *string `json:"sourceIdentity,omitempty"`
 }
 
 // AssumeRoleWithWebIdentityOptions define the options for assuming an IAM Role
