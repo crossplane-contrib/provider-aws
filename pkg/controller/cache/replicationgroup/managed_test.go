@@ -170,6 +170,14 @@ func withLogDeliveryConfiguration(config v1beta1.LogDeliveryConfiguration) repli
 	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.LogDeliveryConfiguration = config }
 }
 
+func withSecurityGroupIDs(ids ...string) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.SecurityGroupIDs = ids }
+}
+
+func withCacheSubnetGroupName(n string) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.CacheSubnetGroupName = &n }
+}
+
 func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup {
 	r := &v1beta1.ReplicationGroup{
 		ObjectMeta: objectMeta,
@@ -543,6 +551,123 @@ func TestObserve(t *testing.T) {
 				withReplicationGroupID(name),
 				withAuthEnabled(true)),
 			returnsErr: true,
+		},
+		{
+			name: "SuccessfulObserveLateInitSubnetKeepsSecurityGroupIDs",
+			e: &external{
+				cache: &cache{},
+				client: &fake.MockClient{
+					MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+						return &elasticache.DescribeReplicationGroupsOutput{
+							ReplicationGroups: []types.ReplicationGroup{{
+								Status:                 aws.String(v1beta1.StatusAvailable),
+								AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+								CacheNodeType:          aws.String(cacheNodeType),
+								SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+								SnapshotWindow:         aws.String(snapshotWindow),
+								ClusterEnabled:         aws.Bool(true),
+								MemberClusters:         []string{cacheClusterID},
+								ARN:                    aws.String("arn:aws:elasticache:us-east-1:123:replicationgroup:" + name),
+							}},
+						}, nil
+					},
+					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+						return &elasticache.DescribeCacheClustersOutput{
+							CacheClusters: []types.CacheCluster{{
+								EngineVersion:              aws.String(engineVersion),
+								CacheParameterGroup:        &types.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+								PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+								CacheSubnetGroupName:       aws.String("coolSubnet"),
+								SecurityGroups: []types.SecurityGroupMembership{
+									{SecurityGroupId: aws.String("sg-123")},
+								},
+							}},
+						}, nil
+					},
+					MockListTagsForResource: func(ctx context.Context, _ *elasticache.ListTagsForResourceInput, opts []func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error) {
+						return &elasticache.ListTagsForResourceOutput{}, nil
+					},
+				},
+				kube: &test.MockClient{
+					MockGet:    test.NewMockGetFn(nil),
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+			},
+			r: replicationGroup(
+				withReplicationGroupID(name),
+				withClusterEnabled(true),
+				withMemberClusters([]string{cacheClusterID}),
+				withSecurityGroupIDs("sg-123"),
+			),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withAutomaticFailover(types.AutomaticFailoverStatusEnabled),
+				withClusterEnabled(true),
+				withMemberClusters([]string{cacheClusterID}),
+				withConditions(xpv1.Available()),
+				withSecurityGroupIDs("sg-123"),
+				withCacheSubnetGroupName("coolSubnet"),
+			),
+		},
+		{
+			name: "SuccessfulObserveBothSubnetAndSecurityGroupsResolved",
+			e: &external{
+				cache: &cache{},
+				client: &fake.MockClient{
+					MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+						return &elasticache.DescribeReplicationGroupsOutput{
+							ReplicationGroups: []types.ReplicationGroup{{
+								Status:                 aws.String(v1beta1.StatusAvailable),
+								AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+								CacheNodeType:          aws.String(cacheNodeType),
+								SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+								SnapshotWindow:         aws.String(snapshotWindow),
+								ClusterEnabled:         aws.Bool(true),
+								MemberClusters:         []string{cacheClusterID},
+								ARN:                    aws.String("arn:aws:elasticache:us-east-1:123:replicationgroup:" + name),
+							}},
+						}, nil
+					},
+					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+						return &elasticache.DescribeCacheClustersOutput{
+							CacheClusters: []types.CacheCluster{{
+								EngineVersion:              aws.String(engineVersion),
+								CacheParameterGroup:        &types.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+								PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+								CacheSubnetGroupName:       aws.String("coolSubnet"),
+								SecurityGroups: []types.SecurityGroupMembership{
+									{SecurityGroupId: aws.String("sg-123")},
+								},
+							}},
+						}, nil
+					},
+					MockListTagsForResource: func(ctx context.Context, _ *elasticache.ListTagsForResourceInput, opts []func(*elasticache.Options)) (*elasticache.ListTagsForResourceOutput, error) {
+						return &elasticache.ListTagsForResourceOutput{}, nil
+					},
+				},
+				kube: &test.MockClient{
+					MockGet:    test.NewMockGetFn(nil),
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+			},
+			r: replicationGroup(
+				withReplicationGroupID(name),
+				withClusterEnabled(true),
+				withMemberClusters([]string{cacheClusterID}),
+				withSecurityGroupIDs("sg-123"),
+				withCacheSubnetGroupName("coolSubnet"),
+			),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withAutomaticFailover(types.AutomaticFailoverStatusEnabled),
+				withClusterEnabled(true),
+				withMemberClusters([]string{cacheClusterID}),
+				withConditions(xpv1.Available()),
+				withSecurityGroupIDs("sg-123"),
+				withCacheSubnetGroupName("coolSubnet"),
+			),
 		},
 		{
 			name: "FailedDescribeReplicationGroups",
@@ -1021,6 +1146,57 @@ func TestIsUpToDate(t *testing.T) {
 						Enabled:   aws.Bool(true),
 					},
 				}),
+			),
+			want: wantIsUpToDate{
+				isUpToDate: true,
+				err:        nil,
+			},
+		},
+		{
+			name: "BothSubnetAndSecurityGroupsResolved",
+			e: &external{
+				cache: &cache{},
+				client: &fake.MockClient{
+					MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+						return &elasticache.DescribeReplicationGroupsOutput{
+							ReplicationGroups: []types.ReplicationGroup{
+								{
+									Status:                 aws.String(v1beta1.StatusModifying),
+									AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+									CacheNodeType:          aws.String(cacheNodeType),
+									SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+									SnapshotWindow:         aws.String(snapshotWindow),
+									ClusterEnabled:         aws.Bool(true),
+									MemberClusters:         []string{cacheClusterID},
+								},
+							},
+						}, nil
+					},
+					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+						return &elasticache.DescribeCacheClustersOutput{
+							CacheClusters: []types.CacheCluster{
+								{
+									EngineVersion:              aws.String(engineVersion),
+									CacheParameterGroup:        &types.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+									PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+									CacheSubnetGroupName:       aws.String("coolSubnet"),
+									SecurityGroups: []types.SecurityGroupMembership{
+										{SecurityGroupId: aws.String("sg-123")},
+									},
+								},
+							},
+						}, nil
+					},
+				},
+				kube: &test.MockClient{
+					MockGet:    test.NewMockGetFn(nil),
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+			},
+			cr: replicationGroup(
+				withReplicationGroupID(name),
+				withSecurityGroupIDs("sg-123"),
+				withCacheSubnetGroupName("coolSubnet"),
 			),
 			want: wantIsUpToDate{
 				isUpToDate: true,
