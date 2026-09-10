@@ -231,6 +231,52 @@ func TestIsUpToDate(t *testing.T) {
 				err:      nil,
 			},
 		},
+		"CloudwatchLogsExportsUpToDateIgnoresOrder": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							EnableCloudwatchLogsExports: []*string{aws.String("audit"), aws.String("error")},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							EnabledCloudwatchLogsExports: []*string{aws.String("error"), aws.String("audit")},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: true,
+				err:      nil,
+			},
+		},
+		"CloudwatchLogsExportsDetectsChange": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							EnableCloudwatchLogsExports: []*string{aws.String("audit"), aws.String("error")},
+						},
+					},
+				},
+				out: &svcsdk.DescribeDBInstancesOutput{
+					DBInstances: []*svcsdk.DBInstance{
+						{
+							EnabledCloudwatchLogsExports: []*string{aws.String("audit")},
+						},
+					},
+				},
+				kube: test.NewMockClient(),
+			},
+			want: want{
+				upToDate: false,
+				err:      nil,
+			},
+		},
 		"PreferredBackupWindowNotUpToDate": {
 			args: args{
 				cr: &svcapitypes.DBInstance{
@@ -1024,6 +1070,33 @@ func TestPreUpdate(t *testing.T) {
 				obj: &svcsdk.ModifyDBInstanceInput{
 					DBPortNumber: aws.Int64(3306),
 					LicenseModel: nil,
+				},
+			},
+		},
+		"CloudwatchLogsExportConfigurationComputed": {
+			args: args{
+				cr: &svcapitypes.DBInstance{
+					Spec: svcapitypes.DBInstanceSpec{
+						ForProvider: svcapitypes.DBInstanceParameters{
+							Port:                        aws.Int64(5432),
+							EnableCloudwatchLogsExports: []*string{aws.String("audit"), aws.String("error")},
+						},
+					},
+					Status: svcapitypes.DBInstanceStatus{
+						AtProvider: svcapitypes.DBInstanceObservation{
+							EnabledCloudwatchLogsExports: []*string{aws.String("audit"), aws.String("general")},
+						},
+					},
+				},
+				obj: &svcsdk.ModifyDBInstanceInput{},
+			},
+			want: want{
+				obj: &svcsdk.ModifyDBInstanceInput{
+					DBPortNumber: aws.Int64(5432),
+					CloudwatchLogsExportConfiguration: &svcsdk.CloudwatchLogsExportConfiguration{
+						EnableLogTypes:  []*string{aws.String("error")},
+						DisableLogTypes: []*string{aws.String("general")},
+					},
 				},
 			},
 		},

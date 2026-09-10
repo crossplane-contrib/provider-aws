@@ -749,7 +749,7 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 			", observed vpcSecurityGroupIDs: " + strings.Join(observedIDs, ",")
 	}
 
-	if !areSameElements(cr.Spec.ForProvider.EnableCloudwatchLogsExports, out.DBClusters[0].EnabledCloudwatchLogsExports) {
+	if !utils.AreSameElements(cr.Spec.ForProvider.EnableCloudwatchLogsExports, out.DBClusters[0].EnabledCloudwatchLogsExports) {
 		diff += "\nenabledCloudwatchLogsExports changed"
 	}
 
@@ -959,7 +959,7 @@ func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *sv
 	obj.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
 
-	obj.CloudwatchLogsExportConfiguration = generateCloudWatchExportConfiguration(
+	obj.CloudwatchLogsExportConfiguration = utils.GenerateCloudWatchExportConfiguration(
 		cr.Spec.ForProvider.EnableCloudwatchLogsExports,
 		cr.Status.AtProvider.EnabledCloudwatchLogsExports)
 	// Only set MasterUserPassword if it has actually changed. Otherwise it triggers a
@@ -1132,56 +1132,6 @@ func (s *shared) updateTags(ctx context.Context, cr *svcapitypes.DBCluster, addT
 
 }
 
-func generateCloudWatchExportConfiguration(spec, current []*string) *svcsdk.CloudwatchLogsExportConfiguration {
-	toEnable := []*string{}
-	toDisable := []*string{}
-
-	currentMap := make(map[string]struct{}, len(current))
-	for _, currentID := range current {
-		currentMap[pointer.StringValue(currentID)] = struct{}{}
-	}
-
-	specMap := make(map[string]struct{}, len(spec))
-	for _, specID := range spec {
-		key := pointer.StringValue(specID)
-		specMap[key] = struct{}{}
-
-		if _, exists := currentMap[key]; !exists {
-			toEnable = append(toEnable, specID)
-		}
-	}
-
-	for _, currentID := range current {
-		if _, exists := specMap[pointer.StringValue(currentID)]; !exists {
-			toDisable = append(toDisable, currentID)
-		}
-	}
-
-	return &svcsdk.CloudwatchLogsExportConfiguration{
-		EnableLogTypes:  toEnable,
-		DisableLogTypes: toDisable,
-	}
-}
-
-func areSameElements(a1, a2 []*string) bool {
-	if len(a1) != len(a2) {
-		return false
-	}
-
-	m2 := make(map[string]struct{}, len(a2))
-	for _, s2 := range a2 {
-		m2[pointer.StringValue(s2)] = struct{}{}
-	}
-
-	for _, s1 := range a1 {
-		v1 := pointer.StringValue(s1)
-		if _, exists := m2[v1]; !exists {
-			return false
-		}
-	}
-
-	return true
-}
 func (s *shared) updateConnectionDetails(ctx context.Context, cr *svcapitypes.DBCluster, details managed.ConnectionDetails) (managed.ConnectionDetails, error) {
 	if details == nil {
 		details = managed.ConnectionDetails{}

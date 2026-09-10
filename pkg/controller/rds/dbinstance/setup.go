@@ -364,6 +364,10 @@ func (s *shared) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 
 	obj.DBPortNumber = cr.Spec.ForProvider.Port
 
+	obj.CloudwatchLogsExportConfiguration = utils.GenerateCloudWatchExportConfiguration(
+		cr.Spec.ForProvider.EnableCloudwatchLogsExports,
+		cr.Status.AtProvider.EnabledCloudwatchLogsExports)
+
 	// LicenseModel cannot be modified on read replicas - AWS rejects the entire ModifyDBInstance request.
 	// After LateInitialize(), licenseModel is always populated in spec.forProvider from the observed AWS state,
 	// which causes it to be included in every subsequent modify call.
@@ -688,6 +692,7 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	vpcSGsChanged := !areVPCSecurityGroupIDsUpToDate(cr, db)
 	dbParameterGroupChanged := !isDBParameterGroupNameUpToDate(cr, db)
 	optionGroupChanged := !isOptionGroupUpToDate(cr, db)
+	cloudwatchLogsExportsChanged := !utils.AreSameElements(cr.Spec.ForProvider.EnableCloudwatchLogsExports, db.EnabledCloudwatchLogsExports)
 
 	diff = cmp.Diff(&svcapitypes.DBInstanceParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
@@ -704,6 +709,10 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		// guarded to standalone instances, to avoid a permanent diff for cluster members.
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "MultiAZ"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "AutoMinorVersionUpgrade"),
+		// EnableCloudwatchLogsExports is compared explicitly below via
+		// utils.AreSameElements so that ordering differences between the desired spec
+		// and the AWS response do not produce a spurious diff.
+		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "EnableCloudwatchLogsExports"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "SkipFinalSnapshot"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "FinalDBSnapshotIdentifier"),
@@ -746,7 +755,8 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 
 	if diff == "" && !maintenanceWindowChanged && !backupWindowChanged && !backupRetentionPeriodChanged &&
 		!iopsChanged && !storageThroughputChanged && !versionChanged && !vpcSGsChanged && !dbParameterGroupChanged &&
-		!optionGroupChanged && !tagsChanged && !passwordChanged && !autoMinorVersionUpgradeChanged && !multiAZChanged {
+		!optionGroupChanged && !tagsChanged && !passwordChanged && !autoMinorVersionUpgradeChanged && !multiAZChanged &&
+		!cloudwatchLogsExportsChanged {
 		return true, diff, nil
 	}
 
@@ -799,6 +809,9 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 	}
 	if multiAZChanged {
 		diff += fmt.Sprintf("\ndesired multiAZ: %t \nobserved multiAZ: %t ", pointer.BoolValue(cr.Spec.ForProvider.MultiAZ), pointer.BoolValue(db.MultiAZ))
+	}
+	if cloudwatchLogsExportsChanged {
+		diff += "\nenabledCloudwatchLogsExports changed"
 	}
 
 	log.Println(diff)
