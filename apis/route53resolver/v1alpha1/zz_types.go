@@ -226,6 +226,8 @@ type ResolverEndpoint_SDK struct {
 
 	PreferredInstanceType *string `json:"preferredInstanceType,omitempty"`
 
+	Protocols []*string `json:"protocols,omitempty"`
+
 	ResolverEndpointType *string `json:"resolverEndpointType,omitempty"`
 
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
@@ -315,6 +317,8 @@ type TargetAddress struct {
 	IPv6 *string `json:"ipv6,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
+
+	Protocol *string `json:"protocol,omitempty"`
 }
 
 // +kubebuilder:skipversion

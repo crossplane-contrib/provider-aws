@@ -91,8 +91,9 @@ spec:
                         type: integer
                       customerContentEncryptionConfiguration:
                         description: |-
-                          Specifies the KMS key that is used to encrypt the user's data stores in Athena.
-                          This setting does not apply to Athena SQL workgroups.
+                          Specifies the customer managed KMS key that is used to encrypt the user's
+                          data stores in Athena. When an Amazon Web Services managed key is used, this
+                          value is null. This setting does not apply to Athena SQL workgroups.
                         properties:
                           kmsKey:
                             type: string
@@ -113,8 +114,28 @@ spec:
                         type: object
                       executionRole:
                         type: string
+                      identityCenterConfiguration:
+                        description: Specifies whether the workgroup is IAM Identity
+                          Center supported.
+                        properties:
+                          enableIdentityCenter:
+                            type: boolean
+                          identityCenterInstanceARN:
+                            type: string
+                        type: object
                       publishCloudWatchMetricsEnabled:
                         type: boolean
+                      queryResultsS3AccessGrantsConfiguration:
+                        description: Specifies whether Amazon S3 access grants are
+                          enabled for query results.
+                        properties:
+                          authenticationType:
+                            type: string
+                          createUserLevelPrefix:
+                            type: boolean
+                          enableS3AccessGrants:
+                            type: boolean
+                        type: object
                       requesterPaysEnabled:
                         type: boolean
                       resultConfiguration:

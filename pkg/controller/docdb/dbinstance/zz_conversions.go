@@ -274,6 +274,16 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 		} else {
 			cr.Status.AtProvider.PendingModifiedValues = nil
 		}
+		if elem.PerformanceInsightsEnabled != nil {
+			cr.Status.AtProvider.PerformanceInsightsEnabled = elem.PerformanceInsightsEnabled
+		} else {
+			cr.Status.AtProvider.PerformanceInsightsEnabled = nil
+		}
+		if elem.PerformanceInsightsKMSKeyId != nil {
+			cr.Spec.ForProvider.PerformanceInsightsKMSKeyID = elem.PerformanceInsightsKMSKeyId
+		} else {
+			cr.Spec.ForProvider.PerformanceInsightsKMSKeyID = nil
+		}
 		if elem.PreferredBackupWindow != nil {
 			cr.Status.AtProvider.PreferredBackupWindow = elem.PreferredBackupWindow
 		} else {
@@ -295,24 +305,24 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Status.AtProvider.PubliclyAccessible = nil
 		}
 		if elem.StatusInfos != nil {
-			f25 := []*svcapitypes.DBInstanceStatusInfo{}
-			for _, f25iter := range elem.StatusInfos {
-				f25elem := &svcapitypes.DBInstanceStatusInfo{}
-				if f25iter.Message != nil {
-					f25elem.Message = f25iter.Message
+			f27 := []*svcapitypes.DBInstanceStatusInfo{}
+			for _, f27iter := range elem.StatusInfos {
+				f27elem := &svcapitypes.DBInstanceStatusInfo{}
+				if f27iter.Message != nil {
+					f27elem.Message = f27iter.Message
 				}
-				if f25iter.Normal != nil {
-					f25elem.Normal = f25iter.Normal
+				if f27iter.Normal != nil {
+					f27elem.Normal = f27iter.Normal
 				}
-				if f25iter.Status != nil {
-					f25elem.Status = f25iter.Status
+				if f27iter.Status != nil {
+					f27elem.Status = f27iter.Status
 				}
-				if f25iter.StatusType != nil {
-					f25elem.StatusType = f25iter.StatusType
+				if f27iter.StatusType != nil {
+					f27elem.StatusType = f27iter.StatusType
 				}
-				f25 = append(f25, f25elem)
+				f27 = append(f27, f27elem)
 			}
-			cr.Status.AtProvider.StatusInfos = f25
+			cr.Status.AtProvider.StatusInfos = f27
 		} else {
 			cr.Status.AtProvider.StatusInfos = nil
 		}
@@ -322,18 +332,18 @@ func GenerateDBInstance(resp *svcsdk.DescribeDBInstancesOutput) *svcapitypes.DBI
 			cr.Status.AtProvider.StorageEncrypted = nil
 		}
 		if elem.VpcSecurityGroups != nil {
-			f27 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f27iter := range elem.VpcSecurityGroups {
-				f27elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f27iter.Status != nil {
-					f27elem.Status = f27iter.Status
+			f29 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f29iter := range elem.VpcSecurityGroups {
+				f29elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f29iter.Status != nil {
+					f29elem.Status = f29iter.Status
 				}
-				if f27iter.VpcSecurityGroupId != nil {
-					f27elem.VPCSecurityGroupID = f27iter.VpcSecurityGroupId
+				if f29iter.VpcSecurityGroupId != nil {
+					f29elem.VPCSecurityGroupID = f29iter.VpcSecurityGroupId
 				}
-				f27 = append(f27, f27elem)
+				f29 = append(f29, f29elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f27
+			cr.Status.AtProvider.VPCSecurityGroups = f29
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}

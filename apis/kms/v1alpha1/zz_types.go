@@ -187,6 +187,13 @@ type MultiRegionKey struct {
 }
 
 // +kubebuilder:skipversion
+type RotationsListEntry struct {
+	KeyID *string `json:"keyID,omitempty"`
+
+	RotationDate *metav1.Time `json:"rotationDate,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Tag struct {
 	TagKey *string `json:"tagKey,omitempty"`
 

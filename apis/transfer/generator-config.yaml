@@ -3,6 +3,7 @@ ignore:
     - CreateUserInput.ServerId
     - CreateUserInput.UserName
     - CreateUserInput.Role
+    - CreateUserInput.HomeDirectoryMappings
     - CreateUserInput.SshPublicKeyBody
     - CreateServerInput.EndpointDetails
     - CreateServerInput.Certificate

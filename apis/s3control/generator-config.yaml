@@ -4,6 +4,10 @@ ignore:
     - Bucket
     - Job
     - MultiRegionAccessPoint
+    - AccessGrant
+    - AccessGrantsInstance
+    - AccessGrantsLocation
+    - StorageLensGroup
   field_paths:
     - CreateAccessPointInput.Name
     - CreateAccessPointInput.Bucket

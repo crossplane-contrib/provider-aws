@@ -45,6 +45,8 @@ type ListenerParameters struct {
 	// For more information, see ALPN policies (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#alpn-policies)
 	// in the Network Load Balancers Guide.
 	AlpnPolicy []*string `json:"alpnPolicy,omitempty"`
+	// The mutual authentication configuration information.
+	MutualAuthentication *MutualAuthenticationAttributes `json:"mutualAuthentication,omitempty"`
 	// The port on which the load balancer is listening. You cannot specify a port
 	// for a Gateway Load Balancer.
 	Port *int64 `json:"port,omitempty"`

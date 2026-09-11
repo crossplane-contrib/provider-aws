@@ -85,6 +85,8 @@ spec:
                         type: string
                       ipv6Support:
                         type: string
+                      securityGroupReferencingSupport:
+                        type: string
                     type: object
                   region:
                     description: Region is which region the TransitGatewayVPCAttachment

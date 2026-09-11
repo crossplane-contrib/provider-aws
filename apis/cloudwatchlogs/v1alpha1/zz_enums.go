@@ -18,6 +18,17 @@ limitations under the License.
 
 package v1alpha1
 
+type AnomalyDetectorStatus string
+
+const (
+	AnomalyDetectorStatus_INITIALIZING AnomalyDetectorStatus = "INITIALIZING"
+	AnomalyDetectorStatus_TRAINING     AnomalyDetectorStatus = "TRAINING"
+	AnomalyDetectorStatus_ANALYZING    AnomalyDetectorStatus = "ANALYZING"
+	AnomalyDetectorStatus_FAILED       AnomalyDetectorStatus = "FAILED"
+	AnomalyDetectorStatus_DELETED      AnomalyDetectorStatus = "DELETED"
+	AnomalyDetectorStatus_PAUSED       AnomalyDetectorStatus = "PAUSED"
+)
+
 type DataProtectionStatus string
 
 const (
@@ -42,6 +53,17 @@ const (
 	Distribution_ByLogStream Distribution = "ByLogStream"
 )
 
+type EvaluationFrequency string
+
+const (
+	EvaluationFrequency_ONE_MIN     EvaluationFrequency = "ONE_MIN"
+	EvaluationFrequency_FIVE_MIN    EvaluationFrequency = "FIVE_MIN"
+	EvaluationFrequency_TEN_MIN     EvaluationFrequency = "TEN_MIN"
+	EvaluationFrequency_FIFTEEN_MIN EvaluationFrequency = "FIFTEEN_MIN"
+	EvaluationFrequency_THIRTY_MIN  EvaluationFrequency = "THIRTY_MIN"
+	EvaluationFrequency_ONE_HOUR    EvaluationFrequency = "ONE_HOUR"
+)
+
 type ExportTaskStatusCode string
 
 const (
@@ -57,6 +79,13 @@ type InheritedProperty string
 
 const (
 	InheritedProperty_ACCOUNT_DATA_PROTECTION InheritedProperty = "ACCOUNT_DATA_PROTECTION"
+)
+
+type LogGroupClass string
+
+const (
+	LogGroupClass_STANDARD          LogGroupClass = "STANDARD"
+	LogGroupClass_INFREQUENT_ACCESS LogGroupClass = "INFREQUENT_ACCESS"
 )
 
 type OrderBy string
@@ -79,7 +108,8 @@ const (
 type PolicyType string
 
 const (
-	PolicyType_DATA_PROTECTION_POLICY PolicyType = "DATA_PROTECTION_POLICY"
+	PolicyType_DATA_PROTECTION_POLICY     PolicyType = "DATA_PROTECTION_POLICY"
+	PolicyType_SUBSCRIPTION_FILTER_POLICY PolicyType = "SUBSCRIPTION_FILTER_POLICY"
 )
 
 type QueryStatus string
@@ -130,4 +160,34 @@ const (
 	StandardUnit_Terabits_Second  StandardUnit = "Terabits/Second"
 	StandardUnit_Count_Second     StandardUnit = "Count/Second"
 	StandardUnit_None             StandardUnit = "None"
+)
+
+type State string
+
+const (
+	State_Active     State = "Active"
+	State_Suppressed State = "Suppressed"
+	State_Baseline   State = "Baseline"
+)
+
+type SuppressionState string
+
+const (
+	SuppressionState_SUPPRESSED   SuppressionState = "SUPPRESSED"
+	SuppressionState_UNSUPPRESSED SuppressionState = "UNSUPPRESSED"
+)
+
+type SuppressionType string
+
+const (
+	SuppressionType_LIMITED  SuppressionType = "LIMITED"
+	SuppressionType_INFINITE SuppressionType = "INFINITE"
+)
+
+type SuppressionUnit string
+
+const (
+	SuppressionUnit_SECONDS SuppressionUnit = "SECONDS"
+	SuppressionUnit_MINUTES SuppressionUnit = "MINUTES"
+	SuppressionUnit_HOURS   SuppressionUnit = "HOURS"
 )
