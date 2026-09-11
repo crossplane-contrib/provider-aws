@@ -35,7 +35,8 @@ func TestConvertVolumes(t *testing.T) {
 						CustomTaskDefinitionParameters: svcapitypes.CustomTaskDefinitionParameters{
 							Volumes: []*svcapitypes.CustomVolume{
 								{
-									Name: aws.String("test1"),
+									ConfiguredAtLaunch: aws.Bool(true),
+									Name:               aws.String("test1"),
 								},
 								{
 									Name: aws.String("test2"),
@@ -47,7 +48,8 @@ func TestConvertVolumes(t *testing.T) {
 			},
 			[]*svcsdk.Volume{
 				{
-					Name: aws.String("test1"),
+					ConfiguredAtLaunch: aws.Bool(true),
+					Name:               aws.String("test1"),
 				},
 				{
 					Name: aws.String("test2"),

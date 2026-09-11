@@ -105,6 +105,13 @@ func GenerateUpdateServerInput(cr *svcapitypes.Server) *svcsdk.UpdateServerInput
 		}
 		res.SetProtocols(f9)
 	}
+	if cr.Spec.ForProvider.S3StorageOptions != nil {
+		f10 := &svcsdk.S3StorageOptions{}
+		if cr.Spec.ForProvider.S3StorageOptions.DirectoryListingOptimization != nil {
+			f10.SetDirectoryListingOptimization(*cr.Spec.ForProvider.S3StorageOptions.DirectoryListingOptimization)
+		}
+		res.SetS3StorageOptions(f10)
+	}
 	if cr.Spec.ForProvider.SecurityPolicyName != nil {
 		res.SetSecurityPolicyName(*cr.Spec.ForProvider.SecurityPolicyName)
 	}

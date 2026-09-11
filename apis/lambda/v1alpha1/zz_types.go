@@ -160,6 +160,8 @@ type FunctionConfiguration struct {
 	LastUpdateStatusReason *string `json:"lastUpdateStatusReason,omitempty"`
 
 	LastUpdateStatusReasonCode *string `json:"lastUpdateStatusReasonCode,omitempty"`
+	// The function's Amazon CloudWatch Logs configuration settings.
+	LoggingConfig *LoggingConfig `json:"loggingConfig,omitempty"`
 
 	MasterARN *string `json:"masterARN,omitempty"`
 
@@ -287,6 +289,17 @@ type LayerVersionsListItem struct {
 	Description *string `json:"description,omitempty"`
 
 	LayerVersionARN *string `json:"layerVersionARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type LoggingConfig struct {
+	ApplicationLogLevel *string `json:"applicationLogLevel,omitempty"`
+
+	LogFormat *string `json:"logFormat,omitempty"`
+
+	LogGroup *string `json:"logGroup,omitempty"`
+
+	SystemLogLevel *string `json:"systemLogLevel,omitempty"`
 }
 
 // +kubebuilder:skipversion

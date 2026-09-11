@@ -59,6 +59,9 @@ func GenerateTransitGatewayVPCAttachment(resp *svcsdk.DescribeTransitGatewayVpcA
 			if elem.Options.Ipv6Support != nil {
 				f1.IPv6Support = elem.Options.Ipv6Support
 			}
+			if elem.Options.SecurityGroupReferencingSupport != nil {
+				f1.SecurityGroupReferencingSupport = elem.Options.SecurityGroupReferencingSupport
+			}
 			cr.Spec.ForProvider.Options = f1
 		} else {
 			cr.Spec.ForProvider.Options = nil
@@ -140,6 +143,9 @@ func GenerateCreateTransitGatewayVpcAttachmentInput(cr *svcapitypes.TransitGatew
 		if cr.Spec.ForProvider.Options.IPv6Support != nil {
 			f0.SetIpv6Support(*cr.Spec.ForProvider.Options.IPv6Support)
 		}
+		if cr.Spec.ForProvider.Options.SecurityGroupReferencingSupport != nil {
+			f0.SetSecurityGroupReferencingSupport(*cr.Spec.ForProvider.Options.SecurityGroupReferencingSupport)
+		}
 		res.SetOptions(f0)
 	}
 	if cr.Spec.ForProvider.TagSpecifications != nil {
@@ -185,6 +191,9 @@ func GenerateModifyTransitGatewayVpcAttachmentInput(cr *svcapitypes.TransitGatew
 		}
 		if cr.Spec.ForProvider.Options.IPv6Support != nil {
 			f1.SetIpv6Support(*cr.Spec.ForProvider.Options.IPv6Support)
+		}
+		if cr.Spec.ForProvider.Options.SecurityGroupReferencingSupport != nil {
+			f1.SetSecurityGroupReferencingSupport(*cr.Spec.ForProvider.Options.SecurityGroupReferencingSupport)
 		}
 		res.SetOptions(f1)
 	}

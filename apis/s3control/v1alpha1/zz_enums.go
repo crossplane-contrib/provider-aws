@@ -92,6 +92,14 @@ const (
 	GeneratedManifestFormat_S3InventoryReport_CSV_20211130 GeneratedManifestFormat = "S3InventoryReport_CSV_20211130"
 )
 
+type GranteeType string
+
+const (
+	GranteeType_DIRECTORY_USER  GranteeType = "DIRECTORY_USER"
+	GranteeType_DIRECTORY_GROUP GranteeType = "DIRECTORY_GROUP"
+	GranteeType_IAM             GranteeType = "IAM"
+)
+
 type JobManifestFieldName string
 
 const (
@@ -229,6 +237,21 @@ const (
 	OwnerOverride_Destination OwnerOverride = "Destination"
 )
 
+type Permission string
+
+const (
+	Permission_READ      Permission = "READ"
+	Permission_WRITE     Permission = "WRITE"
+	Permission_READWRITE Permission = "READWRITE"
+)
+
+type Privilege string
+
+const (
+	Privilege_Minimal Privilege = "Minimal"
+	Privilege_Default Privilege = "Default"
+)
+
 type ReplicaModificationsStatus string
 
 const (
@@ -352,6 +375,12 @@ const (
 	S3Permission_WRITE        S3Permission = "WRITE"
 	S3Permission_READ_ACP     S3Permission = "READ_ACP"
 	S3Permission_WRITE_ACP    S3Permission = "WRITE_ACP"
+)
+
+type S3PrefixType string
+
+const (
+	S3PrefixType_Object S3PrefixType = "Object"
 )
 
 type S3SSEAlgorithm string

@@ -270,7 +270,7 @@ func areLambdaConfigEqual(spec *svcapitypes.LambdaConfigType, current *svcsdk.La
 			pointer.StringValue(spec.PostConfirmation) != pointer.StringValue(current.PostConfirmation),
 			pointer.StringValue(spec.PreAuthentication) != pointer.StringValue(current.PreAuthentication),
 			pointer.StringValue(spec.PreSignUp) != pointer.StringValue(current.PreSignUp),
-			pointer.StringValue(spec.PreTokenGeneration) != pointer.StringValue(current.PreTokenGeneration),
+			!isPreTokenGenerationEqual(spec, current),
 			pointer.StringValue(spec.UserMigration) != pointer.StringValue(current.UserMigration),
 			pointer.StringValue(spec.VerifyAuthChallengeResponse) != pointer.StringValue(current.VerifyAuthChallengeResponse):
 			return false
@@ -297,6 +297,34 @@ func areCustomSMSSenderEqual(spec *svcapitypes.CustomSMSLambdaVersionConfigType,
 			pointer.StringValue(spec.LambdaVersion) != pointer.StringValue(current.LambdaVersion):
 			return false
 		}
+	}
+	return true
+}
+
+// isPreTokenGenerationEqual handles the comparison of the legacy PreTokenGeneration field and the modern PreTokenGenerationConfig field.
+// If PreTokenGenerationConfig is set, it takes precedence over PreTokenGeneration for comparison purposes.
+func isPreTokenGenerationEqual(spec *svcapitypes.LambdaConfigType, current *svcsdk.LambdaConfigType) bool {
+	// only check legacy preTokenGeneration if user sets it
+	if spec.PreTokenGeneration != nil {
+		return pointer.StringValue(spec.PreTokenGeneration) == pointer.StringValue(current.PreTokenGeneration)
+	}
+	// only check modern preTokenGenerationConfig if user does not use legacy preTokenGeneration
+	return isPreTokenGenerationConfigEqual(spec.PreTokenGenerationConfig, current.PreTokenGenerationConfig)
+}
+
+func isPreTokenGenerationConfigEqual(spec *svcapitypes.PreTokenGenerationVersionConfigType, current *svcsdk.PreTokenGenerationVersionConfigType) bool {
+	if spec != nil {
+		if current == nil {
+			return false
+		}
+		switch {
+		case pointer.StringValue(spec.LambdaARN) != pointer.StringValue(current.LambdaArn),
+			pointer.StringValue(spec.LambdaVersion) != pointer.StringValue(current.LambdaVersion):
+			return false
+		}
+	}
+	if spec == nil && current != nil {
+		return false
 	}
 	return true
 }

@@ -37,17 +37,40 @@ type EnvironmentParameters struct {
 	// it defaults to the latest version. For more information, see Apache Airflow
 	// versions on Amazon Managed Workflows for Apache Airflow (MWAA) (https://docs.aws.amazon.com/mwaa/latest/userguide/airflow-versions.html).
 	//
-	// Valid values: 1.10.12, 2.0.2, 2.2.2, 2.4.3, 2.5.1, 2.6.3, 2.7.2.
+	// Valid values: 1.10.12, 2.0.2, 2.2.2, 2.4.3, 2.5.1, 2.6.3, 2.7.2 2.8.1
 	AirflowVersion *string `json:"airflowVersion,omitempty"`
 	// The relative path to the DAGs folder on your Amazon S3 bucket. For example,
 	// dags. For more information, see Adding or updating DAGs (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-folder.html).
 	// +kubebuilder:validation:Required
 	DagS3Path *string `json:"dagS3Path"`
-	// The environment class type. Valid values: mw1.small, mw1.medium, mw1.large.
-	// For more information, see Amazon MWAA environment class (https://docs.aws.amazon.com/mwaa/latest/userguide/environment-class.html).
+	// Defines whether the VPC endpoints configured for the environment are created,
+	// and managed, by the customer or by Amazon MWAA. If set to SERVICE, Amazon
+	// MWAA will create and manage the required VPC endpoints in your VPC. If set
+	// to CUSTOMER, you must create, and manage, the VPC endpoints for your VPC.
+	// If you choose to create an environment in a shared VPC, you must set this
+	// value to CUSTOMER. In a shared VPC deployment, the environment will remain
+	// in PENDING status until you create the VPC endpoints. If you do not take
+	// action to create the endpoints within 72 hours, the status will change to
+	// CREATE_FAILED. You can delete the failed environment and create a new one.
+	EndpointManagement *string `json:"endpointManagement,omitempty"`
+	// The environment class type. Valid values: mw1.small, mw1.medium, mw1.large,
+	// mw1.xlarge, and mw1.2xlarge. For more information, see Amazon MWAA environment
+	// class (https://docs.aws.amazon.com/mwaa/latest/userguide/environment-class.html).
 	EnvironmentClass *string `json:"environmentClass,omitempty"`
 	// Defines the Apache Airflow logs to send to CloudWatch Logs.
 	LoggingConfiguration *LoggingConfigurationInput `json:"loggingConfiguration,omitempty"`
+	// The maximum number of web servers that you want to run in your environment.
+	// Amazon MWAA scales the number of Apache Airflow web servers up to the number
+	// you specify for MaxWebservers when you interact with your Apache Airflow
+	// environment using Apache Airflow REST API, or the Apache Airflow CLI. For
+	// example, in scenarios where your workload requires network calls to the Apache
+	// Airflow REST API with a high transaction-per-second (TPS) rate, Amazon MWAA
+	// will increase the number of web servers up to the number set in MaxWebserers.
+	// As TPS rates decrease Amazon MWAA disposes of the additional web servers,
+	// and scales down to the number set in MinxWebserers.
+	//
+	// Valid values: Accepts between 2 and 5. Defaults to 2.
+	MaxWebservers *int64 `json:"maxWebservers,omitempty"`
 	// The maximum number of workers that you want to run in your environment. MWAA
 	// scales the number of Apache Airflow workers up to the number you specify
 	// in the MaxWorkers field. For example, 20. When there are no more tasks running,
@@ -55,6 +78,16 @@ type EnvironmentParameters struct {
 	// one worker that is included with your environment, or the number you specify
 	// in MinWorkers.
 	MaxWorkers *int64 `json:"maxWorkers,omitempty"`
+	// The minimum number of web servers that you want to run in your environment.
+	// Amazon MWAA scales the number of Apache Airflow web servers up to the number
+	// you specify for MaxWebservers when you interact with your Apache Airflow
+	// environment using Apache Airflow REST API, or the Apache Airflow CLI. As
+	// the transaction-per-second rate, and the network load, decrease, Amazon MWAA
+	// disposes of the additional web servers, and scales down to the number set
+	// in MinxWebserers.
+	//
+	// Valid values: Accepts between 2 and 5. Defaults to 2.
+	MinWebservers *int64 `json:"minWebservers,omitempty"`
 	// The minimum number of workers that you want to run in your environment. MWAA
 	// scales the number of Apache Airflow workers up to the number you specify
 	// in the MaxWorkers field. When there are no more tasks running, and no more
@@ -107,8 +140,8 @@ type EnvironmentParameters struct {
 	// "Environment": "Staging". For more information, see Tagging Amazon Web Services
 	// resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `json:"tags,omitempty"`
-	// The Apache Airflow Web server access mode. For more information, see Apache
-	// Airflow access modes (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-networking.html).
+	// Defines the access mode for the Apache Airflow web server. For more information,
+	// see Apache Airflow access modes (https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-networking.html).
 	WebserverAccessMode *string `json:"webserverAccessMode,omitempty"`
 	// The day and time of the week in Coordinated Universal Time (UTC) 24-hour
 	// standard time to start weekly maintenance updates of your environment in
@@ -130,7 +163,9 @@ type EnvironmentObservation struct {
 	ARN *string `json:"arn,omitempty"`
 	// The status of the last update on the environment.
 	LastUpdate *LastUpdate `json:"lastUpdate,omitempty"`
-	// The status of the Amazon MWAA environment. Valid values:
+	// The status of the Amazon MWAA environment.
+	//
+	// Valid values:
 	//
 	//    * CREATING - Indicates the request to create the environment is in progress.
 	//
@@ -147,6 +182,10 @@ type EnvironmentObservation struct {
 	//    * AVAILABLE - Indicates the request was successful and the environment
 	//    is ready to use.
 	//
+	//    * PENDING - Indicates the request was successful, but the process to create
+	//    the environment is paused until you create the required VPC endpoints
+	//    in your VPC. After you create the VPC endpoints, the process resumes.
+	//
 	//    * UPDATING - Indicates the request to update the environment is in progress.
 	//
 	//    * ROLLING_BACK - Indicates the request to update environment details,
@@ -158,11 +197,18 @@ type EnvironmentObservation struct {
 	//    * DELETED - Indicates the request to delete the environment is complete,
 	//    and the environment has been deleted.
 	//
-	//    * UNAVAILABLE - Indicates the request failed, but the environment was
-	//    unable to rollback and is not in a stable state.
+	//    * UNAVAILABLE - Indicates the request failed, but the environment did
+	//    not return to its previous state and is not stable.
 	//
 	//    * UPDATE_FAILED - Indicates the request to update the environment failed,
-	//    and the environment has rolled back successfully and is ready to use.
+	//    and the environment was restored to its previous state successfully and
+	//    is ready to use.
+	//
+	//    * MAINTENANCE - Indicates that the environment is undergoing maintenance.
+	//    Depending on the type of work Amazon MWAA is performing, your environment
+	//    might become unavailable during this process. After all operations are
+	//    done, your environment will return to its status prior to mainteneace
+	//    operations.
 	//
 	// We recommend reviewing our troubleshooting guide for a list of common errors
 	// and their solutions. For more information, see Amazon MWAA troubleshooting

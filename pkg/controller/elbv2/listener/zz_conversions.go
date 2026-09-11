@@ -241,6 +241,21 @@ func GenerateListener(resp *svcsdk.DescribeListenersOutput) *svcapitypes.Listene
 		} else {
 			cr.Status.AtProvider.LoadBalancerARN = nil
 		}
+		if elem.MutualAuthentication != nil {
+			f5 := &svcapitypes.MutualAuthenticationAttributes{}
+			if elem.MutualAuthentication.IgnoreClientCertificateExpiry != nil {
+				f5.IgnoreClientCertificateExpiry = elem.MutualAuthentication.IgnoreClientCertificateExpiry
+			}
+			if elem.MutualAuthentication.Mode != nil {
+				f5.Mode = elem.MutualAuthentication.Mode
+			}
+			if elem.MutualAuthentication.TrustStoreArn != nil {
+				f5.TrustStoreARN = elem.MutualAuthentication.TrustStoreArn
+			}
+			cr.Spec.ForProvider.MutualAuthentication = f5
+		} else {
+			cr.Spec.ForProvider.MutualAuthentication = nil
+		}
 		if elem.Port != nil {
 			cr.Spec.ForProvider.Port = elem.Port
 		} else {
@@ -279,6 +294,19 @@ func GenerateCreateListenerInput(cr *svcapitypes.Listener) *svcsdk.CreateListene
 		}
 		res.SetAlpnPolicy(f0)
 	}
+	if cr.Spec.ForProvider.MutualAuthentication != nil {
+		f1 := &svcsdk.MutualAuthenticationAttributes{}
+		if cr.Spec.ForProvider.MutualAuthentication.IgnoreClientCertificateExpiry != nil {
+			f1.SetIgnoreClientCertificateExpiry(*cr.Spec.ForProvider.MutualAuthentication.IgnoreClientCertificateExpiry)
+		}
+		if cr.Spec.ForProvider.MutualAuthentication.Mode != nil {
+			f1.SetMode(*cr.Spec.ForProvider.MutualAuthentication.Mode)
+		}
+		if cr.Spec.ForProvider.MutualAuthentication.TrustStoreARN != nil {
+			f1.SetTrustStoreArn(*cr.Spec.ForProvider.MutualAuthentication.TrustStoreARN)
+		}
+		res.SetMutualAuthentication(f1)
+	}
 	if cr.Spec.ForProvider.Port != nil {
 		res.SetPort(*cr.Spec.ForProvider.Port)
 	}
@@ -289,18 +317,18 @@ func GenerateCreateListenerInput(cr *svcapitypes.Listener) *svcsdk.CreateListene
 		res.SetSslPolicy(*cr.Spec.ForProvider.SSLPolicy)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f4 := []*svcsdk.Tag{}
-		for _, f4iter := range cr.Spec.ForProvider.Tags {
-			f4elem := &svcsdk.Tag{}
-			if f4iter.Key != nil {
-				f4elem.SetKey(*f4iter.Key)
+		f5 := []*svcsdk.Tag{}
+		for _, f5iter := range cr.Spec.ForProvider.Tags {
+			f5elem := &svcsdk.Tag{}
+			if f5iter.Key != nil {
+				f5elem.SetKey(*f5iter.Key)
 			}
-			if f4iter.Value != nil {
-				f4elem.SetValue(*f4iter.Value)
+			if f5iter.Value != nil {
+				f5elem.SetValue(*f5iter.Value)
 			}
-			f4 = append(f4, f4elem)
+			f5 = append(f5, f5elem)
 		}
-		res.SetTags(f4)
+		res.SetTags(f5)
 	}
 
 	return res
@@ -495,6 +523,19 @@ func GenerateModifyListenerInput(cr *svcapitypes.Listener) *svcsdk.ModifyListene
 	}
 	if cr.Status.AtProvider.ListenerARN != nil {
 		res.SetListenerArn(*cr.Status.AtProvider.ListenerARN)
+	}
+	if cr.Spec.ForProvider.MutualAuthentication != nil {
+		f4 := &svcsdk.MutualAuthenticationAttributes{}
+		if cr.Spec.ForProvider.MutualAuthentication.IgnoreClientCertificateExpiry != nil {
+			f4.SetIgnoreClientCertificateExpiry(*cr.Spec.ForProvider.MutualAuthentication.IgnoreClientCertificateExpiry)
+		}
+		if cr.Spec.ForProvider.MutualAuthentication.Mode != nil {
+			f4.SetMode(*cr.Spec.ForProvider.MutualAuthentication.Mode)
+		}
+		if cr.Spec.ForProvider.MutualAuthentication.TrustStoreARN != nil {
+			f4.SetTrustStoreArn(*cr.Spec.ForProvider.MutualAuthentication.TrustStoreARN)
+		}
+		res.SetMutualAuthentication(f4)
 	}
 	if cr.Spec.ForProvider.Port != nil {
 		res.SetPort(*cr.Spec.ForProvider.Port)

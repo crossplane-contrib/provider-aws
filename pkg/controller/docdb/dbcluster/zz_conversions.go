@@ -244,19 +244,24 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		} else {
 			cr.Spec.ForProvider.StorageEncrypted = nil
 		}
+		if elem.StorageType != nil {
+			cr.Spec.ForProvider.StorageType = elem.StorageType
+		} else {
+			cr.Spec.ForProvider.StorageType = nil
+		}
 		if elem.VpcSecurityGroups != nil {
-			f31 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f31iter := range elem.VpcSecurityGroups {
-				f31elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f31iter.Status != nil {
-					f31elem.Status = f31iter.Status
+			f32 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f32iter := range elem.VpcSecurityGroups {
+				f32elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f32iter.Status != nil {
+					f32elem.Status = f32iter.Status
 				}
-				if f31iter.VpcSecurityGroupId != nil {
-					f31elem.VPCSecurityGroupID = f31iter.VpcSecurityGroupId
+				if f32iter.VpcSecurityGroupId != nil {
+					f32elem.VPCSecurityGroupID = f32iter.VpcSecurityGroupId
 				}
-				f31 = append(f31, f31elem)
+				f32 = append(f32, f32elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f31
+			cr.Status.AtProvider.VPCSecurityGroups = f32
 		} else {
 			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}
@@ -340,28 +345,31 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 	if cr.Spec.ForProvider.StorageEncrypted != nil {
 		res.SetStorageEncrypted(*cr.Spec.ForProvider.StorageEncrypted)
 	}
+	if cr.Spec.ForProvider.StorageType != nil {
+		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f18 := []*svcsdk.Tag{}
-		for _, f18iter := range cr.Spec.ForProvider.Tags {
-			f18elem := &svcsdk.Tag{}
-			if f18iter.Key != nil {
-				f18elem.SetKey(*f18iter.Key)
+		f19 := []*svcsdk.Tag{}
+		for _, f19iter := range cr.Spec.ForProvider.Tags {
+			f19elem := &svcsdk.Tag{}
+			if f19iter.Key != nil {
+				f19elem.SetKey(*f19iter.Key)
 			}
-			if f18iter.Value != nil {
-				f18elem.SetValue(*f18iter.Value)
+			if f19iter.Value != nil {
+				f19elem.SetValue(*f19iter.Value)
 			}
-			f18 = append(f18, f18elem)
+			f19 = append(f19, f19elem)
 		}
-		res.SetTags(f18)
+		res.SetTags(f19)
 	}
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
-		f19 := []*string{}
-		for _, f19iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			var f19elem string
-			f19elem = *f19iter
-			f19 = append(f19, &f19elem)
+		f20 := []*string{}
+		for _, f20iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			var f20elem string
+			f20elem = *f20iter
+			f20 = append(f20, &f20elem)
 		}
-		res.SetVpcSecurityGroupIds(f19)
+		res.SetVpcSecurityGroupIds(f20)
 	}
 
 	return res
@@ -395,14 +403,17 @@ func GenerateModifyDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.ModifyDBClu
 	if cr.Spec.ForProvider.PreferredMaintenanceWindow != nil {
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
 	}
+	if cr.Spec.ForProvider.StorageType != nil {
+		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
+	}
 	if cr.Spec.ForProvider.VPCSecurityGroupIDs != nil {
-		f11 := []*string{}
-		for _, f11iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
-			var f11elem string
-			f11elem = *f11iter
-			f11 = append(f11, &f11elem)
+		f12 := []*string{}
+		for _, f12iter := range cr.Spec.ForProvider.VPCSecurityGroupIDs {
+			var f12elem string
+			f12elem = *f12iter
+			f12 = append(f12, &f12elem)
 		}
-		res.SetVpcSecurityGroupIds(f11)
+		res.SetVpcSecurityGroupIds(f12)
 	}
 
 	return res

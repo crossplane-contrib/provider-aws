@@ -160,15 +160,17 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 	}
 
 	o := svcapitypes.DomainObservation{
-		ARN:               obj.ARN,
-		AccessPolicies:    obj.AccessPolicies,
-		Created:           obj.Created,
-		Deleted:           obj.Deleted,
-		DomainID:          obj.DomainId,
-		Endpoint:          obj.Endpoint,
-		EngineVersion:     obj.EngineVersion,
-		Processing:        obj.Processing,
-		UpgradeProcessing: obj.UpgradeProcessing,
+		ARN:                          obj.ARN,
+		AccessPolicies:               obj.AccessPolicies,
+		Created:                      obj.Created,
+		Deleted:                      obj.Deleted,
+		DomainID:                     obj.DomainId,
+		DomainEndpointV2HostedZoneID: obj.DomainEndpointV2HostedZoneId,
+		DomainProcessingStatus:       obj.DomainProcessingStatus,
+		Endpoint:                     obj.Endpoint,
+		EngineVersion:                obj.EngineVersion,
+		Processing:                   obj.Processing,
+		UpgradeProcessing:            obj.UpgradeProcessing,
 	}
 
 	if obj.AdvancedOptions != nil {
@@ -187,6 +189,18 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 		}
 		if obj.ChangeProgressDetails.Message != nil {
 			f2.Message = obj.ChangeProgressDetails.Message
+		}
+		if obj.ChangeProgressDetails.ConfigChangeStatus != nil {
+			f2.ConfigChangeStatus = obj.ChangeProgressDetails.ConfigChangeStatus
+		}
+		if obj.ChangeProgressDetails.InitiatedBy != nil {
+			f2.InitiatedBy = obj.ChangeProgressDetails.InitiatedBy
+		}
+		if obj.ChangeProgressDetails.LastUpdatedTime != nil {
+			f2.LastUpdatedTime = &metav1.Time{Time: *obj.ChangeProgressDetails.LastUpdatedTime}
+		}
+		if obj.ChangeProgressDetails.StartTime != nil {
+			f2.StartTime = &metav1.Time{Time: *obj.ChangeProgressDetails.StartTime}
 		}
 		o.ChangeProgressDetails = f2
 	}
@@ -295,6 +309,27 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 			f7.KMSKeyID = obj.EncryptionAtRestOptions.KmsKeyId
 		}
 		o.EncryptionAtRestOptions = f7
+	}
+
+	if obj.ModifyingProperties != nil {
+		f23 := []*svcapitypes.ModifyingProperties{}
+		for _, f23iter := range obj.ModifyingProperties {
+			f23elem := &svcapitypes.ModifyingProperties{}
+			if f23iter.ActiveValue != nil {
+				f23elem.ActiveValue = f23iter.ActiveValue
+			}
+			if f23iter.Name != nil {
+				f23elem.Name = f23iter.Name
+			}
+			if f23iter.PendingValue != nil {
+				f23elem.PendingValue = f23iter.PendingValue
+			}
+			if f23iter.ValueType != nil {
+				f23elem.ValueType = f23iter.ValueType
+			}
+			f23 = append(f23, f23elem)
+		}
+		o.ModifyingProperties = f23
 	}
 
 	if obj.NodeToNodeEncryptionOptions != nil {

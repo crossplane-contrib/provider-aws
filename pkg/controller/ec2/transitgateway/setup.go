@@ -117,14 +117,15 @@ func postCreate(ctx context.Context, cr *svcapitypes.TransitGateway, obj *svcsdk
 func LateInitialize(cr *svcapitypes.TransitGatewayParameters, obj *svcsdk.DescribeTransitGatewaysOutput) error {
 	if len(obj.TransitGateways) > 0 {
 		cr.Options = &svcapitypes.TransitGatewayRequestOptions{
-			AmazonSideASN:                obj.TransitGateways[0].Options.AmazonSideAsn,
-			DNSSupport:                   obj.TransitGateways[0].Options.DnsSupport,
-			AutoAcceptSharedAttachments:  obj.TransitGateways[0].Options.AutoAcceptSharedAttachments,
-			DefaultRouteTableAssociation: obj.TransitGateways[0].Options.DefaultRouteTableAssociation,
-			DefaultRouteTablePropagation: obj.TransitGateways[0].Options.DefaultRouteTablePropagation,
-			MulticastSupport:             obj.TransitGateways[0].Options.MulticastSupport,
-			VPNECMPSupport:               obj.TransitGateways[0].Options.VpnEcmpSupport,
-			TransitGatewayCIDRBlocks:     obj.TransitGateways[0].Options.TransitGatewayCidrBlocks,
+			AmazonSideASN:                   obj.TransitGateways[0].Options.AmazonSideAsn,
+			AutoAcceptSharedAttachments:     obj.TransitGateways[0].Options.AutoAcceptSharedAttachments,
+			DefaultRouteTableAssociation:    obj.TransitGateways[0].Options.DefaultRouteTableAssociation,
+			DefaultRouteTablePropagation:    obj.TransitGateways[0].Options.DefaultRouteTablePropagation,
+			DNSSupport:                      obj.TransitGateways[0].Options.DnsSupport,
+			MulticastSupport:                obj.TransitGateways[0].Options.MulticastSupport,
+			SecurityGroupReferencingSupport: obj.TransitGateways[0].Options.SecurityGroupReferencingSupport,
+			TransitGatewayCIDRBlocks:        obj.TransitGateways[0].Options.TransitGatewayCidrBlocks,
+			VPNECMPSupport:                  obj.TransitGateways[0].Options.VpnEcmpSupport,
 		}
 	}
 

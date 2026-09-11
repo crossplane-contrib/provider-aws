@@ -100,6 +100,8 @@ type CIDRAuthorizationContext struct {
 type CrossAccountResource struct {
 	AttachmentARN *string `json:"attachmentARN,omitempty"`
 
+	CIDR *string `json:"cidr,omitempty"`
+
 	EndpointID *string `json:"endpointID,omitempty"`
 }
 
@@ -283,6 +285,8 @@ type PortRange struct {
 
 // +kubebuilder:skipversion
 type Resource struct {
+	CIDR *string `json:"cidr,omitempty"`
+
 	EndpointID *string `json:"endpointID,omitempty"`
 
 	Region *string `json:"region,omitempty"`

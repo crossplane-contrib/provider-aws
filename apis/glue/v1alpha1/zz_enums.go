@@ -22,6 +22,7 @@ type AdditionalOptionKeys string
 
 const (
 	AdditionalOptionKeys_performanceTuning_caching AdditionalOptionKeys = "performanceTuning.caching"
+	AdditionalOptionKeys_observations_scope        AdditionalOptionKeys = "observations.scope"
 )
 
 type AggFunction string
@@ -75,8 +76,9 @@ const (
 type CatalogEncryptionMode string
 
 const (
-	CatalogEncryptionMode_DISABLED CatalogEncryptionMode = "DISABLED"
-	CatalogEncryptionMode_SSE_KMS  CatalogEncryptionMode = "SSE-KMS"
+	CatalogEncryptionMode_DISABLED                  CatalogEncryptionMode = "DISABLED"
+	CatalogEncryptionMode_SSE_KMS                   CatalogEncryptionMode = "SSE-KMS"
+	CatalogEncryptionMode_SSE_KMS_WITH_SERVICE_ROLE CatalogEncryptionMode = "SSE-KMS-WITH-SERVICE-ROLE"
 )
 
 type CloudWatchEncryptionMode string
@@ -84,6 +86,16 @@ type CloudWatchEncryptionMode string
 const (
 	CloudWatchEncryptionMode_DISABLED CloudWatchEncryptionMode = "DISABLED"
 	CloudWatchEncryptionMode_SSE_KMS  CloudWatchEncryptionMode = "SSE-KMS"
+)
+
+type ColumnStatisticsState string
+
+const (
+	ColumnStatisticsState_STARTING  ColumnStatisticsState = "STARTING"
+	ColumnStatisticsState_RUNNING   ColumnStatisticsState = "RUNNING"
+	ColumnStatisticsState_SUCCEEDED ColumnStatisticsState = "SUCCEEDED"
+	ColumnStatisticsState_FAILED    ColumnStatisticsState = "FAILED"
+	ColumnStatisticsState_STOPPED   ColumnStatisticsState = "STOPPED"
 )
 
 type ColumnStatisticsType string
@@ -162,6 +174,9 @@ const (
 	ConnectionPropertyKey_CONNECTOR_TYPE                           ConnectionPropertyKey = "CONNECTOR_TYPE"
 	ConnectionPropertyKey_CONNECTOR_CLASS_NAME                     ConnectionPropertyKey = "CONNECTOR_CLASS_NAME"
 	ConnectionPropertyKey_KAFKA_SASL_MECHANISM                     ConnectionPropertyKey = "KAFKA_SASL_MECHANISM"
+	ConnectionPropertyKey_KAFKA_SASL_PLAIN_USERNAME                ConnectionPropertyKey = "KAFKA_SASL_PLAIN_USERNAME"
+	ConnectionPropertyKey_KAFKA_SASL_PLAIN_PASSWORD                ConnectionPropertyKey = "KAFKA_SASL_PLAIN_PASSWORD"
+	ConnectionPropertyKey_ENCRYPTED_KAFKA_SASL_PLAIN_PASSWORD      ConnectionPropertyKey = "ENCRYPTED_KAFKA_SASL_PLAIN_PASSWORD"
 	ConnectionPropertyKey_KAFKA_SASL_SCRAM_USERNAME                ConnectionPropertyKey = "KAFKA_SASL_SCRAM_USERNAME"
 	ConnectionPropertyKey_KAFKA_SASL_SCRAM_PASSWORD                ConnectionPropertyKey = "KAFKA_SASL_SCRAM_PASSWORD"
 	ConnectionPropertyKey_KAFKA_SASL_SCRAM_SECRETS_ARN             ConnectionPropertyKey = "KAFKA_SASL_SCRAM_SECRETS_ARN"
@@ -868,6 +883,14 @@ type UpdateCatalogBehavior string
 const (
 	UpdateCatalogBehavior_UPDATE_IN_DATABASE UpdateCatalogBehavior = "UPDATE_IN_DATABASE"
 	UpdateCatalogBehavior_LOG                UpdateCatalogBehavior = "LOG"
+)
+
+type ViewDialect string
+
+const (
+	ViewDialect_REDSHIFT ViewDialect = "REDSHIFT"
+	ViewDialect_ATHENA   ViewDialect = "ATHENA"
+	ViewDialect_SPARK    ViewDialect = "SPARK"
 )
 
 type WorkerType string

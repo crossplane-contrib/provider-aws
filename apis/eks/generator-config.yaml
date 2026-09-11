@@ -4,6 +4,8 @@ ignore:
     - Cluster
     - FargateProfile
     - EksAnywhereSubscription
+    - AccessEntry
+    - PodIdentityAssociation
   shape_names:
     - Nodegroup
     - Cluster

@@ -94,6 +94,7 @@ func setupHooks() option {
 		e.preCreate = preCreate
 		e.lateInitialize = lateInitialize
 		e.isUpToDate = h.isUpToDate
+		e.preUpdate = preUpdate
 		e.postUpdate = h.postUpdate
 	}
 }
@@ -200,27 +201,44 @@ func isSSHPublicKeysUpToDate(cr *svcapitypes.User, obj *svcsdk.DescribeUserOutpu
 }
 
 func isMappingsUpToDate(cr *svcapitypes.User, obj *svcsdk.DescribeUserOutput) bool {
-	specMap := make(map[string]string, len(cr.Spec.ForProvider.HomeDirectoryMappings))
-	for _, k := range cr.Spec.ForProvider.HomeDirectoryMappings {
-		specMap[*k.Entry] = *k.Target
+	type mappingValue struct {
+		target string
+		typ    *string
 	}
 
-	curMap := make(map[string]string, len(obj.User.HomeDirectoryMappings))
+	specMap := make(map[string]mappingValue, len(cr.Spec.ForProvider.HomeDirectoryMappings))
+	for _, k := range cr.Spec.ForProvider.HomeDirectoryMappings {
+		specMap[ptr.Deref(k.Entry, "")] = mappingValue{
+			target: ptr.Deref(k.Target, ""),
+			typ:    k.Type,
+		}
+	}
+
+	curMap := make(map[string]mappingValue, len(obj.User.HomeDirectoryMappings))
 
 	for _, mapping := range obj.User.HomeDirectoryMappings {
 		body := ptr.Deref(mapping.Entry, "")
-		curMap[body] = ptr.Deref(mapping.Target, "")
+		curMap[body] = mappingValue{
+			target: ptr.Deref(mapping.Target, ""),
+			typ:    mapping.Type,
+		}
 
 		if _, exists := specMap[body]; !exists {
 			return false
 		}
 	}
 
-	for key, value := range specMap {
-		if val, exists := curMap[key]; !exists {
+	for key, specValue := range specMap {
+		if curVal, exists := curMap[key]; !exists {
 			return false
-		} else if value != val {
-			return false
+		} else {
+			if specValue.target != curVal.target {
+				return false
+			}
+			// As type is optional and was added later, we only compare if user sets it. (no lateinit)
+			if specValue.typ != nil && *specValue.typ != ptr.Deref(curVal.typ, "") {
+				return false
+			}
 		}
 	}
 
@@ -232,7 +250,15 @@ func preCreate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.CreateUserIn
 	obj.Role = cr.Spec.ForProvider.Role
 	obj.UserName = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 
+	obj.HomeDirectoryMappings = generateHomeDirectoryMappings(cr.Spec.ForProvider.HomeDirectoryMappings)
+
 	// NOTE: SSH public keys are added during postUpdate.
+	return nil
+}
+
+func preUpdate(_ context.Context, cr *svcapitypes.User, obj *svcsdk.UpdateUserInput) error {
+
+	obj.HomeDirectoryMappings = generateHomeDirectoryMappings(cr.Spec.ForProvider.HomeDirectoryMappings)
 	return nil
 }
 

@@ -198,6 +198,7 @@ func (e *hooks) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, resp 
 		pointer.BoolValue(cr.Spec.ForProvider.DeletionProtection) != pointer.BoolValue(cluster.DeletionProtection),
 		!areSameElements(cr.Spec.ForProvider.EnableCloudwatchLogsExports, cluster.EnabledCloudwatchLogsExports),
 		!isEngineVersionUpToDate(cr, resp),
+		!isStorageTypeUpToDate(cr, resp),
 		pointer.Int64Value(cr.Spec.ForProvider.Port) != pointer.Int64Value(cluster.Port),
 		pointer.StringValue(cr.Spec.ForProvider.PreferredBackupWindow) != pointer.StringValue(cluster.PreferredBackupWindow),
 		pointer.StringValue(cr.Spec.ForProvider.PreferredMaintenanceWindow) != pointer.StringValue(cluster.PreferredMaintenanceWindow):
@@ -373,6 +374,10 @@ func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsd
 		res.SetSnapshotIdentifier(cr.Spec.ForProvider.RestoreFrom.Snapshot.SnapshotIdentifier)
 	}
 
+	if cr.Spec.ForProvider.StorageType != nil {
+		res.SetStorageType(*cr.Spec.ForProvider.StorageType)
+	}
+
 	if cr.Spec.ForProvider.Tags != nil {
 		var tags []*svcsdk.Tag
 		for _, tag := range cr.Spec.ForProvider.Tags {
@@ -394,6 +399,7 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 		KmsKeyId:                    p.KMSKeyID,
 		Port:                        p.Port,
 		UseLatestRestorableTime:     p.RestoreFrom.PointInTime.UseLatestRestorableTime,
+		StorageType:                 p.StorageType,
 		VpcSecurityGroupIds:         p.VPCSecurityGroupIDs,
 	}
 	if p.RestoreFrom != nil {
@@ -506,6 +512,22 @@ func isEngineVersionUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBCl
 		return c <= 0
 	}
 	return true
+}
+
+func isStorageTypeUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
+	// If StorageType is not set by user, we do not need to check and accept AWS set default (or the current value)
+	if cr.Spec.ForProvider.StorageType == nil {
+		return true
+	}
+
+	// AWS returns "" when StorageType is explicitly "standard" (default)
+	// see also note in AWS docs: https://docs.aws.amazon.com/documentdb/latest/APIReference/API_CreateDBCluster.html
+	if pointer.StringValue(cr.Spec.ForProvider.StorageType) == "standard" &&
+		pointer.StringValue(out.DBClusters[0].StorageType) == "" {
+		return true
+	}
+
+	return pointer.StringValue(cr.Spec.ForProvider.StorageType) == pointer.StringValue(out.DBClusters[0].StorageType)
 }
 
 func (e *hooks) getPasswordFromRef(ctx context.Context, in *xpv1.SecretKeySelector, out *xpv1.SecretReference) (newPwd string, changed bool, err error) {

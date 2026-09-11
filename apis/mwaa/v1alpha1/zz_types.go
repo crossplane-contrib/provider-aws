@@ -42,9 +42,15 @@ type Environment_SDK struct {
 
 	ARN *string `json:"arn,omitempty"`
 
+	CeleryExecutorQueue *string `json:"celeryExecutorQueue,omitempty"`
+
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
 	DagS3Path *string `json:"dagS3Path,omitempty"`
+
+	DatabaseVPCEndpointService *string `json:"databaseVPCEndpointService,omitempty"`
+
+	EndpointManagement *string `json:"endpointManagement,omitempty"`
 
 	EnvironmentClass *string `json:"environmentClass,omitempty"`
 
@@ -57,7 +63,11 @@ type Environment_SDK struct {
 	// Describes the Apache Airflow log types that are published to CloudWatch Logs.
 	LoggingConfiguration *LoggingConfiguration `json:"loggingConfiguration,omitempty"`
 
+	MaxWebservers *int64 `json:"maxWebservers,omitempty"`
+
 	MaxWorkers *int64 `json:"maxWorkers,omitempty"`
+
+	MinWebservers *int64 `json:"minWebservers,omitempty"`
 
 	MinWorkers *int64 `json:"minWorkers,omitempty"`
 
@@ -88,6 +98,8 @@ type Environment_SDK struct {
 	WebserverAccessMode *string `json:"webserverAccessMode,omitempty"`
 
 	WebserverURL *string `json:"webserverURL,omitempty"`
+
+	WebserverVPCEndpointService *string `json:"webserverVPCEndpointService,omitempty"`
 
 	WeeklyMaintenanceWindowStart *string `json:"weeklyMaintenanceWindowStart,omitempty"`
 }

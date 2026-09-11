@@ -1,0 +1,35 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBCluster
+metadata:
+  name: example-aurora-postgresql-limitless-cluster
+spec:
+  forProvider:
+    region: us-east-1
+    engine: aurora-postgresql
+    enableLimitlessDatabase: true # currently seems to be create-only
+    engineVersion: "16.13-limitless"
+    enablePerformanceInsights: true # must be enabled for limitless
+    monitoringInterval: 60 # seconds; needs to be > 0 for limitless (aka not turned off)
+    monitoringRoleARN: arn:aws:iam::139592264165:role/rds-monitoring-role # arn:aws:iam::<account-id>:role/rds-monitoring-role
+    enableCloudwatchLogsExports:
+      - postgresql # must be enabled for limitless
+    storageType: aurora-iopt1 # required for limitless
+    skipFinalSnapshot: true
+    deletionProtection: false
+    masterUsername: testUser
+    masterUserPasswordSecretRef:
+      name: example-aurora-postgresql-limitless-cluster
+      namespace: crossplane-system
+      key: password      
+    dbSubnetGroupName: db-subnet-group-name
+  providerConfigRef:
+    name: example
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: example-aurora-postgresql-limitless-cluster
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123

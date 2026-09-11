@@ -76,6 +76,8 @@ type Destination struct {
 type DestinationToCreate struct {
 	AvailabilityZoneName *string `json:"availabilityZoneName,omitempty"`
 
+	FileSystemID *string `json:"fileSystemID,omitempty"`
+
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 }
 
@@ -94,6 +96,8 @@ type FileSystemDescription struct {
 	FileSystemARN *string `json:"fileSystemARN,omitempty"`
 
 	FileSystemID *string `json:"fileSystemID,omitempty"`
+	// Describes the protection on a file system.
+	FileSystemProtection *FileSystemProtectionDescription `json:"fileSystemProtection,omitempty"`
 
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
@@ -122,10 +126,17 @@ type FileSystemDescription struct {
 }
 
 // +kubebuilder:skipversion
+type FileSystemProtectionDescription struct {
+	ReplicationOverwriteProtection *string `json:"replicationOverwriteProtection,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FileSystemSize struct {
 	Timestamp *metav1.Time `json:"timestamp,omitempty"`
 
 	Value *int64 `json:"value,omitempty"`
+
+	ValueInArchive *int64 `json:"valueInArchive,omitempty"`
 
 	ValueInIA *int64 `json:"valueInIA,omitempty"`
 

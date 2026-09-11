@@ -61,7 +61,12 @@ type ClusterPendingModifiedValues struct {
 	IOPS *int64 `json:"iops,omitempty"`
 	// A list of the log types whose configuration is still pending. In other words,
 	// these log types are in the process of being activated or deactivated.
+	//
+	// Valid log types are: audit (to publish audit logs) and slowquery (to publish
+	// slow-query logs). See Publishing Neptune logs to Amazon CloudWatch logs (https://docs.aws.amazon.com/neptune/latest/userguide/cloudwatch-logs.html).
 	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -155,6 +160,8 @@ type DBClusterSnapshot struct {
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 
+	StorageType *string `json:"storageType,omitempty"`
+
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
@@ -224,6 +231,8 @@ type DBCluster_SDK struct {
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 
+	IOOptimizedNextAllowedModificationTime *metav1.Time `json:"iOOptimizedNextAllowedModificationTime,omitempty"`
+
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
@@ -257,6 +266,8 @@ type DBCluster_SDK struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
 }
@@ -625,6 +636,9 @@ type PendingModifiedValues struct {
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 	// A list of the log types whose configuration is still pending. In other words,
 	// these log types are in the process of being activated or deactivated.
+	//
+	// Valid log types are: audit (to publish audit logs) and slowquery (to publish
+	// slow-query logs). See Publishing Neptune logs to Amazon CloudWatch logs (https://docs.aws.amazon.com/neptune/latest/userguide/cloudwatch-logs.html).
 	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
