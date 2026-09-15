@@ -556,6 +556,69 @@ func TestLateInitialize(t *testing.T) {
 				CacheSecurityGroupNames:    []string{cacheSecurityGroupNames[0]},
 			},
 		},
+		{
+			name: "LateInitSecurityGroupIDsKeepsResolvedSubnetGroupName",
+			params: &v1beta1.ReplicationGroupParameters{
+				CacheSubnetGroupName: &cacheSubnetGroupName,
+			},
+			cc: elasticachetypes.CacheCluster{
+				CacheSubnetGroupName: pointer.ToOrNilIfZeroValue(cacheSubnetGroupName),
+				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
+					{SecurityGroupId: pointer.ToOrNilIfZeroValue(securityGroupIDs[0])},
+				},
+			},
+			want: &v1beta1.ReplicationGroupParameters{
+				CacheSubnetGroupName: &cacheSubnetGroupName,
+				SecurityGroupIDs:     []string{securityGroupIDs[0]},
+			},
+		},
+		{
+			name: "LateInitSubnetGroupNameKeepsResolvedSecurityGroupIDs",
+			params: &v1beta1.ReplicationGroupParameters{
+				SecurityGroupIDs: []string{securityGroupIDs[0]},
+			},
+			cc: elasticachetypes.CacheCluster{
+				CacheSubnetGroupName: pointer.ToOrNilIfZeroValue(cacheSubnetGroupName),
+				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
+					{SecurityGroupId: pointer.ToOrNilIfZeroValue(securityGroupIDs[0])},
+				},
+			},
+			want: &v1beta1.ReplicationGroupParameters{
+				CacheSubnetGroupName: &cacheSubnetGroupName,
+				SecurityGroupIDs:     []string{securityGroupIDs[0]},
+			},
+		},
+		{
+			name:   "LateInitBothSubnetGroupNameAndSecurityGroupIDs",
+			params: &v1beta1.ReplicationGroupParameters{},
+			cc: elasticachetypes.CacheCluster{
+				CacheSubnetGroupName: pointer.ToOrNilIfZeroValue(cacheSubnetGroupName),
+				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
+					{SecurityGroupId: pointer.ToOrNilIfZeroValue(securityGroupIDs[0])},
+				},
+			},
+			want: &v1beta1.ReplicationGroupParameters{
+				CacheSubnetGroupName: &cacheSubnetGroupName,
+				SecurityGroupIDs:     []string{securityGroupIDs[0]},
+			},
+		},
+		{
+			name: "DoesNotOverwriteResolvedSubnetAndSecurityGroups",
+			params: &v1beta1.ReplicationGroupParameters{
+				CacheSubnetGroupName: &cacheSubnetGroupName,
+				SecurityGroupIDs:     []string{securityGroupIDs[0]},
+			},
+			cc: elasticachetypes.CacheCluster{
+				CacheSubnetGroupName: pointer.ToOrNilIfZeroValue("other-subnet"),
+				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
+					{SecurityGroupId: pointer.ToOrNilIfZeroValue("sg-other")},
+				},
+			},
+			want: &v1beta1.ReplicationGroupParameters{
+				CacheSubnetGroupName: &cacheSubnetGroupName,
+				SecurityGroupIDs:     []string{securityGroupIDs[0]},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -867,6 +930,41 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			ccList: []elasticachetypes.CacheCluster{},
 			want:   true,
 		},
+		{
+			name: "NoUpdateWhenBothSubnetAndSecurityGroupsResolved",
+			kube: replicationGroupParams(),
+			rg: elasticachetypes.ReplicationGroup{
+				AutomaticFailover:      elasticachetypes.AutomaticFailoverStatusEnabling,
+				CacheNodeType:          pointer.ToOrNilIfZeroValue(cacheNodeType),
+				MultiAZ:                elasticachetypes.MultiAZStatusEnabled,
+				SnapshotRetentionLimit: pointer.ToIntAsInt32Ptr(&snapshotRetentionLimit),
+				SnapshotWindow:         pointer.ToOrNilIfZeroValue(snapshotWindow),
+			},
+			ccList: []elasticachetypes.CacheCluster{
+				{
+					EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+					CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+					NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+					PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
+					CacheSubnetGroupName:       pointer.ToOrNilIfZeroValue(cacheSubnetGroupName),
+					SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
+						ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
+						for i, id := range securityGroupIDs {
+							ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.ToOrNilIfZeroValue(id)}
+						}
+						return ids
+					}(),
+					CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
+						names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
+						for i, n := range cacheSecurityGroupNames {
+							names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.ToOrNilIfZeroValue(n)}
+						}
+						return names
+					}(),
+				},
+			},
+			want: false,
+		},
 	}
 
 	for _, tc := range cases {
@@ -1044,6 +1142,50 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
 				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
 				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
+				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
+					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
+					for i, id := range securityGroupIDs {
+						ids[i] = elasticachetypes.SecurityGroupMembership{SecurityGroupId: pointer.ToOrNilIfZeroValue(id)}
+					}
+					return ids
+				}(),
+				CacheSecurityGroups: func() []elasticachetypes.CacheSecurityGroupMembership {
+					names := make([]elasticachetypes.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
+					for i, n := range cacheSecurityGroupNames {
+						names[i] = elasticachetypes.CacheSecurityGroupMembership{CacheSecurityGroupName: pointer.ToOrNilIfZeroValue(n)}
+					}
+					return names
+				}(),
+			},
+			want: false,
+		},
+		{
+			name: "NoUpdateWhenSecurityGroupIDsUnspecified",
+			kube: replicationGroupParams(func(p *v1beta1.ReplicationGroupParameters) {
+				p.SecurityGroupIDs = nil
+				p.CacheSecurityGroupNames = nil
+			}),
+			cc: elasticachetypes.CacheCluster{
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
+				CacheSubnetGroupName:       pointer.ToOrNilIfZeroValue(cacheSubnetGroupName),
+				SecurityGroups: []elasticachetypes.SecurityGroupMembership{
+					{SecurityGroupId: pointer.ToOrNilIfZeroValue(securityGroupIDs[0])},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "NoUpdateWhenBothSubnetAndSecurityGroupsResolved",
+			kube: replicationGroupParams(),
+			cc: elasticachetypes.CacheCluster{
+				EngineVersion:              pointer.ToOrNilIfZeroValue(engineVersion),
+				CacheParameterGroup:        &elasticachetypes.CacheParameterGroupStatus{CacheParameterGroupName: pointer.ToOrNilIfZeroValue(cacheParameterGroupName)},
+				NotificationConfiguration:  &elasticachetypes.NotificationConfiguration{TopicArn: pointer.ToOrNilIfZeroValue(notificationTopicARN), TopicStatus: pointer.ToOrNilIfZeroValue(notificationTopicStatus)},
+				PreferredMaintenanceWindow: pointer.ToOrNilIfZeroValue(maintenanceWindow),
+				CacheSubnetGroupName:       pointer.ToOrNilIfZeroValue(cacheSubnetGroupName),
 				SecurityGroups: func() []elasticachetypes.SecurityGroupMembership {
 					ids := make([]elasticachetypes.SecurityGroupMembership, len(securityGroupIDs))
 					for i, id := range securityGroupIDs {
