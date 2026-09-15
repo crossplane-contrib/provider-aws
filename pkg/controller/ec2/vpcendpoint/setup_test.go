@@ -174,6 +174,97 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestPreCreate(t *testing.T) {
+	type want struct {
+		tagSpecifications []*ec2.TagSpecification
+	}
+
+	cases := map[string]struct {
+		cr               *v1alpha1.VPCEndpoint
+		existingTagSpecs []*ec2.TagSpecification
+		want             want
+	}{
+		"NoTags": {
+			cr: vpcEndpoint(
+				withSpec(v1alpha1.VPCEndpointParameters{
+					CustomVPCEndpointParameters: v1alpha1.CustomVPCEndpointParameters{
+						VPCID: aws.String(testVPCID),
+					},
+				})),
+			want: want{
+				tagSpecifications: nil,
+			},
+		},
+		"WithTags": {
+			cr: vpcEndpoint(
+				withSpec(v1alpha1.VPCEndpointParameters{
+					CustomVPCEndpointParameters: v1alpha1.CustomVPCEndpointParameters{
+						VPCID: aws.String(testVPCID),
+						Tags: map[string]string{
+							"Name": "my-name",
+							"Team": "crossplane",
+						},
+					},
+				})),
+			want: want{
+				tagSpecifications: []*ec2.TagSpecification{{
+					ResourceType: aws.String(ec2.ResourceTypeVpcEndpoint),
+					Tags: []*ec2.Tag{
+						{Key: aws.String("Name"), Value: aws.String("my-name")},
+						{Key: aws.String("Team"), Value: aws.String("crossplane")},
+					},
+				}},
+			},
+		},
+		"WithTagsAndExistingTagSpecifications": {
+			cr: vpcEndpoint(
+				withSpec(v1alpha1.VPCEndpointParameters{
+					CustomVPCEndpointParameters: v1alpha1.CustomVPCEndpointParameters{
+						VPCID: aws.String(testVPCID),
+						Tags: map[string]string{
+							"Name": "my-name",
+						},
+					},
+				})),
+			existingTagSpecs: []*ec2.TagSpecification{{
+				ResourceType: aws.String(ec2.ResourceTypeVpcEndpoint),
+				Tags: []*ec2.Tag{
+					{Key: aws.String("FromTagSpecifications"), Value: aws.String("true")},
+				},
+			}},
+			want: want{
+				tagSpecifications: []*ec2.TagSpecification{
+					{
+						ResourceType: aws.String(ec2.ResourceTypeVpcEndpoint),
+						Tags: []*ec2.Tag{
+							{Key: aws.String("FromTagSpecifications"), Value: aws.String("true")},
+						},
+					},
+					{
+						ResourceType: aws.String(ec2.ResourceTypeVpcEndpoint),
+						Tags: []*ec2.Tag{
+							{Key: aws.String("Name"), Value: aws.String("my-name")},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			obj := &ec2.CreateVpcEndpointInput{TagSpecifications: tc.existingTagSpecs}
+			err := preCreate(context.Background(), tc.cr, obj)
+			if err != nil {
+				t.Errorf("preCreate(...): unexpected error: %s", err)
+			}
+			if diff := cmp.Diff(tc.want.tagSpecifications, obj.TagSpecifications); diff != "" {
+				t.Errorf("preCreate(...): -want tagSpecifications, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestDelete(t *testing.T) {
 	type want struct {
 		cr  *v1alpha1.VPCEndpoint
