@@ -26,6 +26,43 @@ import (
 	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
 )
 
+const vpcEndpointTagResource = "vpc-endpoint"
+
+// generateVPCEndpointTagSpecifications converts the CR tags to AWS TagSpecifications.
+func generateVPCEndpointTagSpecifications(tags map[string]string) []*svcsdk.TagSpecification {
+	ec2Tags := make([]*svcsdk.Tag, 0, len(tags))
+	for k, v := range tags {
+		ec2Tags = append(ec2Tags, &svcsdk.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
+	}
+	return []*svcsdk.TagSpecification{{
+		ResourceType: aws.String(vpcEndpointTagResource),
+		Tags:         ec2Tags,
+	}}
+}
+
+// diffVPCEndpointTags returns the tags that should be added and removed.
+func diffVPCEndpointTags(spec map[string]string, current []*svcsdk.Tag) (addTags, removeTags []*svcsdk.Tag) {
+	addMap := make(map[string]string, len(spec))
+	for k, v := range spec {
+		addMap[k] = v
+	}
+	removeMap := make(map[string]string)
+	for _, t := range current {
+		if addMap[pointer.StringValue(t.Key)] == pointer.StringValue(t.Value) {
+			delete(addMap, pointer.StringValue(t.Key))
+			continue
+		}
+		removeMap[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
+	}
+	for k, v := range addMap {
+		addTags = append(addTags, &svcsdk.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
+	}
+	for k, v := range removeMap {
+		removeTags = append(removeTags, &svcsdk.Tag{Key: pointer.ToOrNilIfZeroValue(k), Value: pointer.ToOrNilIfZeroValue(v)})
+	}
+	return addTags, removeTags
+}
+
 // SetupVPCEndpoint adds a controller that reconciles VPCEndpoint.
 func SetupVPCEndpoint(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VPCEndpointGroupKind)
@@ -101,6 +138,10 @@ func preCreate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.Creat
 		obj.SubnetIds = cr.Spec.ForProvider.SubnetIDs
 	}
 
+	if cr.Spec.ForProvider.Tags != nil {
+		obj.TagSpecifications = generateVPCEndpointTagSpecifications(cr.Spec.ForProvider.Tags)
+	}
+
 	return nil
 }
 
@@ -144,6 +185,11 @@ func postObserve(_ context.Context, cr *svcapitypes.VPCEndpoint, resp *svcsdk.De
 
 // isUpToDate checks for the following mutable fields for the VPCEndpoint in upstream AWS
 func isUpToDate(_ context.Context, cr *svcapitypes.VPCEndpoint, obj *svcsdk.DescribeVpcEndpointsOutput) (bool, string, error) {
+	// Check tags
+	if add, remove := diffVPCEndpointTags(cr.Spec.ForProvider.Tags, obj.VpcEndpoints[0].Tags); len(add) > 0 || len(remove) > 0 {
+		return false, "", nil
+	}
+
 	// Check subnets
 	if !listCompareStringPtrIsSame(obj.VpcEndpoints[0].SubnetIds, cr.Spec.ForProvider.SubnetIDs) {
 		return false, "", nil
@@ -217,6 +263,25 @@ sgCompare:
 	obj.SetRemoveSubnetIds(removeSubnets)
 	obj.SetRemoveSecurityGroupIds(removeSGs)
 	obj.SetRemoveRouteTableIds(removeRTs)
+
+	// Reconcile tags
+	addTags, removeTags := diffVPCEndpointTags(cr.Spec.ForProvider.Tags, upstream.VpcEndpoints[0].Tags)
+	if len(removeTags) > 0 {
+		if _, err := e.client.DeleteTagsWithContext(ctx, &svcsdk.DeleteTagsInput{
+			Resources: []*string{obj.VpcEndpointId},
+			Tags:      removeTags,
+		}); err != nil {
+			return err
+		}
+	}
+	if len(addTags) > 0 {
+		if _, err := e.client.CreateTagsWithContext(ctx, &svcsdk.CreateTagsInput{
+			Resources: []*string{obj.VpcEndpointId},
+			Tags:      addTags,
+		}); err != nil {
+			return err
+		}
+	}
 
 	formatModifyVpcEndpointInput(obj)
 	return nil
