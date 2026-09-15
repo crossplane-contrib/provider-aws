@@ -21,10 +21,13 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	kmstypes "github.com/aws/aws-sdk-go/service/kms"
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	"k8s.io/utils/ptr"
 
 	svcapitypes "github.com/crossplane-contrib/provider-aws/apis/dynamodb/v1alpha1"
@@ -34,6 +37,8 @@ import (
 var (
 	readCapacityUnits  = 1
 	writeCapacityUnits = 1
+
+	errListTagsFailed = errors.New("ListTagsOfResource boom")
 )
 
 type kmsAPIModifier func(mock *mockkms.MockKMSAPI)
@@ -972,6 +977,253 @@ func TestPreCreate(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.want.obj, tc.args.obj); diff != "" {
 				t.Errorf("preCreate(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+// fakeTagLister implements svcsdkapi.DynamoDBAPI just enough for tag tests.
+// All methods not used by the tag helpers panic to surface unexpected calls.
+type fakeTagLister struct {
+	svcsdkapi.DynamoDBAPI // embed to satisfy the interface
+	tags                  []*svcsdk.Tag
+	err                   error
+}
+
+func (f *fakeTagLister) ListTagsOfResourceWithContext(_ aws.Context, _ *svcsdk.ListTagsOfResourceInput, _ ...request.Option) (*svcsdk.ListTagsOfResourceOutput, error) {
+	if f.err != nil {
+		return nil, f.err
+	}
+	return &svcsdk.ListTagsOfResourceOutput{Tags: f.tags}, nil
+}
+
+func TestSortDynamoDBTags(t *testing.T) {
+	cases := map[string]struct {
+		input []*svcsdk.Tag
+		want  []*svcsdk.Tag
+	}{
+		"AlreadySorted": {
+			input: []*svcsdk.Tag{
+				{Key: aws.String("a"), Value: aws.String("1")},
+				{Key: aws.String("b"), Value: aws.String("2")},
+			},
+			want: []*svcsdk.Tag{
+				{Key: aws.String("a"), Value: aws.String("1")},
+				{Key: aws.String("b"), Value: aws.String("2")},
+			},
+		},
+		"ReverseOrder": {
+			input: []*svcsdk.Tag{
+				{Key: aws.String("z"), Value: aws.String("9")},
+				{Key: aws.String("a"), Value: aws.String("1")},
+				{Key: aws.String("m"), Value: aws.String("5")},
+			},
+			want: []*svcsdk.Tag{
+				{Key: aws.String("a"), Value: aws.String("1")},
+				{Key: aws.String("m"), Value: aws.String("5")},
+				{Key: aws.String("z"), Value: aws.String("9")},
+			},
+		},
+		"SameKeySortByValue": {
+			input: []*svcsdk.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+				{Key: aws.String("env"), Value: aws.String("dev")},
+			},
+			want: []*svcsdk.Tag{
+				{Key: aws.String("env"), Value: aws.String("dev")},
+				{Key: aws.String("env"), Value: aws.String("prod")},
+			},
+		},
+		"EmptySlice": {
+			input: []*svcsdk.Tag{},
+			want:  []*svcsdk.Tag{},
+		},
+		"NilSlice": {
+			input: nil,
+			want:  []*svcsdk.Tag{},
+		},
+		"OriginalNotMutated": {
+			// sortDynamoDBTags must not mutate the original slice
+			input: []*svcsdk.Tag{
+				{Key: aws.String("b"), Value: aws.String("2")},
+				{Key: aws.String("a"), Value: aws.String("1")},
+			},
+			want: []*svcsdk.Tag{
+				{Key: aws.String("a"), Value: aws.String("1")},
+				{Key: aws.String("b"), Value: aws.String("2")},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			// keep a copy of the original to verify it wasn't mutated
+			origLen := len(tc.input)
+			origKeys := make([]string, origLen)
+			for i, tag := range tc.input {
+				if tag != nil && tag.Key != nil {
+					origKeys[i] = *tag.Key
+				}
+			}
+
+			got := sortDynamoDBTags(tc.input)
+
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("sortDynamoDBTags(%v): -want, +got:\n%s", name, diff)
+			}
+
+			// verify original slice key order was not changed
+			for i, tag := range tc.input {
+				if tag != nil && tag.Key != nil && *tag.Key != origKeys[i] {
+					t.Errorf("sortDynamoDBTags mutated the original slice at index %d", i)
+				}
+			}
+		})
+	}
+}
+
+func TestAreDynamoDBTagsEqual(t *testing.T) {
+	tableArn := aws.String("arn:aws:dynamodb:us-east-1:123456789012:table/test-table")
+
+	cases := map[string]struct {
+		observedTags []*svcsdk.Tag
+		specTags     []*svcapitypes.Tag
+		listErr      error
+		wantEqual    bool
+		wantErr      bool
+	}{
+		// Core behaviour: equal sets regardless of arrival order
+		"EqualTagsAlreadySorted": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+				{Key: aws.String("team"), Value: aws.String("platform")},
+			},
+			specTags: []*svcapitypes.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+				{Key: aws.String("team"), Value: aws.String("platform")},
+			},
+			wantEqual: true,
+		},
+		// KEY FIX: unsorted tags from AWS must still compare equal to sorted spec
+		"EqualTagsUnsortedFromAWS": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("team"), Value: aws.String("platform")},
+				{Key: aws.String("env"), Value: aws.String("prod")},
+				{Key: aws.String("cost-center"), Value: aws.String("eng")},
+			},
+			specTags: []*svcapitypes.Tag{
+				{Key: aws.String("cost-center"), Value: aws.String("eng")},
+				{Key: aws.String("env"), Value: aws.String("prod")},
+				{Key: aws.String("team"), Value: aws.String("platform")},
+			},
+			wantEqual: true,
+		},
+		// KEY FIX: unsorted spec must still match sorted AWS response
+		"EqualTagsUnsortedSpec": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("a"), Value: aws.String("1")},
+				{Key: aws.String("b"), Value: aws.String("2")},
+				{Key: aws.String("c"), Value: aws.String("3")},
+			},
+			specTags: []*svcapitypes.Tag{
+				{Key: aws.String("c"), Value: aws.String("3")},
+				{Key: aws.String("a"), Value: aws.String("1")},
+				{Key: aws.String("b"), Value: aws.String("2")},
+			},
+			wantEqual: true,
+		},
+		"DifferentTagValues": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("env"), Value: aws.String("staging")},
+			},
+			specTags: []*svcapitypes.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+			},
+			wantEqual: false,
+		},
+		"DifferentTagKeys": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("environment"), Value: aws.String("prod")},
+			},
+			specTags: []*svcapitypes.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+			},
+			wantEqual: false,
+		},
+		"ExtraTagOnAWS": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+				{Key: aws.String("extra"), Value: aws.String("val")},
+			},
+			specTags: []*svcapitypes.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+			},
+			wantEqual: false,
+		},
+		"ExtraTagInSpec": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+			},
+			specTags: []*svcapitypes.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+				{Key: aws.String("extra"), Value: aws.String("val")},
+			},
+			wantEqual: false,
+		},
+		"BothEmpty": {
+			observedTags: []*svcsdk.Tag{},
+			specTags:     []*svcapitypes.Tag{},
+			wantEqual:    true,
+		},
+		"BothNil": {
+			observedTags: nil,
+			specTags:     nil,
+			wantEqual:    true,
+		},
+		"ListTagsError": {
+			listErr: errListTagsFailed,
+			wantErr: true,
+		},
+		// AWS-managed tags (aws: prefix) must be ignored; their presence on the
+		// observed side should not cause a false drift signal.
+		"AWSManagedTagsIgnored": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("aws:cloudformation:stack-name"), Value: aws.String("my-stack")},
+				{Key: aws.String("env"), Value: aws.String("prod")},
+			},
+			specTags: []*svcapitypes.Tag{
+				{Key: aws.String("env"), Value: aws.String("prod")},
+			},
+			wantEqual: true,
+		},
+		// Only aws: tags differ — no user-managed drift, must be equal.
+		"OnlyAWSManagedTagsOnAWSSide": {
+			observedTags: []*svcsdk.Tag{
+				{Key: aws.String("aws:eks:cluster-name"), Value: aws.String("cluster")},
+			},
+			specTags:  []*svcapitypes.Tag{},
+			wantEqual: true,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			u := &updateClient{
+				client: &fakeTagLister{
+					tags: tc.observedTags,
+					err:  tc.listErr,
+				},
+			}
+
+			got, err := u.areDynamoDBTagsEqual(context.Background(), tableArn, tc.specTags)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("areDynamoDBTagsEqual() error = %v, wantErr %v", err, tc.wantErr)
+				return
+			}
+			if !tc.wantErr {
+				if diff := cmp.Diff(tc.wantEqual, got); diff != "" {
+					t.Errorf("areDynamoDBTagsEqual(): -want, +got:\n%s", diff)
+				}
 			}
 		})
 	}
