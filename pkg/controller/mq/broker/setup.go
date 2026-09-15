@@ -40,6 +40,7 @@ func SetupBroker(mgr ctrl.Manager, o controller.Options) error {
 			e.preDelete = preDelete
 			e.postObserve = c.postObserve
 			e.lateInitialize = LateInitialize
+			e.isUpToDate = isUpToDate
 		},
 	}
 
@@ -180,6 +181,79 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 
 	meta.SetExternalName(cr, pointer.StringValue(obj.BrokerId))
 	return cre, nil
+}
+
+// isUpToDate compares the mutable fields accepted by UpdateBroker (see
+// GenerateUpdateBrokerRequest) against the broker's observed state. Broker's
+// generated isUpToDate defaulted to alwaysUpToDate, so changes to e.g.
+// EngineVersion or MaintenanceWindowStartTime were silently ignored.
+func isUpToDate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeBrokerResponse) (bool, string, error) {
+	p := cr.Spec.ForProvider
+
+	if pointer.StringValue(p.AuthenticationStrategy) != pointer.StringValue(obj.AuthenticationStrategy) {
+		return false, "authenticationStrategy is not up to date", nil
+	}
+	if pointer.BoolValue(p.AutoMinorVersionUpgrade) != pointer.BoolValue(obj.AutoMinorVersionUpgrade) {
+		return false, "autoMinorVersionUpgrade is not up to date", nil
+	}
+	if pointer.StringValue(p.EngineVersion) != pointer.StringValue(obj.EngineVersion) {
+		return false, "engineVersion is not up to date", nil
+	}
+	if pointer.StringValue(p.HostInstanceType) != pointer.StringValue(obj.HostInstanceType) {
+		return false, "hostInstanceType is not up to date", nil
+	}
+
+	// Only sub-fields the caller actually set are compared: like
+	// GenerateUpdateBrokerRequest, an unset sub-field is never sent to AWS,
+	// so comparing it against the observed value could flag a permanent,
+	// unfixable diff.
+	if !logsUpToDate(p.Logs, obj.Logs) {
+		return false, "logs is not up to date", nil
+	}
+	if !maintenanceWindowUpToDate(p.MaintenanceWindowStartTime, obj.MaintenanceWindowStartTime) {
+		return false, "maintenanceWindowStartTime is not up to date", nil
+	}
+
+	return true, "", nil
+}
+
+func logsUpToDate(want *svcapitypes.Logs, current *svcsdk.LogsSummary) bool {
+	if want == nil {
+		return true
+	}
+	var currentAudit, currentGeneral *bool
+	if current != nil {
+		currentAudit, currentGeneral = current.Audit, current.General
+	}
+	if want.Audit != nil && pointer.BoolValue(want.Audit) != pointer.BoolValue(currentAudit) {
+		return false
+	}
+	if want.General != nil && pointer.BoolValue(want.General) != pointer.BoolValue(currentGeneral) {
+		return false
+	}
+	return true
+}
+
+func maintenanceWindowUpToDate(want *svcapitypes.WeeklyStartTime, current *svcsdk.WeeklyStartTime) bool {
+	if want == nil {
+		return true
+	}
+	var currentDayOfWeek, currentTimeOfDay, currentTimeZone *string
+	if current != nil {
+		currentDayOfWeek = current.DayOfWeek
+		currentTimeOfDay = current.TimeOfDay
+		currentTimeZone = current.TimeZone
+	}
+	if want.DayOfWeek != nil && pointer.StringValue(want.DayOfWeek) != pointer.StringValue(currentDayOfWeek) {
+		return false
+	}
+	if want.TimeOfDay != nil && pointer.StringValue(want.TimeOfDay) != pointer.StringValue(currentTimeOfDay) {
+		return false
+	}
+	if want.TimeZone != nil && pointer.StringValue(want.TimeZone) != pointer.StringValue(currentTimeZone) {
+		return false
+	}
+	return true
 }
 
 // LateInitialize fills the empty fields in *svcapitypes.BrokerParameters with
