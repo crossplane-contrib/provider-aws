@@ -62,6 +62,14 @@ spec:
                   roleARN:
                     description: AssumeRoleARN to assume with provider credentials
                     type: string
+                  sourceIdentity:
+                    description: |-
+                      SourceIdentity is the identity to set as the SourceIdentity in the assumed
+                      role session, so actions taken through the role are attributed to the
+                      requesting principal in CloudTrail and can be gated with the
+                      aws:SourceIdentity IAM condition key.
+                      (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_control-access_monitor.html)
+                    type: string
                   tags:
                     description: |-
                       Tags is list of session tags that you want to pass. Each session tag consists of a key
