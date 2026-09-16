@@ -485,6 +485,27 @@ type RDSInstanceParameters struct {
 	// will be ignored.
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
+	// The lifecycle type for this DB instance.
+	//
+	// This setting applies only to RDS for MySQL and RDS for PostgreSQL. For Amazon
+	// Aurora DB instances, the engine lifecycle support is managed by the DB cluster.
+	//
+	// You can use this setting to enroll your DB instance into Amazon RDS Extended
+	// Support or to opt out. With RDS Extended Support, you can run the selected major
+	// engine version on your DB instance past the end of standard support for that
+	// engine version. For more information, see [Amazon RDS Extended Support with Amazon RDS]in the Amazon RDS User Guide.
+	//
+	// Valid Values: open-source-rds-extended-support |
+	// open-source-rds-extended-support-disabled
+	//
+	// Note: AWS defaults to "open-source-rds-extended-support".
+	//
+	// This setting doesn't apply to RDS Custom DB instances.
+	//
+	// [Amazon RDS Extended Support with Amazon RDS]: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/extended-support.html
+	// +optional
+	EngineLifecycleSupport *string `json:"engineLifecycleSupport,omitempty"`
+
 	// RestoreFrom specifies the details of the backup to restore when creating a new RDS instance. (If the RDS instance already exists, this property will be ignored.)
 	// +optional
 	RestoreFrom *RestoreBackupConfiguration `json:"restoreFrom,omitempty"`
@@ -1198,6 +1219,9 @@ type RDSInstanceObservation struct {
 
 	// Indicates the database engine version.
 	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	// The life cycle type for the DB instance. Aka RDS Extended Support toggle.
+	EngineLifecycleSupport *string `json:"engineLifecycleSupport,omitempty"`
 
 	// EnhancedMonitoringResourceArn is the Amazon Resource Name (ARN) of the
 	// Amazon CloudWatch Logs log stream that receives the Enhanced Monitoring

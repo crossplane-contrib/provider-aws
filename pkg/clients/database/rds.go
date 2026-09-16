@@ -99,6 +99,7 @@ func GenerateCreateRDSInstanceInput(name, password string, p *v1beta1.RDSInstanc
 		EnablePerformanceInsights:          p.EnablePerformanceInsights,
 		Engine:                             aws.String(p.Engine),
 		EngineVersion:                      p.EngineVersion,
+		EngineLifecycleSupport:             p.EngineLifecycleSupport,
 		KmsKeyId:                           p.KMSKeyID,
 		LicenseModel:                       p.LicenseModel,
 		MasterUserPassword:                 pointer.ToOrNilIfZeroValue(password),
@@ -169,6 +170,7 @@ func GenerateRestoreRDSInstanceFromS3Input(name, password string, p *v1beta1.RDS
 		EnablePerformanceInsights:          p.EnablePerformanceInsights,
 		Engine:                             aws.String(p.Engine),
 		EngineVersion:                      p.EngineVersion,
+		EngineLifecycleSupport:             p.EngineLifecycleSupport,
 		Iops:                               pointer.ToIntAsInt32Ptr(p.IOPS),
 		KmsKeyId:                           p.KMSKeyID,
 		LicenseModel:                       p.LicenseModel,
@@ -234,6 +236,7 @@ func GenerateRestoreRDSInstanceFromSnapshotInput(name string, p *v1beta1.RDSInst
 		EnableCloudwatchLogsExports:     p.EnableCloudwatchLogsExports,
 		EnableIAMDatabaseAuthentication: p.EnableIAMDatabaseAuthentication,
 		Engine:                          aws.String(p.Engine),
+		EngineLifecycleSupport:          p.EngineLifecycleSupport,
 		Iops:                            pointer.ToIntAsInt32Ptr(p.IOPS),
 		LicenseModel:                    p.LicenseModel,
 		MultiAZ:                         p.MultiAZ,
@@ -288,6 +291,7 @@ func GenerateRestoreRDSInstanceToPointInTimeInput(name string, p *v1beta1.RDSIns
 		EnableCloudwatchLogsExports:     p.EnableCloudwatchLogsExports,
 		EnableIAMDatabaseAuthentication: p.EnableIAMDatabaseAuthentication,
 		Engine:                          aws.String(p.Engine),
+		EngineLifecycleSupport:          p.EngineLifecycleSupport,
 		Iops:                            pointer.ToIntAsInt32Ptr(p.IOPS),
 		LicenseModel:                    p.LicenseModel,
 		MultiAZ:                         p.MultiAZ,
@@ -415,6 +419,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 		EnableIAMDatabaseAuthentication:    p.EnableIAMDatabaseAuthentication,
 		EnablePerformanceInsights:          p.EnablePerformanceInsights,
 		EngineVersion:                      p.EngineVersion,
+		EngineLifecycleSupport:             p.EngineLifecycleSupport,
 		Iops:                               pointer.ToIntAsInt32Ptr(p.IOPS),
 		LicenseModel:                       p.LicenseModel,
 		MaxAllocatedStorage:                pointer.ToIntAsInt32Ptr(p.MaxAllocatedStorage),
@@ -463,6 +468,7 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 		DBResourceID:                          aws.ToString(db.DbiResourceId),
 		EnabledCloudwatchLogsExports:          db.EnabledCloudwatchLogsExports,
 		EngineVersion:                         db.EngineVersion,
+		EngineLifecycleSupport:                db.EngineLifecycleSupport,
 		EnhancedMonitoringResourceArn:         aws.ToString(db.EnhancedMonitoringResourceArn),
 		PerformanceInsightsEnabled:            aws.ToBool(db.PerformanceInsightsEnabled),
 		ReadReplicaDBClusterIdentifiers:       db.ReadReplicaDBClusterIdentifiers,
@@ -621,6 +627,7 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rdstypes.DBInstance) 
 	in.DeletionProtection = pointer.LateInitialize(in.DeletionProtection, db.DeletionProtection)
 	in.EnableIAMDatabaseAuthentication = pointer.LateInitialize(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
 	in.EnablePerformanceInsights = pointer.LateInitialize(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
+	in.EngineLifecycleSupport = pointer.LateInitialize(in.EngineLifecycleSupport, db.EngineLifecycleSupport)
 	in.IOPS = pointer.LateInitializeIntFrom32Ptr(in.IOPS, db.Iops)
 	in.KMSKeyID = pointer.LateInitialize(in.KMSKeyID, db.KmsKeyId)
 	in.LicenseModel = pointer.LateInitialize(in.LicenseModel, db.LicenseModel)

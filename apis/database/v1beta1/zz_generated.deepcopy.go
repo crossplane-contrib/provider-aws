@@ -518,6 +518,11 @@ func (in *RDSInstanceObservation) DeepCopyInto(out *RDSInstanceObservation) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EngineLifecycleSupport != nil {
+		in, out := &in.EngineLifecycleSupport, &out.EngineLifecycleSupport
+		*out = new(string)
+		**out = **in
+	}
 	if in.LatestRestorableTime != nil {
 		in, out := &in.LatestRestorableTime, &out.LatestRestorableTime
 		*out = (*in).DeepCopy()
@@ -660,6 +665,11 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	}
 	if in.EngineVersion != nil {
 		in, out := &in.EngineVersion, &out.EngineVersion
+		*out = new(string)
+		**out = **in
+	}
+	if in.EngineLifecycleSupport != nil {
+		in, out := &in.EngineLifecycleSupport, &out.EngineLifecycleSupport
 		*out = new(string)
 		**out = **in
 	}
