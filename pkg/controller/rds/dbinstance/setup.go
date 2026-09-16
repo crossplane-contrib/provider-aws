@@ -512,6 +512,7 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 		in.PreferredBackupWindow = pointer.LateInitialize(in.PreferredBackupWindow, db.PreferredBackupWindow)
 		in.StorageEncrypted = pointer.LateInitialize(in.StorageEncrypted, db.StorageEncrypted)
 		in.StorageType = pointer.LateInitialize(in.StorageType, db.StorageType)
+		in.EngineLifecycleSupport = pointer.LateInitialize(in.EngineLifecycleSupport, db.EngineLifecycleSupport)
 		in.EngineVersion = pointer.LateInitialize(in.EngineVersion, db.EngineVersion)
 		in.IOPS = pointer.LateInitialize(in.IOPS, db.Iops)
 		in.MaxAllocatedStorage = pointer.LateInitialize(in.MaxAllocatedStorage, db.MaxAllocatedStorage)
@@ -701,6 +702,7 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBInstance, out
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "AllowMajorVersionUpgrade"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "BackupRetentionPeriod"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "DBParameterGroupName"),
+		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "EngineLifecycleSupport"), // no modify possible yet (v1 sdk)
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "EngineVersion"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "IOPS"),
 		cmpopts.IgnoreFields(svcapitypes.DBInstanceParameters{}, "StorageThroughput"),

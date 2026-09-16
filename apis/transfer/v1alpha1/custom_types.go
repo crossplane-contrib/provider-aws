@@ -21,6 +21,28 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 // CustomUserParameters includes custom additional fields for UserParameters.
 type CustomUserParameters struct {
 
+	// Logical directory mappings that specify what Amazon S3 or Amazon EFS paths
+	// and keys should be visible to your user and how you want to make them visible.
+	// You must specify the Entry and Target pair, where Entry shows how the path
+	// is made visible and Target is the actual Amazon S3 or Amazon EFS path. If
+	// you only specify a target, it is displayed as is. You also must ensure that
+	// your Identity and Access Management (IAM) role provides access to paths in
+	// Target. This value can be set only when HomeDirectoryType is set to LOGICAL.
+	//
+	// The following is an Entry and Target pair example.
+	//
+	// [ { "Entry": "/directory1", "Target": "/bucket_name/home/mydirectory" } ]
+	//
+	// In most cases, you can use this value instead of the session policy to lock
+	// your user down to the designated home directory ("chroot"). To do this, you
+	// can set Entry to / and set Target to the value the user should see for their
+	// home directory when they log in.
+	//
+	// The following is an Entry and Target pair example for chroot.
+	//
+	// [ { "Entry": "/", "Target": "/bucket_name/home/mydirectory" } ]
+	HomeDirectoryMappings []*CustomHomeDirectoryMapEntry `json:"homeDirectoryMappings,omitempty"`
+
 	// A system-assigned unique identifier for a server instance. This is the specific
 	// server that you added your user to.
 	// +optional
@@ -96,6 +118,24 @@ type SSHPublicKeySpec struct {
 	//    * For ECDSA keys, the key type is either ecdsa-sha2-nistp256, ecdsa-sha2-nistp384,
 	//    or ecdsa-sha2-nistp521, depending on the size of the key you generated.
 	Body string `json:"body"`
+}
+
+// CustomHomeDirectoryMapEntry replaces HomeDirectoryMapEntry because it contains a
+// json tag "type_" that does not follow the convention.
+type CustomHomeDirectoryMapEntry struct {
+	// Represents an entry for HomeDirectoryMappings.
+	Entry *string `json:"entry,omitempty"`
+
+	// Represents the map target that is used in a HomeDirectoryMapEntry.
+	Target *string `json:"target,omitempty"`
+
+	// Specifies the type of mapping. Set the type to FILE if you want the mapping
+	// to point to a file, or DIRECTORY for the directory to point to a directory.
+	//
+	// By default, home directory mappings have a Type of DIRECTORY when you create
+	// a Transfer Family server. You would need to explicitly set Type to FILE if
+	// you want a mapping to have a file target.
+	Type *string `json:"type,omitempty"`
 }
 
 // CustomServerParameters includes custom additional fields for ServerParameters.

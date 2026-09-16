@@ -149,6 +149,11 @@ type JobTemplateData struct {
 }
 
 // +kubebuilder:skipversion
+type LakeFormationConfiguration struct {
+	QueryEngineRoleARN *string `json:"queryEngineRoleARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ParametricCloudWatchMonitoringConfiguration struct {
 	LogStreamNamePrefix *string `json:"logStreamNamePrefix,omitempty"`
 }
@@ -161,6 +166,26 @@ type RetryPolicyConfiguration struct {
 // +kubebuilder:skipversion
 type RetryPolicyExecution struct {
 	CurrentAttemptCount *int64 `json:"currentAttemptCount,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SecureNamespaceInfo struct {
+	ClusterID *string `json:"clusterID,omitempty"`
+
+	Namespace *string `json:"namespace,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SecurityConfiguration struct {
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	CreatedBy *string `json:"createdBy,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Tags map[string]*string `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -195,6 +220,8 @@ type VirtualCluster_SDK struct {
 	ID *string `json:"id,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	SecurityConfigurationID *string `json:"securityConfigurationID,omitempty"`
 
 	State *string `json:"state,omitempty"`
 

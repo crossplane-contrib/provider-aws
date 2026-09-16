@@ -36,27 +36,6 @@ type UserParameters struct {
 	//
 	// The HomeDirectory parameter is only used if HomeDirectoryType is set to PATH.
 	HomeDirectory *string `json:"homeDirectory,omitempty"`
-	// Logical directory mappings that specify what Amazon S3 or Amazon EFS paths
-	// and keys should be visible to your user and how you want to make them visible.
-	// You must specify the Entry and Target pair, where Entry shows how the path
-	// is made visible and Target is the actual Amazon S3 or Amazon EFS path. If
-	// you only specify a target, it is displayed as is. You also must ensure that
-	// your Identity and Access Management (IAM) role provides access to paths in
-	// Target. This value can be set only when HomeDirectoryType is set to LOGICAL.
-	//
-	// The following is an Entry and Target pair example.
-	//
-	// [ { "Entry": "/directory1", "Target": "/bucket_name/home/mydirectory" } ]
-	//
-	// In most cases, you can use this value instead of the session policy to lock
-	// your user down to the designated home directory ("chroot"). To do this, you
-	// can set Entry to / and set Target to the value the user should see for their
-	// home directory when they log in.
-	//
-	// The following is an Entry and Target pair example for chroot.
-	//
-	// [ { "Entry": "/", "Target": "/bucket_name/home/mydirectory" } ]
-	HomeDirectoryMappings []*HomeDirectoryMapEntry `json:"homeDirectoryMappings,omitempty"`
 	// The type of landing directory (folder) that you want your users' home directory
 	// to be when they log in to the server. If you set it to PATH, the user will
 	// see the absolute Amazon S3 bucket or Amazon EFS path as is in their file

@@ -51,6 +51,7 @@ type CertificateUsageType string
 const (
 	CertificateUsageType_SIGNING    CertificateUsageType = "SIGNING"
 	CertificateUsageType_ENCRYPTION CertificateUsageType = "ENCRYPTION"
+	CertificateUsageType_TLS        CertificateUsageType = "TLS"
 )
 
 type CompressionEnum string
@@ -67,6 +68,13 @@ const (
 	CustomStepStatus_FAILURE CustomStepStatus = "FAILURE"
 )
 
+type DirectoryListingOptimization string
+
+const (
+	DirectoryListingOptimization_ENABLED  DirectoryListingOptimization = "ENABLED"
+	DirectoryListingOptimization_DISABLED DirectoryListingOptimization = "DISABLED"
+)
+
 type Domain string
 
 const (
@@ -77,10 +85,11 @@ const (
 type EncryptionAlg string
 
 const (
-	EncryptionAlg_AES128_CBC EncryptionAlg = "AES128_CBC"
-	EncryptionAlg_AES192_CBC EncryptionAlg = "AES192_CBC"
-	EncryptionAlg_AES256_CBC EncryptionAlg = "AES256_CBC"
-	EncryptionAlg_NONE       EncryptionAlg = "NONE"
+	EncryptionAlg_AES128_CBC   EncryptionAlg = "AES128_CBC"
+	EncryptionAlg_AES192_CBC   EncryptionAlg = "AES192_CBC"
+	EncryptionAlg_AES256_CBC   EncryptionAlg = "AES256_CBC"
+	EncryptionAlg_DES_EDE3_CBC EncryptionAlg = "DES_EDE3_CBC"
+	EncryptionAlg_NONE         EncryptionAlg = "NONE"
 )
 
 type EncryptionType string
@@ -135,6 +144,13 @@ const (
 	IdentityProviderType_AWS_LAMBDA            IdentityProviderType = "AWS_LAMBDA"
 )
 
+type MapType string
+
+const (
+	MapType_FILE      MapType = "FILE"
+	MapType_DIRECTORY MapType = "DIRECTORY"
+)
+
 type MdnResponse string
 
 const (
@@ -174,6 +190,20 @@ const (
 	Protocol_FTP  Protocol = "FTP"
 	Protocol_FTPS Protocol = "FTPS"
 	Protocol_AS2  Protocol = "AS2"
+)
+
+type SecurityPolicyProtocol string
+
+const (
+	SecurityPolicyProtocol_SFTP SecurityPolicyProtocol = "SFTP"
+	SecurityPolicyProtocol_FTPS SecurityPolicyProtocol = "FTPS"
+)
+
+type SecurityPolicyResourceType string
+
+const (
+	SecurityPolicyResourceType_SERVER    SecurityPolicyResourceType = "SERVER"
+	SecurityPolicyResourceType_CONNECTOR SecurityPolicyResourceType = "CONNECTOR"
 )
 
 type SetStatOption string

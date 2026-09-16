@@ -244,6 +244,12 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			in.BillingMode = t.Table.BillingModeSummary.BillingMode
 		}
 	}
+	if in.OnDemandThroughput == nil && t.Table.OnDemandThroughput != nil {
+		in.OnDemandThroughput = &svcapitypes.OnDemandThroughput{
+			MaxReadRequestUnits:  t.Table.OnDemandThroughput.MaxReadRequestUnits,
+			MaxWriteRequestUnits: t.Table.OnDemandThroughput.MaxWriteRequestUnits,
+		}
+	}
 	if in.ProvisionedThroughput == nil && t.Table.ProvisionedThroughput != nil {
 		// NOTE: AWS always returns ProvisionedThroughput in DescribeTable
 		// output, even for PAY_PER_REQUEST tables (with values of 0). We
@@ -415,6 +421,8 @@ func (e *updateClient) isCoreResourceUpToDate(ctx context.Context, cr *svcapityp
 	switch {
 	case patch.BillingMode != nil:
 		return false, nil
+	case patch.OnDemandThroughput != nil:
+		return false, nil
 	case patch.ProvisionedThroughput != nil:
 		// TODO(negz): DescribeTableOutput appears to report that
 		// ProvisionedThroughput is 0 when the billing mode is set to
@@ -492,7 +500,7 @@ type updateClient struct {
 	clientkms kmsiface.KMSAPI
 }
 
-func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
+func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error { //nolint:gocyclo
 	filtered := &svcsdk.UpdateTableInput{
 		TableName:            pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
 		AttributeDefinitions: u.AttributeDefinitions,
@@ -529,6 +537,10 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 		if pointer.StringValue(u.BillingMode) == string(svcapitypes.BillingMode_PROVISIONED) {
 			filtered.ProvisionedThroughput = u.ProvisionedThroughput
 		}
+	case p.OnDemandThroughput != nil:
+		// NOTE: You may only included on demand throughput when
+		// the billing mode is PAY_PER_REQUEST.
+		filtered.OnDemandThroughput = u.OnDemandThroughput
 	case p.ProvisionedThroughput != nil:
 		// NOTE(negz): You may only included provisioned throughput when
 		// the billing mode is PROVISIONED.

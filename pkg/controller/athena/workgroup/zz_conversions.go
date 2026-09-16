@@ -74,38 +74,61 @@ func GenerateWorkGroup(resp *svcsdk.GetWorkGroupOutput) *svcapitypes.WorkGroup {
 		if resp.WorkGroup.Configuration.ExecutionRole != nil {
 			f0.ExecutionRole = resp.WorkGroup.Configuration.ExecutionRole
 		}
+		if resp.WorkGroup.Configuration.IdentityCenterConfiguration != nil {
+			f0f7 := &svcapitypes.IdentityCenterConfiguration{}
+			if resp.WorkGroup.Configuration.IdentityCenterConfiguration.EnableIdentityCenter != nil {
+				f0f7.EnableIdentityCenter = resp.WorkGroup.Configuration.IdentityCenterConfiguration.EnableIdentityCenter
+			}
+			if resp.WorkGroup.Configuration.IdentityCenterConfiguration.IdentityCenterInstanceArn != nil {
+				f0f7.IdentityCenterInstanceARN = resp.WorkGroup.Configuration.IdentityCenterConfiguration.IdentityCenterInstanceArn
+			}
+			f0.IdentityCenterConfiguration = f0f7
+		}
 		if resp.WorkGroup.Configuration.PublishCloudWatchMetricsEnabled != nil {
 			f0.PublishCloudWatchMetricsEnabled = resp.WorkGroup.Configuration.PublishCloudWatchMetricsEnabled
+		}
+		if resp.WorkGroup.Configuration.QueryResultsS3AccessGrantsConfiguration != nil {
+			f0f9 := &svcapitypes.QueryResultsS3AccessGrantsConfiguration{}
+			if resp.WorkGroup.Configuration.QueryResultsS3AccessGrantsConfiguration.AuthenticationType != nil {
+				f0f9.AuthenticationType = resp.WorkGroup.Configuration.QueryResultsS3AccessGrantsConfiguration.AuthenticationType
+			}
+			if resp.WorkGroup.Configuration.QueryResultsS3AccessGrantsConfiguration.CreateUserLevelPrefix != nil {
+				f0f9.CreateUserLevelPrefix = resp.WorkGroup.Configuration.QueryResultsS3AccessGrantsConfiguration.CreateUserLevelPrefix
+			}
+			if resp.WorkGroup.Configuration.QueryResultsS3AccessGrantsConfiguration.EnableS3AccessGrants != nil {
+				f0f9.EnableS3AccessGrants = resp.WorkGroup.Configuration.QueryResultsS3AccessGrantsConfiguration.EnableS3AccessGrants
+			}
+			f0.QueryResultsS3AccessGrantsConfiguration = f0f9
 		}
 		if resp.WorkGroup.Configuration.RequesterPaysEnabled != nil {
 			f0.RequesterPaysEnabled = resp.WorkGroup.Configuration.RequesterPaysEnabled
 		}
 		if resp.WorkGroup.Configuration.ResultConfiguration != nil {
-			f0f9 := &svcapitypes.ResultConfiguration{}
+			f0f11 := &svcapitypes.ResultConfiguration{}
 			if resp.WorkGroup.Configuration.ResultConfiguration.AclConfiguration != nil {
-				f0f9f0 := &svcapitypes.ACLConfiguration{}
+				f0f11f0 := &svcapitypes.ACLConfiguration{}
 				if resp.WorkGroup.Configuration.ResultConfiguration.AclConfiguration.S3AclOption != nil {
-					f0f9f0.S3ACLOption = resp.WorkGroup.Configuration.ResultConfiguration.AclConfiguration.S3AclOption
+					f0f11f0.S3ACLOption = resp.WorkGroup.Configuration.ResultConfiguration.AclConfiguration.S3AclOption
 				}
-				f0f9.ACLConfiguration = f0f9f0
+				f0f11.ACLConfiguration = f0f11f0
 			}
 			if resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration != nil {
-				f0f9f1 := &svcapitypes.EncryptionConfiguration{}
+				f0f11f1 := &svcapitypes.EncryptionConfiguration{}
 				if resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption != nil {
-					f0f9f1.EncryptionOption = resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption
+					f0f11f1.EncryptionOption = resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption
 				}
 				if resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.KmsKey != nil {
-					f0f9f1.KMSKey = resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.KmsKey
+					f0f11f1.KMSKey = resp.WorkGroup.Configuration.ResultConfiguration.EncryptionConfiguration.KmsKey
 				}
-				f0f9.EncryptionConfiguration = f0f9f1
+				f0f11.EncryptionConfiguration = f0f11f1
 			}
 			if resp.WorkGroup.Configuration.ResultConfiguration.ExpectedBucketOwner != nil {
-				f0f9.ExpectedBucketOwner = resp.WorkGroup.Configuration.ResultConfiguration.ExpectedBucketOwner
+				f0f11.ExpectedBucketOwner = resp.WorkGroup.Configuration.ResultConfiguration.ExpectedBucketOwner
 			}
 			if resp.WorkGroup.Configuration.ResultConfiguration.OutputLocation != nil {
-				f0f9.OutputLocation = resp.WorkGroup.Configuration.ResultConfiguration.OutputLocation
+				f0f11.OutputLocation = resp.WorkGroup.Configuration.ResultConfiguration.OutputLocation
 			}
-			f0.ResultConfiguration = f0f9
+			f0.ResultConfiguration = f0f11
 		}
 		cr.Spec.ForProvider.Configuration = f0
 	} else {
@@ -158,38 +181,61 @@ func GenerateCreateWorkGroupInput(cr *svcapitypes.WorkGroup) *svcsdk.CreateWorkG
 		if cr.Spec.ForProvider.Configuration.ExecutionRole != nil {
 			f0.SetExecutionRole(*cr.Spec.ForProvider.Configuration.ExecutionRole)
 		}
+		if cr.Spec.ForProvider.Configuration.IdentityCenterConfiguration != nil {
+			f0f7 := &svcsdk.IdentityCenterConfiguration{}
+			if cr.Spec.ForProvider.Configuration.IdentityCenterConfiguration.EnableIdentityCenter != nil {
+				f0f7.SetEnableIdentityCenter(*cr.Spec.ForProvider.Configuration.IdentityCenterConfiguration.EnableIdentityCenter)
+			}
+			if cr.Spec.ForProvider.Configuration.IdentityCenterConfiguration.IdentityCenterInstanceARN != nil {
+				f0f7.SetIdentityCenterInstanceArn(*cr.Spec.ForProvider.Configuration.IdentityCenterConfiguration.IdentityCenterInstanceARN)
+			}
+			f0.SetIdentityCenterConfiguration(f0f7)
+		}
 		if cr.Spec.ForProvider.Configuration.PublishCloudWatchMetricsEnabled != nil {
 			f0.SetPublishCloudWatchMetricsEnabled(*cr.Spec.ForProvider.Configuration.PublishCloudWatchMetricsEnabled)
+		}
+		if cr.Spec.ForProvider.Configuration.QueryResultsS3AccessGrantsConfiguration != nil {
+			f0f9 := &svcsdk.QueryResultsS3AccessGrantsConfiguration{}
+			if cr.Spec.ForProvider.Configuration.QueryResultsS3AccessGrantsConfiguration.AuthenticationType != nil {
+				f0f9.SetAuthenticationType(*cr.Spec.ForProvider.Configuration.QueryResultsS3AccessGrantsConfiguration.AuthenticationType)
+			}
+			if cr.Spec.ForProvider.Configuration.QueryResultsS3AccessGrantsConfiguration.CreateUserLevelPrefix != nil {
+				f0f9.SetCreateUserLevelPrefix(*cr.Spec.ForProvider.Configuration.QueryResultsS3AccessGrantsConfiguration.CreateUserLevelPrefix)
+			}
+			if cr.Spec.ForProvider.Configuration.QueryResultsS3AccessGrantsConfiguration.EnableS3AccessGrants != nil {
+				f0f9.SetEnableS3AccessGrants(*cr.Spec.ForProvider.Configuration.QueryResultsS3AccessGrantsConfiguration.EnableS3AccessGrants)
+			}
+			f0.SetQueryResultsS3AccessGrantsConfiguration(f0f9)
 		}
 		if cr.Spec.ForProvider.Configuration.RequesterPaysEnabled != nil {
 			f0.SetRequesterPaysEnabled(*cr.Spec.ForProvider.Configuration.RequesterPaysEnabled)
 		}
 		if cr.Spec.ForProvider.Configuration.ResultConfiguration != nil {
-			f0f9 := &svcsdk.ResultConfiguration{}
+			f0f11 := &svcsdk.ResultConfiguration{}
 			if cr.Spec.ForProvider.Configuration.ResultConfiguration.ACLConfiguration != nil {
-				f0f9f0 := &svcsdk.AclConfiguration{}
+				f0f11f0 := &svcsdk.AclConfiguration{}
 				if cr.Spec.ForProvider.Configuration.ResultConfiguration.ACLConfiguration.S3ACLOption != nil {
-					f0f9f0.SetS3AclOption(*cr.Spec.ForProvider.Configuration.ResultConfiguration.ACLConfiguration.S3ACLOption)
+					f0f11f0.SetS3AclOption(*cr.Spec.ForProvider.Configuration.ResultConfiguration.ACLConfiguration.S3ACLOption)
 				}
-				f0f9.SetAclConfiguration(f0f9f0)
+				f0f11.SetAclConfiguration(f0f11f0)
 			}
 			if cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration != nil {
-				f0f9f1 := &svcsdk.EncryptionConfiguration{}
+				f0f11f1 := &svcsdk.EncryptionConfiguration{}
 				if cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption != nil {
-					f0f9f1.SetEncryptionOption(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption)
+					f0f11f1.SetEncryptionOption(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.EncryptionOption)
 				}
 				if cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.KMSKey != nil {
-					f0f9f1.SetKmsKey(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.KMSKey)
+					f0f11f1.SetKmsKey(*cr.Spec.ForProvider.Configuration.ResultConfiguration.EncryptionConfiguration.KMSKey)
 				}
-				f0f9.SetEncryptionConfiguration(f0f9f1)
+				f0f11.SetEncryptionConfiguration(f0f11f1)
 			}
 			if cr.Spec.ForProvider.Configuration.ResultConfiguration.ExpectedBucketOwner != nil {
-				f0f9.SetExpectedBucketOwner(*cr.Spec.ForProvider.Configuration.ResultConfiguration.ExpectedBucketOwner)
+				f0f11.SetExpectedBucketOwner(*cr.Spec.ForProvider.Configuration.ResultConfiguration.ExpectedBucketOwner)
 			}
 			if cr.Spec.ForProvider.Configuration.ResultConfiguration.OutputLocation != nil {
-				f0f9.SetOutputLocation(*cr.Spec.ForProvider.Configuration.ResultConfiguration.OutputLocation)
+				f0f11.SetOutputLocation(*cr.Spec.ForProvider.Configuration.ResultConfiguration.OutputLocation)
 			}
-			f0.SetResultConfiguration(f0f9)
+			f0.SetResultConfiguration(f0f11)
 		}
 		res.SetConfiguration(f0)
 	}

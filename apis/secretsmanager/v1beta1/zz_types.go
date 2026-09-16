@@ -101,6 +101,15 @@ type SecretListEntry struct {
 }
 
 // +kubebuilder:skipversion
+type SecretValueEntry struct {
+	ARN *string `json:"arn,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	VersionStages []*string `json:"versionStages,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SecretVersionsListEntry struct {
 	LastAccessedDate *metav1.Time `json:"lastAccessedDate,omitempty"`
 

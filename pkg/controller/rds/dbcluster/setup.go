@@ -284,6 +284,10 @@ func generateRestoreDBClusterFromS3Input(cr *svcapitypes.DBCluster) *svcsdk.Rest
 		res.SetEngine(*cr.Spec.ForProvider.Engine)
 	}
 
+	if cr.Spec.ForProvider.EngineLifecycleSupport != nil {
+		res.SetEngineLifecycleSupport(*cr.Spec.ForProvider.EngineLifecycleSupport)
+	}
+
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
 	}
@@ -412,6 +416,10 @@ func generateRestoreDBClusterFromSnapshotInput(cr *svcapitypes.DBCluster) *svcsd
 		res.SetEngine(*cr.Spec.ForProvider.Engine)
 	}
 
+	if cr.Spec.ForProvider.EngineLifecycleSupport != nil {
+		res.SetEngineLifecycleSupport(*cr.Spec.ForProvider.EngineLifecycleSupport)
+	}
+
 	if cr.Spec.ForProvider.EngineMode != nil {
 		res.SetEngineMode(*cr.Spec.ForProvider.EngineMode)
 	}
@@ -508,6 +516,7 @@ func generateRestoreDBClusterToPointInTimeInput(cr *svcapitypes.DBCluster) *svcs
 		DomainIAMRoleName:               p.DomainIAMRoleName,
 		EnableCloudwatchLogsExports:     p.EnableCloudwatchLogsExports,
 		EnableIAMDatabaseAuthentication: p.EnableIAMDatabaseAuthentication,
+		EngineLifecycleSupport:          p.EngineLifecycleSupport,
 		EngineMode:                      p.EngineMode,
 		Iops:                            p.IOPS,
 		KmsKeyId:                        p.KMSKeyID,
@@ -608,9 +617,12 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "AutoMinorVersionUpgrade"),
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "BacktrackWindow"),
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "BackupRetentionPeriod"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "CACertificateIdentifier"),
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "DBSubnetGroupName"),
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "DBClusterParameterGroupName"),
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "EnableCloudwatchLogsExports"),
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "EnableLimitlessDatabase"), // seems to not be possible to switch back and forth
+		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "EngineLifecycleSupport"),  // no modify possible yet (v1 sdk)
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "EngineVersion"),
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "FinalDBSnapshotIdentifier"),
 		cmpopts.IgnoreFields(svcapitypes.DBClusterParameters{}, "MasterUserPasswordSecretRef"),
@@ -765,6 +777,11 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 	}
 	if !isScalingConfigurationUpToDate {
 		diff += "\nscalingConfiguration changed"
+	}
+
+	if !isCACertificateIdentifierUpToDate(cr, out) {
+		diff += "\ndesired caCertificateIdentifier: " + pointer.StringValue(cr.Spec.ForProvider.CACertificateIdentifier) +
+			", observed caCertificateIdentifier: " + pointer.StringValue(out.DBClusters[0].CertificateDetails.CAIdentifier)
 	}
 
 	// Build ignore rules: implicit aws:* + user supplied rules
@@ -955,6 +972,13 @@ func areVPCSecurityGroupIDsUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.Descr
 	return cmp.Equal(desiredIDs, actualIDs)
 }
 
+func isCACertificateIdentifierUpToDate(cr *svcapitypes.DBCluster, out *svcsdk.DescribeDBClustersOutput) bool {
+	if out.DBClusters[0].CertificateDetails != nil {
+		return pointer.StringValue(cr.Spec.ForProvider.CACertificateIdentifier) == pointer.StringValue(out.DBClusters[0].CertificateDetails.CAIdentifier)
+	}
+	return true
+}
+
 func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.ModifyDBClusterInput) error {
 	obj.DBClusterIdentifier = pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr))
 	obj.ApplyImmediately = cr.Spec.ForProvider.ApplyImmediately
@@ -999,6 +1023,18 @@ func (s *shared) preUpdate(_ context.Context, cr *svcapitypes.DBCluster, obj *sv
 	if !pointer.BoolValue(cr.Spec.ForProvider.EnablePerformanceInsights) {
 		obj.PerformanceInsightsRetentionPeriod = nil
 		obj.PerformanceInsightsKMSKeyId = nil
+	}
+
+	// As of now, it does not appear to be possible to switch from a standard Aurora cluster
+	// to Aurora Limitless, or vice versa. Ensure why it
+	obj.EnableLimitlessDatabase = nil
+
+	// Aurora Limitless Database doesn't support the following DB cluster modifications:
+	// [StorageType, Port, CloudwatchLogsExportConfiguration]
+	if cr.Status.AtProvider.LimitlessDatabase != nil {
+		obj.CloudwatchLogsExportConfiguration = nil
+		obj.Port = nil
+		obj.StorageType = nil
 	}
 
 	return nil

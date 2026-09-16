@@ -340,6 +340,33 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Service) (managed
 						if f6elemf13f3iter.PortName != nil {
 							f6elemf13f3elem.PortName = f6elemf13f3iter.PortName
 						}
+						if f6elemf13f3iter.Timeout != nil {
+							f6elemf13f3elemf4 := &svcapitypes.TimeoutConfiguration{}
+							if f6elemf13f3iter.Timeout.IdleTimeoutSeconds != nil {
+								f6elemf13f3elemf4.IdleTimeoutSeconds = f6elemf13f3iter.Timeout.IdleTimeoutSeconds
+							}
+							if f6elemf13f3iter.Timeout.PerRequestTimeoutSeconds != nil {
+								f6elemf13f3elemf4.PerRequestTimeoutSeconds = f6elemf13f3iter.Timeout.PerRequestTimeoutSeconds
+							}
+							f6elemf13f3elem.Timeout = f6elemf13f3elemf4
+						}
+						if f6elemf13f3iter.Tls != nil {
+							f6elemf13f3elemf5 := &svcapitypes.ServiceConnectTLSConfiguration{}
+							if f6elemf13f3iter.Tls.IssuerCertificateAuthority != nil {
+								f6elemf13f3elemf5f0 := &svcapitypes.ServiceConnectTLSCertificateAuthority{}
+								if f6elemf13f3iter.Tls.IssuerCertificateAuthority.AwsPcaAuthorityArn != nil {
+									f6elemf13f3elemf5f0.AWSPcaAuthorityARN = f6elemf13f3iter.Tls.IssuerCertificateAuthority.AwsPcaAuthorityArn
+								}
+								f6elemf13f3elemf5.IssuerCertificateAuthority = f6elemf13f3elemf5f0
+							}
+							if f6elemf13f3iter.Tls.KmsKey != nil {
+								f6elemf13f3elemf5.KMSKey = f6elemf13f3iter.Tls.KmsKey
+							}
+							if f6elemf13f3iter.Tls.RoleArn != nil {
+								f6elemf13f3elemf5.RoleARN = f6elemf13f3iter.Tls.RoleArn
+							}
+							f6elemf13f3elem.TLS = f6elemf13f3elemf5
+						}
 						f6elemf13f3 = append(f6elemf13f3, f6elemf13f3elem)
 					}
 					f6elemf13.Services = f6elemf13f3
@@ -368,6 +395,76 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Service) (managed
 			}
 			if f6iter.UpdatedAt != nil {
 				f6elem.UpdatedAt = &metav1.Time{*f6iter.UpdatedAt}
+			}
+			if f6iter.VolumeConfigurations != nil {
+				f6elemf18 := []*svcapitypes.ServiceVolumeConfiguration{}
+				for _, f6elemf18iter := range f6iter.VolumeConfigurations {
+					f6elemf18elem := &svcapitypes.ServiceVolumeConfiguration{}
+					if f6elemf18iter.ManagedEBSVolume != nil {
+						f6elemf18elemf0 := &svcapitypes.ServiceManagedEBSVolumeConfiguration{}
+						if f6elemf18iter.ManagedEBSVolume.Encrypted != nil {
+							f6elemf18elemf0.Encrypted = f6elemf18iter.ManagedEBSVolume.Encrypted
+						}
+						if f6elemf18iter.ManagedEBSVolume.FilesystemType != nil {
+							f6elemf18elemf0.FilesystemType = f6elemf18iter.ManagedEBSVolume.FilesystemType
+						}
+						if f6elemf18iter.ManagedEBSVolume.Iops != nil {
+							f6elemf18elemf0.IOPS = f6elemf18iter.ManagedEBSVolume.Iops
+						}
+						if f6elemf18iter.ManagedEBSVolume.KmsKeyId != nil {
+							f6elemf18elemf0.KMSKeyID = f6elemf18iter.ManagedEBSVolume.KmsKeyId
+						}
+						if f6elemf18iter.ManagedEBSVolume.RoleArn != nil {
+							f6elemf18elemf0.RoleARN = f6elemf18iter.ManagedEBSVolume.RoleArn
+						}
+						if f6elemf18iter.ManagedEBSVolume.SizeInGiB != nil {
+							f6elemf18elemf0.SizeInGiB = f6elemf18iter.ManagedEBSVolume.SizeInGiB
+						}
+						if f6elemf18iter.ManagedEBSVolume.SnapshotId != nil {
+							f6elemf18elemf0.SnapshotID = f6elemf18iter.ManagedEBSVolume.SnapshotId
+						}
+						if f6elemf18iter.ManagedEBSVolume.TagSpecifications != nil {
+							f6elemf18elemf0f7 := []*svcapitypes.EBSTagSpecification{}
+							for _, f6elemf18elemf0f7iter := range f6elemf18iter.ManagedEBSVolume.TagSpecifications {
+								f6elemf18elemf0f7elem := &svcapitypes.EBSTagSpecification{}
+								if f6elemf18elemf0f7iter.PropagateTags != nil {
+									f6elemf18elemf0f7elem.PropagateTags = f6elemf18elemf0f7iter.PropagateTags
+								}
+								if f6elemf18elemf0f7iter.ResourceType != nil {
+									f6elemf18elemf0f7elem.ResourceType = f6elemf18elemf0f7iter.ResourceType
+								}
+								if f6elemf18elemf0f7iter.Tags != nil {
+									f6elemf18elemf0f7elemf2 := []*svcapitypes.Tag{}
+									for _, f6elemf18elemf0f7elemf2iter := range f6elemf18elemf0f7iter.Tags {
+										f6elemf18elemf0f7elemf2elem := &svcapitypes.Tag{}
+										if f6elemf18elemf0f7elemf2iter.Key != nil {
+											f6elemf18elemf0f7elemf2elem.Key = f6elemf18elemf0f7elemf2iter.Key
+										}
+										if f6elemf18elemf0f7elemf2iter.Value != nil {
+											f6elemf18elemf0f7elemf2elem.Value = f6elemf18elemf0f7elemf2iter.Value
+										}
+										f6elemf18elemf0f7elemf2 = append(f6elemf18elemf0f7elemf2, f6elemf18elemf0f7elemf2elem)
+									}
+									f6elemf18elemf0f7elem.Tags = f6elemf18elemf0f7elemf2
+								}
+								f6elemf18elemf0f7 = append(f6elemf18elemf0f7, f6elemf18elemf0f7elem)
+							}
+							f6elemf18elemf0.TagSpecifications = f6elemf18elemf0f7
+						}
+						if f6elemf18iter.ManagedEBSVolume.Throughput != nil {
+							f6elemf18elemf0.Throughput = f6elemf18iter.ManagedEBSVolume.Throughput
+						}
+						if f6elemf18iter.ManagedEBSVolume.VolumeType != nil {
+							f6elemf18elemf0.VolumeType = f6elemf18iter.ManagedEBSVolume.VolumeType
+						}
+						f6elemf18elem.ManagedEBSVolume = f6elemf18elemf0
+					}
+					if f6elemf18iter.Name != nil {
+						f6elemf18elem.Name = f6elemf18iter.Name
+					}
+					f6elemf18 = append(f6elemf18, f6elemf18elem)
+				}
+				f6elem.VolumeConfigurations = f6elemf18
 			}
 			f6 = append(f6, f6elem)
 		}

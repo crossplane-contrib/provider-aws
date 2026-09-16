@@ -82,6 +82,11 @@ spec:
                     description: |-
                       The Amazon Web Services account ID associated with the S3 bucket associated
                       with this access point.
+
+                      For same account access point when your bucket and access point belong to
+                      the same account owner, the BucketAccountId is not required. For cross-account
+                      access point when your bucket and access point are not in the same account,
+                      the BucketAccountId is required.
                     type: string
                   bucketName:
                     description: BucketName is the name of the Bucket for AccessPoint

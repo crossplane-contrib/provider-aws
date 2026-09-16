@@ -313,19 +313,24 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.DBCluster) (manag
 	} else {
 		cr.Spec.ForProvider.StorageEncrypted = nil
 	}
+	if resp.DBCluster.StorageType != nil {
+		cr.Spec.ForProvider.StorageType = resp.DBCluster.StorageType
+	} else {
+		cr.Spec.ForProvider.StorageType = nil
+	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
-		f31 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f31iter := range resp.DBCluster.VpcSecurityGroups {
-			f31elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f31iter.Status != nil {
-				f31elem.Status = f31iter.Status
+		f32 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f32iter := range resp.DBCluster.VpcSecurityGroups {
+			f32elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f32iter.Status != nil {
+				f32elem.Status = f32iter.Status
 			}
-			if f31iter.VpcSecurityGroupId != nil {
-				f31elem.VPCSecurityGroupID = f31iter.VpcSecurityGroupId
+			if f32iter.VpcSecurityGroupId != nil {
+				f32elem.VPCSecurityGroupID = f32iter.VpcSecurityGroupId
 			}
-			f31 = append(f31, f31elem)
+			f32 = append(f32, f32elem)
 		}
-		cr.Status.AtProvider.VPCSecurityGroups = f31
+		cr.Status.AtProvider.VPCSecurityGroups = f32
 	} else {
 		cr.Status.AtProvider.VPCSecurityGroups = nil
 	}

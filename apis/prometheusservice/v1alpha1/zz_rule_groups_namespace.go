@@ -29,13 +29,18 @@ type RuleGroupsNamespaceParameters struct {
 	// Region is which region the RuleGroupsNamespace will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The namespace data that define the rule groups.
+	// The rules file to use in the new namespace.
+	//
+	// Contains the base64-encoded version of the YAML rules file.
+	//
+	// For details about the rule groups namespace structure, see RuleGroupsNamespaceData
+	// (https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-RuleGroupsNamespaceData.html).
 	// +kubebuilder:validation:Required
 	Data []byte `json:"data"`
-	// The rule groups namespace name.
+	// The name for the new rule groups namespace.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
-	// Optional, user-provided tags for this rule groups namespace.
+	// The list of tag keys and values to associate with the rule groups namespace.
 	Tags                                map[string]*string `json:"tags,omitempty"`
 	CustomRuleGroupsNamespaceParameters `json:",inline"`
 }
@@ -48,9 +53,9 @@ type RuleGroupsNamespaceSpec struct {
 
 // RuleGroupsNamespaceObservation defines the observed state of RuleGroupsNamespace
 type RuleGroupsNamespaceObservation struct {
-	// The Amazon Resource Name (ARN) of this rule groups namespace.
+	// The Amazon Resource Name (ARN) of the new rule groups namespace.
 	ARN *string `json:"arn,omitempty"`
-	// The status of rule groups namespace.
+	// A structure that returns the current status of the rule groups namespace.
 	Status *RuleGroupsNamespaceStatus_SDK `json:"status,omitempty"`
 
 	CustomRuleGroupsNamespaceObservation `json:",inline"`

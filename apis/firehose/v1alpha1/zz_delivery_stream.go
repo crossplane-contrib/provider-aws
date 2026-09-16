@@ -67,6 +67,8 @@ type DeliveryStreamParameters struct {
 	RedshiftDestinationConfiguration *RedshiftDestinationConfiguration `json:"redshiftDestinationConfiguration,omitempty"`
 	// [Deprecated] The destination in Amazon S3. You can specify only one destination.
 	S3DestinationConfiguration *S3DestinationConfiguration `json:"s3DestinationConfiguration,omitempty"`
+	// Configure Snowflake destination
+	SnowflakeDestinationConfiguration *SnowflakeDestinationConfiguration `json:"snowflakeDestinationConfiguration,omitempty"`
 	// The destination in Splunk. You can specify only one destination.
 	SplunkDestinationConfiguration *SplunkDestinationConfiguration `json:"splunkDestinationConfiguration,omitempty"`
 	// A set of tags to assign to the delivery stream. A tag is a key-value pair
@@ -77,6 +79,20 @@ type DeliveryStreamParameters struct {
 	// in the Amazon Web Services Billing and Cost Management User Guide.
 	//
 	// You can specify up to 50 tags when creating a delivery stream.
+	//
+	// If you specify tags in the CreateDeliveryStream action, Amazon Data Firehose
+	// performs an additional authorization on the firehose:TagDeliveryStream action
+	// to verify if users have permissions to create tags. If you do not provide
+	// this permission, requests to create new Firehose delivery streams with IAM
+	// resource tags will fail with an AccessDeniedException such as following.
+	//
+	// AccessDeniedException
+	//
+	// User: arn:aws:sts::x:assumed-role/x/x is not authorized to perform: firehose:TagDeliveryStream
+	// on resource: arn:aws:firehose:us-east-1:x:deliverystream/x with an explicit
+	// deny in an identity-based policy.
+	//
+	// For an example IAM policy, see Tag example. (https://docs.aws.amazon.com/firehose/latest/APIReference/API_CreateDeliveryStream.html#API_CreateDeliveryStream_Examples)
 	Tags                           []*Tag `json:"tags,omitempty"`
 	CustomDeliveryStreamParameters `json:",inline"`
 }

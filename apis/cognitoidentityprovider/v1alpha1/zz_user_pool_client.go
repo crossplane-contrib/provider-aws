@@ -42,7 +42,9 @@ type UserPoolClientParameters struct {
 	// If you don't specify otherwise in the configuration of your app client, your
 	// access tokens are valid for one hour.
 	AccessTokenValidity *int64 `json:"accessTokenValidity,omitempty"`
-	// The allowed OAuth flows.
+	// The OAuth grant types that you want your app client to generate. To create
+	// an app client that generates client credentials grants, you must add client_credentials
+	// as the only allowed OAuth flow.
 	//
 	// code
 	//
@@ -117,7 +119,8 @@ type UserPoolClientParameters struct {
 	// The client name for the user pool client you would like to create.
 	// +kubebuilder:validation:Required
 	ClientName *string `json:"clientName"`
-	// The default redirect URI. Must be in the CallbackURLs list.
+	// The default redirect URI. In app clients with one assigned IdP, replaces
+	// redirect_uri in authentication requests. Must be in the CallbackURLs list.
 	//
 	// A redirect URI must:
 	//
@@ -127,7 +130,7 @@ type UserPoolClientParameters struct {
 	//
 	//    * Not include a fragment component.
 	//
-	// See OAuth 2.0 - Redirection Endpoint (https://tools.ietf.org/html/rfc6749#section-3.1.2).
+	// For more information, see Default redirect URI (https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-client-apps.html#cognito-user-pools-app-idp-settings-about).
 	//
 	// Amazon Cognito requires HTTPS over HTTP except for http://localhost for testing
 	// purposes only.
@@ -215,7 +218,19 @@ type UserPoolClientParameters struct {
 	//    * LEGACY - This represents the early behavior of Amazon Cognito where
 	//    user existence related errors aren't prevented.
 	PreventUserExistenceErrors *string `json:"preventUserExistenceErrors,omitempty"`
-	// The read attributes.
+	// The list of user attributes that you want your app client to have read-only
+	// access to. After your user authenticates in your app, their access token
+	// authorizes them to read their own attribute value for any attribute in this
+	// list. An example of this kind of activity is when your user selects a link
+	// to view their profile information. Your app makes a GetUser (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_GetUser.html)
+	// API request to retrieve and display your user's profile data.
+	//
+	// When you don't specify the ReadAttributes for your app client, your app can
+	// read the values of email_verified, phone_number_verified, and the Standard
+	// attributes of your user pool. When your user pool has read access to these
+	// default attributes, ReadAttributes doesn't return any information. Amazon
+	// Cognito only populates ReadAttributes in the API response if you have specified
+	// your own custom set of read attributes.
 	ReadAttributes []*string `json:"readAttributes,omitempty"`
 	// The refresh token time limit. After this limit expires, your user can't use
 	// their refresh token. To specify the time unit for RefreshTokenValidity as
@@ -242,7 +257,19 @@ type UserPoolClientParameters struct {
 	// The units in which the validity times are represented. The default unit for
 	// RefreshToken is days, and default for ID and access tokens are hours.
 	TokenValidityUnits *TokenValidityUnitsType `json:"tokenValidityUnits,omitempty"`
-	// The user pool attributes that the app client can write to.
+	// The list of user attributes that you want your app client to have write access
+	// to. After your user authenticates in your app, their access token authorizes
+	// them to set or modify their own attribute value for any attribute in this
+	// list. An example of this kind of activity is when you present your user with
+	// a form to update their profile information and they change their last name.
+	// Your app then makes an UpdateUserAttributes (https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_UpdateUserAttributes.html)
+	// API request and sets family_name to the new value.
+	//
+	// When you don't specify the WriteAttributes for your app client, your app
+	// can write the values of the Standard attributes of your user pool. When your
+	// user pool has write access to these default attributes, WriteAttributes doesn't
+	// return any information. Amazon Cognito only populates WriteAttributes in
+	// the API response if you have specified your own custom set of write attributes.
 	//
 	// If your app client allows users to sign in through an IdP, this array must
 	// include all attributes that you have mapped to IdP attributes. Amazon Cognito
@@ -267,11 +294,13 @@ type UserPoolClientObservation struct {
 	ClientID *string `json:"clientID,omitempty"`
 	// The client secret from the user pool request of the client type.
 	ClientSecret *string `json:"clientSecret,omitempty"`
-	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-	// format, when the item was created.
+	// The date and time when the item was created. Amazon Cognito returns this
+	// timestamp in UNIX epoch time format. Your SDK might render the output in
+	// a human-readable format like ISO 8601 or a Java Date object.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
-	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-	// format, when the item was modified.
+	// The date and time when the item was modified. Amazon Cognito returns this
+	// timestamp in UNIX epoch time format. Your SDK might render the output in
+	// a human-readable format like ISO 8601 or a Java Date object.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The user pool ID for the user pool client.
 	UserPoolID *string `json:"userPoolID,omitempty"`

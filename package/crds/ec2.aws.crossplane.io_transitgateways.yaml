@@ -93,6 +93,8 @@ spec:
                         type: string
                       multicastSupport:
                         type: string
+                      securityGroupReferencingSupport:
+                        type: string
                       transitGatewayCIDRBlocks:
                         items:
                           type: string

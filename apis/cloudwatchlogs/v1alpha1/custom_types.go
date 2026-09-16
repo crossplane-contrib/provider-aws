@@ -24,7 +24,9 @@ import (
 type CustomLogGroupParameters struct {
 	// The number of days to retain the log events in the specified log group.
 	// If you select 0, the events in the log group are always retained and never expire.
-	// +kubebuilder:validation:Enum=0;1;3;5;7;14;30;60;90;120;150;180;365;400;545;731;1827;3653
+	// Log group class DELIVERY has a fixed retention of 2 days and cannot be changed.
+	// Also no other log group class can set this field to 2 days.
+	// +kubebuilder:validation:Enum=0;1;2;3;5;7;14;30;60;90;120;150;180;365;400;545;731;1827;3653
 	// +optional
 	RetentionInDays *int64 `json:"retentionInDays,omitempty"`
 

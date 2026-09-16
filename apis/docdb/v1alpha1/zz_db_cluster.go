@@ -145,6 +145,19 @@ type DBClusterParameters struct {
 	SourceRegion *string `json:"sourceRegion,omitempty"`
 	// Specifies whether the cluster is encrypted.
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+	// The storage type to associate with the DB cluster.
+	//
+	// For information on storage types for Amazon DocumentDB clusters, see Cluster
+	// storage configurations in the Amazon DocumentDB Developer Guide.
+	//
+	// Valid values for storage type - standard | iopt1
+	//
+	// Default value is standard
+	//
+	// When you create a DocumentDB DB cluster with the storage type set to iopt1,
+	// the storage type is returned in the response. The storage type isn't returned
+	// when you set it to standard.
+	StorageType *string `json:"storageType,omitempty"`
 	// The tags to be assigned to the cluster.
 	Tags []*Tag `json:"tags,omitempty"`
 	// A list of EC2 VPC security groups to associate with this cluster.

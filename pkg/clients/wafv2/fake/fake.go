@@ -32,6 +32,9 @@ type MockWAFV2Client struct {
 	MockCreateWebACL                                     func(input *svcsdk.CreateWebACLInput) (*svcsdk.CreateWebACLOutput, error)
 	MockCreateWebACLWithContext                          func(input *svcsdk.CreateWebACLInput) (*svcsdk.CreateWebACLOutput, error)
 	MockCreateWebACLRequest                              func(input *svcsdk.CreateWebACLInput) (*request.Request, *svcsdk.CreateWebACLOutput)
+	MockDeleteAPIKey                                     func(input *svcsdk.DeleteAPIKeyInput) (*svcsdk.DeleteAPIKeyOutput, error)
+	MockDeleteAPIKeyWithContext                          func(input *svcsdk.DeleteAPIKeyInput) (*svcsdk.DeleteAPIKeyOutput, error)
+	MockDeleteAPIKeyRequest                              func(input *svcsdk.DeleteAPIKeyInput) (*request.Request, *svcsdk.DeleteAPIKeyOutput)
 	MockDeleteFirewallManagerRuleGroups                  func(input *svcsdk.DeleteFirewallManagerRuleGroupsInput) (*svcsdk.DeleteFirewallManagerRuleGroupsOutput, error)
 	MockDeleteFirewallManagerRuleGroupsRequest           func(input *svcsdk.DeleteFirewallManagerRuleGroupsInput) (*request.Request, *svcsdk.DeleteFirewallManagerRuleGroupsOutput)
 	MockDeleteFirewallManagerRuleGroupsWithContext       func(input *svcsdk.DeleteFirewallManagerRuleGroupsInput) (*svcsdk.DeleteFirewallManagerRuleGroupsOutput, error)
@@ -254,6 +257,18 @@ func (m *MockWAFV2Client) CreateWebACLWithContext(context aws.Context, input *sv
 
 func (m *MockWAFV2Client) CreateWebACLRequest(input *svcsdk.CreateWebACLInput) (*request.Request, *svcsdk.CreateWebACLOutput) {
 	return m.MockCreateWebACLRequest(input)
+}
+
+func (m *MockWAFV2Client) DeleteAPIKey(input *svcsdk.DeleteAPIKeyInput) (*svcsdk.DeleteAPIKeyOutput, error) {
+	return m.MockDeleteAPIKey(input)
+}
+
+func (m *MockWAFV2Client) DeleteAPIKeyWithContext(context aws.Context, input *svcsdk.DeleteAPIKeyInput, option ...request.Option) (*svcsdk.DeleteAPIKeyOutput, error) {
+	return m.MockDeleteAPIKeyWithContext(input)
+}
+
+func (m *MockWAFV2Client) DeleteAPIKeyRequest(input *svcsdk.DeleteAPIKeyInput) (*request.Request, *svcsdk.DeleteAPIKeyOutput) {
+	return m.MockDeleteAPIKeyRequest(input)
 }
 
 func (m *MockWAFV2Client) DeleteFirewallManagerRuleGroups(input *svcsdk.DeleteFirewallManagerRuleGroupsInput) (*svcsdk.DeleteFirewallManagerRuleGroupsOutput, error) {

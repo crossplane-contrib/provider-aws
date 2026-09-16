@@ -79,14 +79,17 @@ func GenerateTransitGateway(resp *svcsdk.DescribeTransitGatewaysOutput) *svcapit
 			if elem.Options.MulticastSupport != nil {
 				f2.MulticastSupport = elem.Options.MulticastSupport
 			}
+			if elem.Options.SecurityGroupReferencingSupport != nil {
+				f2.SecurityGroupReferencingSupport = elem.Options.SecurityGroupReferencingSupport
+			}
 			if elem.Options.TransitGatewayCidrBlocks != nil {
-				f2f8 := []*string{}
-				for _, f2f8iter := range elem.Options.TransitGatewayCidrBlocks {
-					var f2f8elem string
-					f2f8elem = *f2f8iter
-					f2f8 = append(f2f8, &f2f8elem)
+				f2f9 := []*string{}
+				for _, f2f9iter := range elem.Options.TransitGatewayCidrBlocks {
+					var f2f9elem string
+					f2f9elem = *f2f9iter
+					f2f9 = append(f2f9, &f2f9elem)
 				}
-				f2.TransitGatewayCIDRBlocks = f2f8
+				f2.TransitGatewayCIDRBlocks = f2f9
 			}
 			if elem.Options.VpnEcmpSupport != nil {
 				f2.VPNECMPSupport = elem.Options.VpnEcmpSupport
@@ -168,14 +171,17 @@ func GenerateCreateTransitGatewayInput(cr *svcapitypes.TransitGateway) *svcsdk.C
 		if cr.Spec.ForProvider.Options.MulticastSupport != nil {
 			f1.SetMulticastSupport(*cr.Spec.ForProvider.Options.MulticastSupport)
 		}
+		if cr.Spec.ForProvider.Options.SecurityGroupReferencingSupport != nil {
+			f1.SetSecurityGroupReferencingSupport(*cr.Spec.ForProvider.Options.SecurityGroupReferencingSupport)
+		}
 		if cr.Spec.ForProvider.Options.TransitGatewayCIDRBlocks != nil {
-			f1f6 := []*string{}
-			for _, f1f6iter := range cr.Spec.ForProvider.Options.TransitGatewayCIDRBlocks {
-				var f1f6elem string
-				f1f6elem = *f1f6iter
-				f1f6 = append(f1f6, &f1f6elem)
+			f1f7 := []*string{}
+			for _, f1f7iter := range cr.Spec.ForProvider.Options.TransitGatewayCIDRBlocks {
+				var f1f7elem string
+				f1f7elem = *f1f7iter
+				f1f7 = append(f1f7, &f1f7elem)
 			}
-			f1.SetTransitGatewayCidrBlocks(f1f6)
+			f1.SetTransitGatewayCidrBlocks(f1f7)
 		}
 		if cr.Spec.ForProvider.Options.VPNECMPSupport != nil {
 			f1.SetVpnEcmpSupport(*cr.Spec.ForProvider.Options.VPNECMPSupport)
@@ -234,6 +240,9 @@ func GenerateModifyTransitGatewayInput(cr *svcapitypes.TransitGateway) *svcsdk.M
 		}
 		if cr.Spec.ForProvider.Options.DNSSupport != nil {
 			f2.SetDnsSupport(*cr.Spec.ForProvider.Options.DNSSupport)
+		}
+		if cr.Spec.ForProvider.Options.SecurityGroupReferencingSupport != nil {
+			f2.SetSecurityGroupReferencingSupport(*cr.Spec.ForProvider.Options.SecurityGroupReferencingSupport)
 		}
 		if cr.Spec.ForProvider.Options.VPNECMPSupport != nil {
 			f2.SetVpnEcmpSupport(*cr.Spec.ForProvider.Options.VPNECMPSupport)

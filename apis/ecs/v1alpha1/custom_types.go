@@ -219,6 +219,15 @@ type CustomEFSVolumeConfiguration struct {
 
 // CustomVolume provides custom parameters for the Volume type
 type CustomVolume struct {
+	// Indicates whether the volume should be configured at launch time. This is
+	// used to create Amazon EBS volumes for standalone tasks or tasks created as
+	// part of a service. Each task definition revision may only have one volume
+	// configured at launch in the volume configuration.
+	//
+	// To configure a volume at launch time, use this task definition revision and
+	// specify a volumeConfigurations object when calling the CreateService, UpdateService,
+	// RunTask or StartTask APIs.
+	ConfiguredAtLaunch *bool `json:"configuredAtLaunch,omitempty"`
 	// This parameter is specified when you are using Docker volumes. Docker volumes
 	// are only supported when you are using the EC2 launch type. Windows containers
 	// only support the use of the local driver. To use bind mounts, specify a host
@@ -270,6 +279,14 @@ type CustomTaskDefinitionParameters struct {
 	TaskRoleARNRef      *xpv1.Reference `json:"taskRoleARNRef,omitempty"`
 	TaskRoleARNSelector *xpv1.Selector  `json:"taskRoleARNSelector,omitempty"`
 
+	// The data volume configuration for tasks launched using this task definition.
+	// Specifying a volume configuration in a task definition is optional. The volume
+	// configuration may contain multiple volumes but only one volume configured
+	// at launch is supported. Each volume defined in the volume configuration may
+	// only specify a name and one of either configuredAtLaunch, dockerVolumeConfiguration,
+	// efsVolumeConfiguration, fsxWindowsFileServerVolumeConfiguration, or host.
+	// If an empty volume configuration is specified, by default Amazon ECS uses
+	// a host volume. For more information, see Using data volumes in tasks (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html).
 	Volumes []*CustomVolume `json:"volumes,omitempty"`
 }
 

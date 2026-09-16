@@ -42,44 +42,108 @@ func GenerateServiceCustom(resp *svcsdk.DescribeServicesOutput) *svcapitypes.Ser
 		params.CustomServiceParameters.TaskDefinition = out.TaskDefinition
 	}
 
-	// Get ServiceConnectConfiguration from last deployment
+	// Get ServiceConnectConfiguration and VolumeConfigurations from last deployment
 	if len(out.Deployments) > 0 {
 		current := out.Deployments[0]
-		if current != nil && current.ServiceConnectConfiguration != nil {
-			params.ServiceConnectConfiguration = &svcapitypes.ServiceConnectConfiguration{
-				Enabled:   current.ServiceConnectConfiguration.Enabled,
-				Namespace: current.ServiceConnectConfiguration.Namespace,
+		if current != nil {
+			// ServiceConnectConfiguration
+			if current.ServiceConnectConfiguration != nil {
+				params.ServiceConnectConfiguration = &svcapitypes.ServiceConnectConfiguration{
+					Enabled:   current.ServiceConnectConfiguration.Enabled,
+					Namespace: current.ServiceConnectConfiguration.Namespace,
+				}
+
+				if current.ServiceConnectConfiguration.LogConfiguration != nil {
+					params.ServiceConnectConfiguration.LogConfiguration = &svcapitypes.LogConfiguration{
+						LogDriver: current.ServiceConnectConfiguration.LogConfiguration.LogDriver,
+						Options:   current.ServiceConnectConfiguration.LogConfiguration.Options,
+					}
+
+					for _, so := range params.ServiceConnectConfiguration.LogConfiguration.SecretOptions {
+						params.ServiceConnectConfiguration.LogConfiguration.SecretOptions = append(params.ServiceConnectConfiguration.LogConfiguration.SecretOptions, &svcapitypes.Secret{
+							Name:      so.Name,
+							ValueFrom: so.ValueFrom,
+						})
+					}
+				}
+
+				for _, s := range current.ServiceConnectConfiguration.Services {
+					service := &svcapitypes.ServiceConnectService{
+						DiscoveryName:       s.DiscoveryName,
+						IngressPortOverride: s.IngressPortOverride,
+						PortName:            s.PortName,
+					}
+
+					if s.Timeout != nil {
+						service.Timeout = &svcapitypes.TimeoutConfiguration{
+							IdleTimeoutSeconds:       s.Timeout.IdleTimeoutSeconds,
+							PerRequestTimeoutSeconds: s.Timeout.PerRequestTimeoutSeconds,
+						}
+					}
+
+					if s.Tls != nil {
+						service.TLS = &svcapitypes.ServiceConnectTLSConfiguration{
+							KMSKey:  s.Tls.KmsKey,
+							RoleARN: s.Tls.RoleArn,
+						}
+
+						if s.Tls.IssuerCertificateAuthority != nil {
+							service.TLS.IssuerCertificateAuthority = &svcapitypes.ServiceConnectTLSCertificateAuthority{
+								AWSPcaAuthorityARN: s.Tls.IssuerCertificateAuthority.AwsPcaAuthorityArn,
+							}
+						}
+					}
+
+					for _, ca := range s.ClientAliases {
+						service.ClientAliases = append(service.ClientAliases, &svcapitypes.ServiceConnectClientAlias{
+							DNSName: ca.DnsName,
+							Port:    ca.Port,
+						})
+					}
+
+					params.ServiceConnectConfiguration.Services = append(params.ServiceConnectConfiguration.Services, service)
+				}
 			}
 
-			if current.ServiceConnectConfiguration.LogConfiguration != nil {
-				params.ServiceConnectConfiguration.LogConfiguration = &svcapitypes.LogConfiguration{
-					LogDriver: current.ServiceConnectConfiguration.LogConfiguration.LogDriver,
-					Options:   current.ServiceConnectConfiguration.LogConfiguration.Options,
-				}
+			// VolumeConfigurations
+			if current.VolumeConfigurations != nil {
+				params.VolumeConfigurations = []*svcapitypes.ServiceVolumeConfiguration{}
+				for _, vc := range current.VolumeConfigurations {
+					vConfig := &svcapitypes.ServiceVolumeConfiguration{
+						Name: vc.Name,
+					}
 
-				for _, so := range params.ServiceConnectConfiguration.LogConfiguration.SecretOptions {
-					params.ServiceConnectConfiguration.LogConfiguration.SecretOptions = append(params.ServiceConnectConfiguration.LogConfiguration.SecretOptions, &svcapitypes.Secret{
-						Name:      so.Name,
-						ValueFrom: so.ValueFrom,
-					})
-				}
-			}
+					if vc.ManagedEBSVolume != nil {
+						vConfig.ManagedEBSVolume = &svcapitypes.ServiceManagedEBSVolumeConfiguration{
+							Encrypted:      vc.ManagedEBSVolume.Encrypted,
+							FilesystemType: vc.ManagedEBSVolume.FilesystemType,
+							IOPS:           vc.ManagedEBSVolume.Iops,
+							KMSKeyID:       vc.ManagedEBSVolume.KmsKeyId,
+							RoleARN:        vc.ManagedEBSVolume.RoleArn,
+							SizeInGiB:      vc.ManagedEBSVolume.SizeInGiB,
+							SnapshotID:     vc.ManagedEBSVolume.SnapshotId,
+							Throughput:     vc.ManagedEBSVolume.Throughput,
+							VolumeType:     vc.ManagedEBSVolume.VolumeType,
+						}
 
-			for _, s := range current.ServiceConnectConfiguration.Services {
-				service := &svcapitypes.ServiceConnectService{
-					DiscoveryName:       s.DiscoveryName,
-					IngressPortOverride: s.IngressPortOverride,
-					PortName:            s.PortName,
-				}
+						for _, ts := range vc.ManagedEBSVolume.TagSpecifications {
+							tagSpec := &svcapitypes.EBSTagSpecification{
+								ResourceType: ts.ResourceType,
+							}
 
-				for _, ca := range s.ClientAliases {
-					service.ClientAliases = append(service.ClientAliases, &svcapitypes.ServiceConnectClientAlias{
-						DNSName: ca.DnsName,
-						Port:    ca.Port,
-					})
-				}
+							for _, tag := range ts.Tags {
+								tagSpec.Tags = append(tagSpec.Tags, &svcapitypes.Tag{
+									Key:   tag.Key,
+									Value: tag.Value,
+								})
+							}
 
-				params.ServiceConnectConfiguration.Services = append(params.ServiceConnectConfiguration.Services, service)
+							vConfig.ManagedEBSVolume.TagSpecifications = append(vConfig.ManagedEBSVolume.TagSpecifications, tagSpec)
+						}
+					}
+
+					params.VolumeConfigurations = append(params.VolumeConfigurations, vConfig)
+				}
 			}
 		}
 	}

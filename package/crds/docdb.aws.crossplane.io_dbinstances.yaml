@@ -587,6 +587,11 @@ spec:
                       storageType:
                         type: string
                     type: object
+                  performanceInsightsEnabled:
+                    description: |-
+                      Set to true if Amazon RDS Performance Insights is enabled for the DB instance,
+                      and otherwise false.
+                    type: boolean
                   preferredBackupWindow:
                     description: |-
                       Specifies the daily time range during which automated backups are created

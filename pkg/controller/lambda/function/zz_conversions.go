@@ -155,6 +155,22 @@ func GenerateCreateFunctionInput(cr *svcapitypes.Function) *svcsdk.CreateFunctio
 		}
 		res.SetLayers(f10)
 	}
+	if cr.Spec.ForProvider.LoggingConfig != nil {
+		f11 := &svcsdk.LoggingConfig{}
+		if cr.Spec.ForProvider.LoggingConfig.ApplicationLogLevel != nil {
+			f11.SetApplicationLogLevel(*cr.Spec.ForProvider.LoggingConfig.ApplicationLogLevel)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.LogFormat != nil {
+			f11.SetLogFormat(*cr.Spec.ForProvider.LoggingConfig.LogFormat)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.LogGroup != nil {
+			f11.SetLogGroup(*cr.Spec.ForProvider.LoggingConfig.LogGroup)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.SystemLogLevel != nil {
+			f11.SetSystemLogLevel(*cr.Spec.ForProvider.LoggingConfig.SystemLogLevel)
+		}
+		res.SetLoggingConfig(f11)
+	}
 	if cr.Spec.ForProvider.MemorySize != nil {
 		res.SetMemorySize(*cr.Spec.ForProvider.MemorySize)
 	}
@@ -168,30 +184,30 @@ func GenerateCreateFunctionInput(cr *svcapitypes.Function) *svcsdk.CreateFunctio
 		res.SetRuntime(*cr.Spec.ForProvider.Runtime)
 	}
 	if cr.Spec.ForProvider.SnapStart != nil {
-		f15 := &svcsdk.SnapStart{}
+		f16 := &svcsdk.SnapStart{}
 		if cr.Spec.ForProvider.SnapStart.ApplyOn != nil {
-			f15.SetApplyOn(*cr.Spec.ForProvider.SnapStart.ApplyOn)
+			f16.SetApplyOn(*cr.Spec.ForProvider.SnapStart.ApplyOn)
 		}
-		res.SetSnapStart(f15)
+		res.SetSnapStart(f16)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f16 := map[string]*string{}
-		for f16key, f16valiter := range cr.Spec.ForProvider.Tags {
-			var f16val string
-			f16val = *f16valiter
-			f16[f16key] = &f16val
+		f17 := map[string]*string{}
+		for f17key, f17valiter := range cr.Spec.ForProvider.Tags {
+			var f17val string
+			f17val = *f17valiter
+			f17[f17key] = &f17val
 		}
-		res.SetTags(f16)
+		res.SetTags(f17)
 	}
 	if cr.Spec.ForProvider.Timeout != nil {
 		res.SetTimeout(*cr.Spec.ForProvider.Timeout)
 	}
 	if cr.Spec.ForProvider.TracingConfig != nil {
-		f18 := &svcsdk.TracingConfig{}
+		f19 := &svcsdk.TracingConfig{}
 		if cr.Spec.ForProvider.TracingConfig.Mode != nil {
-			f18.SetMode(*cr.Spec.ForProvider.TracingConfig.Mode)
+			f19.SetMode(*cr.Spec.ForProvider.TracingConfig.Mode)
 		}
-		res.SetTracingConfig(f18)
+		res.SetTracingConfig(f19)
 	}
 
 	return res

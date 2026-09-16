@@ -105,3 +105,4 @@ ignore:
     - BlueGreenDeployment
     - Integration
     - TenantDatabase
+    - DBShardGroup

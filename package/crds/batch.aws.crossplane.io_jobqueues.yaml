@@ -200,6 +200,24 @@ spec:
                     - ENABLED
                     - DISABLED
                     type: string
+                  jobStateTimeLimitActions:
+                    description: |-
+                      The set of actions that Batch performs on jobs that remain at the head of
+                      the job queue in the specified state longer than specified times. Batch will
+                      perform each action after maxTimeSeconds has passed.
+                    items:
+                      properties:
+                        action:
+                          type: string
+                        maxTimeSeconds:
+                          format: int64
+                          type: integer
+                        reason:
+                          type: string
+                        state:
+                          type: string
+                      type: object
+                    type: array
                   priority:
                     description: |-
                       The priority of the job queue. Job queues with a higher priority (or a higher

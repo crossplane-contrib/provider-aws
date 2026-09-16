@@ -28,6 +28,7 @@ ignore:
     - TopicRuleDestination
     - Package
     - PackageVersion
+    - CertificateProvider
   field_paths:
     - CreatePolicyInput.PolicyName
     - CreatePolicyOutput.PolicyName

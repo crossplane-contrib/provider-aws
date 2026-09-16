@@ -46,7 +46,7 @@
 #   providerConfigRef:
 #     name: example
 ---
-apiVersion: autoscaling.aws.crossplane.io/v1alpha1
+apiVersion: autoscaling.aws.crossplane.io/v1beta1
 kind: AutoScalingGroup
 metadata:
   name: autoscalinggroup-example
