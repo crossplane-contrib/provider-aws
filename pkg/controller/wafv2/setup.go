@@ -20,6 +20,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane-contrib/provider-aws/pkg/controller/wafv2/ipset"
 	"github.com/crossplane-contrib/provider-aws/pkg/controller/wafv2/webacl"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/setup"
 )
@@ -28,6 +29,7 @@ import (
 func Setup(mgr ctrl.Manager, o controller.Options) error {
 	return setup.SetupControllers(
 		mgr, o,
+		ipset.SetupIPSet,
 		webacl.SetupWebACL,
 	)
 }
