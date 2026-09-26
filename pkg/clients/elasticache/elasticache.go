@@ -147,6 +147,7 @@ func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		CacheNodeType:               aws.String(g.CacheNodeType),
 		CacheParameterGroupName:     g.CacheParameterGroupName,
 		CacheSecurityGroupNames:     g.CacheSecurityGroupNames,
+		Engine:                      pointer.ToOrNilIfZeroValue(g.Engine),
 		EngineVersion:               g.EngineVersion,
 		LogDeliveryConfigurations:   generateLogDeliveryConfigurationsRequest(g.LogDeliveryConfiguration),
 		MultiAZEnabled:              g.MultiAZEnabled,
@@ -416,6 +417,12 @@ func versionMatches(kubeVersion *string, awsVersion *string) bool { //nolint: go
 }
 
 func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticachetypes.CacheCluster) string { //nolint:gocyclo
+	// Only report an Engine change when one is explicitly requested. When the
+	// engine is left unset, AWS reports its own value and we must not treat that
+	// as drift (otherwise the resource would never be up to date).
+	if desiredEngine := pointer.ToOrNilIfZeroValue(kube.Engine); desiredEngine != nil && !reflect.DeepEqual(desiredEngine, cc.Engine) {
+		return "Engine"
+	}
 	// AWS will set and return a default version if we don't specify one.
 	if !versionMatches(kube.EngineVersion, cc.EngineVersion) {
 		return "EngineVersion"
