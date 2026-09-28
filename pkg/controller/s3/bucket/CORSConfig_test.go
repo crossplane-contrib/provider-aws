@@ -160,6 +160,27 @@ func TestCORSObserve(t *testing.T) {
 				status: Updated,
 			},
 		},
+		"NoUpdateEmptyVsNilHeaders": {
+			args: args{
+				b: s3testing.Bucket(s3testing.WithCORSConfig(&v1beta1.CORSConfiguration{CORSRules: []v1beta1.CORSRule{{
+					AllowedHeaders: []string{},
+					AllowedMethods: []string{"GET"},
+					AllowedOrigins: []string{"test.origin"},
+					ExposeHeaders:  []string{},
+				}}})),
+				cl: NewCORSConfigurationClient(fake.MockBucketClient{
+					MockGetBucketCors: func(ctx context.Context, input *s3.GetBucketCorsInput, opts []func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
+						return &s3.GetBucketCorsOutput{CORSRules: []s3types.CORSRule{{
+							AllowedMethods: []string{"GET"},
+							AllowedOrigins: []string{"test.origin"},
+						}}}, nil
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
+			},
+		},
 	}
 
 	for name, tc := range cases {
