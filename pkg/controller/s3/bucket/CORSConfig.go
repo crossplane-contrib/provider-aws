@@ -21,6 +21,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/s3/v1beta1"
@@ -144,10 +145,10 @@ func CompareCORS(local []v1beta1.CORSRule, external []types.CORSRule) ResourceSt
 
 	for i := range local {
 		outputRule := external[i]
-		if !(cmp.Equal(local[i].AllowedHeaders, outputRule.AllowedHeaders) &&
-			cmp.Equal(local[i].AllowedMethods, outputRule.AllowedMethods) &&
-			cmp.Equal(local[i].AllowedOrigins, outputRule.AllowedOrigins) &&
-			cmp.Equal(local[i].ExposeHeaders, outputRule.ExposeHeaders) &&
+		if !(cmp.Equal(local[i].AllowedHeaders, outputRule.AllowedHeaders, cmpopts.EquateEmpty()) &&
+			cmp.Equal(local[i].AllowedMethods, outputRule.AllowedMethods, cmpopts.EquateEmpty()) &&
+			cmp.Equal(local[i].AllowedOrigins, outputRule.AllowedOrigins, cmpopts.EquateEmpty()) &&
+			cmp.Equal(local[i].ExposeHeaders, outputRule.ExposeHeaders, cmpopts.EquateEmpty()) &&
 			local[i].MaxAgeSeconds == ptr.Deref(outputRule.MaxAgeSeconds, 0)) {
 			return NeedsUpdate
 		}
