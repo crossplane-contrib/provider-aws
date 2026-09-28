@@ -261,6 +261,7 @@ func LateInitialize(s *v1beta1.ReplicationGroupParameters, rg elasticachetypes.R
 		s.NotificationTopicStatus = pointer.LateInitialize(s.NotificationTopicStatus, cc.NotificationConfiguration.TopicStatus)
 	}
 	s.PreferredMaintenanceWindow = pointer.LateInitialize(s.PreferredMaintenanceWindow, cc.PreferredMaintenanceWindow)
+	s.CacheSubnetGroupName = pointer.LateInitialize(s.CacheSubnetGroupName, cc.CacheSubnetGroupName)
 	if len(s.SecurityGroupIDs) == 0 && len(cc.SecurityGroups) != 0 {
 		s.SecurityGroupIDs = make([]string, len(cc.SecurityGroups))
 		for i, val := range cc.SecurityGroups {
@@ -445,6 +446,10 @@ func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elastic
 }
 
 func sgIDsNeedUpdate(kube []string, cc []elasticachetypes.SecurityGroupMembership) bool {
+	// Empty desired list: field is unspecified/unresolved, not a request to clear groups.
+	if len(kube) == 0 {
+		return false
+	}
 	if len(kube) != len(cc) {
 		return true
 	}
@@ -461,6 +466,9 @@ func sgIDsNeedUpdate(kube []string, cc []elasticachetypes.SecurityGroupMembershi
 }
 
 func sgNamesNeedUpdate(kube []string, cc []elasticachetypes.CacheSecurityGroupMembership) bool {
+	if len(kube) == 0 {
+		return false
+	}
 	if len(kube) != len(cc) {
 		return true
 	}
