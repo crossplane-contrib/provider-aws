@@ -132,28 +132,8 @@ func (u *updater) update(ctx context.Context, cr *svcapitypes.Key) (managed.Exte
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
-	// Key rotation is only supported for AWS_KMS origin keys. AWS rejects
-	// EnableKeyRotation/DisableKeyRotation for AWS_CLOUDHSM and EXTERNAL
-	// origin keys, so skip the call for those. Origin is late-initialized
-	// from KeyMetadata.Origin after creation, so it is reliably populated
-	// by the time update runs; an empty value preserves existing AWS_KMS
-	// behaviour.
-	if cr.Spec.ForProvider.Origin == nil || pointer.StringValue(cr.Spec.ForProvider.Origin) == string(svcapitypes.OriginType_AWS_KMS) {
-		if pointer.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) {
-			// EnableKeyRotation
-			if _, err := u.client.EnableKeyRotationWithContext(ctx, &svcsdk.EnableKeyRotationInput{
-				KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
-			}); err != nil {
-				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
-			}
-		} else {
-			// DisableKeyRotation
-			if _, err := u.client.DisableKeyRotationWithContext(ctx, &svcsdk.DisableKeyRotationInput{
-				KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
-			}); err != nil {
-				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
-			}
-		}
+	if err := u.updateKeyRotation(ctx, cr); err != nil {
+		return managed.ExternalUpdate{}, err
 	}
 
 	// Tags
@@ -167,6 +147,32 @@ func (u *updater) update(ctx context.Context, cr *svcapitypes.Key) (managed.Exte
 	}
 
 	return managed.ExternalUpdate{}, nil
+}
+
+// updateKeyRotation enables or disables key rotation. Key rotation is only
+// supported for AWS_KMS origin keys. AWS rejects EnableKeyRotation and
+// DisableKeyRotation for AWS_CLOUDHSM and EXTERNAL origin keys, so the call is
+// skipped for those. Origin is late-initialized from KeyMetadata.Origin after
+// creation, so it is reliably populated by the time update runs; an unset or
+// empty value preserves existing AWS_KMS behaviour.
+func (u *updater) updateKeyRotation(ctx context.Context, cr *svcapitypes.Key) error {
+	if origin := pointer.StringValue(cr.Spec.ForProvider.Origin); origin != "" && origin != string(svcapitypes.OriginType_AWS_KMS) {
+		return nil
+	}
+	if pointer.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) {
+		if _, err := u.client.EnableKeyRotationWithContext(ctx, &svcsdk.EnableKeyRotationInput{
+			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+		}); err != nil {
+			return errorutils.Wrap(err, errUpdate)
+		}
+		return nil
+	}
+	if _, err := u.client.DisableKeyRotationWithContext(ctx, &svcsdk.DisableKeyRotationInput{
+		KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+	}); err != nil {
+		return errorutils.Wrap(err, errUpdate)
+	}
+	return nil
 }
 
 func (u *updater) updateTags(ctx context.Context, cr *svcapitypes.Key) error {
