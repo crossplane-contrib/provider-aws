@@ -235,7 +235,12 @@ func logsUpToDate(want *svcapitypes.Logs, current *svcsdk.LogsSummary) bool {
 	if current != nil {
 		currentAudit, currentGeneral = current.Audit, current.General
 		if current.Pending != nil {
-			currentAudit, currentGeneral = current.Pending.Audit, current.Pending.General
+			if current.Pending.Audit != nil {
+				currentAudit = current.Pending.Audit
+			}
+			if current.Pending.General != nil {
+				currentGeneral = current.Pending.General
+			}
 		}
 	}
 	if want.Audit != nil && pointer.BoolValue(want.Audit) != pointer.BoolValue(currentAudit) {
