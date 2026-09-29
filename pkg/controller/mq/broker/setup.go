@@ -183,23 +183,24 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 	return cre, nil
 }
 
-// isUpToDate compares the mutable fields accepted by UpdateBroker (see
-// GenerateUpdateBrokerRequest) against the broker's observed state. Broker's
-// generated isUpToDate defaulted to alwaysUpToDate, so changes to e.g.
-// EngineVersion or MaintenanceWindowStartTime were silently ignored.
+// isUpToDate compares the mutable fields accepted by UpdateBroker against the
+// broker's observed state.
 func isUpToDate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeBrokerResponse) (bool, string, error) {
 	p := cr.Spec.ForProvider
 
-	if pointer.StringValue(p.AuthenticationStrategy) != pointer.StringValue(obj.AuthenticationStrategy) {
+	if pointer.StringValue(p.AuthenticationStrategy) != pendingOrCurrent(obj.PendingAuthenticationStrategy, obj.AuthenticationStrategy) {
 		return false, "authenticationStrategy is not up to date", nil
 	}
 	if pointer.BoolValue(p.AutoMinorVersionUpgrade) != pointer.BoolValue(obj.AutoMinorVersionUpgrade) {
 		return false, "autoMinorVersionUpgrade is not up to date", nil
 	}
-	if pointer.StringValue(p.EngineVersion) != pointer.StringValue(obj.EngineVersion) {
+	// With autoMinorVersionUpgrade enabled AWS moves the minor version on its
+	// own, so comparing it to the spec would fight the upgrade.
+	if !pointer.BoolValue(obj.AutoMinorVersionUpgrade) &&
+		pointer.StringValue(p.EngineVersion) != pendingOrCurrent(obj.PendingEngineVersion, obj.EngineVersion) {
 		return false, "engineVersion is not up to date", nil
 	}
-	if pointer.StringValue(p.HostInstanceType) != pointer.StringValue(obj.HostInstanceType) {
+	if pointer.StringValue(p.HostInstanceType) != pendingOrCurrent(obj.PendingHostInstanceType, obj.HostInstanceType) {
 		return false, "hostInstanceType is not up to date", nil
 	}
 
@@ -217,6 +218,15 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeB
 	return true, "", nil
 }
 
+// pendingOrCurrent returns the pending value if AWS reports one, since the
+// current value only changes at the next reboot or maintenance window.
+func pendingOrCurrent(pending, current *string) string {
+	if pending != nil {
+		return *pending
+	}
+	return pointer.StringValue(current)
+}
+
 func logsUpToDate(want *svcapitypes.Logs, current *svcsdk.LogsSummary) bool {
 	if want == nil {
 		return true
@@ -224,6 +234,9 @@ func logsUpToDate(want *svcapitypes.Logs, current *svcsdk.LogsSummary) bool {
 	var currentAudit, currentGeneral *bool
 	if current != nil {
 		currentAudit, currentGeneral = current.Audit, current.General
+		if current.Pending != nil {
+			currentAudit, currentGeneral = current.Pending.Audit, current.Pending.General
+		}
 	}
 	if want.Audit != nil && pointer.BoolValue(want.Audit) != pointer.BoolValue(currentAudit) {
 		return false

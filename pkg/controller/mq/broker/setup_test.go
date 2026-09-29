@@ -38,6 +38,10 @@ func TestIsUpToDate(t *testing.T) {
 	timeOfDay := "03:00"
 	timeZone := "UTC"
 
+	authStrategy := "SIMPLE"
+	newAuthStrategy := "LDAP"
+	yes, no := true, false
+
 	type args struct {
 		broker                 *svcapitypes.Broker
 		describeBrokerResponse *svcsdk.DescribeBrokerResponse
@@ -162,6 +166,76 @@ func TestIsUpToDate(t *testing.T) {
 				},
 			},
 			want: want{result: true},
+		},
+		"PendingEngineVersionMatchesSpec": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{EngineVersion: &newEngineVersion}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{EngineVersion: &engineVersion, PendingEngineVersion: &newEngineVersion},
+			},
+			want: want{result: true},
+		},
+		"PendingEngineVersionDiffersFromSpec": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{EngineVersion: &engineVersion}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{EngineVersion: &engineVersion, PendingEngineVersion: &newEngineVersion},
+			},
+			want: want{result: false},
+		},
+		"PendingHostInstanceTypeMatchesSpec": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{HostInstanceType: &newHostInstanceType}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{HostInstanceType: &hostInstanceType, PendingHostInstanceType: &newHostInstanceType},
+			},
+			want: want{result: true},
+		},
+		"PendingAuthenticationStrategyMatchesSpec": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{AuthenticationStrategy: &newAuthStrategy}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{AuthenticationStrategy: &authStrategy, PendingAuthenticationStrategy: &newAuthStrategy},
+			},
+			want: want{result: true},
+		},
+		"PendingAuthenticationStrategyDiffersFromSpec": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{AuthenticationStrategy: &authStrategy}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{AuthenticationStrategy: &authStrategy, PendingAuthenticationStrategy: &newAuthStrategy},
+			},
+			want: want{result: false},
+		},
+		"PendingLogsMatchSpec": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{Logs: &svcapitypes.Logs{Audit: &yes}}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{Logs: &svcsdk.LogsSummary{Audit: &no, Pending: &svcsdk.PendingLogs{Audit: &yes}}},
+			},
+			want: want{result: true},
+		},
+		"PendingLogsDifferFromSpec": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{Logs: &svcapitypes.Logs{Audit: &no}}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{Logs: &svcsdk.LogsSummary{Audit: &no, Pending: &svcsdk.PendingLogs{Audit: &yes}}},
+			},
+			want: want{result: false},
+		},
+		"AutoMinorVersionUpgradeSkipsEngineVersion": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{AutoMinorVersionUpgrade: &yes, EngineVersion: &engineVersion}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{AutoMinorVersionUpgrade: &yes, EngineVersion: &newEngineVersion},
+			},
+			want: want{result: true},
+		},
+		"AutoMinorVersionUpgradeDisabledComparesEngineVersion": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{AutoMinorVersionUpgrade: &no, EngineVersion: &engineVersion}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{AutoMinorVersionUpgrade: &no, EngineVersion: &newEngineVersion},
+			},
+			want: want{result: false},
+		},
+		"AutoMinorVersionUpgradeChanged": {
+			args: args{
+				broker:                 &svcapitypes.Broker{Spec: svcapitypes.BrokerSpec{ForProvider: svcapitypes.BrokerParameters{AutoMinorVersionUpgrade: &yes}}},
+				describeBrokerResponse: &svcsdk.DescribeBrokerResponse{AutoMinorVersionUpgrade: &no},
+			},
+			want: want{result: false},
 		},
 	}
 	for name, tc := range cases {
