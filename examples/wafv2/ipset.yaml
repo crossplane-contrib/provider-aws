@@ -1,0 +1,21 @@
+apiVersion: wafv2.aws.crossplane.io/v1alpha1
+kind: IPSet
+metadata:
+  name: example-ipset
+spec:
+  forProvider:
+    region: eu-central-1
+    name: example-ipset
+    scope: REGIONAL
+    ipAddressVersion: IPV4
+    description: "Example IP Set for WAF rules"
+    addresses:
+      - "10.0.0.0/8"
+      - "192.168.1.0/24"
+    tags:
+      - key: Environment
+        value: development
+      - key: ManagedBy
+        value: crossplane
+  providerConfigRef:
+    name: default
