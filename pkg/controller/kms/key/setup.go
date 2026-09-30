@@ -132,19 +132,24 @@ func (u *updater) update(ctx context.Context, cr *svcapitypes.Key) (managed.Exte
 		return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
 	}
 
-	if pointer.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) {
-		// EnableKeyRotation
-		if _, err := u.client.EnableKeyRotationWithContext(ctx, &svcsdk.EnableKeyRotationInput{
-			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
-		}); err != nil {
-			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
-		}
-	} else {
-		// DisableKeyRotation
-		if _, err := u.client.DisableKeyRotationWithContext(ctx, &svcsdk.DisableKeyRotationInput{
-			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
-		}); err != nil {
-			return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
+	// Key rotation is only supported for AWS_KMS keys. Skip it for CloudHSM
+	// (AWS_CLOUDHSM), external (EXTERNAL), and external key store keys, where
+	// the rotation APIs return UnsupportedOperationException.
+	if origin := pointer.StringValue(cr.Spec.ForProvider.Origin); origin == "" || origin == svcsdk.OriginTypeAwsKms {
+		if pointer.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) {
+			// EnableKeyRotation
+			if _, err := u.client.EnableKeyRotationWithContext(ctx, &svcsdk.EnableKeyRotationInput{
+				KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+			}); err != nil {
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
+			}
+		} else {
+			// DisableKeyRotation
+			if _, err := u.client.DisableKeyRotationWithContext(ctx, &svcsdk.DisableKeyRotationInput{
+				KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+			}); err != nil {
+				return managed.ExternalUpdate{}, errorutils.Wrap(err, errUpdate)
+			}
 		}
 	}
 
@@ -316,15 +321,18 @@ func (o *observer) isUpToDate(_ context.Context, cr *svcapitypes.Key, obj *svcsd
 		return false, "spec.forProvider.policy: " + diff, nil
 	}
 
-	// EnableKeyRotation
-	resRotation, err := o.client.GetKeyRotationStatus(&svcsdk.GetKeyRotationStatusInput{
-		KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
-	})
-	if err != nil {
-		return false, "", errorutils.Wrap(err, "cannot get key rotation status")
-	}
-	if pointer.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) != pointer.BoolValue(resRotation.KeyRotationEnabled) {
-		return false, "", nil
+	// Key rotation status is only supported for AWS_KMS keys. Skip it for
+	// CloudHSM (AWS_CLOUDHSM), external (EXTERNAL), and external key store keys.
+	if origin := pointer.StringValue(obj.KeyMetadata.Origin); origin == "" || origin == svcsdk.OriginTypeAwsKms {
+		resRotation, err := o.client.GetKeyRotationStatus(&svcsdk.GetKeyRotationStatusInput{
+			KeyId: pointer.ToOrNilIfZeroValue(meta.GetExternalName(cr)),
+		})
+		if err != nil {
+			return false, "", errorutils.Wrap(err, "cannot get key rotation status")
+		}
+		if pointer.BoolValue(cr.Spec.ForProvider.EnableKeyRotation) != pointer.BoolValue(resRotation.KeyRotationEnabled) {
+			return false, "", nil
+		}
 	}
 
 	// Tags
