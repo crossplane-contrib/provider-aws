@@ -17,6 +17,8 @@ type MockVPCEndpointClient struct {
 	MockModifyVpcEndpointWithContext    func(context.Context, *ec2.ModifyVpcEndpointInput, ...request.Option) (*ec2.ModifyVpcEndpointOutput, error)
 	MockDescribeVpcEndpoints            func(*ec2.DescribeVpcEndpointsInput) (*ec2.DescribeVpcEndpointsOutput, error)
 	MockDescribeVpcEndpointsWithContext func(context.Context, *ec2.DescribeVpcEndpointsInput, ...request.Option) (*ec2.DescribeVpcEndpointsOutput, error)
+	MockCreateTagsWithContext           func(context.Context, *ec2.CreateTagsInput, ...request.Option) (*ec2.CreateTagsOutput, error)
+	MockDeleteTagsWithContext           func(context.Context, *ec2.DeleteTagsInput, ...request.Option) (*ec2.DeleteTagsOutput, error)
 }
 
 // CreateVpcEndpointWithContext mocks CreateVpcEndpointWithContext
@@ -42,4 +44,14 @@ func (m *MockVPCEndpointClient) DescribeVpcEndpoints(input *ec2.DescribeVpcEndpo
 // DescribeVpcEndpointsWithContext mocks DescribeVpcEndpointsWithContext
 func (m *MockVPCEndpointClient) DescribeVpcEndpointsWithContext(ctx context.Context, input *ec2.DescribeVpcEndpointsInput, req ...request.Option) (*ec2.DescribeVpcEndpointsOutput, error) {
 	return m.MockDescribeVpcEndpointsWithContext(ctx, input)
+}
+
+// CreateTagsWithContext mocks CreateTagsWithContext
+func (m *MockVPCEndpointClient) CreateTagsWithContext(ctx context.Context, input *ec2.CreateTagsInput, req ...request.Option) (*ec2.CreateTagsOutput, error) {
+	return m.MockCreateTagsWithContext(ctx, input)
+}
+
+// DeleteTagsWithContext mocks DeleteTagsWithContext
+func (m *MockVPCEndpointClient) DeleteTagsWithContext(ctx context.Context, input *ec2.DeleteTagsInput, req ...request.Option) (*ec2.DeleteTagsOutput, error) {
+	return m.MockDeleteTagsWithContext(ctx, input)
 }
