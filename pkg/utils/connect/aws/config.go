@@ -799,6 +799,10 @@ func SetAssumeRoleOptions(pc *v1beta1.ProviderConfig) func(*stscreds.AssumeRoleO
 			if len(pc.Spec.AssumeRole.TransitiveTagKeys) > 0 {
 				opt.TransitiveTagKeys = pc.Spec.AssumeRole.TransitiveTagKeys
 			}
+
+			if pc.Spec.AssumeRole.SourceIdentity != nil {
+				opt.SourceIdentity = pc.Spec.AssumeRole.SourceIdentity
+			}
 		}
 	}
 

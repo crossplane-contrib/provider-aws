@@ -249,6 +249,7 @@ func TestSetAssumeroleOptions(t *testing.T) {
 
 	key1 := "key1"
 	value1 := "value1"
+	sourceIdentity := "user:alice"
 
 	type args struct {
 		pc v1beta1.ProviderConfig
@@ -319,6 +320,22 @@ func TestSetAssumeroleOptions(t *testing.T) {
 					ExternalID:        &externalID,
 					Tags:              []stscredstypesv2.Tag{{Key: &key1, Value: &value1}},
 					TransitiveTagKeys: []string{"a", "b", "c"},
+				},
+			},
+		},
+		"SetSourceIdentity": {
+			args: args{
+				pc: v1beta1.ProviderConfig{
+					Spec: v1beta1.ProviderConfigSpec{
+						AssumeRole: &v1beta1.AssumeRoleOptions{
+							SourceIdentity: &sourceIdentity,
+						},
+					},
+				},
+			},
+			want: want{
+				aro: stscreds.AssumeRoleOptions{
+					SourceIdentity: &sourceIdentity,
 				},
 			},
 		},
