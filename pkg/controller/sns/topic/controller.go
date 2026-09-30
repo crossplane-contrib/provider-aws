@@ -18,7 +18,6 @@ package topic
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
@@ -130,8 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			errorutils.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopicAttr)
 	}
 
-	current := cr.Spec.ForProvider.DeepCopy()
-	snsclient.LateInitializeTopicAttr(&cr.Spec.ForProvider, res.Attributes)
+	lateInitialized := snsclient.LateInitializeTopicAttr(&cr.Spec.ForProvider, res.Attributes)
 
 	cr.SetConditions(xpv1.Available())
 
@@ -146,7 +144,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        upToDate,
-		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
+		ResourceLateInitialized: lateInitialized,
 	}, nil
 }
 

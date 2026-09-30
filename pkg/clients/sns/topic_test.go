@@ -434,3 +434,192 @@ func TestIsSNSTopicUpToDate(t *testing.T) {
 		})
 	}
 }
+
+func TestLateInitializeTopicAttr(t *testing.T) {
+	kmsKeyID := "arn:aws:kms:us-east-1:123456789012:key/test-key"
+	displayName := "my-topic"
+	deliveryPolicy := `{"http":{"defaultHealthyRetryPolicy":{"numRetries":3}}}`
+	policy := `{"Version":"2012-10-17","Statement":[]}`
+
+	type args struct {
+		in   *v1beta1.TopicParameters
+		attr map[string]string
+	}
+	type want struct {
+		modified bool
+		in       *v1beta1.TopicParameters
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		// Core fix: empty-string attributes must not populate spec fields.
+		"NoOpWhenAllAttrsEmpty": {
+			args: args{
+				in:   &v1beta1.TopicParameters{Name: topicName},
+				attr: topicAttributes(), // all keys absent → zero-value ""
+			},
+			want: want{
+				modified: false,
+				in:       &v1beta1.TopicParameters{Name: topicName},
+			},
+		},
+		// KMSMasterKeyID is populated when AWS returns a real key ARN.
+		"KMSMasterKeyIDCopied": {
+			args: args{
+				in: &v1beta1.TopicParameters{Name: topicName},
+				attr: map[string]string{
+					string(TopicKmsMasterKeyID): kmsKeyID,
+				},
+			},
+			want: want{
+				modified: true,
+				in: &v1beta1.TopicParameters{
+					Name:           topicName,
+					KMSMasterKeyID: aws.String(kmsKeyID),
+				},
+			},
+		},
+		// Already-set spec field must not be overwritten.
+		"KMSMasterKeyIDNotOverwritten": {
+			args: args{
+				in: &v1beta1.TopicParameters{
+					Name:           topicName,
+					KMSMasterKeyID: aws.String("existing-key"),
+				},
+				attr: map[string]string{
+					string(TopicKmsMasterKeyID): kmsKeyID,
+				},
+			},
+			want: want{
+				modified: false,
+				in: &v1beta1.TopicParameters{
+					Name:           topicName,
+					KMSMasterKeyID: aws.String("existing-key"),
+				},
+			},
+		},
+		"DisplayNameCopied": {
+			args: args{
+				in: &v1beta1.TopicParameters{Name: topicName},
+				attr: map[string]string{
+					string(TopicDisplayName): displayName,
+				},
+			},
+			want: want{
+				modified: true,
+				in: &v1beta1.TopicParameters{
+					Name:        topicName,
+					DisplayName: aws.String(displayName),
+				},
+			},
+		},
+		"DeliveryPolicyCopied": {
+			args: args{
+				in: &v1beta1.TopicParameters{Name: topicName},
+				attr: map[string]string{
+					string(TopicDeliveryPolicy): deliveryPolicy,
+				},
+			},
+			want: want{
+				modified: true,
+				in: &v1beta1.TopicParameters{
+					Name:           topicName,
+					DeliveryPolicy: aws.String(deliveryPolicy),
+				},
+			},
+		},
+		"PolicyCopied": {
+			args: args{
+				in: &v1beta1.TopicParameters{Name: topicName},
+				attr: map[string]string{
+					string(TopicPolicy): policy,
+				},
+			},
+			want: want{
+				modified: true,
+				in: &v1beta1.TopicParameters{
+					Name:   topicName,
+					Policy: aws.String(policy),
+				},
+			},
+		},
+		// FifoTopic: only true causes a write; false/absent is a no-op.
+		"FifoTopicTrueCopied": {
+			args: args{
+				in: &v1beta1.TopicParameters{Name: topicName},
+				attr: map[string]string{
+					string(TopicFifoTopic): "true",
+				},
+			},
+			want: want{
+				modified: true,
+				in: &v1beta1.TopicParameters{
+					Name:      topicName,
+					FifoTopic: aws.Bool(true),
+				},
+			},
+		},
+		"FifoTopicFalseIsNoOp": {
+			args: args{
+				in: &v1beta1.TopicParameters{Name: topicName},
+				attr: map[string]string{
+					string(TopicFifoTopic): "false",
+				},
+			},
+			want: want{
+				modified: false,
+				in:       &v1beta1.TopicParameters{Name: topicName},
+			},
+		},
+		"FifoTopicNotOverwrittenWhenAlreadySet": {
+			args: args{
+				in: &v1beta1.TopicParameters{Name: topicName, FifoTopic: aws.Bool(true)},
+				attr: map[string]string{
+					string(TopicFifoTopic): "true",
+				},
+			},
+			want: want{
+				modified: false,
+				in:       &v1beta1.TopicParameters{Name: topicName, FifoTopic: aws.Bool(true)},
+			},
+		},
+		// All fields populated in one pass.
+		"AllFieldsCopied": {
+			args: args{
+				in: &v1beta1.TopicParameters{Name: topicName},
+				attr: map[string]string{
+					string(TopicKmsMasterKeyID): kmsKeyID,
+					string(TopicDisplayName):    displayName,
+					string(TopicDeliveryPolicy): deliveryPolicy,
+					string(TopicPolicy):         policy,
+					string(TopicFifoTopic):      "true",
+				},
+			},
+			want: want{
+				modified: true,
+				in: &v1beta1.TopicParameters{
+					Name:           topicName,
+					KMSMasterKeyID: aws.String(kmsKeyID),
+					DisplayName:    aws.String(displayName),
+					DeliveryPolicy: aws.String(deliveryPolicy),
+					Policy:         aws.String(policy),
+					FifoTopic:      aws.Bool(true),
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := LateInitializeTopicAttr(tc.args.in, tc.args.attr)
+			if diff := cmp.Diff(tc.want.modified, got); diff != "" {
+				t.Errorf("LateInitializeTopicAttr() modified: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.in, tc.args.in); diff != "" {
+				t.Errorf("LateInitializeTopicAttr() params: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
