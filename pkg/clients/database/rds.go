@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -376,6 +377,11 @@ func CreatePatch(in *rdstypes.DBInstance, spec *v1beta1.RDSInstanceParameters) (
 		currentParams.IOPS = target.IOPS
 		currentParams.StorageThroughput = target.StorageThroughput
 	}
+
+	// Sort VPCSecurityGroupIDs in both current and target so that order differences
+	// from the AWS API response don't cause false positives in the patch diff.
+	sort.Strings(currentParams.VPCSecurityGroupIDs)
+	sort.Strings(target.VPCSecurityGroupIDs)
 
 	jsonPatch, err := jsonpatch.CreateJSONPatch(currentParams, target)
 	if err != nil {
