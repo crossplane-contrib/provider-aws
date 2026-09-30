@@ -183,8 +183,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 	return cre, nil
 }
 
-// isUpToDate compares the mutable fields accepted by UpdateBroker against the
-// broker's observed state.
+// isUpToDate compares the fields UpdateBroker accepts against the observed broker.
 func isUpToDate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.DescribeBrokerResponse) (bool, string, error) {
 	p := cr.Spec.ForProvider
 
