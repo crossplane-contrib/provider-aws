@@ -63,20 +63,6 @@ func GenerateCreateUserInput(cr *svcapitypes.User) *svcsdk.CreateUserInput {
 	if cr.Spec.ForProvider.HomeDirectory != nil {
 		res.SetHomeDirectory(*cr.Spec.ForProvider.HomeDirectory)
 	}
-	if cr.Spec.ForProvider.HomeDirectoryMappings != nil {
-		f1 := []*svcsdk.HomeDirectoryMapEntry{}
-		for _, f1iter := range cr.Spec.ForProvider.HomeDirectoryMappings {
-			f1elem := &svcsdk.HomeDirectoryMapEntry{}
-			if f1iter.Entry != nil {
-				f1elem.SetEntry(*f1iter.Entry)
-			}
-			if f1iter.Target != nil {
-				f1elem.SetTarget(*f1iter.Target)
-			}
-			f1 = append(f1, f1elem)
-		}
-		res.SetHomeDirectoryMappings(f1)
-	}
 	if cr.Spec.ForProvider.HomeDirectoryType != nil {
 		res.SetHomeDirectoryType(*cr.Spec.ForProvider.HomeDirectoryType)
 	}
@@ -84,37 +70,37 @@ func GenerateCreateUserInput(cr *svcapitypes.User) *svcsdk.CreateUserInput {
 		res.SetPolicy(*cr.Spec.ForProvider.Policy)
 	}
 	if cr.Spec.ForProvider.PosixProfile != nil {
-		f4 := &svcsdk.PosixProfile{}
+		f3 := &svcsdk.PosixProfile{}
 		if cr.Spec.ForProvider.PosixProfile.Gid != nil {
-			f4.SetGid(*cr.Spec.ForProvider.PosixProfile.Gid)
+			f3.SetGid(*cr.Spec.ForProvider.PosixProfile.Gid)
 		}
 		if cr.Spec.ForProvider.PosixProfile.SecondaryGids != nil {
-			f4f1 := []*int64{}
-			for _, f4f1iter := range cr.Spec.ForProvider.PosixProfile.SecondaryGids {
-				var f4f1elem int64
-				f4f1elem = *f4f1iter
-				f4f1 = append(f4f1, &f4f1elem)
+			f3f1 := []*int64{}
+			for _, f3f1iter := range cr.Spec.ForProvider.PosixProfile.SecondaryGids {
+				var f3f1elem int64
+				f3f1elem = *f3f1iter
+				f3f1 = append(f3f1, &f3f1elem)
 			}
-			f4.SetSecondaryGids(f4f1)
+			f3.SetSecondaryGids(f3f1)
 		}
 		if cr.Spec.ForProvider.PosixProfile.Uid != nil {
-			f4.SetUid(*cr.Spec.ForProvider.PosixProfile.Uid)
+			f3.SetUid(*cr.Spec.ForProvider.PosixProfile.Uid)
 		}
-		res.SetPosixProfile(f4)
+		res.SetPosixProfile(f3)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f5 := []*svcsdk.Tag{}
-		for _, f5iter := range cr.Spec.ForProvider.Tags {
-			f5elem := &svcsdk.Tag{}
-			if f5iter.Key != nil {
-				f5elem.SetKey(*f5iter.Key)
+		f4 := []*svcsdk.Tag{}
+		for _, f4iter := range cr.Spec.ForProvider.Tags {
+			f4elem := &svcsdk.Tag{}
+			if f4iter.Key != nil {
+				f4elem.SetKey(*f4iter.Key)
 			}
-			if f5iter.Value != nil {
-				f5elem.SetValue(*f5iter.Value)
+			if f4iter.Value != nil {
+				f4elem.SetValue(*f4iter.Value)
 			}
-			f5 = append(f5, f5elem)
+			f4 = append(f4, f4elem)
 		}
-		res.SetTags(f5)
+		res.SetTags(f4)
 	}
 
 	return res
@@ -126,20 +112,6 @@ func GenerateUpdateUserInput(cr *svcapitypes.User) *svcsdk.UpdateUserInput {
 
 	if cr.Spec.ForProvider.HomeDirectory != nil {
 		res.SetHomeDirectory(*cr.Spec.ForProvider.HomeDirectory)
-	}
-	if cr.Spec.ForProvider.HomeDirectoryMappings != nil {
-		f1 := []*svcsdk.HomeDirectoryMapEntry{}
-		for _, f1iter := range cr.Spec.ForProvider.HomeDirectoryMappings {
-			f1elem := &svcsdk.HomeDirectoryMapEntry{}
-			if f1iter.Entry != nil {
-				f1elem.SetEntry(*f1iter.Entry)
-			}
-			if f1iter.Target != nil {
-				f1elem.SetTarget(*f1iter.Target)
-			}
-			f1 = append(f1, f1elem)
-		}
-		res.SetHomeDirectoryMappings(f1)
 	}
 	if cr.Spec.ForProvider.HomeDirectoryType != nil {
 		res.SetHomeDirectoryType(*cr.Spec.ForProvider.HomeDirectoryType)

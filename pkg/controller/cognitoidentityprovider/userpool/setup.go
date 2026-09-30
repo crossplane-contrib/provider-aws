@@ -15,6 +15,7 @@ package userpool
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -155,6 +156,8 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.UserPool, resp *sv
 	pool := resp.UserPool
 	spec := cr.Spec.ForProvider
 
+	fmt.Printf("isUpToDate: observed lambdaconfig: %+v\n", pool.LambdaConfig)
+
 	switch {
 	case !areAccountRecoverySettingEqual(spec.AccountRecoverySetting, pool.AccountRecoverySetting),
 		!areAdminCreateUserConfigEqual(spec.AdminCreateUserConfig, pool.AdminCreateUserConfig),
@@ -171,7 +174,7 @@ func (e *hooks) isUpToDate(_ context.Context, cr *svcapitypes.UserPool, resp *sv
 		!reflect.DeepEqual(spec.UserPoolTags, pool.UserPoolTags):
 		return false, "", nil
 	}
-
+	fmt.Println("isuptodate, all equal in switch case")
 	// check the conflicting fields for isUpToDate + conflicts
 	fieldsUpToDate, err := conflictingFieldsEqual(spec, pool)
 	if err != nil || !fieldsUpToDate {
@@ -270,7 +273,7 @@ func areLambdaConfigEqual(spec *svcapitypes.LambdaConfigType, current *svcsdk.La
 			pointer.StringValue(spec.PostConfirmation) != pointer.StringValue(current.PostConfirmation),
 			pointer.StringValue(spec.PreAuthentication) != pointer.StringValue(current.PreAuthentication),
 			pointer.StringValue(spec.PreSignUp) != pointer.StringValue(current.PreSignUp),
-			pointer.StringValue(spec.PreTokenGeneration) != pointer.StringValue(current.PreTokenGeneration),
+			!isPreTokenGenerationEqual(spec, current),
 			pointer.StringValue(spec.UserMigration) != pointer.StringValue(current.UserMigration),
 			pointer.StringValue(spec.VerifyAuthChallengeResponse) != pointer.StringValue(current.VerifyAuthChallengeResponse):
 			return false
@@ -292,6 +295,36 @@ func areCustomEmailSenderEqual(spec *svcapitypes.CustomEmailLambdaVersionConfigT
 
 func areCustomSMSSenderEqual(spec *svcapitypes.CustomSMSLambdaVersionConfigType, current *svcsdk.CustomSMSLambdaVersionConfigType) bool {
 	if spec != nil && current != nil {
+		switch {
+		case pointer.StringValue(spec.LambdaARN) != pointer.StringValue(current.LambdaArn),
+			pointer.StringValue(spec.LambdaVersion) != pointer.StringValue(current.LambdaVersion):
+			return false
+		}
+	}
+	return true
+}
+
+// isPreTokenGenerationEqual handles the comparison of the legacy PreTokenGeneration field and the modern PreTokenGenerationConfig field.
+// If PreTokenGenerationConfig is set, it takes precedence over PreTokenGeneration for comparison purposes.
+func isPreTokenGenerationEqual(spec *svcapitypes.LambdaConfigType, current *svcsdk.LambdaConfigType) bool {
+	// only check legacy preTokenGeneration if user sets it
+	if spec.PreTokenGeneration != nil {
+		fmt.Println("Comparing legacy PreTokenGeneration")
+		return pointer.StringValue(spec.PreTokenGeneration) == pointer.StringValue(current.PreTokenGeneration)
+	}
+	// only check modern preTokenGenerationConfig if user sets it
+	return isPreTokenGenerationConfigEqual(spec.PreTokenGenerationConfig, current.PreTokenGenerationConfig)
+}
+
+func isPreTokenGenerationConfigEqual(spec *svcapitypes.PreTokenGenerationVersionConfigType, current *svcsdk.PreTokenGenerationVersionConfigType) bool {
+	if spec != nil && current != nil {
+		fmt.Printf("Comparing modern PreTokenGenerationConfig \n")
+		if pointer.StringValue(spec.LambdaARN) != pointer.StringValue(current.LambdaArn) {
+			fmt.Printf("Lambda ARNs do not match: spec=%s, current=%s\n", pointer.StringValue(spec.LambdaARN), pointer.StringValue(current.LambdaArn))
+		}
+		if pointer.StringValue(spec.LambdaVersion) != pointer.StringValue(current.LambdaVersion) {
+			fmt.Printf("Lambda Versions do not match: spec=%s, current=%s\n", pointer.StringValue(spec.LambdaVersion), pointer.StringValue(current.LambdaVersion))
+		}
 		switch {
 		case pointer.StringValue(spec.LambdaARN) != pointer.StringValue(current.LambdaArn),
 			pointer.StringValue(spec.LambdaVersion) != pointer.StringValue(current.LambdaVersion):

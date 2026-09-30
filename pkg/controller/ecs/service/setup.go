@@ -176,6 +176,22 @@ func lateInitialize(in *svcapitypes.ServiceParameters, out *svcsdk.DescribeServi
 		}
 	}
 
+	if len(o.Deployments) > 0 {
+		current := o.Deployments[0]
+		if current != nil {
+			if current.VolumeConfigurations != nil && in.VolumeConfigurations != nil {
+				for _, ovc := range current.VolumeConfigurations {
+					for _, ivc := range in.VolumeConfigurations {
+						if ovc.Name != nil && ivc.Name != nil && *ovc.Name == *ivc.Name {
+							if ivc.ManagedEBSVolume.FilesystemType == nil {
+								ivc.ManagedEBSVolume.FilesystemType = ovc.ManagedEBSVolume.FilesystemType
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	return nil
 }
 
@@ -454,6 +470,33 @@ func mapUpdateServiceInput(cr *svcapitypes.Service, obj *svcsdk.UpdateServiceInp
 				}
 				if f14f3iter.PortName != nil {
 					f14f3elem.SetPortName(*f14f3iter.PortName)
+				}
+				if f14f3iter.Timeout != nil {
+					f14f3elemf4 := &svcsdk.TimeoutConfiguration{}
+					if f14f3iter.Timeout.IdleTimeoutSeconds != nil {
+						f14f3elemf4.SetIdleTimeoutSeconds(*f14f3iter.Timeout.IdleTimeoutSeconds)
+					}
+					if f14f3iter.Timeout.PerRequestTimeoutSeconds != nil {
+						f14f3elemf4.SetPerRequestTimeoutSeconds(*f14f3iter.Timeout.PerRequestTimeoutSeconds)
+					}
+					f14f3elem.SetTimeout(f14f3elemf4)
+				}
+				if f14f3iter.TLS != nil {
+					f14f3elemf5 := &svcsdk.ServiceConnectTlsConfiguration{}
+					if f14f3iter.TLS.IssuerCertificateAuthority != nil {
+						f14f3elemf5f0 := &svcsdk.ServiceConnectTlsCertificateAuthority{}
+						if f14f3iter.TLS.IssuerCertificateAuthority.AWSPcaAuthorityARN != nil {
+							f14f3elemf5f0.SetAwsPcaAuthorityArn(*f14f3iter.TLS.IssuerCertificateAuthority.AWSPcaAuthorityARN)
+						}
+						f14f3elemf5.SetIssuerCertificateAuthority(f14f3elemf5f0)
+					}
+					if f14f3iter.TLS.KMSKey != nil {
+						f14f3elemf5.SetKmsKey(*f14f3iter.TLS.KMSKey)
+					}
+					if f14f3iter.TLS.RoleARN != nil {
+						f14f3elemf5.SetRoleArn(*f14f3iter.TLS.RoleARN)
+					}
+					f14f3elem.SetTls(f14f3elemf5)
 				}
 				f14f3 = append(f14f3, f14f3elem)
 			}

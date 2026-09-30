@@ -13,3 +13,5 @@ ignore:
     - ReplicationGroup
     - GlobalReplicationGroup
     - Snapshot
+    - ServerlessCache
+    - ServerlessCacheSnapshot

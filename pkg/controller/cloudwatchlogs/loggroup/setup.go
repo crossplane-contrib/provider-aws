@@ -15,6 +15,7 @@ package loggroup
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -135,7 +136,10 @@ func postCreate(ctx context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.Creat
 }
 
 func (u *updater) isUpToDate(_ context.Context, cr *svcapitypes.LogGroup, obj *svcsdk.DescribeLogGroupsOutput) (bool, string, error) {
-	if pointer.Int64Value(cr.Spec.ForProvider.RetentionInDays) != pointer.Int64Value(obj.LogGroups[0].RetentionInDays) {
+	fmt.Printf("isuptodate observe: %v/n", obj)
+	if (pointer.Int64Value(cr.Spec.ForProvider.RetentionInDays) != pointer.Int64Value(obj.LogGroups[0].RetentionInDays)) &&
+		obj.LogGroups[0].LogGroupClass != nil && *obj.LogGroups[0].LogGroupClass != "DELIVERY" {
+		// RetentionInDays is fix 2 for DELIVERY https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CloudWatch_Logs_Log_Classes.html
 		return false, "", nil
 	}
 
@@ -241,6 +245,7 @@ func generateObservation(obj *svcsdk.DescribeLogGroupsOutput) svcapitypes.LogGro
 		CreationTime:      obj.LogGroups[0].CreationTime,
 		KMSKeyID:          obj.LogGroups[0].KmsKeyId,
 		LogGroupName:      obj.LogGroups[0].LogGroupName,
+		LogGroupClass:     obj.LogGroups[0].LogGroupClass,
 		MetricFilterCount: obj.LogGroups[0].MetricFilterCount,
 		RetentionInDays:   obj.LogGroups[0].RetentionInDays,
 		StoredBytes:       obj.LogGroups[0].StoredBytes,

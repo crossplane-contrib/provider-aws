@@ -69,6 +69,8 @@ var (
 	testOtherPreferredBackupWindow       = "some-other-window"
 	testPreferredMaintenanceWindow       = "some-window"
 	testOtherPreferredMaintenanceWindow  = "some-other-window"
+	testStorageTypeStandard              = "standard"
+	testOtherStorageTypeIOpt1            = "iopt1"
 	testTagKey                           = "some-tag-key"
 	testTagValue                         = "some-tag-value"
 	testOtherTagKey                      = "some-other-tag-key"
@@ -282,6 +284,12 @@ func withPreferredBackupWindow(value string) docDBModifier {
 func withPreferredMaintenanceWindow(value string) docDBModifier {
 	return func(o *svcapitypes.DBCluster) {
 		o.Spec.ForProvider.PreferredMaintenanceWindow = pointer.ToOrNilIfZeroValue(value)
+	}
+}
+
+func withStorageType(value string) docDBModifier {
+	return func(o *svcapitypes.DBCluster) {
+		o.Spec.ForProvider.StorageType = pointer.ToOrNilIfZeroValue(value)
 	}
 }
 
@@ -1807,6 +1815,168 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withDBClusterIdentifier(testDBClusterIdentifier),
 					withPreferredMaintenanceWindow(testPreferredMaintenanceWindow),
+					withExternalName(testDBClusterIdentifier),
+					withConditions(xpv1.Available()),
+					withStatus(svcapitypes.DocDBInstanceStateAvailable),
+					withVpcSecurityGroupIds(),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: true,
+					ConnectionDetails:       generateConnectionDetails("", "", "", "", 0),
+				},
+				docdb: fake.MockDocDBClientCall{
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
+					ListTagsForResource: []*fake.CallListTagsForResource{
+						{
+							I: &docdb.ListTagsForResourceInput{},
+						},
+					},
+				},
+			},
+		},
+		"AvailableState_and_changed_StorageType_should_not_be_UpToDate": {
+			args: args{
+				docdb: &fake.MockDocDBClient{
+					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									StorageType:         pointer.ToOrNilIfZeroValue(""),
+								},
+							},
+						}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withStorageType(testOtherStorageTypeIOpt1),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withConditions(xpv1.Available()),
+					withStatus(svcapitypes.DocDBInstanceStateAvailable),
+					withStorageType(testOtherStorageTypeIOpt1),
+					withVpcSecurityGroupIds(),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceUpToDate:        false,
+					ResourceLateInitialized: true,
+					ConnectionDetails:       generateConnectionDetails("", "", "", "", 0),
+				},
+				docdb: fake.MockDocDBClientCall{
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
+				},
+			},
+		},
+		"AvailableState_and_same_StorageType_should_be_UpToDate": {
+			args: args{
+				docdb: &fake.MockDocDBClient{
+					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									StorageType:         pointer.ToOrNilIfZeroValue(""),
+								},
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
+						return &docdb.ListTagsForResourceOutput{
+							TagList: []*docdb.Tag{},
+						}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withStorageType(testStorageTypeStandard),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+					withConditions(xpv1.Available()),
+					withStatus(svcapitypes.DocDBInstanceStateAvailable),
+					withStorageType(testStorageTypeStandard),
+					withVpcSecurityGroupIds(),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: true,
+					ConnectionDetails:       generateConnectionDetails("", "", "", "", 0),
+				},
+				docdb: fake.MockDocDBClientCall{
+					DescribeDBClustersWithContext: []*fake.CallDescribeDBClustersWithContext{
+						{
+							Ctx: context.Background(),
+							I: &docdb.DescribeDBClustersInput{
+								DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+							},
+						},
+					},
+					ListTagsForResource: []*fake.CallListTagsForResource{
+						{
+							I: &docdb.ListTagsForResourceInput{},
+						},
+					},
+				},
+			},
+		},
+		"AvailableState_and_no_spec_StorageType_should_be_UpToDate": {
+			args: args{
+				docdb: &fake.MockDocDBClient{
+					MockDescribeDBClustersWithContext: func(c context.Context, ddi *docdb.DescribeDBClustersInput, o []request.Option) (*docdb.DescribeDBClustersOutput, error) {
+						return &docdb.DescribeDBClustersOutput{
+							DBClusters: []*docdb.DBCluster{
+								{
+									DBClusterIdentifier: pointer.ToOrNilIfZeroValue(testDBClusterIdentifier),
+									Status:              pointer.ToOrNilIfZeroValue(svcapitypes.DocDBInstanceStateAvailable),
+									StorageType:         pointer.ToOrNilIfZeroValue(""),
+								},
+							},
+						}, nil
+					},
+					MockListTagsForResource: func(ltfri *docdb.ListTagsForResourceInput) (*docdb.ListTagsForResourceOutput, error) {
+						return &docdb.ListTagsForResourceOutput{
+							TagList: []*docdb.Tag{},
+						}, nil
+					},
+				},
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
+					withExternalName(testDBClusterIdentifier),
+				),
+			},
+			want: want{
+				cr: instance(
+					withDBClusterIdentifier(testDBClusterIdentifier),
 					withExternalName(testDBClusterIdentifier),
 					withConditions(xpv1.Available()),
 					withStatus(svcapitypes.DocDBInstanceStateAvailable),

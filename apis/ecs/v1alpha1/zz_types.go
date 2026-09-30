@@ -241,6 +241,9 @@ type ContainerDefinition struct {
 	// The health check is designed to make sure that your containers survive agent
 	// restarts, upgrades, or temporary unavailability.
 	//
+	// Amazon ECS performs health checks on containers with the default that launched
+	// the container instance or the task.
+	//
 	// The following describes the possible healthStatus values for a container:
 	//
 	//    * HEALTHY-The container health check has passed successfully.
@@ -522,6 +525,8 @@ type Deployment struct {
 	TaskDefinition *string `json:"taskDefinition,omitempty"`
 
 	UpdatedAt *metav1.Time `json:"updatedAt,omitempty"`
+
+	VolumeConfigurations []*ServiceVolumeConfiguration `json:"volumeConfigurations,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -601,6 +606,15 @@ type DockerVolumeConfiguration struct {
 	Labels map[string]*string `json:"labels,omitempty"`
 
 	Scope *string `json:"scope,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type EBSTagSpecification struct {
+	PropagateTags *string `json:"propagateTags,omitempty"`
+
+	ResourceType *string `json:"resourceType,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -760,8 +774,8 @@ type KeyValuePair struct {
 
 // +kubebuilder:skipversion
 type LinuxParameters struct {
-	// The Linux capabilities for the container that are added to or dropped from
-	// the default configuration provided by Docker. For more information about
+	// The Linux capabilities to add or remove from the default Docker configuration
+	// for a container defined in the task definition. For more information about
 	// the default capabilities and the non-default available capabilities, see
 	// Runtime privilege and Linux capabilities (https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities)
 	// in the Docker run reference. For more detailed information about these Linux
@@ -846,7 +860,8 @@ type NetworkBinding struct {
 
 // +kubebuilder:skipversion
 type NetworkConfiguration struct {
-	// An object representing the networking details for a task or service.
+	// An object representing the networking details for a task or service. For
+	// example awsvpcConfiguration={subnets=["subnet-12344321"],securityGroups=["sg-12344321"]}
 	AWSVPCConfiguration *AWSVPCConfiguration `json:"awsVPCConfiguration,omitempty"`
 }
 
@@ -1019,6 +1034,13 @@ type ServiceConnectService struct {
 	IngressPortOverride *int64 `json:"ingressPortOverride,omitempty"`
 
 	PortName *string `json:"portName,omitempty"`
+	// An object that represents the timeout configurations for Service Connect.
+	//
+	// If idleTimeout is set to a time that is less than perRequestTimeout, the
+	// connection will close when the idleTimeout is reached and not the perRequestTimeout.
+	Timeout *TimeoutConfiguration `json:"timeout,omitempty"`
+	// An object that represents the configuration for Service Connect TLS.
+	TLS *ServiceConnectTLSConfiguration `json:"tls,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1026,6 +1048,22 @@ type ServiceConnectServiceResource struct {
 	DiscoveryARN *string `json:"discoveryARN,omitempty"`
 
 	DiscoveryName *string `json:"discoveryName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServiceConnectTLSCertificateAuthority struct {
+	AWSPcaAuthorityARN *string `json:"awsPcaAuthorityARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServiceConnectTLSConfiguration struct {
+	// An object that represents the Amazon Web Services Private Certificate Authority
+	// certificate.
+	IssuerCertificateAuthority *ServiceConnectTLSCertificateAuthority `json:"issuerCertificateAuthority,omitempty"`
+
+	KMSKey *string `json:"kmsKey,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1038,6 +1076,29 @@ type ServiceEvent struct {
 }
 
 // +kubebuilder:skipversion
+type ServiceManagedEBSVolumeConfiguration struct {
+	Encrypted *bool `json:"encrypted,omitempty"`
+
+	FilesystemType *string `json:"filesystemType,omitempty"`
+
+	IOPS *int64 `json:"iops,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	SizeInGiB *int64 `json:"sizeInGiB,omitempty"`
+
+	SnapshotID *string `json:"snapshotID,omitempty"`
+
+	TagSpecifications []*EBSTagSpecification `json:"tagSpecifications,omitempty"`
+
+	Throughput *int64 `json:"throughput,omitempty"`
+
+	VolumeType *string `json:"volumeType,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ServiceRegistry struct {
 	ContainerName *string `json:"containerName,omitempty"`
 
@@ -1046,6 +1107,19 @@ type ServiceRegistry struct {
 	Port *int64 `json:"port,omitempty"`
 
 	RegistryARN *string `json:"registryARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ServiceVolumeConfiguration struct {
+	// The configuration for the Amazon EBS volume that Amazon ECS creates and manages
+	// on your behalf. These settings are used to create each Amazon EBS volume,
+	// with one volume created for each task in the service.
+	//
+	// Many of these parameters map 1:1 with the Amazon EBS CreateVolume API request
+	// parameters.
+	ManagedEBSVolume *ServiceManagedEBSVolumeConfiguration `json:"managedEBSVolume,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1168,8 +1242,8 @@ type Task struct {
 	// The amount of ephemeral storage to allocate for the task. This parameter
 	// is used to expand the total amount of ephemeral storage available, beyond
 	// the default amount, for tasks hosted on Fargate. For more information, see
-	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
-	// in the Amazon ECS User Guide for Fargate.
+	// Using data volumes in tasks (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html)
+	// in the Amazon ECS Developer Guide;.
 	//
 	// For tasks using the Fargate launch type, the task requires the following
 	// platforms:
@@ -1235,8 +1309,8 @@ type TaskDefinition_SDK struct {
 	// The amount of ephemeral storage to allocate for the task. This parameter
 	// is used to expand the total amount of ephemeral storage available, beyond
 	// the default amount, for tasks hosted on Fargate. For more information, see
-	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
-	// in the Amazon ECS User Guide for Fargate.
+	// Using data volumes in tasks (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html)
+	// in the Amazon ECS Developer Guide;.
 	//
 	// For tasks using the Fargate launch type, the task requires the following
 	// platforms:
@@ -1296,13 +1370,41 @@ type TaskDefinition_SDK struct {
 }
 
 // +kubebuilder:skipversion
+type TaskManagedEBSVolumeConfiguration struct {
+	Encrypted *bool `json:"encrypted,omitempty"`
+
+	FilesystemType *string `json:"filesystemType,omitempty"`
+
+	IOPS *int64 `json:"iops,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	SizeInGiB *int64 `json:"sizeInGiB,omitempty"`
+
+	SnapshotID *string `json:"snapshotID,omitempty"`
+
+	TagSpecifications []*EBSTagSpecification `json:"tagSpecifications,omitempty"`
+
+	Throughput *int64 `json:"throughput,omitempty"`
+
+	VolumeType *string `json:"volumeType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TaskManagedEBSVolumeTerminationPolicy struct {
+	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type TaskOverride struct {
 	CPU *string `json:"cpu,omitempty"`
 	// The amount of ephemeral storage to allocate for the task. This parameter
 	// is used to expand the total amount of ephemeral storage available, beyond
 	// the default amount, for tasks hosted on Fargate. For more information, see
-	// Fargate task storage (https://docs.aws.amazon.com/AmazonECS/latest/userguide/using_data_volumes.html)
-	// in the Amazon ECS User Guide for Fargate.
+	// Using data volumes in tasks (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html)
+	// in the Amazon ECS Developer Guide;.
 	//
 	// For tasks using the Fargate launch type, the task requires the following
 	// platforms:
@@ -1372,6 +1474,18 @@ type TaskSet struct {
 }
 
 // +kubebuilder:skipversion
+type TaskVolumeConfiguration struct {
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TimeoutConfiguration struct {
+	IdleTimeoutSeconds *int64 `json:"idleTimeoutSeconds,omitempty"`
+
+	PerRequestTimeoutSeconds *int64 `json:"perRequestTimeoutSeconds,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Tmpfs struct {
 	ContainerPath *string `json:"containerPath,omitempty"`
 
@@ -1400,6 +1514,7 @@ type VersionInfo struct {
 
 // +kubebuilder:skipversion
 type Volume struct {
+	ConfiguredAtLaunch *bool `json:"configuredAtLaunch,omitempty"`
 	// This parameter is specified when you're using Docker volumes. Docker volumes
 	// are only supported when you're using the EC2 launch type. Windows containers
 	// only support the use of the local driver. To use bind mounts, specify a host

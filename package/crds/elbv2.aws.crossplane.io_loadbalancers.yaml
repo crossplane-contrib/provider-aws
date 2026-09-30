@@ -80,9 +80,19 @@ spec:
                     type: string
                   ipAddressType:
                     description: |-
-                      The type of IP addresses used by the subnets for your load balancer. The
-                      possible values are ipv4 (for IPv4 addresses) and dualstack (for IPv4 and
-                      IPv6 addresses).
+                      Note: Internal load balancers must use the ipv4 IP address type.
+
+                      [Application Load Balancers] The IP address type. The possible values are
+                      ipv4 (for only IPv4 addresses), dualstack (for IPv4 and IPv6 addresses),
+                      and dualstack-without-public-ipv4 (for IPv6 only public addresses, with private
+                      IPv4 and IPv6 addresses).
+
+                      [Network Load Balancers] The IP address type. The possible values are ipv4
+                      (for only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses). You
+                      can’t specify dualstack for a load balancer with a UDP or TCP_UDP listener.
+
+                      [Gateway Load Balancers] The IP address type. The possible values are ipv4
+                      (for only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses).
                     type: string
                   loadBalancerType:
                     description: The type of load balancer. The default is application.
@@ -200,7 +210,7 @@ spec:
                     type: array
                   subnetMappings:
                     description: |-
-                      The IDs of the public subnets. You can specify only one subnet per Availability
+                      The IDs of the subnets. You can specify only one subnet per Availability
                       Zone. You must specify either subnets or subnet mappings, but not both.
 
                       [Application Load Balancers] You must specify subnets from at least two Availability
@@ -311,7 +321,7 @@ spec:
                     type: object
                   subnets:
                     description: |-
-                      The IDs of the public subnets. You can specify only one subnet per Availability
+                      The IDs of the subnets. You can specify only one subnet per Availability
                       Zone. You must specify either subnets or subnet mappings, but not both. To
                       specify an Elastic IP address, specify subnet mappings instead of subnets.
 

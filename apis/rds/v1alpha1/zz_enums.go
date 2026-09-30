@@ -169,6 +169,19 @@ const (
 	IntegrationStatus_needs_attention IntegrationStatus = "needs_attention"
 )
 
+type LimitlessDatabaseStatus string
+
+const (
+	LimitlessDatabaseStatus_active                 LimitlessDatabaseStatus = "active"
+	LimitlessDatabaseStatus_not_in_use             LimitlessDatabaseStatus = "not-in-use"
+	LimitlessDatabaseStatus_enabled                LimitlessDatabaseStatus = "enabled"
+	LimitlessDatabaseStatus_disabled               LimitlessDatabaseStatus = "disabled"
+	LimitlessDatabaseStatus_enabling               LimitlessDatabaseStatus = "enabling"
+	LimitlessDatabaseStatus_disabling              LimitlessDatabaseStatus = "disabling"
+	LimitlessDatabaseStatus_modifying_max_capacity LimitlessDatabaseStatus = "modifying-max-capacity"
+	LimitlessDatabaseStatus_error                  LimitlessDatabaseStatus = "error"
+)
+
 type LocalWriteForwardingStatus string
 
 const (

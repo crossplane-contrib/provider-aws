@@ -246,6 +246,55 @@ func TestIsUpToDate(t *testing.T) {
 				err:    nil,
 			},
 		},
+		"ChangedLambdaConfigPreTokenGeneration": {
+			args: args{
+				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
+					LambdaConfig: &svcapitypes.LambdaConfigType{
+						PreTokenGeneration: &testString1,
+					},
+				})),
+				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
+					LambdaConfig: &svcsdk.LambdaConfigType{
+						PreTokenGeneration: &testString2,
+						PreTokenGenerationConfig: &svcsdk.PreTokenGenerationVersionConfigType{
+							LambdaArn:     &testString2,
+							LambdaVersion: &testString2,
+						},
+					},
+				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
+			},
+			want: want{
+				result: false,
+				err:    nil,
+			},
+		},
+		"ChangedLambdaConfigPreTokenGenerationConfig": {
+			args: args{
+				cr: userPool(withSpec(svcapitypes.UserPoolParameters{
+					LambdaConfig: &svcapitypes.LambdaConfigType{
+						PreTokenGenerationConfig: &svcapitypes.PreTokenGenerationVersionConfigType{
+							LambdaARN:     &testString1,
+							LambdaVersion: &testString1,
+						},
+					},
+				})),
+				resp: &svcsdk.DescribeUserPoolOutput{UserPool: &svcsdk.UserPoolType{
+					LambdaConfig: &svcsdk.LambdaConfigType{
+						PreTokenGeneration: &testString2,
+						PreTokenGenerationConfig: &svcsdk.PreTokenGenerationVersionConfigType{
+							LambdaArn:     &testString2,
+							LambdaVersion: &testString2,
+						},
+					},
+				}},
+				resp2: &svcsdk.GetUserPoolMfaConfigOutput{},
+			},
+			want: want{
+				result: false,
+				err:    nil,
+			},
+		},
 		"ChangedMFAConfiguration": {
 			args: args{
 				cr: userPool(withSpec(svcapitypes.UserPoolParameters{

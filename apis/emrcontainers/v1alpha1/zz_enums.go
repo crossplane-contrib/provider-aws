@@ -18,6 +18,12 @@ limitations under the License.
 
 package v1alpha1
 
+type CertificateProviderType string
+
+const (
+	CertificateProviderType_PEM CertificateProviderType = "PEM"
+)
+
 type ContainerProviderType string
 
 const (

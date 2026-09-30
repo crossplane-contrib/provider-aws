@@ -18,6 +18,17 @@ limitations under the License.
 
 package v1beta1
 
+type ApplicationLogLevel string
+
+const (
+	ApplicationLogLevel_TRACE ApplicationLogLevel = "TRACE"
+	ApplicationLogLevel_DEBUG ApplicationLogLevel = "DEBUG"
+	ApplicationLogLevel_INFO  ApplicationLogLevel = "INFO"
+	ApplicationLogLevel_WARN  ApplicationLogLevel = "WARN"
+	ApplicationLogLevel_ERROR ApplicationLogLevel = "ERROR"
+	ApplicationLogLevel_FATAL ApplicationLogLevel = "FATAL"
+)
+
 type Architecture string
 
 const (
@@ -121,6 +132,13 @@ const (
 	LastUpdateStatusReasonCode_FunctionError               LastUpdateStatusReasonCode = "FunctionError"
 )
 
+type LogFormat string
+
+const (
+	LogFormat_JSON LogFormat = "JSON"
+	LogFormat_Text LogFormat = "Text"
+)
+
 type LogType string
 
 const (
@@ -174,6 +192,7 @@ const (
 	Runtime_dotnetcore2_1   Runtime = "dotnetcore2.1"
 	Runtime_dotnetcore3_1   Runtime = "dotnetcore3.1"
 	Runtime_dotnet6         Runtime = "dotnet6"
+	Runtime_dotnet8         Runtime = "dotnet8"
 	Runtime_nodejs4_3_edge  Runtime = "nodejs4.3-edge"
 	Runtime_go1_x           Runtime = "go1.x"
 	Runtime_ruby2_5         Runtime = "ruby2.5"
@@ -184,10 +203,12 @@ const (
 	Runtime_python3_10      Runtime = "python3.10"
 	Runtime_java17          Runtime = "java17"
 	Runtime_ruby3_2         Runtime = "ruby3.2"
+	Runtime_ruby3_3         Runtime = "ruby3.3"
 	Runtime_python3_11      Runtime = "python3.11"
 	Runtime_nodejs20_x      Runtime = "nodejs20.x"
 	Runtime_provided_al2023 Runtime = "provided.al2023"
 	Runtime_python3_12      Runtime = "python3.12"
+	Runtime_java21          Runtime = "java21"
 )
 
 type SnapStartApplyOn string
@@ -253,6 +274,14 @@ const (
 	StateReasonCode_InvalidRuntime              StateReasonCode = "InvalidRuntime"
 	StateReasonCode_InvalidZipFileException     StateReasonCode = "InvalidZipFileException"
 	StateReasonCode_FunctionError               StateReasonCode = "FunctionError"
+)
+
+type SystemLogLevel string
+
+const (
+	SystemLogLevel_DEBUG SystemLogLevel = "DEBUG"
+	SystemLogLevel_INFO  SystemLogLevel = "INFO"
+	SystemLogLevel_WARN  SystemLogLevel = "WARN"
 )
 
 type ThrottleReason string

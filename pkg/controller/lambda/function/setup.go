@@ -186,6 +186,10 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.GetFunc
 		return false, "", nil
 	}
 
+	if !isUpToDateLoggingConfig(cr, obj) {
+		return false, "", nil
+	}
+
 	// The function's layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html).
 	// The generator is creating layers with type of
 	// 	Layers []*string `json:"layers,omitempty"`
@@ -343,6 +347,35 @@ func isUpToDateSecurityGroupIDs(cr *svcapitypes.Function, obj *svcsdk.GetFunctio
 	})
 
 	return cmp.Equal(securityGroupIDs, awsSecurityGroupIDs, sortCmp, cmpopts.EquateEmpty())
+}
+
+func isUpToDateLoggingConfig(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
+	if obj.Configuration == nil {
+		return false
+	}
+	desiredLogCfg := cr.Spec.ForProvider.LoggingConfig
+	actualLogCfg := obj.Configuration.LoggingConfig
+
+	if desiredLogCfg != nil {
+		if actualLogCfg == nil {
+			return false
+		}
+		if aws.StringValue(desiredLogCfg.ApplicationLogLevel) != aws.StringValue(actualLogCfg.ApplicationLogLevel) {
+			return false
+		}
+		// AWS defaults LogFormat to "Text", we only check if user wants to manage it
+		if desiredLogCfg.LogFormat != nil && aws.StringValue(desiredLogCfg.LogFormat) != aws.StringValue(actualLogCfg.LogFormat) {
+			return false
+		}
+		if aws.StringValue(desiredLogCfg.LogGroup) != aws.StringValue(actualLogCfg.LogGroup) {
+			return false
+		}
+		if aws.StringValue(desiredLogCfg.SystemLogLevel) != aws.StringValue(actualLogCfg.SystemLogLevel) {
+			return false
+		}
+	}
+
+	return true
 }
 
 type updater struct {
@@ -535,6 +568,22 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 			f10 = append(f10, &f10elem)
 		}
 		res.SetLayers(f10)
+	}
+	if cr.Spec.ForProvider.LoggingConfig != nil {
+		f11 := &svcsdk.LoggingConfig{}
+		if cr.Spec.ForProvider.LoggingConfig.ApplicationLogLevel != nil {
+			f11.SetApplicationLogLevel(*cr.Spec.ForProvider.LoggingConfig.ApplicationLogLevel)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.LogFormat != nil {
+			f11.SetLogFormat(*cr.Spec.ForProvider.LoggingConfig.LogFormat)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.LogGroup != nil {
+			f11.SetLogGroup(*cr.Spec.ForProvider.LoggingConfig.LogGroup)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.SystemLogLevel != nil {
+			f11.SetSystemLogLevel(*cr.Spec.ForProvider.LoggingConfig.SystemLogLevel)
+		}
+		res.SetLoggingConfig(f11)
 	}
 	if cr.Spec.ForProvider.MemorySize != nil {
 		res.SetMemorySize(*cr.Spec.ForProvider.MemorySize)
