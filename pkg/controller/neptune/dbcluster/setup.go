@@ -222,6 +222,9 @@ func isUpToDate(_ context.Context, cr *svcapitypes.DBCluster, output *svcsdk.Des
 	if aws.StringValue(in.PreferredMaintenanceWindow) != aws.StringValue(out.PreferredMaintenanceWindow) {
 		return false, "", nil
 	}
+	if !isStorageTypeUpToDate(in, out) {
+		return false, "", nil
+	}
 	if len(in.VPCSecurityGroupIDs) != len(out.VpcSecurityGroups) {
 		return false, "", nil
 	}
@@ -235,6 +238,22 @@ func isUpToDate(_ context.Context, cr *svcapitypes.DBCluster, output *svcsdk.Des
 	}
 
 	return true, "", nil
+}
+
+func isStorageTypeUpToDate(in svcapitypes.DBClusterParameters, out *svcsdk.DBCluster) bool {
+	// If StorageType is not set by user, we do not need to check and accept AWS set default (or the current value)
+	if in.StorageType == nil {
+		return true
+	}
+
+	// AWS returns "" when StorageType is explicitly "standard" (default)
+	// see also note in AWS docs: https://docs.aws.amazon.com/neptune/latest/userguide/api-clusters.html#CreateDBCluster
+	if pointer.StringValue(in.StorageType) == "standard" &&
+		pointer.StringValue(out.StorageType) == "" {
+		return true
+	}
+
+	return pointer.StringValue(in.StorageType) == pointer.StringValue(out.StorageType)
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.DBCluster, resp *svcsdk.DescribeDBClustersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

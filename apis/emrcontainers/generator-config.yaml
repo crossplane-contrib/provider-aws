@@ -12,6 +12,7 @@ ignore:
   resource_names:
     - ManagedEndpoint
     - JobTemplate
+    - SecurityConfiguration
   shape_names: null
 sdk_names:
   model_name: emr-containers

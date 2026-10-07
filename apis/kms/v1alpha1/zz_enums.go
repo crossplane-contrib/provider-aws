@@ -227,6 +227,13 @@ const (
 	OriginType_EXTERNAL_KEY_STORE OriginType = "EXTERNAL_KEY_STORE"
 )
 
+type RotationType string
+
+const (
+	RotationType_AUTOMATIC RotationType = "AUTOMATIC"
+	RotationType_ON_DEMAND RotationType = "ON_DEMAND"
+)
+
 type SigningAlgorithmSpec string
 
 const (

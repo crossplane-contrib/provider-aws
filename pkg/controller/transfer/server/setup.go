@@ -289,6 +289,10 @@ func isNotUpToDate(in svcapitypes.ServerParameters, out *svcsdk.DescribedServer)
 		return true
 	}
 
+	if !isS3StorageOptionsUpToDate(in.S3StorageOptions, out.S3StorageOptions) {
+		return true
+	}
+
 	return false
 }
 
@@ -409,4 +413,18 @@ func isHostKeyUpToDate(in *string, out *string) bool {
 	fingerprint := ssh.FingerprintSHA256(key.PublicKey())
 	currentFingerprint := strings.TrimSuffix(ptr.Deref(out, ""), "=")
 	return fingerprint == currentFingerprint
+}
+
+func isS3StorageOptionsUpToDate(in *svcapitypes.S3StorageOptions, out *svcsdk.S3StorageOptions) bool {
+	// consider AWS default, not late-init by us
+	if in == nil {
+		return true
+	}
+	if out == nil {
+		return false
+	}
+	if !cmp.Equal(in.DirectoryListingOptimization, out.DirectoryListingOptimization) {
+		return false
+	}
+	return true
 }

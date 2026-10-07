@@ -99,6 +99,13 @@ type EngineVersion struct {
 }
 
 // +kubebuilder:skipversion
+type IdentityCenterConfiguration struct {
+	EnableIdentityCenter *bool `json:"enableIdentityCenter,omitempty"`
+
+	IdentityCenterInstanceARN *string `json:"identityCenterInstanceARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type NamedQuery struct {
 	Name *string `json:"name,omitempty"`
 
@@ -136,6 +143,8 @@ type QueryExecution struct {
 	// The Athena engine version for running queries, or the PySpark engine version
 	// for running sessions.
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
+	// Specifies whether Amazon S3 access grants are enabled for query results.
+	QueryResultsS3AccessGrantsConfiguration *QueryResultsS3AccessGrantsConfiguration `json:"queryResultsS3AccessGrantsConfiguration,omitempty"`
 	// The location in Amazon S3 where query and calculation results are stored
 	// and the encryption option, if any, used for query and calculation results.
 	// These are known as "client-side settings". If workgroup settings override
@@ -159,6 +168,15 @@ type QueryExecutionStatus struct {
 	StateChangeReason *string `json:"stateChangeReason,omitempty"`
 
 	SubmissionDateTime *metav1.Time `json:"submissionDateTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type QueryResultsS3AccessGrantsConfiguration struct {
+	AuthenticationType *string `json:"authenticationType,omitempty"`
+
+	CreateUserLevelPrefix *bool `json:"createUserLevelPrefix,omitempty"`
+
+	EnableS3AccessGrants *bool `json:"enableS3AccessGrants,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -263,8 +281,9 @@ type WorkGroupConfiguration struct {
 	AdditionalConfiguration *string `json:"additionalConfiguration,omitempty"`
 
 	BytesScannedCutoffPerQuery *int64 `json:"bytesScannedCutoffPerQuery,omitempty"`
-	// Specifies the KMS key that is used to encrypt the user's data stores in Athena.
-	// This setting does not apply to Athena SQL workgroups.
+	// Specifies the customer managed KMS key that is used to encrypt the user's
+	// data stores in Athena. When an Amazon Web Services managed key is used, this
+	// value is null. This setting does not apply to Athena SQL workgroups.
 	CustomerContentEncryptionConfiguration *CustomerContentEncryptionConfiguration `json:"customerContentEncryptionConfiguration,omitempty"`
 
 	EnableMinimumEncryptionConfiguration *bool `json:"enableMinimumEncryptionConfiguration,omitempty"`
@@ -275,8 +294,12 @@ type WorkGroupConfiguration struct {
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
 
 	ExecutionRole *string `json:"executionRole,omitempty"`
+	// Specifies whether the workgroup is IAM Identity Center supported.
+	IdentityCenterConfiguration *IdentityCenterConfiguration `json:"identityCenterConfiguration,omitempty"`
 
 	PublishCloudWatchMetricsEnabled *bool `json:"publishCloudWatchMetricsEnabled,omitempty"`
+	// Specifies whether Amazon S3 access grants are enabled for query results.
+	QueryResultsS3AccessGrantsConfiguration *QueryResultsS3AccessGrantsConfiguration `json:"queryResultsS3AccessGrantsConfiguration,omitempty"`
 
 	RequesterPaysEnabled *bool `json:"requesterPaysEnabled,omitempty"`
 	// The location in Amazon S3 where query and calculation results are stored
@@ -291,8 +314,9 @@ type WorkGroupConfigurationUpdates struct {
 	AdditionalConfiguration *string `json:"additionalConfiguration,omitempty"`
 
 	BytesScannedCutoffPerQuery *int64 `json:"bytesScannedCutoffPerQuery,omitempty"`
-	// Specifies the KMS key that is used to encrypt the user's data stores in Athena.
-	// This setting does not apply to Athena SQL workgroups.
+	// Specifies the customer managed KMS key that is used to encrypt the user's
+	// data stores in Athena. When an Amazon Web Services managed key is used, this
+	// value is null. This setting does not apply to Athena SQL workgroups.
 	CustomerContentEncryptionConfiguration *CustomerContentEncryptionConfiguration `json:"customerContentEncryptionConfiguration,omitempty"`
 
 	EnableMinimumEncryptionConfiguration *bool `json:"enableMinimumEncryptionConfiguration,omitempty"`
@@ -305,6 +329,8 @@ type WorkGroupConfigurationUpdates struct {
 	ExecutionRole *string `json:"executionRole,omitempty"`
 
 	PublishCloudWatchMetricsEnabled *bool `json:"publishCloudWatchMetricsEnabled,omitempty"`
+	// Specifies whether Amazon S3 access grants are enabled for query results.
+	QueryResultsS3AccessGrantsConfiguration *QueryResultsS3AccessGrantsConfiguration `json:"queryResultsS3AccessGrantsConfiguration,omitempty"`
 
 	RemoveBytesScannedCutoffPerQuery *bool `json:"removeBytesScannedCutoffPerQuery,omitempty"`
 
@@ -324,6 +350,8 @@ type WorkGroupSummary struct {
 	// The Athena engine version for running queries, or the PySpark engine version
 	// for running sessions.
 	EngineVersion *EngineVersion `json:"engineVersion,omitempty"`
+
+	IdentityCenterApplicationARN *string `json:"identityCenterApplicationARN,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 
@@ -345,6 +373,8 @@ type WorkGroup_SDK struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	Description *string `json:"description,omitempty"`
+
+	IdentityCenterApplicationARN *string `json:"identityCenterApplicationARN,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 

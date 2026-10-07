@@ -29,8 +29,12 @@ type ResourceServerParameters struct {
 	// Region is which region the ResourceServer will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// A unique resource server identifier for the resource server. This could be
-	// an HTTPS endpoint where the resource server is located, such as https://my-weather-api.example.com.
+	// A unique resource server identifier for the resource server. The identifier
+	// can be an API friendly name like solar-system-data. You can also set an API
+	// URL like https://solar-system-data-api.example.com as your identifier.
+	//
+	// Amazon Cognito represents scopes in the access token in the format $resource-server-identifier/$scope.
+	// Longer scope-identifier strings increase the size of your access tokens.
 	// +kubebuilder:validation:Required
 	Identifier *string `json:"identifier"`
 	// A friendly name for the resource server.

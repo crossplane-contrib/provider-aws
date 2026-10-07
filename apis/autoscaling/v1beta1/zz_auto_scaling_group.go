@@ -120,6 +120,10 @@ type AutoScalingGroupParameters struct {
 	// an EC2 instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-from-instance.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	InstanceID *string `json:"instanceID,omitempty"`
+	// An instance maintenance policy. For more information, see Set instance maintenance
+	// policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `json:"instanceMaintenancePolicy,omitempty"`
 	// The name of the launch configuration to use to launch instances.
 	//
 	// Conditional: You must specify either a launch template (LaunchTemplate or

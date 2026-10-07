@@ -97,6 +97,9 @@ spec:
                     description: Region is which region the VirtualCluster will be
                       created.
                     type: string
+                  securityConfigurationID:
+                    description: The ID of the security configuration.
+                    type: string
                   tags:
                     additionalProperties:
                       type: string

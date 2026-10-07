@@ -89,14 +89,8 @@ func TestObserve(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -113,6 +107,12 @@ func TestObserve(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -170,14 +170,8 @@ func TestObserve(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -194,6 +188,12 @@ func TestObserve(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -228,14 +228,8 @@ func TestObserve(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -252,6 +246,12 @@ func TestObserve(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 						},
@@ -304,14 +304,8 @@ func TestObserve(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -328,6 +322,12 @@ func TestObserve(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -364,14 +364,8 @@ func TestObserve(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -388,6 +382,12 @@ func TestObserve(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID:         ptr.To("server"),
 							Role:             ptr.To("role"),
 							SshPublicKeyBody: ptr.To("some-public-key"),
@@ -441,14 +441,8 @@ func TestObserve(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -465,6 +459,12 @@ func TestObserve(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID:         ptr.To("server"),
 							Role:             ptr.To("role"),
 							SshPublicKeyBody: ptr.To("some-public-key"),
@@ -762,14 +762,8 @@ func TestCreate(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -786,6 +780,12 @@ func TestCreate(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -830,14 +830,8 @@ func TestCreate(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -854,6 +848,12 @@ func TestCreate(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -920,14 +920,8 @@ func TestUpdate(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -944,6 +938,12 @@ func TestUpdate(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -1022,14 +1022,8 @@ func TestUpdate(t *testing.T) {
 				cr: user(
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
-						Region:        "us-east-1",
-						HomeDirectory: ptr.To("/test"),
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
+						Region:            "us-east-1",
+						HomeDirectory:     ptr.To("/test"),
 						HomeDirectoryType: ptr.To("LOGICAL"),
 						PosixProfile: &svcapitypes.PosixProfile{
 							Gid: ptr.To(int64(1000)),
@@ -1046,6 +1040,12 @@ func TestUpdate(t *testing.T) {
 							},
 						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -1078,6 +1078,7 @@ func TestUpdate(t *testing.T) {
 				h.cache.keyIDsToDelete = tc.args.keyIDsToDelete
 				h.cache.tagsToAdd = tc.args.tagsToAdd
 				h.cache.tagsToDelete = tc.args.tagsToDelete
+				e.preUpdate = preUpdate
 				e.postUpdate = h.postUpdate
 			}})
 			u, err := e.Update(context.Background(), tc.args.cr)
@@ -1298,13 +1299,13 @@ func TestIsMappingUpToDate(t *testing.T) {
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
 						Region: "us-east-1",
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -1334,13 +1335,13 @@ func TestIsMappingUpToDate(t *testing.T) {
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
 						Region: "us-east-1",
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("targetnew"),
-							},
-						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("targetnew"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{
@@ -1375,13 +1376,13 @@ func TestIsMappingUpToDate(t *testing.T) {
 					withExternalName("test"),
 					withSpec(svcapitypes.UserParameters{
 						Region: "us-east-1",
-						HomeDirectoryMappings: []*svcapitypes.HomeDirectoryMapEntry{
-							{
-								Entry:  ptr.To("entry"),
-								Target: ptr.To("target"),
-							},
-						},
 						CustomUserParameters: svcapitypes.CustomUserParameters{
+							HomeDirectoryMappings: []*svcapitypes.CustomHomeDirectoryMapEntry{
+								{
+									Entry:  ptr.To("entry"),
+									Target: ptr.To("target"),
+								},
+							},
 							ServerID: ptr.To("server"),
 							Role:     ptr.To("role"),
 							SSHPublicKeys: []svcapitypes.SSHPublicKeySpec{

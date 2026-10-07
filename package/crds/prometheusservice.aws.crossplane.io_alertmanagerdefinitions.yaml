@@ -76,7 +76,12 @@ spec:
                   state of AlertManagerDefinition
                 properties:
                   data:
-                    description: The alert manager definition data.
+                    description: |-
+                      The alert manager definition to add. A base64-encoded version of the YAML
+                      alert manager definition file.
+
+                      For details about the alert manager definition, see AlertManagedDefinitionData
+                      (https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-AlertManagerDefinitionData.html).
                     format: byte
                     type: string
                   region:
@@ -344,10 +349,10 @@ spec:
                   state of AlertManagerDefinition
                 properties:
                   statusCode:
-                    description: Status code of this definition.
+                    description: The current status of the alert manager.
                     type: string
                   statusReason:
-                    description: The reason for failure if any.
+                    description: If there is a failure, the reason for the failure.
                     type: string
                 type: object
               conditions:

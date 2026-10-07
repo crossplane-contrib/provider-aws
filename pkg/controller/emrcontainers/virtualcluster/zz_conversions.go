@@ -82,14 +82,19 @@ func GenerateVirtualCluster(resp *svcsdk.DescribeVirtualClusterOutput) *svcapity
 	} else {
 		cr.Status.AtProvider.Name = nil
 	}
+	if resp.VirtualCluster.SecurityConfigurationId != nil {
+		cr.Spec.ForProvider.SecurityConfigurationID = resp.VirtualCluster.SecurityConfigurationId
+	} else {
+		cr.Spec.ForProvider.SecurityConfigurationID = nil
+	}
 	if resp.VirtualCluster.Tags != nil {
-		f6 := map[string]*string{}
-		for f6key, f6valiter := range resp.VirtualCluster.Tags {
-			var f6val string
-			f6val = *f6valiter
-			f6[f6key] = &f6val
+		f7 := map[string]*string{}
+		for f7key, f7valiter := range resp.VirtualCluster.Tags {
+			var f7val string
+			f7val = *f7valiter
+			f7[f7key] = &f7val
 		}
-		cr.Spec.ForProvider.Tags = f6
+		cr.Spec.ForProvider.Tags = f7
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -122,14 +127,17 @@ func GenerateCreateVirtualClusterInput(cr *svcapitypes.VirtualCluster) *svcsdk.C
 		}
 		res.SetContainerProvider(f0)
 	}
+	if cr.Spec.ForProvider.SecurityConfigurationID != nil {
+		res.SetSecurityConfigurationId(*cr.Spec.ForProvider.SecurityConfigurationID)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f1 := map[string]*string{}
-		for f1key, f1valiter := range cr.Spec.ForProvider.Tags {
-			var f1val string
-			f1val = *f1valiter
-			f1[f1key] = &f1val
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.Tags {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
 		}
-		res.SetTags(f1)
+		res.SetTags(f2)
 	}
 
 	return res
