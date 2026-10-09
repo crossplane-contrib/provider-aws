@@ -276,6 +276,45 @@ func TestCreate(t *testing.T) {
 			),
 			returnsErr: true,
 		},
+		{
+			name: "CreateWithoutAuthSendsNoToken",
+			e: &external{
+				cache: &cache{},
+				client: &fake.MockClient{
+					MockCreateReplicationGroup: func(ctx context.Context, in *elasticache.CreateReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.CreateReplicationGroupOutput, error) {
+						if in.AuthToken != nil {
+							return nil, errorBoom
+						}
+						return &elasticache.CreateReplicationGroupOutput{}, nil
+					},
+				}},
+			r: replicationGroup(withAuthEnabled(false)),
+			want: replicationGroup(
+				withAuthEnabled(false),
+				withConditions(xpv1.Creating()),
+				withReplicationGroupID(name),
+			),
+		},
+		{
+			name: "CreateWithAuthSendsToken",
+			e: &external{
+				cache: &cache{},
+				client: &fake.MockClient{
+					MockCreateReplicationGroup: func(ctx context.Context, in *elasticache.CreateReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.CreateReplicationGroupOutput, error) {
+						if in.AuthToken == nil || *in.AuthToken == "" {
+							return nil, errorBoom
+						}
+						return &elasticache.CreateReplicationGroupOutput{}, nil
+					},
+				}},
+			r: replicationGroup(withAuthEnabled(true)),
+			want: replicationGroup(
+				withAuthEnabled(true),
+				withConditions(xpv1.Creating()),
+				withReplicationGroupID(name),
+			),
+			tokenCreated: true,
+		},
 	}
 
 	for _, tc := range cases {
