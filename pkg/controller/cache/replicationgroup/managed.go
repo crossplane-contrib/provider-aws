@@ -261,7 +261,11 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 		token = t
 	}
-	_, err := e.client.CreateReplicationGroup(ctx, elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), &token))
+	var authToken *string
+	if token != "" {
+		authToken = &token
+	}
+	_, err := e.client.CreateReplicationGroup(ctx, elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), authToken))
 	if err != nil {
 		return managed.ExternalCreation{}, errorutils.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
