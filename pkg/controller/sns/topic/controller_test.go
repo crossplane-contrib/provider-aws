@@ -212,16 +212,16 @@ func TestObserve(t *testing.T) {
 				cr: topic(
 					withDisplayName(&topicDisplayName),
 					withTopicARN(&topicName),
-					withPolicy(&empty),
-					withDeliveryPolicy(&empty),
-					withKmsMasterKeyID(&empty),
+					// Empty-string attributes are no longer late-initialized into
+					// the spec; only non-empty AWS values are copied (fixes the
+					// spurious ResourceLateInitialized=true loop, ref #1108).
 					withConditions(xpv1.Available()),
 					withObservationOwner(&empty),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
 					ResourceUpToDate:        false,
-					ResourceLateInitialized: true,
+					ResourceLateInitialized: false,
 				},
 			},
 		},
