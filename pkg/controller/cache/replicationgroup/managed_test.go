@@ -315,6 +315,36 @@ func TestCreate(t *testing.T) {
 			),
 			tokenCreated: true,
 		},
+		{
+			name: "FailedCreateEmptyAuthTokenSecret",
+			e: &external{
+				cache: &cache{},
+				kube: &test.MockClient{
+					MockGet: test.NewMockGetFn(nil, mockGettingSecretData),
+				},
+				client: &fake.MockClient{
+					MockCreateReplicationGroup: func(ctx context.Context, _ *elasticache.CreateReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.CreateReplicationGroupOutput, error) {
+						return &elasticache.CreateReplicationGroupOutput{}, nil
+					},
+				}},
+			r: replicationGroup(
+				withAuthEnabled(true),
+				withAuthTokenSecretRef(&xpv1.SecretKeySelector{
+					SecretReference: xpv1.SecretReference{Name: "authTokenSecret", Namespace: "default"},
+					Key:             "missing-key",
+				}),
+			),
+			want: replicationGroup(
+				withAuthEnabled(true),
+				withAuthTokenSecretRef(&xpv1.SecretKeySelector{
+					SecretReference: xpv1.SecretReference{Name: "authTokenSecret", Namespace: "default"},
+					Key:             "missing-key",
+				}),
+				withConditions(xpv1.Creating()),
+				withReplicationGroupID(name),
+			),
+			returnsErr: true,
+		},
 	}
 
 	for _, tc := range cases {
@@ -834,6 +864,56 @@ func TestIsUpToDate(t *testing.T) {
 			want: wantIsUpToDate{
 				isUpToDate: false,
 				err:        nil,
+			},
+		},
+		{
+			name: "EmptyAuthTokenSecretFailsObserve",
+			e: &external{
+				cache: &cache{},
+				client: &fake.MockClient{
+					MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+						return &elasticache.DescribeReplicationGroupsOutput{
+							ReplicationGroups: []types.ReplicationGroup{
+								{
+									Status:                 aws.String(v1beta1.StatusModifying),
+									AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+									CacheNodeType:          aws.String(cacheNodeType),
+									SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+									SnapshotWindow:         aws.String(snapshotWindow),
+									ClusterEnabled:         aws.Bool(true),
+									MemberClusters:         []string{cacheClusterID},
+								},
+							},
+						}, nil
+					},
+					MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+						return &elasticache.DescribeCacheClustersOutput{
+							CacheClusters: []types.CacheCluster{
+								{EngineVersion: aws.String(engineVersion), PreferredMaintenanceWindow: aws.String(maintenanceWindow)},
+							},
+						}, nil
+					},
+				},
+				kube: &test.MockClient{
+					MockGet:    test.NewMockGetFn(nil, mockGettingSecretDataWithDiff),
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+			},
+			cr: replicationGroup(
+				withReplicationGroupID(name),
+				withAuthTokenSecretRef(&xpv1.SecretKeySelector{
+					SecretReference: xpv1.SecretReference{
+						Name:      "authTokenSecret",
+						Namespace: "default"},
+					Key: "missing-key",
+				}),
+				withWriteConnectionSecretToReference(xpv1.SecretReference{
+					Name: "writeConnectionSecretToRefName",
+				}),
+			),
+			want: wantIsUpToDate{
+				isUpToDate: false,
+				err:        errors.Wrap(errors.New(errEmptyAuthTokenSecret), errGetPasswordSecret),
 			},
 		},
 		{
