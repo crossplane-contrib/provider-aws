@@ -577,6 +577,16 @@ spec:
                             type: string
                         type: object
                     type: object
+                  mutualAuthentication:
+                    description: The mutual authentication configuration information.
+                    properties:
+                      ignoreClientCertificateExpiry:
+                        type: boolean
+                      mode:
+                        type: string
+                      trustStoreARN:
+                        type: string
+                    type: object
                   port:
                     description: |-
                       The port on which the load balancer is listening. You cannot specify a port

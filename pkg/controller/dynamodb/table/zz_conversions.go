@@ -119,31 +119,41 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 				}
 				f5elem.KeySchema = f5elemf6
 			}
+			if f5iter.OnDemandThroughput != nil {
+				f5elemf7 := &svcapitypes.OnDemandThroughput{}
+				if f5iter.OnDemandThroughput.MaxReadRequestUnits != nil {
+					f5elemf7.MaxReadRequestUnits = f5iter.OnDemandThroughput.MaxReadRequestUnits
+				}
+				if f5iter.OnDemandThroughput.MaxWriteRequestUnits != nil {
+					f5elemf7.MaxWriteRequestUnits = f5iter.OnDemandThroughput.MaxWriteRequestUnits
+				}
+				f5elem.OnDemandThroughput = f5elemf7
+			}
 			if f5iter.Projection != nil {
-				f5elemf7 := &svcapitypes.Projection{}
+				f5elemf8 := &svcapitypes.Projection{}
 				if f5iter.Projection.NonKeyAttributes != nil {
-					f5elemf7f0 := []*string{}
-					for _, f5elemf7f0iter := range f5iter.Projection.NonKeyAttributes {
-						var f5elemf7f0elem string
-						f5elemf7f0elem = *f5elemf7f0iter
-						f5elemf7f0 = append(f5elemf7f0, &f5elemf7f0elem)
+					f5elemf8f0 := []*string{}
+					for _, f5elemf8f0iter := range f5iter.Projection.NonKeyAttributes {
+						var f5elemf8f0elem string
+						f5elemf8f0elem = *f5elemf8f0iter
+						f5elemf8f0 = append(f5elemf8f0, &f5elemf8f0elem)
 					}
-					f5elemf7.NonKeyAttributes = f5elemf7f0
+					f5elemf8.NonKeyAttributes = f5elemf8f0
 				}
 				if f5iter.Projection.ProjectionType != nil {
-					f5elemf7.ProjectionType = f5iter.Projection.ProjectionType
+					f5elemf8.ProjectionType = f5iter.Projection.ProjectionType
 				}
-				f5elem.Projection = f5elemf7
+				f5elem.Projection = f5elemf8
 			}
 			if f5iter.ProvisionedThroughput != nil {
-				f5elemf8 := &svcapitypes.ProvisionedThroughput{}
+				f5elemf9 := &svcapitypes.ProvisionedThroughput{}
 				if f5iter.ProvisionedThroughput.ReadCapacityUnits != nil {
-					f5elemf8.ReadCapacityUnits = f5iter.ProvisionedThroughput.ReadCapacityUnits
+					f5elemf9.ReadCapacityUnits = f5iter.ProvisionedThroughput.ReadCapacityUnits
 				}
 				if f5iter.ProvisionedThroughput.WriteCapacityUnits != nil {
-					f5elemf8.WriteCapacityUnits = f5iter.ProvisionedThroughput.WriteCapacityUnits
+					f5elemf9.WriteCapacityUnits = f5iter.ProvisionedThroughput.WriteCapacityUnits
 				}
-				f5elem.ProvisionedThroughput = f5elemf8
+				f5elem.ProvisionedThroughput = f5elemf9
 			}
 			f5 = append(f5, f5elem)
 		}
@@ -230,126 +240,152 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 	} else {
 		cr.Spec.ForProvider.LocalSecondaryIndexes = nil
 	}
+	if resp.Table.OnDemandThroughput != nil {
+		f12 := &svcapitypes.OnDemandThroughput{}
+		if resp.Table.OnDemandThroughput.MaxReadRequestUnits != nil {
+			f12.MaxReadRequestUnits = resp.Table.OnDemandThroughput.MaxReadRequestUnits
+		}
+		if resp.Table.OnDemandThroughput.MaxWriteRequestUnits != nil {
+			f12.MaxWriteRequestUnits = resp.Table.OnDemandThroughput.MaxWriteRequestUnits
+		}
+		cr.Spec.ForProvider.OnDemandThroughput = f12
+	} else {
+		cr.Spec.ForProvider.OnDemandThroughput = nil
+	}
 	if resp.Table.ProvisionedThroughput != nil {
-		f12 := &svcapitypes.ProvisionedThroughput{}
+		f13 := &svcapitypes.ProvisionedThroughput{}
 		if resp.Table.ProvisionedThroughput.ReadCapacityUnits != nil {
-			f12.ReadCapacityUnits = resp.Table.ProvisionedThroughput.ReadCapacityUnits
+			f13.ReadCapacityUnits = resp.Table.ProvisionedThroughput.ReadCapacityUnits
 		}
 		if resp.Table.ProvisionedThroughput.WriteCapacityUnits != nil {
-			f12.WriteCapacityUnits = resp.Table.ProvisionedThroughput.WriteCapacityUnits
+			f13.WriteCapacityUnits = resp.Table.ProvisionedThroughput.WriteCapacityUnits
 		}
-		cr.Spec.ForProvider.ProvisionedThroughput = f12
+		cr.Spec.ForProvider.ProvisionedThroughput = f13
 	} else {
 		cr.Spec.ForProvider.ProvisionedThroughput = nil
 	}
 	if resp.Table.Replicas != nil {
-		f13 := []*svcapitypes.ReplicaDescription{}
-		for _, f13iter := range resp.Table.Replicas {
-			f13elem := &svcapitypes.ReplicaDescription{}
-			if f13iter.GlobalSecondaryIndexes != nil {
-				f13elemf0 := []*svcapitypes.ReplicaGlobalSecondaryIndexDescription{}
-				for _, f13elemf0iter := range f13iter.GlobalSecondaryIndexes {
-					f13elemf0elem := &svcapitypes.ReplicaGlobalSecondaryIndexDescription{}
-					if f13elemf0iter.IndexName != nil {
-						f13elemf0elem.IndexName = f13elemf0iter.IndexName
+		f14 := []*svcapitypes.ReplicaDescription{}
+		for _, f14iter := range resp.Table.Replicas {
+			f14elem := &svcapitypes.ReplicaDescription{}
+			if f14iter.GlobalSecondaryIndexes != nil {
+				f14elemf0 := []*svcapitypes.ReplicaGlobalSecondaryIndexDescription{}
+				for _, f14elemf0iter := range f14iter.GlobalSecondaryIndexes {
+					f14elemf0elem := &svcapitypes.ReplicaGlobalSecondaryIndexDescription{}
+					if f14elemf0iter.IndexName != nil {
+						f14elemf0elem.IndexName = f14elemf0iter.IndexName
 					}
-					if f13elemf0iter.ProvisionedThroughputOverride != nil {
-						f13elemf0elemf1 := &svcapitypes.ProvisionedThroughputOverride{}
-						if f13elemf0iter.ProvisionedThroughputOverride.ReadCapacityUnits != nil {
-							f13elemf0elemf1.ReadCapacityUnits = f13elemf0iter.ProvisionedThroughputOverride.ReadCapacityUnits
+					if f14elemf0iter.OnDemandThroughputOverride != nil {
+						f14elemf0elemf1 := &svcapitypes.OnDemandThroughputOverride{}
+						if f14elemf0iter.OnDemandThroughputOverride.MaxReadRequestUnits != nil {
+							f14elemf0elemf1.MaxReadRequestUnits = f14elemf0iter.OnDemandThroughputOverride.MaxReadRequestUnits
 						}
-						f13elemf0elem.ProvisionedThroughputOverride = f13elemf0elemf1
+						f14elemf0elem.OnDemandThroughputOverride = f14elemf0elemf1
 					}
-					f13elemf0 = append(f13elemf0, f13elemf0elem)
+					if f14elemf0iter.ProvisionedThroughputOverride != nil {
+						f14elemf0elemf2 := &svcapitypes.ProvisionedThroughputOverride{}
+						if f14elemf0iter.ProvisionedThroughputOverride.ReadCapacityUnits != nil {
+							f14elemf0elemf2.ReadCapacityUnits = f14elemf0iter.ProvisionedThroughputOverride.ReadCapacityUnits
+						}
+						f14elemf0elem.ProvisionedThroughputOverride = f14elemf0elemf2
+					}
+					f14elemf0 = append(f14elemf0, f14elemf0elem)
 				}
-				f13elem.GlobalSecondaryIndexes = f13elemf0
+				f14elem.GlobalSecondaryIndexes = f14elemf0
 			}
-			if f13iter.KMSMasterKeyId != nil {
-				f13elem.KMSMasterKeyID = f13iter.KMSMasterKeyId
+			if f14iter.KMSMasterKeyId != nil {
+				f14elem.KMSMasterKeyID = f14iter.KMSMasterKeyId
 			}
-			if f13iter.ProvisionedThroughputOverride != nil {
-				f13elemf2 := &svcapitypes.ProvisionedThroughputOverride{}
-				if f13iter.ProvisionedThroughputOverride.ReadCapacityUnits != nil {
-					f13elemf2.ReadCapacityUnits = f13iter.ProvisionedThroughputOverride.ReadCapacityUnits
+			if f14iter.OnDemandThroughputOverride != nil {
+				f14elemf2 := &svcapitypes.OnDemandThroughputOverride{}
+				if f14iter.OnDemandThroughputOverride.MaxReadRequestUnits != nil {
+					f14elemf2.MaxReadRequestUnits = f14iter.OnDemandThroughputOverride.MaxReadRequestUnits
 				}
-				f13elem.ProvisionedThroughputOverride = f13elemf2
+				f14elem.OnDemandThroughputOverride = f14elemf2
 			}
-			if f13iter.RegionName != nil {
-				f13elem.RegionName = f13iter.RegionName
-			}
-			if f13iter.ReplicaInaccessibleDateTime != nil {
-				f13elem.ReplicaInaccessibleDateTime = &metav1.Time{*f13iter.ReplicaInaccessibleDateTime}
-			}
-			if f13iter.ReplicaStatus != nil {
-				f13elem.ReplicaStatus = f13iter.ReplicaStatus
-			}
-			if f13iter.ReplicaStatusDescription != nil {
-				f13elem.ReplicaStatusDescription = f13iter.ReplicaStatusDescription
-			}
-			if f13iter.ReplicaStatusPercentProgress != nil {
-				f13elem.ReplicaStatusPercentProgress = f13iter.ReplicaStatusPercentProgress
-			}
-			if f13iter.ReplicaTableClassSummary != nil {
-				f13elemf8 := &svcapitypes.TableClassSummary{}
-				if f13iter.ReplicaTableClassSummary.LastUpdateDateTime != nil {
-					f13elemf8.LastUpdateDateTime = &metav1.Time{*f13iter.ReplicaTableClassSummary.LastUpdateDateTime}
+			if f14iter.ProvisionedThroughputOverride != nil {
+				f14elemf3 := &svcapitypes.ProvisionedThroughputOverride{}
+				if f14iter.ProvisionedThroughputOverride.ReadCapacityUnits != nil {
+					f14elemf3.ReadCapacityUnits = f14iter.ProvisionedThroughputOverride.ReadCapacityUnits
 				}
-				if f13iter.ReplicaTableClassSummary.TableClass != nil {
-					f13elemf8.TableClass = f13iter.ReplicaTableClassSummary.TableClass
-				}
-				f13elem.ReplicaTableClassSummary = f13elemf8
+				f14elem.ProvisionedThroughputOverride = f14elemf3
 			}
-			f13 = append(f13, f13elem)
+			if f14iter.RegionName != nil {
+				f14elem.RegionName = f14iter.RegionName
+			}
+			if f14iter.ReplicaInaccessibleDateTime != nil {
+				f14elem.ReplicaInaccessibleDateTime = &metav1.Time{*f14iter.ReplicaInaccessibleDateTime}
+			}
+			if f14iter.ReplicaStatus != nil {
+				f14elem.ReplicaStatus = f14iter.ReplicaStatus
+			}
+			if f14iter.ReplicaStatusDescription != nil {
+				f14elem.ReplicaStatusDescription = f14iter.ReplicaStatusDescription
+			}
+			if f14iter.ReplicaStatusPercentProgress != nil {
+				f14elem.ReplicaStatusPercentProgress = f14iter.ReplicaStatusPercentProgress
+			}
+			if f14iter.ReplicaTableClassSummary != nil {
+				f14elemf9 := &svcapitypes.TableClassSummary{}
+				if f14iter.ReplicaTableClassSummary.LastUpdateDateTime != nil {
+					f14elemf9.LastUpdateDateTime = &metav1.Time{*f14iter.ReplicaTableClassSummary.LastUpdateDateTime}
+				}
+				if f14iter.ReplicaTableClassSummary.TableClass != nil {
+					f14elemf9.TableClass = f14iter.ReplicaTableClassSummary.TableClass
+				}
+				f14elem.ReplicaTableClassSummary = f14elemf9
+			}
+			f14 = append(f14, f14elem)
 		}
-		cr.Status.AtProvider.Replicas = f13
+		cr.Status.AtProvider.Replicas = f14
 	} else {
 		cr.Status.AtProvider.Replicas = nil
 	}
 	if resp.Table.RestoreSummary != nil {
-		f14 := &svcapitypes.RestoreSummary{}
+		f15 := &svcapitypes.RestoreSummary{}
 		if resp.Table.RestoreSummary.RestoreDateTime != nil {
-			f14.RestoreDateTime = &metav1.Time{*resp.Table.RestoreSummary.RestoreDateTime}
+			f15.RestoreDateTime = &metav1.Time{*resp.Table.RestoreSummary.RestoreDateTime}
 		}
 		if resp.Table.RestoreSummary.RestoreInProgress != nil {
-			f14.RestoreInProgress = resp.Table.RestoreSummary.RestoreInProgress
+			f15.RestoreInProgress = resp.Table.RestoreSummary.RestoreInProgress
 		}
 		if resp.Table.RestoreSummary.SourceBackupArn != nil {
-			f14.SourceBackupARN = resp.Table.RestoreSummary.SourceBackupArn
+			f15.SourceBackupARN = resp.Table.RestoreSummary.SourceBackupArn
 		}
 		if resp.Table.RestoreSummary.SourceTableArn != nil {
-			f14.SourceTableARN = resp.Table.RestoreSummary.SourceTableArn
+			f15.SourceTableARN = resp.Table.RestoreSummary.SourceTableArn
 		}
-		cr.Status.AtProvider.RestoreSummary = f14
+		cr.Status.AtProvider.RestoreSummary = f15
 	} else {
 		cr.Status.AtProvider.RestoreSummary = nil
 	}
 	if resp.Table.SSEDescription != nil {
-		f15 := &svcapitypes.SSEDescription{}
+		f16 := &svcapitypes.SSEDescription{}
 		if resp.Table.SSEDescription.InaccessibleEncryptionDateTime != nil {
-			f15.InaccessibleEncryptionDateTime = &metav1.Time{*resp.Table.SSEDescription.InaccessibleEncryptionDateTime}
+			f16.InaccessibleEncryptionDateTime = &metav1.Time{*resp.Table.SSEDescription.InaccessibleEncryptionDateTime}
 		}
 		if resp.Table.SSEDescription.KMSMasterKeyArn != nil {
-			f15.KMSMasterKeyARN = resp.Table.SSEDescription.KMSMasterKeyArn
+			f16.KMSMasterKeyARN = resp.Table.SSEDescription.KMSMasterKeyArn
 		}
 		if resp.Table.SSEDescription.SSEType != nil {
-			f15.SSEType = resp.Table.SSEDescription.SSEType
+			f16.SSEType = resp.Table.SSEDescription.SSEType
 		}
 		if resp.Table.SSEDescription.Status != nil {
-			f15.Status = resp.Table.SSEDescription.Status
+			f16.Status = resp.Table.SSEDescription.Status
 		}
-		cr.Status.AtProvider.SSEDescription = f15
+		cr.Status.AtProvider.SSEDescription = f16
 	} else {
 		cr.Status.AtProvider.SSEDescription = nil
 	}
 	if resp.Table.StreamSpecification != nil {
-		f16 := &svcapitypes.StreamSpecification{}
+		f17 := &svcapitypes.StreamSpecification{}
 		if resp.Table.StreamSpecification.StreamEnabled != nil {
-			f16.StreamEnabled = resp.Table.StreamSpecification.StreamEnabled
+			f17.StreamEnabled = resp.Table.StreamSpecification.StreamEnabled
 		}
 		if resp.Table.StreamSpecification.StreamViewType != nil {
-			f16.StreamViewType = resp.Table.StreamSpecification.StreamViewType
+			f17.StreamViewType = resp.Table.StreamSpecification.StreamViewType
 		}
-		cr.Spec.ForProvider.StreamSpecification = f16
+		cr.Spec.ForProvider.StreamSpecification = f17
 	} else {
 		cr.Spec.ForProvider.StreamSpecification = nil
 	}
@@ -359,14 +395,14 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 		cr.Status.AtProvider.TableARN = nil
 	}
 	if resp.Table.TableClassSummary != nil {
-		f18 := &svcapitypes.TableClassSummary{}
+		f19 := &svcapitypes.TableClassSummary{}
 		if resp.Table.TableClassSummary.LastUpdateDateTime != nil {
-			f18.LastUpdateDateTime = &metav1.Time{*resp.Table.TableClassSummary.LastUpdateDateTime}
+			f19.LastUpdateDateTime = &metav1.Time{*resp.Table.TableClassSummary.LastUpdateDateTime}
 		}
 		if resp.Table.TableClassSummary.TableClass != nil {
-			f18.TableClass = resp.Table.TableClassSummary.TableClass
+			f19.TableClass = resp.Table.TableClassSummary.TableClass
 		}
-		cr.Status.AtProvider.TableClassSummary = f18
+		cr.Status.AtProvider.TableClassSummary = f19
 	} else {
 		cr.Status.AtProvider.TableClassSummary = nil
 	}
@@ -439,31 +475,41 @@ func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
 				}
 				f3elem.SetKeySchema(f3elemf1)
 			}
+			if f3iter.OnDemandThroughput != nil {
+				f3elemf2 := &svcsdk.OnDemandThroughput{}
+				if f3iter.OnDemandThroughput.MaxReadRequestUnits != nil {
+					f3elemf2.SetMaxReadRequestUnits(*f3iter.OnDemandThroughput.MaxReadRequestUnits)
+				}
+				if f3iter.OnDemandThroughput.MaxWriteRequestUnits != nil {
+					f3elemf2.SetMaxWriteRequestUnits(*f3iter.OnDemandThroughput.MaxWriteRequestUnits)
+				}
+				f3elem.SetOnDemandThroughput(f3elemf2)
+			}
 			if f3iter.Projection != nil {
-				f3elemf2 := &svcsdk.Projection{}
+				f3elemf3 := &svcsdk.Projection{}
 				if f3iter.Projection.NonKeyAttributes != nil {
-					f3elemf2f0 := []*string{}
-					for _, f3elemf2f0iter := range f3iter.Projection.NonKeyAttributes {
-						var f3elemf2f0elem string
-						f3elemf2f0elem = *f3elemf2f0iter
-						f3elemf2f0 = append(f3elemf2f0, &f3elemf2f0elem)
+					f3elemf3f0 := []*string{}
+					for _, f3elemf3f0iter := range f3iter.Projection.NonKeyAttributes {
+						var f3elemf3f0elem string
+						f3elemf3f0elem = *f3elemf3f0iter
+						f3elemf3f0 = append(f3elemf3f0, &f3elemf3f0elem)
 					}
-					f3elemf2.SetNonKeyAttributes(f3elemf2f0)
+					f3elemf3.SetNonKeyAttributes(f3elemf3f0)
 				}
 				if f3iter.Projection.ProjectionType != nil {
-					f3elemf2.SetProjectionType(*f3iter.Projection.ProjectionType)
+					f3elemf3.SetProjectionType(*f3iter.Projection.ProjectionType)
 				}
-				f3elem.SetProjection(f3elemf2)
+				f3elem.SetProjection(f3elemf3)
 			}
 			if f3iter.ProvisionedThroughput != nil {
-				f3elemf3 := &svcsdk.ProvisionedThroughput{}
+				f3elemf4 := &svcsdk.ProvisionedThroughput{}
 				if f3iter.ProvisionedThroughput.ReadCapacityUnits != nil {
-					f3elemf3.SetReadCapacityUnits(*f3iter.ProvisionedThroughput.ReadCapacityUnits)
+					f3elemf4.SetReadCapacityUnits(*f3iter.ProvisionedThroughput.ReadCapacityUnits)
 				}
 				if f3iter.ProvisionedThroughput.WriteCapacityUnits != nil {
-					f3elemf3.SetWriteCapacityUnits(*f3iter.ProvisionedThroughput.WriteCapacityUnits)
+					f3elemf4.SetWriteCapacityUnits(*f3iter.ProvisionedThroughput.WriteCapacityUnits)
 				}
-				f3elem.SetProvisionedThroughput(f3elemf3)
+				f3elem.SetProvisionedThroughput(f3elemf4)
 			}
 			f3 = append(f3, f3elem)
 		}
@@ -524,55 +570,68 @@ func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
 		}
 		res.SetLocalSecondaryIndexes(f5)
 	}
+	if cr.Spec.ForProvider.OnDemandThroughput != nil {
+		f6 := &svcsdk.OnDemandThroughput{}
+		if cr.Spec.ForProvider.OnDemandThroughput.MaxReadRequestUnits != nil {
+			f6.SetMaxReadRequestUnits(*cr.Spec.ForProvider.OnDemandThroughput.MaxReadRequestUnits)
+		}
+		if cr.Spec.ForProvider.OnDemandThroughput.MaxWriteRequestUnits != nil {
+			f6.SetMaxWriteRequestUnits(*cr.Spec.ForProvider.OnDemandThroughput.MaxWriteRequestUnits)
+		}
+		res.SetOnDemandThroughput(f6)
+	}
 	if cr.Spec.ForProvider.ProvisionedThroughput != nil {
-		f6 := &svcsdk.ProvisionedThroughput{}
+		f7 := &svcsdk.ProvisionedThroughput{}
 		if cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits != nil {
-			f6.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
+			f7.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
 		}
 		if cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits != nil {
-			f6.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
+			f7.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
 		}
-		res.SetProvisionedThroughput(f6)
+		res.SetProvisionedThroughput(f7)
+	}
+	if cr.Spec.ForProvider.ResourcePolicy != nil {
+		res.SetResourcePolicy(*cr.Spec.ForProvider.ResourcePolicy)
 	}
 	if cr.Spec.ForProvider.SSESpecification != nil {
-		f7 := &svcsdk.SSESpecification{}
+		f9 := &svcsdk.SSESpecification{}
 		if cr.Spec.ForProvider.SSESpecification.Enabled != nil {
-			f7.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
+			f9.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
 		}
 		if cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID != nil {
-			f7.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
+			f9.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
 		}
 		if cr.Spec.ForProvider.SSESpecification.SSEType != nil {
-			f7.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
+			f9.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
 		}
-		res.SetSSESpecification(f7)
+		res.SetSSESpecification(f9)
 	}
 	if cr.Spec.ForProvider.StreamSpecification != nil {
-		f8 := &svcsdk.StreamSpecification{}
+		f10 := &svcsdk.StreamSpecification{}
 		if cr.Spec.ForProvider.StreamSpecification.StreamEnabled != nil {
-			f8.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
+			f10.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
 		}
 		if cr.Spec.ForProvider.StreamSpecification.StreamViewType != nil {
-			f8.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
+			f10.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
 		}
-		res.SetStreamSpecification(f8)
+		res.SetStreamSpecification(f10)
 	}
 	if cr.Spec.ForProvider.TableClass != nil {
 		res.SetTableClass(*cr.Spec.ForProvider.TableClass)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f10 := []*svcsdk.Tag{}
-		for _, f10iter := range cr.Spec.ForProvider.Tags {
-			f10elem := &svcsdk.Tag{}
-			if f10iter.Key != nil {
-				f10elem.SetKey(*f10iter.Key)
+		f12 := []*svcsdk.Tag{}
+		for _, f12iter := range cr.Spec.ForProvider.Tags {
+			f12elem := &svcsdk.Tag{}
+			if f12iter.Key != nil {
+				f12elem.SetKey(*f12iter.Key)
 			}
-			if f10iter.Value != nil {
-				f10elem.SetValue(*f10iter.Value)
+			if f12iter.Value != nil {
+				f12elem.SetValue(*f12iter.Value)
 			}
-			f10 = append(f10, f10elem)
+			f12 = append(f12, f12elem)
 		}
-		res.SetTags(f10)
+		res.SetTags(f12)
 	}
 
 	return res
@@ -602,38 +661,48 @@ func GenerateUpdateTableInput(cr *svcapitypes.Table) *svcsdk.UpdateTableInput {
 	if cr.Spec.ForProvider.DeletionProtectionEnabled != nil {
 		res.SetDeletionProtectionEnabled(*cr.Spec.ForProvider.DeletionProtectionEnabled)
 	}
+	if cr.Spec.ForProvider.OnDemandThroughput != nil {
+		f4 := &svcsdk.OnDemandThroughput{}
+		if cr.Spec.ForProvider.OnDemandThroughput.MaxReadRequestUnits != nil {
+			f4.SetMaxReadRequestUnits(*cr.Spec.ForProvider.OnDemandThroughput.MaxReadRequestUnits)
+		}
+		if cr.Spec.ForProvider.OnDemandThroughput.MaxWriteRequestUnits != nil {
+			f4.SetMaxWriteRequestUnits(*cr.Spec.ForProvider.OnDemandThroughput.MaxWriteRequestUnits)
+		}
+		res.SetOnDemandThroughput(f4)
+	}
 	if cr.Spec.ForProvider.ProvisionedThroughput != nil {
-		f4 := &svcsdk.ProvisionedThroughput{}
+		f5 := &svcsdk.ProvisionedThroughput{}
 		if cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits != nil {
-			f4.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
+			f5.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
 		}
 		if cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits != nil {
-			f4.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
+			f5.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
 		}
-		res.SetProvisionedThroughput(f4)
+		res.SetProvisionedThroughput(f5)
 	}
 	if cr.Spec.ForProvider.SSESpecification != nil {
-		f6 := &svcsdk.SSESpecification{}
+		f7 := &svcsdk.SSESpecification{}
 		if cr.Spec.ForProvider.SSESpecification.Enabled != nil {
-			f6.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
+			f7.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
 		}
 		if cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID != nil {
-			f6.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
+			f7.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
 		}
 		if cr.Spec.ForProvider.SSESpecification.SSEType != nil {
-			f6.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
+			f7.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
 		}
-		res.SetSSESpecification(f6)
+		res.SetSSESpecification(f7)
 	}
 	if cr.Spec.ForProvider.StreamSpecification != nil {
-		f7 := &svcsdk.StreamSpecification{}
+		f8 := &svcsdk.StreamSpecification{}
 		if cr.Spec.ForProvider.StreamSpecification.StreamEnabled != nil {
-			f7.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
+			f8.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
 		}
 		if cr.Spec.ForProvider.StreamSpecification.StreamViewType != nil {
-			f7.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
+			f8.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
 		}
-		res.SetStreamSpecification(f7)
+		res.SetStreamSpecification(f8)
 	}
 	if cr.Spec.ForProvider.TableClass != nil {
 		res.SetTableClass(*cr.Spec.ForProvider.TableClass)

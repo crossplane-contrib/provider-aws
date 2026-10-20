@@ -214,6 +214,7 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Environment, obj *svcsdk.GetE
 		env.Spec.ForProvider,
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.EnvironmentParameters{}, "Region"),
+		cmpopts.IgnoreFields(svcapitypes.EnvironmentParameters{}, "EndpointManagement"), // Create only
 		cmpopts.IgnoreFields(svcapitypes.CustomEnvironmentParameters{}, "KMSKey"),
 	)
 	return diff == "", diff, nil
@@ -232,6 +233,8 @@ func lateInitialize(spec *svcapitypes.EnvironmentParameters, obj *svcsdk.GetEnvi
 	}
 	spec.MaxWorkers = pointer.LateInitialize(spec.MaxWorkers, current.MaxWorkers)
 	spec.MinWorkers = pointer.LateInitialize(spec.MinWorkers, current.MinWorkers)
+	spec.MaxWebservers = pointer.LateInitialize(spec.MaxWebservers, current.MaxWebservers)
+	spec.MinWebservers = pointer.LateInitialize(spec.MinWebservers, current.MinWebservers)
 	spec.PluginsS3ObjectVersion = pointer.LateInitialize(spec.PluginsS3ObjectVersion, current.PluginsS3ObjectVersion)
 	spec.PluginsS3Path = pointer.LateInitialize(spec.PluginsS3Path, current.PluginsS3Path)
 	spec.RequirementsS3ObjectVersion = pointer.LateInitialize(spec.RequirementsS3ObjectVersion, current.RequirementsS3ObjectVersion)

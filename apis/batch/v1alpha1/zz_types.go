@@ -65,6 +65,24 @@ type AttemptDetail struct {
 }
 
 // +kubebuilder:skipversion
+type AttemptECSTaskDetails struct {
+	ContainerInstanceARN *string `json:"containerInstanceARN,omitempty"`
+
+	TaskARN *string `json:"taskARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AttemptTaskContainerDetails struct {
+	ExitCode *int64 `json:"exitCode,omitempty"`
+
+	LogStreamName *string `json:"logStreamName,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Reason *string `json:"reason,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ComputeEnvironmentDetail struct {
 	ComputeEnvironmentARN *string `json:"computeEnvironmentARN,omitempty"`
 
@@ -242,6 +260,36 @@ type EC2Configuration struct {
 }
 
 // +kubebuilder:skipversion
+type ECSTaskDetails struct {
+	ContainerInstanceARN *string `json:"containerInstanceARN,omitempty"`
+
+	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`
+
+	IPCMode *string `json:"ipcMode,omitempty"`
+
+	PIDMode *string `json:"pidMode,omitempty"`
+
+	PlatformVersion *string `json:"platformVersion,omitempty"`
+
+	TaskARN *string `json:"taskARN,omitempty"`
+
+	TaskRoleARN *string `json:"taskRoleARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ECSTaskProperties struct {
+	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`
+
+	IPCMode *string `json:"ipcMode,omitempty"`
+
+	PIDMode *string `json:"pidMode,omitempty"`
+
+	PlatformVersion *string `json:"platformVersion,omitempty"`
+
+	TaskRoleARN *string `json:"taskRoleARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EFSAuthorizationConfig struct {
 	AccessPointID *string `json:"accessPointID,omitempty"`
 }
@@ -258,6 +306,8 @@ type EFSVolumeConfiguration struct {
 // +kubebuilder:skipversion
 type EKSAttemptContainerDetail struct {
 	ExitCode *int64 `json:"exitCode,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 
 	Reason *string `json:"reason,omitempty"`
 }
@@ -322,10 +372,14 @@ type EKSContainerOverride struct {
 	Command []*string `json:"command,omitempty"`
 
 	Image *string `json:"image,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type EKSContainerSecurityContext struct {
+	AllowPrivilegeEscalation *bool `json:"allowPrivilegeEscalation,omitempty"`
+
 	Privileged *bool `json:"privileged,omitempty"`
 
 	ReadOnlyRootFilesystem *bool `json:"readOnlyRootFilesystem,omitempty"`
@@ -359,6 +413,8 @@ type EKSPodProperties struct {
 	HostNetwork *bool `json:"hostNetwork,omitempty"`
 
 	ServiceAccountName *string `json:"serviceAccountName,omitempty"`
+
+	ShareProcessNamespace *bool `json:"shareProcessNamespace,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -372,6 +428,8 @@ type EKSPodPropertiesDetail struct {
 	PodName *string `json:"podName,omitempty"`
 
 	ServiceAccountName *string `json:"serviceAccountName,omitempty"`
+
+	ShareProcessNamespace *bool `json:"shareProcessNamespace,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -418,6 +476,11 @@ type Host struct {
 }
 
 // +kubebuilder:skipversion
+type ImagePullSecret struct {
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type JobDependency struct {
 	JobID *string `json:"jobID,omitempty"`
 }
@@ -457,6 +520,8 @@ type JobQueueDetail struct {
 
 	JobQueueName *string `json:"jobQueueName,omitempty"`
 
+	JobStateTimeLimitActions []*JobStateTimeLimitAction `json:"jobStateTimeLimitActions,omitempty"`
+
 	Priority *int64 `json:"priority,omitempty"`
 
 	SchedulingPolicyARN *string `json:"schedulingPolicyARN,omitempty"`
@@ -468,6 +533,17 @@ type JobQueueDetail struct {
 	StatusReason *string `json:"statusReason,omitempty"`
 
 	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type JobStateTimeLimitAction struct {
+	Action *string `json:"action,omitempty"`
+
+	MaxTimeSeconds *int64 `json:"maxTimeSeconds,omitempty"`
+
+	Reason *string `json:"reason,omitempty"`
+
+	State *string `json:"state,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -570,12 +646,21 @@ type NodePropertiesSummary struct {
 
 // +kubebuilder:skipversion
 type NodePropertyOverride struct {
+	InstanceTypes []*string `json:"instanceTypes,omitempty"`
+
 	TargetNodes *string `json:"targetNodes,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type NodeRangeProperty struct {
+	InstanceTypes []*string `json:"instanceTypes,omitempty"`
+
 	TargetNodes *string `json:"targetNodes,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RepositoryCredentials struct {
+	CredentialsParameter *string `json:"credentialsParameter,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -619,6 +704,60 @@ type Secret struct {
 // +kubebuilder:skipversion
 type ShareAttributes struct {
 	ShareIdentifier *string `json:"shareIdentifier,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TaskContainerDependency struct {
+	Condition *string `json:"condition,omitempty"`
+
+	ContainerName *string `json:"containerName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TaskContainerDetails struct {
+	Command []*string `json:"command,omitempty"`
+
+	Essential *bool `json:"essential,omitempty"`
+
+	ExitCode *int64 `json:"exitCode,omitempty"`
+
+	Image *string `json:"image,omitempty"`
+
+	LogStreamName *string `json:"logStreamName,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Privileged *bool `json:"privileged,omitempty"`
+
+	ReadonlyRootFilesystem *bool `json:"readonlyRootFilesystem,omitempty"`
+
+	Reason *string `json:"reason,omitempty"`
+
+	User *string `json:"user,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TaskContainerOverrides struct {
+	Command []*string `json:"command,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type TaskContainerProperties struct {
+	Command []*string `json:"command,omitempty"`
+
+	Essential *bool `json:"essential,omitempty"`
+
+	Image *string `json:"image,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Privileged *bool `json:"privileged,omitempty"`
+
+	ReadonlyRootFilesystem *bool `json:"readonlyRootFilesystem,omitempty"`
+
+	User *string `json:"user,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -186,6 +186,10 @@ func isUpToDate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.GetFunc
 		return false, "", nil
 	}
 
+	if !isUpToDateLoggingConfig(cr, obj) {
+		return false, "", nil
+	}
+
 	// The function's layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html).
 	// The generator is creating layers with type of
 	// 	Layers []*string `json:"layers,omitempty"`
@@ -343,6 +347,37 @@ func isUpToDateSecurityGroupIDs(cr *svcapitypes.Function, obj *svcsdk.GetFunctio
 	})
 
 	return cmp.Equal(securityGroupIDs, awsSecurityGroupIDs, sortCmp, cmpopts.EquateEmpty())
+}
+
+func isUpToDateLoggingConfig(cr *svcapitypes.Function, obj *svcsdk.GetFunctionOutput) bool {
+	if obj.Configuration == nil {
+		return false
+	}
+	desiredLogCfg := cr.Spec.ForProvider.LoggingConfig
+	actualLogCfg := obj.Configuration.LoggingConfig
+
+	if desiredLogCfg != nil {
+		if actualLogCfg == nil {
+			return false
+		}
+		// AWS defaults these LogCfg fields.
+		// Therefore, we only check a field if the user explicitly manages it.
+		return isUpToDateLoggingConfigString(desiredLogCfg.ApplicationLogLevel, actualLogCfg.ApplicationLogLevel) &&
+			isUpToDateLoggingConfigString(desiredLogCfg.LogFormat, actualLogCfg.LogFormat) &&
+			isUpToDateLoggingConfigString(desiredLogCfg.LogGroup, actualLogCfg.LogGroup) &&
+			isUpToDateLoggingConfigString(desiredLogCfg.SystemLogLevel, actualLogCfg.SystemLogLevel)
+	}
+
+	return true
+}
+
+// isUpToDateLoggingConfigString checks if the desired and actual logging config strings are equal,
+// considering a nil desired as equal/isUpToDate.
+func isUpToDateLoggingConfigString(desired, actual *string) bool {
+	if desired != nil && aws.StringValue(desired) != aws.StringValue(actual) {
+		return false
+	}
+	return true
 }
 
 type updater struct {
@@ -536,6 +571,22 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 		}
 		res.SetLayers(f10)
 	}
+	if cr.Spec.ForProvider.LoggingConfig != nil {
+		f11 := &svcsdk.LoggingConfig{}
+		if cr.Spec.ForProvider.LoggingConfig.ApplicationLogLevel != nil {
+			f11.SetApplicationLogLevel(*cr.Spec.ForProvider.LoggingConfig.ApplicationLogLevel)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.LogFormat != nil {
+			f11.SetLogFormat(*cr.Spec.ForProvider.LoggingConfig.LogFormat)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.LogGroup != nil {
+			f11.SetLogGroup(*cr.Spec.ForProvider.LoggingConfig.LogGroup)
+		}
+		if cr.Spec.ForProvider.LoggingConfig.SystemLogLevel != nil {
+			f11.SetSystemLogLevel(*cr.Spec.ForProvider.LoggingConfig.SystemLogLevel)
+		}
+		res.SetLoggingConfig(f11)
+	}
 	if cr.Spec.ForProvider.MemorySize != nil {
 		res.SetMemorySize(*cr.Spec.ForProvider.MemorySize)
 	}
@@ -622,6 +673,14 @@ func generateFuntionObservation(resp *svcsdk.GetFunctionOutput) svcapitypes.Func
 				EntryPoint:       resp.Configuration.ImageConfigResponse.ImageConfig.EntryPoint,
 				WorkingDirectory: resp.Configuration.ImageConfigResponse.ImageConfig.WorkingDirectory,
 			}
+		}
+	}
+	if resp.Configuration.LoggingConfig != nil {
+		o.LoggingConfig = &svcapitypes.LoggingConfig{
+			ApplicationLogLevel: resp.Configuration.LoggingConfig.ApplicationLogLevel,
+			LogFormat:           resp.Configuration.LoggingConfig.LogFormat,
+			LogGroup:            resp.Configuration.LoggingConfig.LogGroup,
+			SystemLogLevel:      resp.Configuration.LoggingConfig.SystemLogLevel,
 		}
 	}
 	return o

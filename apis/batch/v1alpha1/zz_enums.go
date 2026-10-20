@@ -130,6 +130,18 @@ const (
 	JobDefinitionType_multinode JobDefinitionType = "multinode"
 )
 
+type JobStateTimeLimitActionsAction string
+
+const (
+	JobStateTimeLimitActionsAction_CANCEL JobStateTimeLimitActionsAction = "CANCEL"
+)
+
+type JobStateTimeLimitActionsState string
+
+const (
+	JobStateTimeLimitActionsState_RUNNABLE JobStateTimeLimitActionsState = "RUNNABLE"
+)
+
 type JobStatus string
 
 const (

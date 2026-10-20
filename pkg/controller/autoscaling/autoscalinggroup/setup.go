@@ -105,6 +105,15 @@ func isUpToDate(_ context.Context, obj *svcapitypes.AutoScalingGroup, obs *svcsd
 	if !cmp.Equal(in.HealthCheckType, asg.HealthCheckType) {
 		return false, "spec.forProvider.healthCheckType", nil
 	}
+	// InstanceMaintenancePolicy can be updated
+	if in.InstanceMaintenancePolicy != nil && asg.InstanceMaintenancePolicy != nil {
+		if !cmp.Equal(in.InstanceMaintenancePolicy.MaxHealthyPercentage, asg.InstanceMaintenancePolicy.MaxHealthyPercentage) {
+			return false, "spec.forProvider.instanceMaintenancePolicy.maxHealthyPercentage", nil
+		}
+		if !cmp.Equal(in.InstanceMaintenancePolicy.MinHealthyPercentage, asg.InstanceMaintenancePolicy.MinHealthyPercentage) {
+			return false, "spec.forProvider.instanceMaintenancePolicy.minHealthyPercentage", nil
+		}
+	}
 	// MaxInstanceLifetime can be updated
 	if !cmp.Equal(in.MaxInstanceLifetime, asg.MaxInstanceLifetime) {
 		return false, "spec.forProvider.maxInstanceLifetime", nil

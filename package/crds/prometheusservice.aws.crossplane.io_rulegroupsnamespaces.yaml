@@ -76,11 +76,17 @@ spec:
                   of RuleGroupsNamespace
                 properties:
                   data:
-                    description: The namespace data that define the rule groups.
+                    description: |-
+                      The rules file to use in the new namespace.
+
+                      Contains the base64-encoded version of the YAML rules file.
+
+                      For details about the rule groups namespace structure, see RuleGroupsNamespaceData
+                      (https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-RuleGroupsNamespaceData.html).
                     format: byte
                     type: string
                   name:
-                    description: The rule groups namespace name.
+                    description: The name for the new rule groups namespace.
                     type: string
                   region:
                     description: Region is which region the RuleGroupsNamespace will
@@ -89,8 +95,8 @@ spec:
                   tags:
                     additionalProperties:
                       type: string
-                    description: Optional, user-provided tags for this rule groups
-                      namespace.
+                    description: The list of tag keys and values to associate with
+                      the rule groups namespace.
                     type: object
                   workspaceId:
                     description: workspaceID is the ID for the Workspace.
@@ -353,11 +359,12 @@ spec:
                   of RuleGroupsNamespace
                 properties:
                   arn:
-                    description: The Amazon Resource Name (ARN) of this rule groups
+                    description: The Amazon Resource Name (ARN) of the new rule groups
                       namespace.
                     type: string
                   status:
-                    description: The status of rule groups namespace.
+                    description: A structure that returns the current status of the
+                      rule groups namespace.
                     properties:
                       statusCode:
                         description: State of a namespace.

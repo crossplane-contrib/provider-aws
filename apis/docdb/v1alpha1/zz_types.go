@@ -124,6 +124,8 @@ type DBClusterSnapshot struct {
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 
+	StorageType *string `json:"storageType,omitempty"`
+
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
@@ -200,6 +202,8 @@ type DBCluster_SDK struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
 }
@@ -284,6 +288,10 @@ type DBInstance_SDK struct {
 	// One or more modified settings for an instance. These modified settings have
 	// been requested, but haven't been applied yet.
 	PendingModifiedValues *PendingModifiedValues `json:"pendingModifiedValues,omitempty"`
+
+	PerformanceInsightsEnabled *bool `json:"performanceInsightsEnabled,omitempty"`
+
+	PerformanceInsightsKMSKeyID *string `json:"performanceInsightsKMSKeyID,omitempty"`
 
 	PreferredBackupWindow *string `json:"preferredBackupWindow,omitempty"`
 
@@ -412,6 +420,8 @@ type OrderableDBInstanceOption struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	LicenseModel *string `json:"licenseModel,omitempty"`
+
+	StorageType *string `json:"storageType,omitempty"`
 
 	VPC *bool `json:"vpc,omitempty"`
 }

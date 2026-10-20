@@ -2616,6 +2616,56 @@ func (mr *MockTransferAPIMockRecorder) SendWorkflowStepStateWithContext(arg0, ar
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendWorkflowStepStateWithContext", reflect.TypeOf((*MockTransferAPI)(nil).SendWorkflowStepStateWithContext), varargs...)
 }
 
+// StartDirectoryListing mocks base method.
+func (m *MockTransferAPI) StartDirectoryListing(arg0 *transfer.StartDirectoryListingInput) (*transfer.StartDirectoryListingOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartDirectoryListing", arg0)
+	ret0, _ := ret[0].(*transfer.StartDirectoryListingOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StartDirectoryListing indicates an expected call of StartDirectoryListing.
+func (mr *MockTransferAPIMockRecorder) StartDirectoryListing(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDirectoryListing", reflect.TypeOf((*MockTransferAPI)(nil).StartDirectoryListing), arg0)
+}
+
+// StartDirectoryListingRequest mocks base method.
+func (m *MockTransferAPI) StartDirectoryListingRequest(arg0 *transfer.StartDirectoryListingInput) (*request.Request, *transfer.StartDirectoryListingOutput) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartDirectoryListingRequest", arg0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*transfer.StartDirectoryListingOutput)
+	return ret0, ret1
+}
+
+// StartDirectoryListingRequest indicates an expected call of StartDirectoryListingRequest.
+func (mr *MockTransferAPIMockRecorder) StartDirectoryListingRequest(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDirectoryListingRequest", reflect.TypeOf((*MockTransferAPI)(nil).StartDirectoryListingRequest), arg0)
+}
+
+// StartDirectoryListingWithContext mocks base method.
+func (m *MockTransferAPI) StartDirectoryListingWithContext(arg0 context.Context, arg1 *transfer.StartDirectoryListingInput, arg2 ...request.Option) (*transfer.StartDirectoryListingOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "StartDirectoryListingWithContext", varargs...)
+	ret0, _ := ret[0].(*transfer.StartDirectoryListingOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// StartDirectoryListingWithContext indicates an expected call of StartDirectoryListingWithContext.
+func (mr *MockTransferAPIMockRecorder) StartDirectoryListingWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartDirectoryListingWithContext", reflect.TypeOf((*MockTransferAPI)(nil).StartDirectoryListingWithContext), varargs...)
+}
+
 // StartFileTransfer mocks base method.
 func (m *MockTransferAPI) StartFileTransfer(arg0 *transfer.StartFileTransferInput) (*transfer.StartFileTransferOutput, error) {
 	m.ctrl.T.Helper()

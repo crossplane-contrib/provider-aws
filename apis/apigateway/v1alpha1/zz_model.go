@@ -38,7 +38,7 @@ type ModelParameters struct {
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
 	// The schema for the model. For application/json models, this should be JSON
-	// schema draft 4 model.
+	// schema draft 4 model. The maximum size of the model is 400 KB.
 	Schema                *string `json:"schema,omitempty"`
 	CustomModelParameters `json:",inline"`
 }

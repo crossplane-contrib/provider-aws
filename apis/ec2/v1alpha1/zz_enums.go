@@ -18,6 +18,28 @@ limitations under the License.
 
 package v1alpha1
 
+type ASNAssociationState string
+
+const (
+	ASNAssociationState_disassociated          ASNAssociationState = "disassociated"
+	ASNAssociationState_failed_disassociation  ASNAssociationState = "failed-disassociation"
+	ASNAssociationState_failed_association     ASNAssociationState = "failed-association"
+	ASNAssociationState_pending_disassociation ASNAssociationState = "pending-disassociation"
+	ASNAssociationState_pending_association    ASNAssociationState = "pending-association"
+	ASNAssociationState_associated             ASNAssociationState = "associated"
+)
+
+type ASNState string
+
+const (
+	ASNState_deprovisioned       ASNState = "deprovisioned"
+	ASNState_failed_deprovision  ASNState = "failed-deprovision"
+	ASNState_failed_provision    ASNState = "failed-provision"
+	ASNState_pending_deprovision ASNState = "pending-deprovision"
+	ASNState_pending_provision   ASNState = "pending-provision"
+	ASNState_provisioned         ASNState = "provisioned"
+)
+
 type AcceleratorManufacturer string
 
 const (
@@ -25,6 +47,7 @@ const (
 	AcceleratorManufacturer_amd                 AcceleratorManufacturer = "amd"
 	AcceleratorManufacturer_nvidia              AcceleratorManufacturer = "nvidia"
 	AcceleratorManufacturer_xilinx              AcceleratorManufacturer = "xilinx"
+	AcceleratorManufacturer_habana              AcceleratorManufacturer = "habana"
 )
 
 type AcceleratorName string
@@ -39,6 +62,9 @@ const (
 	AcceleratorName_t4              AcceleratorName = "t4"
 	AcceleratorName_vu9p            AcceleratorName = "vu9p"
 	AcceleratorName_v100            AcceleratorName = "v100"
+	AcceleratorName_a10g            AcceleratorName = "a10g"
+	AcceleratorName_h100            AcceleratorName = "h100"
+	AcceleratorName_t4g             AcceleratorName = "t4g"
 )
 
 type AcceleratorType string
@@ -230,6 +256,7 @@ const (
 	AvailabilityZoneState_information AvailabilityZoneState = "information"
 	AvailabilityZoneState_impaired    AvailabilityZoneState = "impaired"
 	AvailabilityZoneState_unavailable AvailabilityZoneState = "unavailable"
+	AvailabilityZoneState_constrained AvailabilityZoneState = "constrained"
 )
 
 type BGPStatus string
@@ -550,6 +577,22 @@ const (
 	DatafeedSubscriptionState_Inactive DatafeedSubscriptionState = "Inactive"
 )
 
+type DefaultInstanceMetadataEndpointState string
+
+const (
+	DefaultInstanceMetadataEndpointState_disabled      DefaultInstanceMetadataEndpointState = "disabled"
+	DefaultInstanceMetadataEndpointState_enabled       DefaultInstanceMetadataEndpointState = "enabled"
+	DefaultInstanceMetadataEndpointState_no_preference DefaultInstanceMetadataEndpointState = "no-preference"
+)
+
+type DefaultInstanceMetadataTagsState string
+
+const (
+	DefaultInstanceMetadataTagsState_disabled      DefaultInstanceMetadataTagsState = "disabled"
+	DefaultInstanceMetadataTagsState_enabled       DefaultInstanceMetadataTagsState = "enabled"
+	DefaultInstanceMetadataTagsState_no_preference DefaultInstanceMetadataTagsState = "no-preference"
+)
+
 type DefaultRouteTableAssociationValue string
 
 const (
@@ -601,6 +644,7 @@ type DeviceTrustProviderType string
 const (
 	DeviceTrustProviderType_jamf        DeviceTrustProviderType = "jamf"
 	DeviceTrustProviderType_crowdstrike DeviceTrustProviderType = "crowdstrike"
+	DeviceTrustProviderType_jumpcloud   DeviceTrustProviderType = "jumpcloud"
 )
 
 type DeviceType string
@@ -679,6 +723,20 @@ const (
 	ENASupport_unsupported ENASupport = "unsupported"
 	ENASupport_supported   ENASupport = "supported"
 	ENASupport_required    ENASupport = "required"
+)
+
+type EkPubKeyFormat string
+
+const (
+	EkPubKeyFormat_der  EkPubKeyFormat = "der"
+	EkPubKeyFormat_tpmt EkPubKeyFormat = "tpmt"
+)
+
+type EkPubKeyType string
+
+const (
+	EkPubKeyType_rsa_2048     EkPubKeyType = "rsa-2048"
+	EkPubKeyType_ecc_sec_p384 EkPubKeyType = "ecc-sec-p384"
 )
 
 type ElasticGPUState string
@@ -1020,6 +1078,7 @@ const (
 	IPAMPoolAllocationResourceType_vpc                  IPAMPoolAllocationResourceType = "vpc"
 	IPAMPoolAllocationResourceType_ec2_public_ipv4_pool IPAMPoolAllocationResourceType = "ec2-public-ipv4-pool"
 	IPAMPoolAllocationResourceType_custom               IPAMPoolAllocationResourceType = "custom"
+	IPAMPoolAllocationResourceType_subnet               IPAMPoolAllocationResourceType = "subnet"
 )
 
 type IPAMPoolCIDRFailureCode string
@@ -1049,6 +1108,12 @@ const (
 	IPAMPoolPublicIPSource_byoip  IPAMPoolPublicIPSource = "byoip"
 )
 
+type IPAMPoolSourceResourceType string
+
+const (
+	IPAMPoolSourceResourceType_vpc IPAMPoolSourceResourceType = "vpc"
+)
+
 type IPAMPoolState string
 
 const (
@@ -1064,6 +1129,37 @@ const (
 	IPAMPoolState_isolate_in_progress IPAMPoolState = "isolate-in-progress"
 	IPAMPoolState_isolate_complete    IPAMPoolState = "isolate-complete"
 	IPAMPoolState_restore_in_progress IPAMPoolState = "restore-in-progress"
+)
+
+type IPAMPublicAddressAWSService string
+
+const (
+	IPAMPublicAddressAWSService_nat_gateway                 IPAMPublicAddressAWSService = "nat-gateway"
+	IPAMPublicAddressAWSService_database_migration_service  IPAMPublicAddressAWSService = "database-migration-service"
+	IPAMPublicAddressAWSService_redshift                    IPAMPublicAddressAWSService = "redshift"
+	IPAMPublicAddressAWSService_elastic_container_service   IPAMPublicAddressAWSService = "elastic-container-service"
+	IPAMPublicAddressAWSService_relational_database_service IPAMPublicAddressAWSService = "relational-database-service"
+	IPAMPublicAddressAWSService_site_to_site_vpn            IPAMPublicAddressAWSService = "site-to-site-vpn"
+	IPAMPublicAddressAWSService_load_balancer               IPAMPublicAddressAWSService = "load-balancer"
+	IPAMPublicAddressAWSService_global_accelerator          IPAMPublicAddressAWSService = "global-accelerator"
+	IPAMPublicAddressAWSService_other                       IPAMPublicAddressAWSService = "other"
+)
+
+type IPAMPublicAddressAssociationStatus string
+
+const (
+	IPAMPublicAddressAssociationStatus_associated    IPAMPublicAddressAssociationStatus = "associated"
+	IPAMPublicAddressAssociationStatus_disassociated IPAMPublicAddressAssociationStatus = "disassociated"
+)
+
+type IPAMPublicAddressType string
+
+const (
+	IPAMPublicAddressType_service_managed_ip    IPAMPublicAddressType = "service-managed-ip"
+	IPAMPublicAddressType_service_managed_byoip IPAMPublicAddressType = "service-managed-byoip"
+	IPAMPublicAddressType_amazon_owned_eip      IPAMPublicAddressType = "amazon-owned-eip"
+	IPAMPublicAddressType_byoip                 IPAMPublicAddressType = "byoip"
+	IPAMPublicAddressType_ec2_public_ip         IPAMPublicAddressType = "ec2-public-ip"
 )
 
 type IPAMResourceDiscoveryAssociationState string
@@ -1105,6 +1201,7 @@ const (
 	IPAMResourceType_eip              IPAMResourceType = "eip"
 	IPAMResourceType_public_ipv4_pool IPAMResourceType = "public-ipv4-pool"
 	IPAMResourceType_ipv6_pool        IPAMResourceType = "ipv6-pool"
+	IPAMResourceType_eni              IPAMResourceType = "eni"
 )
 
 type IPAMScopeState string
@@ -1148,6 +1245,13 @@ const (
 	IPAMState_restore_in_progress IPAMState = "restore-in-progress"
 )
 
+type IPAMTier string
+
+const (
+	IPAMTier_free     IPAMTier = "free"
+	IPAMTier_advanced IPAMTier = "advanced"
+)
+
 type IPAddressType string
 
 const (
@@ -1173,18 +1277,19 @@ const (
 type ImageAttributeName string
 
 const (
-	ImageAttributeName_description        ImageAttributeName = "description"
-	ImageAttributeName_kernel             ImageAttributeName = "kernel"
-	ImageAttributeName_ramdisk            ImageAttributeName = "ramdisk"
-	ImageAttributeName_launchPermission   ImageAttributeName = "launchPermission"
-	ImageAttributeName_productCodes       ImageAttributeName = "productCodes"
-	ImageAttributeName_blockDeviceMapping ImageAttributeName = "blockDeviceMapping"
-	ImageAttributeName_sriovNetSupport    ImageAttributeName = "sriovNetSupport"
-	ImageAttributeName_bootMode           ImageAttributeName = "bootMode"
-	ImageAttributeName_tpmSupport         ImageAttributeName = "tpmSupport"
-	ImageAttributeName_uefiData           ImageAttributeName = "uefiData"
-	ImageAttributeName_lastLaunchedTime   ImageAttributeName = "lastLaunchedTime"
-	ImageAttributeName_imdsSupport        ImageAttributeName = "imdsSupport"
+	ImageAttributeName_description              ImageAttributeName = "description"
+	ImageAttributeName_kernel                   ImageAttributeName = "kernel"
+	ImageAttributeName_ramdisk                  ImageAttributeName = "ramdisk"
+	ImageAttributeName_launchPermission         ImageAttributeName = "launchPermission"
+	ImageAttributeName_productCodes             ImageAttributeName = "productCodes"
+	ImageAttributeName_blockDeviceMapping       ImageAttributeName = "blockDeviceMapping"
+	ImageAttributeName_sriovNetSupport          ImageAttributeName = "sriovNetSupport"
+	ImageAttributeName_bootMode                 ImageAttributeName = "bootMode"
+	ImageAttributeName_tpmSupport               ImageAttributeName = "tpmSupport"
+	ImageAttributeName_uefiData                 ImageAttributeName = "uefiData"
+	ImageAttributeName_lastLaunchedTime         ImageAttributeName = "lastLaunchedTime"
+	ImageAttributeName_imdsSupport              ImageAttributeName = "imdsSupport"
+	ImageAttributeName_deregistrationProtection ImageAttributeName = "deregistrationProtection"
 )
 
 type ImageBlockPublicAccessDisabledState string
@@ -2134,6 +2239,31 @@ const (
 	InstanceType_r7i_16xlarge      InstanceType = "r7i.16xlarge"
 	InstanceType_r7i_24xlarge      InstanceType = "r7i.24xlarge"
 	InstanceType_r7i_48xlarge      InstanceType = "r7i.48xlarge"
+	InstanceType_dl2q_24xlarge     InstanceType = "dl2q.24xlarge"
+	InstanceType_mac2_m2_metal     InstanceType = "mac2-m2.metal"
+	InstanceType_i4i_12xlarge      InstanceType = "i4i.12xlarge"
+	InstanceType_i4i_24xlarge      InstanceType = "i4i.24xlarge"
+	InstanceType_c7i_metal_24xl    InstanceType = "c7i.metal-24xl"
+	InstanceType_c7i_metal_48xl    InstanceType = "c7i.metal-48xl"
+	InstanceType_m7i_metal_24xl    InstanceType = "m7i.metal-24xl"
+	InstanceType_m7i_metal_48xl    InstanceType = "m7i.metal-48xl"
+	InstanceType_r7i_metal_24xl    InstanceType = "r7i.metal-24xl"
+	InstanceType_r7i_metal_48xl    InstanceType = "r7i.metal-48xl"
+	InstanceType_r7iz_metal_16xl   InstanceType = "r7iz.metal-16xl"
+	InstanceType_r7iz_metal_32xl   InstanceType = "r7iz.metal-32xl"
+	InstanceType_c7gd_metal        InstanceType = "c7gd.metal"
+	InstanceType_m7gd_metal        InstanceType = "m7gd.metal"
+	InstanceType_r7gd_metal        InstanceType = "r7gd.metal"
+	InstanceType_g6_xlarge         InstanceType = "g6.xlarge"
+	InstanceType_g6_2xlarge        InstanceType = "g6.2xlarge"
+	InstanceType_g6_4xlarge        InstanceType = "g6.4xlarge"
+	InstanceType_g6_8xlarge        InstanceType = "g6.8xlarge"
+	InstanceType_g6_12xlarge       InstanceType = "g6.12xlarge"
+	InstanceType_g6_16xlarge       InstanceType = "g6.16xlarge"
+	InstanceType_g6_24xlarge       InstanceType = "g6.24xlarge"
+	InstanceType_g6_48xlarge       InstanceType = "g6.48xlarge"
+	InstanceType_gr6_4xlarge       InstanceType = "gr6.4xlarge"
+	InstanceType_gr6_8xlarge       InstanceType = "gr6.8xlarge"
 )
 
 type InstanceTypeHypervisor string
@@ -2290,6 +2420,22 @@ const (
 	LocationType_outpost              LocationType = "outpost"
 )
 
+type LockMode string
+
+const (
+	LockMode_compliance LockMode = "compliance"
+	LockMode_governance LockMode = "governance"
+)
+
+type LockState string
+
+const (
+	LockState_compliance         LockState = "compliance"
+	LockState_governance         LockState = "governance"
+	LockState_compliance_cooloff LockState = "compliance-cooloff"
+	LockState_expired            LockState = "expired"
+)
+
 type LogDestinationType string
 
 const (
@@ -2310,6 +2456,14 @@ type MembershipType string
 const (
 	MembershipType_static MembershipType = "static"
 	MembershipType_igmp   MembershipType = "igmp"
+)
+
+type MetadataDefaultHTTPTokensState string
+
+const (
+	MetadataDefaultHTTPTokensState_optional      MetadataDefaultHTTPTokensState = "optional"
+	MetadataDefaultHTTPTokensState_required      MetadataDefaultHTTPTokensState = "required"
+	MetadataDefaultHTTPTokensState_no_preference MetadataDefaultHTTPTokensState = "no-preference"
 )
 
 type MetricType string
@@ -2372,10 +2526,11 @@ const (
 type NetworkInterfaceAttribute string
 
 const (
-	NetworkInterfaceAttribute_description     NetworkInterfaceAttribute = "description"
-	NetworkInterfaceAttribute_groupSet        NetworkInterfaceAttribute = "groupSet"
-	NetworkInterfaceAttribute_sourceDestCheck NetworkInterfaceAttribute = "sourceDestCheck"
-	NetworkInterfaceAttribute_attachment      NetworkInterfaceAttribute = "attachment"
+	NetworkInterfaceAttribute_description              NetworkInterfaceAttribute = "description"
+	NetworkInterfaceAttribute_groupSet                 NetworkInterfaceAttribute = "groupSet"
+	NetworkInterfaceAttribute_sourceDestCheck          NetworkInterfaceAttribute = "sourceDestCheck"
+	NetworkInterfaceAttribute_attachment               NetworkInterfaceAttribute = "attachment"
+	NetworkInterfaceAttribute_associatePublicIpAddress NetworkInterfaceAttribute = "associatePublicIpAddress"
 )
 
 type NetworkInterfaceCreationType string
@@ -2511,6 +2666,13 @@ type PermissionGroup string
 
 const (
 	PermissionGroup_all PermissionGroup = "all"
+)
+
+type PhcSupport string
+
+const (
+	PhcSupport_unsupported PhcSupport = "unsupported"
+	PhcSupport_supported   PhcSupport = "supported"
 )
 
 type PlacementGroupState string
@@ -2823,6 +2985,13 @@ const (
 	Scope_Region            Scope = "Region"
 )
 
+type SecurityGroupReferencingSupportValue string
+
+const (
+	SecurityGroupReferencingSupportValue_enable  SecurityGroupReferencingSupportValue = "enable"
+	SecurityGroupReferencingSupportValue_disable SecurityGroupReferencingSupportValue = "disable"
+)
+
 type SelfServicePortal string
 
 const (
@@ -3007,8 +3176,9 @@ const (
 type SubnetState string
 
 const (
-	SubnetState_pending   SubnetState = "pending"
-	SubnetState_available SubnetState = "available"
+	SubnetState_pending     SubnetState = "pending"
+	SubnetState_available   SubnetState = "available"
+	SubnetState_unavailable SubnetState = "unavailable"
 )
 
 type SummaryStatus string

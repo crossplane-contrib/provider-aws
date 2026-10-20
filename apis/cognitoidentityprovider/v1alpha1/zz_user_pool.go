@@ -149,8 +149,9 @@ type UserPoolSpec struct {
 type UserPoolObservation struct {
 	// The Amazon Resource Name (ARN) for the user pool.
 	ARN *string `json:"arn,omitempty"`
-	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-	// format, when the item was created.
+	// The date and time when the item was created. Amazon Cognito returns this
+	// timestamp in UNIX epoch time format. Your SDK might render the output in
+	// a human-readable format like ISO 8601 or a Java Date object.
 	CreationDate *metav1.Time `json:"creationDate,omitempty"`
 	// A custom domain name that you provide to Amazon Cognito. This parameter applies
 	// only if you use a custom domain to host the sign-up and sign-in pages for
@@ -168,8 +169,9 @@ type UserPoolObservation struct {
 	EstimatedNumberOfUsers *int64 `json:"estimatedNumberOfUsers,omitempty"`
 	// The ID of the user pool.
 	ID *string `json:"id,omitempty"`
-	// The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-	// format, when the item was modified.
+	// The date and time when the item was modified. Amazon Cognito returns this
+	// timestamp in UNIX epoch time format. Your SDK might render the output in
+	// a human-readable format like ISO 8601 or a Java Date object.
 	LastModifiedDate *metav1.Time `json:"lastModifiedDate,omitempty"`
 	// The name of the user pool.
 	Name *string `json:"name,omitempty"`
@@ -202,7 +204,7 @@ type UserPoolObservation struct {
 	// To learn how to move your Amazon Web Services account out of the sandbox,
 	// see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html).
 	SmsConfigurationFailure *string `json:"smsConfigurationFailure,omitempty"`
-	// The status of a user pool.
+	// This parameter is no longer used.
 	Status *string `json:"status,omitempty"`
 
 	CustomUserPoolObservation `json:",inline"`

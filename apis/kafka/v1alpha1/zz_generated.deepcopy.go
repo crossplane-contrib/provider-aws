@@ -408,6 +408,11 @@ func (in *ClusterInfo) DeepCopyInto(out *ClusterInfo) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CustomerActionStatus != nil {
+		in, out := &in.CustomerActionStatus, &out.CustomerActionStatus
+		*out = new(string)
+		**out = **in
+	}
 	if in.EncryptionInfo != nil {
 		in, out := &in.EncryptionInfo, &out.EncryptionInfo
 		*out = new(EncryptionInfo)
@@ -2084,6 +2089,11 @@ func (in *Provisioned) DeepCopyInto(out *Provisioned) {
 		in, out := &in.CurrentBrokerSoftwareInfo, &out.CurrentBrokerSoftwareInfo
 		*out = new(BrokerSoftwareInfo)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.CustomerActionStatus != nil {
+		in, out := &in.CustomerActionStatus, &out.CustomerActionStatus
+		*out = new(string)
+		**out = **in
 	}
 	if in.EncryptionInfo != nil {
 		in, out := &in.EncryptionInfo, &out.EncryptionInfo

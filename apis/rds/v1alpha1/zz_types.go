@@ -101,6 +101,14 @@ type ClusterPendingModifiedValues struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+	// Returns the details of the DB instance’s server certificate.
+	//
+	// For more information, see Using SSL/TLS to encrypt a connection to a DB instance
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
+	// in the Amazon RDS User Guide and Using SSL/TLS to encrypt a connection to
+	// a DB cluster (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.SSL.html)
+	// in the Amazon Aurora User Guide.
+	CertificateDetails *CertificateDetails `json:"certificateDetails,omitempty"`
 
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 
@@ -144,6 +152,13 @@ type ConnectionPoolConfigurationInfo struct {
 	MaxIdleConnectionsPercent *int64 `json:"maxIdleConnectionsPercent,omitempty"`
 
 	SessionPinningFilters []*string `json:"sessionPinningFilters,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ContextAttribute struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -196,6 +211,8 @@ type DBClusterAutomatedBackup struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
 
@@ -309,6 +326,8 @@ type DBClusterSnapshot struct {
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 
+	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
+
 	StorageType *string `json:"storageType,omitempty"`
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.
@@ -325,6 +344,17 @@ type DBClusterSnapshotAttribute struct {
 // +kubebuilder:skipversion
 type DBClusterSnapshotAttributesResult struct {
 	DBClusterSnapshotIdentifier *string `json:"dbClusterSnapshotIdentifier,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DBClusterStatusInfo struct {
+	Message *string `json:"message,omitempty"`
+
+	Normal *bool `json:"normal,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	StatusType *string `json:"statusType,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -356,6 +386,14 @@ type DBCluster_SDK struct {
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
 	Capacity *int64 `json:"capacity,omitempty"`
+	// Returns the details of the DB instance’s server certificate.
+	//
+	// For more information, see Using SSL/TLS to encrypt a connection to a DB instance
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
+	// in the Amazon RDS User Guide and Using SSL/TLS to encrypt a connection to
+	// a DB cluster (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.SSL.html)
+	// in the Amazon Aurora User Guide.
+	CertificateDetails *CertificateDetails `json:"certificateDetails,omitempty"`
 
 	CharacterSetName *string `json:"characterSetName,omitempty"`
 
@@ -403,6 +441,8 @@ type DBCluster_SDK struct {
 
 	Engine *string `json:"engine,omitempty"`
 
+	EngineLifecycleSupport *string `json:"engineLifecycleSupport,omitempty"`
+
 	EngineMode *string `json:"engineMode,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
@@ -424,6 +464,8 @@ type DBCluster_SDK struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
+	// Contains details for Aurora Limitless Database.
+	LimitlessDatabase *LimitlessDatabase `json:"limitlessDatabase,omitempty"`
 
 	LocalWriteForwardingStatus *string `json:"localWriteForwardingStatus,omitempty"`
 	// Contains the secret managed by RDS in Amazon Web Services Secrets Manager
@@ -486,7 +528,11 @@ type DBCluster_SDK struct {
 
 	Status *string `json:"status,omitempty"`
 
+	StatusInfos []*DBClusterStatusInfo `json:"statusInfos,omitempty"`
+
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+
+	StorageThroughput *int64 `json:"storageThroughput,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
@@ -535,6 +581,8 @@ type DBEngineVersion struct {
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
 	SupportsIntegrations *bool `json:"supportsIntegrations,omitempty"`
+
+	SupportsLimitlessDatabase *bool `json:"supportsLimitlessDatabase,omitempty"`
 
 	SupportsLocalWriteForwarding *bool `json:"supportsLocalWriteForwarding,omitempty"`
 
@@ -737,6 +785,8 @@ type DBInstance_SDK struct {
 	Endpoint *Endpoint `json:"endpoint,omitempty"`
 
 	Engine *string `json:"engine,omitempty"`
+
+	EngineLifecycleSupport *string `json:"engineLifecycleSupport,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
@@ -948,6 +998,43 @@ type DBProxyTargetGroup struct {
 }
 
 // +kubebuilder:skipversion
+type DBRecommendation struct {
+	AdditionalInfo *string `json:"additionalInfo,omitempty"`
+
+	Category *string `json:"category,omitempty"`
+
+	CreatedTime *metav1.Time `json:"createdTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	Detection *string `json:"detection,omitempty"`
+
+	Impact *string `json:"impact,omitempty"`
+
+	Reason *string `json:"reason,omitempty"`
+
+	Recommendation *string `json:"recommendation,omitempty"`
+
+	RecommendationID *string `json:"recommendationID,omitempty"`
+
+	ResourceARN *string `json:"resourceARN,omitempty"`
+
+	Severity *string `json:"severity,omitempty"`
+
+	Source *string `json:"source,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	TypeDetection *string `json:"typeDetection,omitempty"`
+
+	TypeID *string `json:"typeID,omitempty"`
+
+	TypeRecommendation *string `json:"typeRecommendation,omitempty"`
+
+	UpdatedTime *metav1.Time `json:"updatedTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type DBSecurityGroup struct {
 	DBSecurityGroupARN *string `json:"dbSecurityGroupARN,omitempty"`
 
@@ -963,6 +1050,23 @@ type DBSecurityGroup struct {
 // +kubebuilder:skipversion
 type DBSecurityGroupMembership struct {
 	DBSecurityGroupName *string `json:"dbSecurityGroupName,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DBShardGroup struct {
+	ComputeRedundancy *int64 `json:"computeRedundancy,omitempty"`
+
+	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
+
+	DBShardGroupResourceID *string `json:"dbShardGroupResourceID,omitempty"`
+
+	Endpoint *string `json:"endpoint,omitempty"`
+
+	MaxACU *float64 `json:"maxACU,omitempty"`
+
+	PubliclyAccessible *bool `json:"publiclyAccessible,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 }
@@ -1103,6 +1207,13 @@ type DBSubnetGroup struct {
 // +kubebuilder:skipversion
 type DescribeDBLogFilesDetails struct {
 	LogFileName *string `json:"logFileName,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DocLink struct {
+	Text *string `json:"text,omitempty"`
+
+	URL *string `json:"url,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1258,6 +1369,8 @@ type GlobalCluster_SDK struct {
 
 	Engine *string `json:"engine,omitempty"`
 
+	EngineLifecycleSupport *string `json:"engineLifecycleSupport,omitempty"`
+
 	EngineVersion *string `json:"engineVersion,omitempty"`
 	// Contains the state of scheduled or in-process operations on a global cluster
 	// (Aurora global database). This data type is empty unless a switchover or
@@ -1302,12 +1415,31 @@ type IntegrationError struct {
 }
 
 // +kubebuilder:skipversion
+type LimitlessDatabase struct {
+	MinRequiredACU *float64 `json:"minRequiredACU,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type MasterUserSecret struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	SecretARN *string `json:"secretARN,omitempty"`
 
 	SecretStatus *string `json:"secretStatus,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type Metric struct {
+	Name *string `json:"name,omitempty"`
+
+	StatisticsDetails *string `json:"statisticsDetails,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type MetricReference struct {
+	Name *string `json:"name,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1629,6 +1761,29 @@ type PendingModifiedValues struct {
 }
 
 // +kubebuilder:skipversion
+type PerformanceInsightsMetricDimensionGroup struct {
+	Dimensions []*string `json:"dimensions,omitempty"`
+
+	Group *string `json:"group,omitempty"`
+
+	Limit *int64 `json:"limit,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PerformanceInsightsMetricQuery struct {
+	Metric *string `json:"metric,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type PerformanceIssueDetails struct {
+	Analysis *string `json:"analysis,omitempty"`
+
+	EndTime *metav1.Time `json:"endTime,omitempty"`
+
+	StartTime *metav1.Time `json:"startTime,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ProcessorFeature struct {
 	Name *string `json:"name,omitempty"`
 
@@ -1648,7 +1803,38 @@ type Range struct {
 type RdsCustomClusterConfiguration struct {
 	InterconnectSubnetID *string `json:"interconnectSubnetID,omitempty"`
 
+	ReplicaMode *string `json:"replicaMode,omitempty"`
+
 	TransitGatewayMulticastDomainID *string `json:"transitGatewayMulticastDomainID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecommendedAction struct {
+	ActionID *string `json:"actionID,omitempty"`
+
+	ApplyModes []*string `json:"applyModes,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	Operation *string `json:"operation,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	Title *string `json:"title,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecommendedActionParameter struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecommendedActionUpdate struct {
+	ActionID *string `json:"actionID,omitempty"`
+
+	Status *string `json:"status,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1857,6 +2043,8 @@ type UpgradeTarget struct {
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
 	SupportsIntegrations *bool `json:"supportsIntegrations,omitempty"`
+
+	SupportsLimitlessDatabase *bool `json:"supportsLimitlessDatabase,omitempty"`
 
 	SupportsLocalWriteForwarding *bool `json:"supportsLocalWriteForwarding,omitempty"`
 

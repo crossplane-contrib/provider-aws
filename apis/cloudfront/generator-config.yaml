@@ -11,6 +11,7 @@ ignore:
     - FieldLevelEncryptionConfig
     - Function
     - ContinuousDeploymentPolicy
+    - KeyValueStore
   field_paths:
     - Origins.Quantity
     - Aliases.Quantity

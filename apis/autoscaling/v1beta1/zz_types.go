@@ -157,6 +157,11 @@ type Group struct {
 	HealthCheckGracePeriod *int64 `json:"healthCheckGracePeriod,omitempty"`
 
 	HealthCheckType *string `json:"healthCheckType,omitempty"`
+	// Describes an instance maintenance policy.
+	//
+	// For more information, see Set instance maintenance policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-maintenance-policy.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
+	InstanceMaintenancePolicy *InstanceMaintenancePolicy `json:"instanceMaintenancePolicy,omitempty"`
 
 	Instances []*Instance `json:"instances,omitempty"`
 
@@ -262,6 +267,13 @@ type InstanceDetails struct {
 }
 
 // +kubebuilder:skipversion
+type InstanceMaintenancePolicy struct {
+	MaxHealthyPercentage *int64 `json:"maxHealthyPercentage,omitempty"`
+
+	MinHealthyPercentage *int64 `json:"minHealthyPercentage,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type InstanceRefresh struct {
 	AutoScalingGroupName *string `json:"autoScalingGroupName,omitempty"`
 
@@ -305,6 +317,8 @@ type InstanceRequirements struct {
 	LocalStorage *string `json:"localStorage,omitempty"`
 
 	LocalStorageTypes []*string `json:"localStorageTypes,omitempty"`
+
+	MaxSpotPriceAsPercentageOfOptimalOnDemandPrice *int64 `json:"maxSpotPriceAsPercentageOfOptimalOnDemandPrice,omitempty"`
 	// Specifies the minimum and maximum for the MemoryGiBPerVCpu object when you
 	// specify InstanceRequirements for an Auto Scaling group.
 	MemoryGiBPerVCPU *MemoryGiBPerVCPURequest `json:"memoryGiBPerVCPU,omitempty"`

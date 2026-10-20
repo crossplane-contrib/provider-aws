@@ -85,6 +85,15 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 		} else {
 			cr.Status.AtProvider.FileSystemID = nil
 		}
+		if elem.FileSystemProtection != nil {
+			f7 := &svcapitypes.FileSystemProtectionDescription{}
+			if elem.FileSystemProtection.ReplicationOverwriteProtection != nil {
+				f7.ReplicationOverwriteProtection = elem.FileSystemProtection.ReplicationOverwriteProtection
+			}
+			cr.Status.AtProvider.FileSystemProtection = f7
+		} else {
+			cr.Status.AtProvider.FileSystemProtection = nil
+		}
 		if elem.KmsKeyId != nil {
 			cr.Spec.ForProvider.KMSKeyID = elem.KmsKeyId
 		} else {
@@ -116,36 +125,39 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 			cr.Spec.ForProvider.PerformanceMode = nil
 		}
 		if elem.SizeInBytes != nil {
-			f13 := &svcapitypes.FileSystemSize{}
+			f14 := &svcapitypes.FileSystemSize{}
 			if elem.SizeInBytes.Timestamp != nil {
-				f13.Timestamp = &metav1.Time{*elem.SizeInBytes.Timestamp}
+				f14.Timestamp = &metav1.Time{*elem.SizeInBytes.Timestamp}
 			}
 			if elem.SizeInBytes.Value != nil {
-				f13.Value = elem.SizeInBytes.Value
+				f14.Value = elem.SizeInBytes.Value
+			}
+			if elem.SizeInBytes.ValueInArchive != nil {
+				f14.ValueInArchive = elem.SizeInBytes.ValueInArchive
 			}
 			if elem.SizeInBytes.ValueInIA != nil {
-				f13.ValueInIA = elem.SizeInBytes.ValueInIA
+				f14.ValueInIA = elem.SizeInBytes.ValueInIA
 			}
 			if elem.SizeInBytes.ValueInStandard != nil {
-				f13.ValueInStandard = elem.SizeInBytes.ValueInStandard
+				f14.ValueInStandard = elem.SizeInBytes.ValueInStandard
 			}
-			cr.Status.AtProvider.SizeInBytes = f13
+			cr.Status.AtProvider.SizeInBytes = f14
 		} else {
 			cr.Status.AtProvider.SizeInBytes = nil
 		}
 		if elem.Tags != nil {
-			f14 := []*svcapitypes.Tag{}
-			for _, f14iter := range elem.Tags {
-				f14elem := &svcapitypes.Tag{}
-				if f14iter.Key != nil {
-					f14elem.Key = f14iter.Key
+			f15 := []*svcapitypes.Tag{}
+			for _, f15iter := range elem.Tags {
+				f15elem := &svcapitypes.Tag{}
+				if f15iter.Key != nil {
+					f15elem.Key = f15iter.Key
 				}
-				if f14iter.Value != nil {
-					f14elem.Value = f14iter.Value
+				if f15iter.Value != nil {
+					f15elem.Value = f15iter.Value
 				}
-				f14 = append(f14, f14elem)
+				f15 = append(f15, f15elem)
 			}
-			cr.Spec.ForProvider.Tags = f14
+			cr.Spec.ForProvider.Tags = f15
 		} else {
 			cr.Spec.ForProvider.Tags = nil
 		}

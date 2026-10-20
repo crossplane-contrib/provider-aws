@@ -163,6 +163,10 @@ type CreateGlobalSecondaryIndexAction struct {
 	IndexName *string `json:"indexName,omitempty"`
 
 	KeySchema []*KeySchemaElement `json:"keySchema,omitempty"`
+	// Sets the maximum number of read and write units for the specified on-demand
+	// table. If you use this parameter, you must specify MaxReadRequestUnits, MaxWriteRequestUnits,
+	// or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Represents attributes that are copied (projected) from the table into an
 	// index. These are in addition to the primary key attributes and index key
 	// attributes, which are automatically projected.
@@ -186,6 +190,10 @@ type CreateReplicationGroupMemberAction struct {
 	GlobalSecondaryIndexes []*ReplicaGlobalSecondaryIndex `json:"globalSecondaryIndexes,omitempty"`
 
 	KMSMasterKeyID *string `json:"kmsMasterKeyID,omitempty"`
+	// Overrides the on-demand throughput settings for this replica table. If you
+	// don't specify a value for this parameter, it uses the source table's on-demand
+	// throughput settings.
+	OnDemandThroughputOverride *OnDemandThroughputOverride `json:"onDemandThroughputOverride,omitempty"`
 	// Replica-specific provisioned throughput settings. If not specified, uses
 	// the source table's provisioned throughput settings.
 	ProvisionedThroughputOverride *ProvisionedThroughputOverride `json:"provisionedThroughputOverride,omitempty"`
@@ -244,6 +252,10 @@ type GlobalSecondaryIndex struct {
 	IndexName *string `json:"indexName,omitempty"`
 
 	KeySchema []*KeySchemaElement `json:"keySchema,omitempty"`
+	// Sets the maximum number of read and write units for the specified on-demand
+	// table. If you use this parameter, you must specify MaxReadRequestUnits, MaxWriteRequestUnits,
+	// or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Represents attributes that are copied (projected) from the table into an
 	// index. These are in addition to the primary key attributes and index key
 	// attributes, which are automatically projected.
@@ -277,6 +289,10 @@ type GlobalSecondaryIndexDescription struct {
 	ItemCount *int64 `json:"itemCount,omitempty"`
 
 	KeySchema []*KeySchemaElement `json:"keySchema,omitempty"`
+	// Sets the maximum number of read and write units for the specified on-demand
+	// table. If you use this parameter, you must specify MaxReadRequestUnits, MaxWriteRequestUnits,
+	// or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Represents attributes that are copied (projected) from the table into an
 	// index. These are in addition to the primary key attributes and index key
 	// attributes, which are automatically projected.
@@ -291,6 +307,10 @@ type GlobalSecondaryIndexInfo struct {
 	IndexName *string `json:"indexName,omitempty"`
 
 	KeySchema []*KeySchemaElement `json:"keySchema,omitempty"`
+	// Sets the maximum number of read and write units for the specified on-demand
+	// table. If you use this parameter, you must specify MaxReadRequestUnits, MaxWriteRequestUnits,
+	// or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Represents attributes that are copied (projected) from the table into an
 	// index. These are in addition to the primary key attributes and index key
 	// attributes, which are automatically projected.
@@ -410,6 +430,18 @@ type LocalSecondaryIndexInfo struct {
 }
 
 // +kubebuilder:skipversion
+type OnDemandThroughput struct {
+	MaxReadRequestUnits *int64 `json:"maxReadRequestUnits,omitempty"`
+
+	MaxWriteRequestUnits *int64 `json:"maxWriteRequestUnits,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OnDemandThroughputOverride struct {
+	MaxReadRequestUnits *int64 `json:"maxReadRequestUnits,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type PointInTimeRecoveryDescription struct {
 	EarliestRestorableDateTime *metav1.Time `json:"earliestRestorableDateTime,omitempty"`
 
@@ -480,6 +512,10 @@ type ReplicaDescription struct {
 	GlobalSecondaryIndexes []*ReplicaGlobalSecondaryIndexDescription `json:"globalSecondaryIndexes,omitempty"`
 
 	KMSMasterKeyID *string `json:"kmsMasterKeyID,omitempty"`
+	// Overrides the on-demand throughput settings for this replica table. If you
+	// don't specify a value for this parameter, it uses the source table's on-demand
+	// throughput settings.
+	OnDemandThroughputOverride *OnDemandThroughputOverride `json:"onDemandThroughputOverride,omitempty"`
 	// Replica-specific provisioned throughput settings. If not specified, uses
 	// the source table's provisioned throughput settings.
 	ProvisionedThroughputOverride *ProvisionedThroughputOverride `json:"provisionedThroughputOverride,omitempty"`
@@ -500,6 +536,10 @@ type ReplicaDescription struct {
 // +kubebuilder:skipversion
 type ReplicaGlobalSecondaryIndex struct {
 	IndexName *string `json:"indexName,omitempty"`
+	// Overrides the on-demand throughput settings for this replica table. If you
+	// don't specify a value for this parameter, it uses the source table's on-demand
+	// throughput settings.
+	OnDemandThroughputOverride *OnDemandThroughputOverride `json:"onDemandThroughputOverride,omitempty"`
 	// Replica-specific provisioned throughput settings. If not specified, uses
 	// the source table's provisioned throughput settings.
 	ProvisionedThroughputOverride *ProvisionedThroughputOverride `json:"provisionedThroughputOverride,omitempty"`
@@ -520,6 +560,10 @@ type ReplicaGlobalSecondaryIndexAutoScalingUpdate struct {
 // +kubebuilder:skipversion
 type ReplicaGlobalSecondaryIndexDescription struct {
 	IndexName *string `json:"indexName,omitempty"`
+	// Overrides the on-demand throughput settings for this replica table. If you
+	// don't specify a value for this parameter, it uses the source table's on-demand
+	// throughput settings.
+	OnDemandThroughputOverride *OnDemandThroughputOverride `json:"onDemandThroughputOverride,omitempty"`
 	// Replica-specific provisioned throughput settings. If not specified, uses
 	// the source table's provisioned throughput settings.
 	ProvisionedThroughputOverride *ProvisionedThroughputOverride `json:"provisionedThroughputOverride,omitempty"`
@@ -628,6 +672,10 @@ type SourceTableDetails struct {
 	ItemCount *int64 `json:"itemCount,omitempty"`
 
 	KeySchema []*KeySchemaElement `json:"keySchema,omitempty"`
+	// Sets the maximum number of read and write units for the specified on-demand
+	// table. If you use this parameter, you must specify MaxReadRequestUnits, MaxWriteRequestUnits,
+	// or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Represents the provisioned throughput settings for a specified table or index.
 	// The settings can be modified using the UpdateTable operation.
 	//
@@ -690,6 +738,10 @@ type TableCreationParameters struct {
 	GlobalSecondaryIndexes []*GlobalSecondaryIndex `json:"globalSecondaryIndexes,omitempty"`
 
 	KeySchema []*KeySchemaElement `json:"keySchema,omitempty"`
+	// Sets the maximum number of read and write units for the specified on-demand
+	// table. If you use this parameter, you must specify MaxReadRequestUnits, MaxWriteRequestUnits,
+	// or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Represents the provisioned throughput settings for a specified table or index.
 	// The settings can be modified using the UpdateTable operation.
 	//
@@ -734,6 +786,10 @@ type TableDescription struct {
 	LatestStreamLabel *string `json:"latestStreamLabel,omitempty"`
 
 	LocalSecondaryIndexes []*LocalSecondaryIndexDescription `json:"localSecondaryIndexes,omitempty"`
+	// Sets the maximum number of read and write units for the specified on-demand
+	// table. If you use this parameter, you must specify MaxReadRequestUnits, MaxWriteRequestUnits,
+	// or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Represents the provisioned throughput settings for the table, consisting
 	// of read and write capacity units, along with data about increases and decreases.
 	ProvisionedThroughput *ProvisionedThroughputDescription `json:"provisionedThroughput,omitempty"`
@@ -786,6 +842,10 @@ type Update struct {
 // +kubebuilder:skipversion
 type UpdateGlobalSecondaryIndexAction struct {
 	IndexName *string `json:"indexName,omitempty"`
+	// Sets the maximum number of read and write units for the specified on-demand
+	// table. If you use this parameter, you must specify MaxReadRequestUnits, MaxWriteRequestUnits,
+	// or both.
+	OnDemandThroughput *OnDemandThroughput `json:"onDemandThroughput,omitempty"`
 	// Represents the provisioned throughput settings for a specified table or index.
 	// The settings can be modified using the UpdateTable operation.
 	//
@@ -800,6 +860,10 @@ type UpdateReplicationGroupMemberAction struct {
 	GlobalSecondaryIndexes []*ReplicaGlobalSecondaryIndex `json:"globalSecondaryIndexes,omitempty"`
 
 	KMSMasterKeyID *string `json:"kmsMasterKeyID,omitempty"`
+	// Overrides the on-demand throughput settings for this replica table. If you
+	// don't specify a value for this parameter, it uses the source table's on-demand
+	// throughput settings.
+	OnDemandThroughputOverride *OnDemandThroughputOverride `json:"onDemandThroughputOverride,omitempty"`
 	// Replica-specific provisioned throughput settings. If not specified, uses
 	// the source table's provisioned throughput settings.
 	ProvisionedThroughputOverride *ProvisionedThroughputOverride `json:"provisionedThroughputOverride,omitempty"`

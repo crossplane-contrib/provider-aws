@@ -142,14 +142,17 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.TransitGateway) (
 		if resp.TransitGateway.Options.MulticastSupport != nil {
 			f2.MulticastSupport = resp.TransitGateway.Options.MulticastSupport
 		}
+		if resp.TransitGateway.Options.SecurityGroupReferencingSupport != nil {
+			f2.SecurityGroupReferencingSupport = resp.TransitGateway.Options.SecurityGroupReferencingSupport
+		}
 		if resp.TransitGateway.Options.TransitGatewayCidrBlocks != nil {
-			f2f8 := []*string{}
-			for _, f2f8iter := range resp.TransitGateway.Options.TransitGatewayCidrBlocks {
-				var f2f8elem string
-				f2f8elem = *f2f8iter
-				f2f8 = append(f2f8, &f2f8elem)
+			f2f9 := []*string{}
+			for _, f2f9iter := range resp.TransitGateway.Options.TransitGatewayCidrBlocks {
+				var f2f9elem string
+				f2f9elem = *f2f9iter
+				f2f9 = append(f2f9, &f2f9elem)
 			}
-			f2.TransitGatewayCIDRBlocks = f2f8
+			f2.TransitGatewayCIDRBlocks = f2f9
 		}
 		if resp.TransitGateway.Options.VpnEcmpSupport != nil {
 			f2.VPNECMPSupport = resp.TransitGateway.Options.VpnEcmpSupport

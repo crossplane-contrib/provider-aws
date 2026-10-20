@@ -75,8 +75,18 @@ spec:
                 properties:
                   alias:
                     description: |-
-                      An optional user-assigned alias for this workspace. This alias is for user
-                      reference and does not need to be unique.
+                      An alias that you assign to this workspace to help you identify it. It does
+                      not need to be unique.
+
+                      Blank spaces at the beginning or end of the alias that you specify will be
+                      trimmed from the value used.
+                    type: string
+                  kmsKeyARN:
+                    description: |-
+                      (optional) The ARN for a customer managed KMS key to use for encrypting data
+                      within your workspace. For more information about using your own key in your
+                      workspace, see Encryption at rest (https://docs.aws.amazon.com/prometheus/latest/userguide/encryption-at-rest-Amazon-Service-Prometheus.html)
+                      in the Amazon Managed Service for Prometheus User Guide.
                     type: string
                   region:
                     description: Region is which region the Workspace will be created.
@@ -84,7 +94,8 @@ spec:
                   tags:
                     additionalProperties:
                       type: string
-                    description: Optional, user-provided tags for this workspace.
+                    description: The list of tag keys and values to associate with
+                      the workspace.
                     type: object
                 required:
                 - region
@@ -263,21 +274,22 @@ spec:
                 description: WorkspaceObservation defines the observed state of Workspace
                 properties:
                   arn:
-                    description: The ARN of the workspace that was just created.
+                    description: The ARN for the new workspace.
                     type: string
                   prometheusEndpoint:
-                    description: Prometheus endpoint URI.
+                    description: The Prometheus endpoint available for this workspace.
                     type: string
                   status:
-                    description: The status of the workspace that was just created
-                      (usually CREATING).
+                    description: |-
+                      The current status of the new workspace. Immediately after you create the
+                      workspace, the status is usually CREATING.
                     properties:
                       statusCode:
                         description: State of a workspace.
                         type: string
                     type: object
                   workspaceID:
-                    description: The generated ID of the workspace that was just created.
+                    description: The unique ID for the new workspace.
                     type: string
                 type: object
               conditions:

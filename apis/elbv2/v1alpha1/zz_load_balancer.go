@@ -32,9 +32,19 @@ type LoadBalancerParameters struct {
 	// [Application Load Balancers on Outposts] The ID of the customer-owned address
 	// pool (CoIP pool).
 	CustomerOwnedIPv4Pool *string `json:"customerOwnedIPv4Pool,omitempty"`
-	// The type of IP addresses used by the subnets for your load balancer. The
-	// possible values are ipv4 (for IPv4 addresses) and dualstack (for IPv4 and
-	// IPv6 addresses).
+	// Note: Internal load balancers must use the ipv4 IP address type.
+	//
+	// [Application Load Balancers] The IP address type. The possible values are
+	// ipv4 (for only IPv4 addresses), dualstack (for IPv4 and IPv6 addresses),
+	// and dualstack-without-public-ipv4 (for IPv6 only public addresses, with private
+	// IPv4 and IPv6 addresses).
+	//
+	// [Network Load Balancers] The IP address type. The possible values are ipv4
+	// (for only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses). You
+	// can’t specify dualstack for a load balancer with a UDP or TCP_UDP listener.
+	//
+	// [Gateway Load Balancers] The IP address type. The possible values are ipv4
+	// (for only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses).
 	IPAddressType *string `json:"ipAddressType,omitempty"`
 	// The name of the load balancer.
 	//
@@ -60,7 +70,7 @@ type LoadBalancerParameters struct {
 	// [Application Load Balancers and Network Load Balancers] The IDs of the security
 	// groups for the load balancer.
 	SecurityGroups []*string `json:"securityGroups,omitempty"`
-	// The IDs of the public subnets. You can specify only one subnet per Availability
+	// The IDs of the subnets. You can specify only one subnet per Availability
 	// Zone. You must specify either subnets or subnet mappings, but not both.
 	//
 	// [Application Load Balancers] You must specify subnets from at least two Availability
@@ -81,7 +91,7 @@ type LoadBalancerParameters struct {
 	// [Gateway Load Balancers] You can specify subnets from one or more Availability
 	// Zones. You cannot specify Elastic IP addresses for your subnets.
 	SubnetMappings []*SubnetMapping `json:"subnetMappings,omitempty"`
-	// The IDs of the public subnets. You can specify only one subnet per Availability
+	// The IDs of the subnets. You can specify only one subnet per Availability
 	// Zone. You must specify either subnets or subnet mappings, but not both. To
 	// specify an Elastic IP address, specify subnet mappings instead of subnets.
 	//

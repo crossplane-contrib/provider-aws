@@ -75,9 +75,8 @@ spec:
                 properties:
                   addonName:
                     description: |-
-                      The name of the add-on. The name must match one of the names that DescribeAddonVersions
-                      (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonVersions.html)
-                      returns.
+                      The name of the add-on. The name must match one of the names returned by
+                      DescribeAddonVersions.
                     type: string
                   addonVersion:
                     description: |-
@@ -168,8 +167,7 @@ spec:
                   configurationValues:
                     description: |-
                       The set of configuration values for the add-on that's created. The values
-                      that you provide are validated against the schema in DescribeAddonConfiguration
-                      (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonConfiguration.html).
+                      that you provide are validated against the schema returned by DescribeAddonConfiguration.
                     type: string
                   region:
                     description: Region is which region the Addon will be created.
@@ -216,8 +214,9 @@ spec:
                     additionalProperties:
                       type: string
                     description: |-
-                      The metadata to apply to the cluster to assist with categorization and organization.
-                      Each tag consists of a key and an optional value. You define both.
+                      Metadata that assists with categorization and organization. Each tag consists
+                      of a key and an optional value. You define both. Tags don't propagate to
+                      any other cluster or Amazon Web Services resources.
                     type: object
                 required:
                 - addonName
@@ -400,10 +399,10 @@ spec:
                     description: The Amazon Resource Name (ARN) of the add-on.
                     type: string
                   clusterName:
-                    description: The name of the cluster.
+                    description: The name of your cluster.
                     type: string
                   createdAt:
-                    description: The date and time that the add-on was created.
+                    description: The Unix epoch timestamp at object creation.
                     format: date-time
                     type: string
                   health:
@@ -433,7 +432,8 @@ spec:
                         type: string
                     type: object
                   modifiedAt:
-                    description: The date and time that the add-on was last modified.
+                    description: The Unix epoch timestamp for the last modification
+                      to the object.
                     format: date-time
                     type: string
                   owner:

@@ -275,6 +275,33 @@ func GenerateService(resp *svcsdk.DescribeServicesOutput) *svcapitypes.Service {
 							if f6elemf13f3iter.PortName != nil {
 								f6elemf13f3elem.PortName = f6elemf13f3iter.PortName
 							}
+							if f6elemf13f3iter.Timeout != nil {
+								f6elemf13f3elemf4 := &svcapitypes.TimeoutConfiguration{}
+								if f6elemf13f3iter.Timeout.IdleTimeoutSeconds != nil {
+									f6elemf13f3elemf4.IdleTimeoutSeconds = f6elemf13f3iter.Timeout.IdleTimeoutSeconds
+								}
+								if f6elemf13f3iter.Timeout.PerRequestTimeoutSeconds != nil {
+									f6elemf13f3elemf4.PerRequestTimeoutSeconds = f6elemf13f3iter.Timeout.PerRequestTimeoutSeconds
+								}
+								f6elemf13f3elem.Timeout = f6elemf13f3elemf4
+							}
+							if f6elemf13f3iter.Tls != nil {
+								f6elemf13f3elemf5 := &svcapitypes.ServiceConnectTLSConfiguration{}
+								if f6elemf13f3iter.Tls.IssuerCertificateAuthority != nil {
+									f6elemf13f3elemf5f0 := &svcapitypes.ServiceConnectTLSCertificateAuthority{}
+									if f6elemf13f3iter.Tls.IssuerCertificateAuthority.AwsPcaAuthorityArn != nil {
+										f6elemf13f3elemf5f0.AWSPcaAuthorityARN = f6elemf13f3iter.Tls.IssuerCertificateAuthority.AwsPcaAuthorityArn
+									}
+									f6elemf13f3elemf5.IssuerCertificateAuthority = f6elemf13f3elemf5f0
+								}
+								if f6elemf13f3iter.Tls.KmsKey != nil {
+									f6elemf13f3elemf5.KMSKey = f6elemf13f3iter.Tls.KmsKey
+								}
+								if f6elemf13f3iter.Tls.RoleArn != nil {
+									f6elemf13f3elemf5.RoleARN = f6elemf13f3iter.Tls.RoleArn
+								}
+								f6elemf13f3elem.TLS = f6elemf13f3elemf5
+							}
 							f6elemf13f3 = append(f6elemf13f3, f6elemf13f3elem)
 						}
 						f6elemf13.Services = f6elemf13f3
@@ -303,6 +330,76 @@ func GenerateService(resp *svcsdk.DescribeServicesOutput) *svcapitypes.Service {
 				}
 				if f6iter.UpdatedAt != nil {
 					f6elem.UpdatedAt = &metav1.Time{*f6iter.UpdatedAt}
+				}
+				if f6iter.VolumeConfigurations != nil {
+					f6elemf18 := []*svcapitypes.ServiceVolumeConfiguration{}
+					for _, f6elemf18iter := range f6iter.VolumeConfigurations {
+						f6elemf18elem := &svcapitypes.ServiceVolumeConfiguration{}
+						if f6elemf18iter.ManagedEBSVolume != nil {
+							f6elemf18elemf0 := &svcapitypes.ServiceManagedEBSVolumeConfiguration{}
+							if f6elemf18iter.ManagedEBSVolume.Encrypted != nil {
+								f6elemf18elemf0.Encrypted = f6elemf18iter.ManagedEBSVolume.Encrypted
+							}
+							if f6elemf18iter.ManagedEBSVolume.FilesystemType != nil {
+								f6elemf18elemf0.FilesystemType = f6elemf18iter.ManagedEBSVolume.FilesystemType
+							}
+							if f6elemf18iter.ManagedEBSVolume.Iops != nil {
+								f6elemf18elemf0.IOPS = f6elemf18iter.ManagedEBSVolume.Iops
+							}
+							if f6elemf18iter.ManagedEBSVolume.KmsKeyId != nil {
+								f6elemf18elemf0.KMSKeyID = f6elemf18iter.ManagedEBSVolume.KmsKeyId
+							}
+							if f6elemf18iter.ManagedEBSVolume.RoleArn != nil {
+								f6elemf18elemf0.RoleARN = f6elemf18iter.ManagedEBSVolume.RoleArn
+							}
+							if f6elemf18iter.ManagedEBSVolume.SizeInGiB != nil {
+								f6elemf18elemf0.SizeInGiB = f6elemf18iter.ManagedEBSVolume.SizeInGiB
+							}
+							if f6elemf18iter.ManagedEBSVolume.SnapshotId != nil {
+								f6elemf18elemf0.SnapshotID = f6elemf18iter.ManagedEBSVolume.SnapshotId
+							}
+							if f6elemf18iter.ManagedEBSVolume.TagSpecifications != nil {
+								f6elemf18elemf0f7 := []*svcapitypes.EBSTagSpecification{}
+								for _, f6elemf18elemf0f7iter := range f6elemf18iter.ManagedEBSVolume.TagSpecifications {
+									f6elemf18elemf0f7elem := &svcapitypes.EBSTagSpecification{}
+									if f6elemf18elemf0f7iter.PropagateTags != nil {
+										f6elemf18elemf0f7elem.PropagateTags = f6elemf18elemf0f7iter.PropagateTags
+									}
+									if f6elemf18elemf0f7iter.ResourceType != nil {
+										f6elemf18elemf0f7elem.ResourceType = f6elemf18elemf0f7iter.ResourceType
+									}
+									if f6elemf18elemf0f7iter.Tags != nil {
+										f6elemf18elemf0f7elemf2 := []*svcapitypes.Tag{}
+										for _, f6elemf18elemf0f7elemf2iter := range f6elemf18elemf0f7iter.Tags {
+											f6elemf18elemf0f7elemf2elem := &svcapitypes.Tag{}
+											if f6elemf18elemf0f7elemf2iter.Key != nil {
+												f6elemf18elemf0f7elemf2elem.Key = f6elemf18elemf0f7elemf2iter.Key
+											}
+											if f6elemf18elemf0f7elemf2iter.Value != nil {
+												f6elemf18elemf0f7elemf2elem.Value = f6elemf18elemf0f7elemf2iter.Value
+											}
+											f6elemf18elemf0f7elemf2 = append(f6elemf18elemf0f7elemf2, f6elemf18elemf0f7elemf2elem)
+										}
+										f6elemf18elemf0f7elem.Tags = f6elemf18elemf0f7elemf2
+									}
+									f6elemf18elemf0f7 = append(f6elemf18elemf0f7, f6elemf18elemf0f7elem)
+								}
+								f6elemf18elemf0.TagSpecifications = f6elemf18elemf0f7
+							}
+							if f6elemf18iter.ManagedEBSVolume.Throughput != nil {
+								f6elemf18elemf0.Throughput = f6elemf18iter.ManagedEBSVolume.Throughput
+							}
+							if f6elemf18iter.ManagedEBSVolume.VolumeType != nil {
+								f6elemf18elemf0.VolumeType = f6elemf18iter.ManagedEBSVolume.VolumeType
+							}
+							f6elemf18elem.ManagedEBSVolume = f6elemf18elemf0
+						}
+						if f6elemf18iter.Name != nil {
+							f6elemf18elem.Name = f6elemf18iter.Name
+						}
+						f6elemf18 = append(f6elemf18, f6elemf18elem)
+					}
+					f6elem.VolumeConfigurations = f6elemf18
 				}
 				f6 = append(f6, f6elem)
 			}
@@ -903,6 +1000,33 @@ func GenerateCreateServiceInput(cr *svcapitypes.Service) *svcsdk.CreateServiceIn
 				if f14f3iter.PortName != nil {
 					f14f3elem.SetPortName(*f14f3iter.PortName)
 				}
+				if f14f3iter.Timeout != nil {
+					f14f3elemf4 := &svcsdk.TimeoutConfiguration{}
+					if f14f3iter.Timeout.IdleTimeoutSeconds != nil {
+						f14f3elemf4.SetIdleTimeoutSeconds(*f14f3iter.Timeout.IdleTimeoutSeconds)
+					}
+					if f14f3iter.Timeout.PerRequestTimeoutSeconds != nil {
+						f14f3elemf4.SetPerRequestTimeoutSeconds(*f14f3iter.Timeout.PerRequestTimeoutSeconds)
+					}
+					f14f3elem.SetTimeout(f14f3elemf4)
+				}
+				if f14f3iter.TLS != nil {
+					f14f3elemf5 := &svcsdk.ServiceConnectTlsConfiguration{}
+					if f14f3iter.TLS.IssuerCertificateAuthority != nil {
+						f14f3elemf5f0 := &svcsdk.ServiceConnectTlsCertificateAuthority{}
+						if f14f3iter.TLS.IssuerCertificateAuthority.AWSPcaAuthorityARN != nil {
+							f14f3elemf5f0.SetAwsPcaAuthorityArn(*f14f3iter.TLS.IssuerCertificateAuthority.AWSPcaAuthorityARN)
+						}
+						f14f3elemf5.SetIssuerCertificateAuthority(f14f3elemf5f0)
+					}
+					if f14f3iter.TLS.KMSKey != nil {
+						f14f3elemf5.SetKmsKey(*f14f3iter.TLS.KMSKey)
+					}
+					if f14f3iter.TLS.RoleARN != nil {
+						f14f3elemf5.SetRoleArn(*f14f3iter.TLS.RoleARN)
+					}
+					f14f3elem.SetTls(f14f3elemf5)
+				}
 				f14f3 = append(f14f3, f14f3elem)
 			}
 			f14.SetServices(f14f3)
@@ -942,6 +1066,76 @@ func GenerateCreateServiceInput(cr *svcapitypes.Service) *svcsdk.CreateServiceIn
 			f16 = append(f16, f16elem)
 		}
 		res.SetTags(f16)
+	}
+	if cr.Spec.ForProvider.VolumeConfigurations != nil {
+		f17 := []*svcsdk.ServiceVolumeConfiguration{}
+		for _, f17iter := range cr.Spec.ForProvider.VolumeConfigurations {
+			f17elem := &svcsdk.ServiceVolumeConfiguration{}
+			if f17iter.ManagedEBSVolume != nil {
+				f17elemf0 := &svcsdk.ServiceManagedEBSVolumeConfiguration{}
+				if f17iter.ManagedEBSVolume.Encrypted != nil {
+					f17elemf0.SetEncrypted(*f17iter.ManagedEBSVolume.Encrypted)
+				}
+				if f17iter.ManagedEBSVolume.FilesystemType != nil {
+					f17elemf0.SetFilesystemType(*f17iter.ManagedEBSVolume.FilesystemType)
+				}
+				if f17iter.ManagedEBSVolume.IOPS != nil {
+					f17elemf0.SetIops(*f17iter.ManagedEBSVolume.IOPS)
+				}
+				if f17iter.ManagedEBSVolume.KMSKeyID != nil {
+					f17elemf0.SetKmsKeyId(*f17iter.ManagedEBSVolume.KMSKeyID)
+				}
+				if f17iter.ManagedEBSVolume.RoleARN != nil {
+					f17elemf0.SetRoleArn(*f17iter.ManagedEBSVolume.RoleARN)
+				}
+				if f17iter.ManagedEBSVolume.SizeInGiB != nil {
+					f17elemf0.SetSizeInGiB(*f17iter.ManagedEBSVolume.SizeInGiB)
+				}
+				if f17iter.ManagedEBSVolume.SnapshotID != nil {
+					f17elemf0.SetSnapshotId(*f17iter.ManagedEBSVolume.SnapshotID)
+				}
+				if f17iter.ManagedEBSVolume.TagSpecifications != nil {
+					f17elemf0f7 := []*svcsdk.EBSTagSpecification{}
+					for _, f17elemf0f7iter := range f17iter.ManagedEBSVolume.TagSpecifications {
+						f17elemf0f7elem := &svcsdk.EBSTagSpecification{}
+						if f17elemf0f7iter.PropagateTags != nil {
+							f17elemf0f7elem.SetPropagateTags(*f17elemf0f7iter.PropagateTags)
+						}
+						if f17elemf0f7iter.ResourceType != nil {
+							f17elemf0f7elem.SetResourceType(*f17elemf0f7iter.ResourceType)
+						}
+						if f17elemf0f7iter.Tags != nil {
+							f17elemf0f7elemf2 := []*svcsdk.Tag{}
+							for _, f17elemf0f7elemf2iter := range f17elemf0f7iter.Tags {
+								f17elemf0f7elemf2elem := &svcsdk.Tag{}
+								if f17elemf0f7elemf2iter.Key != nil {
+									f17elemf0f7elemf2elem.SetKey(*f17elemf0f7elemf2iter.Key)
+								}
+								if f17elemf0f7elemf2iter.Value != nil {
+									f17elemf0f7elemf2elem.SetValue(*f17elemf0f7elemf2iter.Value)
+								}
+								f17elemf0f7elemf2 = append(f17elemf0f7elemf2, f17elemf0f7elemf2elem)
+							}
+							f17elemf0f7elem.SetTags(f17elemf0f7elemf2)
+						}
+						f17elemf0f7 = append(f17elemf0f7, f17elemf0f7elem)
+					}
+					f17elemf0.SetTagSpecifications(f17elemf0f7)
+				}
+				if f17iter.ManagedEBSVolume.Throughput != nil {
+					f17elemf0.SetThroughput(*f17iter.ManagedEBSVolume.Throughput)
+				}
+				if f17iter.ManagedEBSVolume.VolumeType != nil {
+					f17elemf0.SetVolumeType(*f17iter.ManagedEBSVolume.VolumeType)
+				}
+				f17elem.SetManagedEBSVolume(f17elemf0)
+			}
+			if f17iter.Name != nil {
+				f17elem.SetName(*f17iter.Name)
+			}
+			f17 = append(f17, f17elem)
+		}
+		res.SetVolumeConfigurations(f17)
 	}
 
 	return res
@@ -1167,6 +1361,33 @@ func GenerateUpdateServiceInput(cr *svcapitypes.Service) *svcsdk.UpdateServiceIn
 				if f15f3iter.PortName != nil {
 					f15f3elem.SetPortName(*f15f3iter.PortName)
 				}
+				if f15f3iter.Timeout != nil {
+					f15f3elemf4 := &svcsdk.TimeoutConfiguration{}
+					if f15f3iter.Timeout.IdleTimeoutSeconds != nil {
+						f15f3elemf4.SetIdleTimeoutSeconds(*f15f3iter.Timeout.IdleTimeoutSeconds)
+					}
+					if f15f3iter.Timeout.PerRequestTimeoutSeconds != nil {
+						f15f3elemf4.SetPerRequestTimeoutSeconds(*f15f3iter.Timeout.PerRequestTimeoutSeconds)
+					}
+					f15f3elem.SetTimeout(f15f3elemf4)
+				}
+				if f15f3iter.TLS != nil {
+					f15f3elemf5 := &svcsdk.ServiceConnectTlsConfiguration{}
+					if f15f3iter.TLS.IssuerCertificateAuthority != nil {
+						f15f3elemf5f0 := &svcsdk.ServiceConnectTlsCertificateAuthority{}
+						if f15f3iter.TLS.IssuerCertificateAuthority.AWSPcaAuthorityARN != nil {
+							f15f3elemf5f0.SetAwsPcaAuthorityArn(*f15f3iter.TLS.IssuerCertificateAuthority.AWSPcaAuthorityARN)
+						}
+						f15f3elemf5.SetIssuerCertificateAuthority(f15f3elemf5f0)
+					}
+					if f15f3iter.TLS.KMSKey != nil {
+						f15f3elemf5.SetKmsKey(*f15f3iter.TLS.KMSKey)
+					}
+					if f15f3iter.TLS.RoleARN != nil {
+						f15f3elemf5.SetRoleArn(*f15f3iter.TLS.RoleARN)
+					}
+					f15f3elem.SetTls(f15f3elemf5)
+				}
 				f15f3 = append(f15f3, f15f3elem)
 			}
 			f15.SetServices(f15f3)
@@ -1195,6 +1416,76 @@ func GenerateUpdateServiceInput(cr *svcapitypes.Service) *svcsdk.UpdateServiceIn
 	}
 	if cr.Status.AtProvider.TaskDefinition != nil {
 		res.SetTaskDefinition(*cr.Status.AtProvider.TaskDefinition)
+	}
+	if cr.Spec.ForProvider.VolumeConfigurations != nil {
+		f18 := []*svcsdk.ServiceVolumeConfiguration{}
+		for _, f18iter := range cr.Spec.ForProvider.VolumeConfigurations {
+			f18elem := &svcsdk.ServiceVolumeConfiguration{}
+			if f18iter.ManagedEBSVolume != nil {
+				f18elemf0 := &svcsdk.ServiceManagedEBSVolumeConfiguration{}
+				if f18iter.ManagedEBSVolume.Encrypted != nil {
+					f18elemf0.SetEncrypted(*f18iter.ManagedEBSVolume.Encrypted)
+				}
+				if f18iter.ManagedEBSVolume.FilesystemType != nil {
+					f18elemf0.SetFilesystemType(*f18iter.ManagedEBSVolume.FilesystemType)
+				}
+				if f18iter.ManagedEBSVolume.IOPS != nil {
+					f18elemf0.SetIops(*f18iter.ManagedEBSVolume.IOPS)
+				}
+				if f18iter.ManagedEBSVolume.KMSKeyID != nil {
+					f18elemf0.SetKmsKeyId(*f18iter.ManagedEBSVolume.KMSKeyID)
+				}
+				if f18iter.ManagedEBSVolume.RoleARN != nil {
+					f18elemf0.SetRoleArn(*f18iter.ManagedEBSVolume.RoleARN)
+				}
+				if f18iter.ManagedEBSVolume.SizeInGiB != nil {
+					f18elemf0.SetSizeInGiB(*f18iter.ManagedEBSVolume.SizeInGiB)
+				}
+				if f18iter.ManagedEBSVolume.SnapshotID != nil {
+					f18elemf0.SetSnapshotId(*f18iter.ManagedEBSVolume.SnapshotID)
+				}
+				if f18iter.ManagedEBSVolume.TagSpecifications != nil {
+					f18elemf0f7 := []*svcsdk.EBSTagSpecification{}
+					for _, f18elemf0f7iter := range f18iter.ManagedEBSVolume.TagSpecifications {
+						f18elemf0f7elem := &svcsdk.EBSTagSpecification{}
+						if f18elemf0f7iter.PropagateTags != nil {
+							f18elemf0f7elem.SetPropagateTags(*f18elemf0f7iter.PropagateTags)
+						}
+						if f18elemf0f7iter.ResourceType != nil {
+							f18elemf0f7elem.SetResourceType(*f18elemf0f7iter.ResourceType)
+						}
+						if f18elemf0f7iter.Tags != nil {
+							f18elemf0f7elemf2 := []*svcsdk.Tag{}
+							for _, f18elemf0f7elemf2iter := range f18elemf0f7iter.Tags {
+								f18elemf0f7elemf2elem := &svcsdk.Tag{}
+								if f18elemf0f7elemf2iter.Key != nil {
+									f18elemf0f7elemf2elem.SetKey(*f18elemf0f7elemf2iter.Key)
+								}
+								if f18elemf0f7elemf2iter.Value != nil {
+									f18elemf0f7elemf2elem.SetValue(*f18elemf0f7elemf2iter.Value)
+								}
+								f18elemf0f7elemf2 = append(f18elemf0f7elemf2, f18elemf0f7elemf2elem)
+							}
+							f18elemf0f7elem.SetTags(f18elemf0f7elemf2)
+						}
+						f18elemf0f7 = append(f18elemf0f7, f18elemf0f7elem)
+					}
+					f18elemf0.SetTagSpecifications(f18elemf0f7)
+				}
+				if f18iter.ManagedEBSVolume.Throughput != nil {
+					f18elemf0.SetThroughput(*f18iter.ManagedEBSVolume.Throughput)
+				}
+				if f18iter.ManagedEBSVolume.VolumeType != nil {
+					f18elemf0.SetVolumeType(*f18iter.ManagedEBSVolume.VolumeType)
+				}
+				f18elem.SetManagedEBSVolume(f18elemf0)
+			}
+			if f18iter.Name != nil {
+				f18elem.SetName(*f18iter.Name)
+			}
+			f18 = append(f18, f18elem)
+		}
+		res.SetVolumeConfigurations(f18)
 	}
 
 	return res

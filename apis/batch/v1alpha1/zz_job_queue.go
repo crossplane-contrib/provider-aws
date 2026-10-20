@@ -29,6 +29,10 @@ type JobQueueParameters struct {
 	// Region is which region the JobQueue will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// The set of actions that Batch performs on jobs that remain at the head of
+	// the job queue in the specified state longer than specified times. Batch will
+	// perform each action after maxTimeSeconds has passed.
+	JobStateTimeLimitActions []*JobStateTimeLimitAction `json:"jobStateTimeLimitActions,omitempty"`
 	// The priority of the job queue. Job queues with a higher priority (or a higher
 	// integer value for the priority parameter) are evaluated first when associated
 	// with the same compute environment. Priority is determined in descending order.
