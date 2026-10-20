@@ -11,7 +11,7 @@
 ignore:
   resource_names:
     - APIKey
-    - IPSet
+    # IPSet: manually implemented (see pkg/controller/wafv2/ipset/)
     - RegexPatternSet
     - RuleGroup
   field_paths:
