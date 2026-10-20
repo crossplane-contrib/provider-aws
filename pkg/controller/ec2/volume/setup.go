@@ -38,6 +38,7 @@ func SetupVolume(mgr ctrl.Manager, o controller.Options) error {
 	name := managed.ControllerName(svcapitypes.VolumeGroupKind)
 	opts := []option{
 		func(e *external) {
+			e.preObserve = preObserve
 			e.preCreate = preCreate
 			e.postCreate = postCreate
 			e.postObserve = postObserve
@@ -86,6 +87,18 @@ func filterList(cr *svcapitypes.Volume, obj *svcsdk.DescribeVolumesOutput) *svcs
 		}
 	}
 	return resp
+}
+
+func preObserve(_ context.Context, cr *svcapitypes.Volume, input *svcsdk.DescribeVolumesInput) error {
+	// Sometimes it saves annotations after creation but fails to update status.atProvider.
+	// This results in API client trying to describe all volumes.
+	// Use annotation as a fallback to avoid this.
+	if len(input.VolumeIds) == 0 {
+		id := meta.GetExternalName(cr)
+		input.VolumeIds = append(input.VolumeIds, &id)
+	}
+
+	return nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Volume, obj *svcsdk.CreateVolumeInput) error {
