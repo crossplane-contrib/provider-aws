@@ -59,6 +59,7 @@ const (
 	errDescribeReplicationGroup            = "cannot describe ElastiCache replication group"
 	errGenerateAuthToken                   = "cannot generate ElastiCache auth token"
 	errGetPasswordSecret                   = "cannot get ElastiCache auth password from secret"
+	errEmptyAuthTokenSecret                = "ElastiCache auth token secret key is missing or empty"
 	errCreateReplicationGroup              = "cannot create ElastiCache replication group"
 	errModifyReplicationGroup              = "cannot modify ElastiCache replication group"
 	errDeleteReplicationGroup              = "cannot delete ElastiCache replication group"
@@ -206,7 +207,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 	// retrieve desired pass from the spec secret ref(if exists)
 	if cr.GetAuthTokenSecretRef() != nil {
-		dsPass, err := getSecretPassword(ctx, e.kube, cr.GetAuthTokenSecretRef())
+		dsPass, err := getAuthTokenFromSecret(ctx, e.kube, cr.GetAuthTokenSecretRef())
 		e.cache.desiredAuthToken = dsPass
 		if err != nil {
 			return managed.ExternalObservation{}, errorutils.Wrap(err, errGetPasswordSecret)
@@ -249,7 +250,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	// is required.
 	var token string
 	if cr.Spec.ForProvider.AuthTokenSecretRef != nil {
-		t, err := getSecretPassword(ctx, e.kube, cr.GetAuthTokenSecretRef())
+		t, err := getAuthTokenFromSecret(ctx, e.kube, cr.GetAuthTokenSecretRef())
 		if err != nil {
 			return managed.ExternalCreation{}, errorutils.Wrap(err, errGetPasswordSecret)
 		}
@@ -261,7 +262,11 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 		token = t
 	}
-	_, err := e.client.CreateReplicationGroup(ctx, elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), &token))
+	var authToken *string
+	if token != "" {
+		authToken = &token
+	}
+	_, err := e.client.CreateReplicationGroup(ctx, elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), authToken))
 	if err != nil {
 		return managed.ExternalCreation{}, errorutils.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
@@ -471,6 +476,18 @@ func getSecretPassword(ctx context.Context, kube client.Client, sks *xpv1.Secret
 	}
 	pwdRaw := secret.Data[sks.Key]
 	return string(pwdRaw), nil
+}
+
+// rejects empty values, unlike getSecretPassword
+func getAuthTokenFromSecret(ctx context.Context, kube client.Client, sks *xpv1.SecretKeySelector) (string, error) {
+	t, err := getSecretPassword(ctx, kube, sks)
+	if err != nil {
+		return "", err
+	}
+	if t == "" {
+		return "", errors.New(errEmptyAuthTokenSecret)
+	}
+	return t, nil
 }
 
 // GetCurrentPassword retrieves the current password from the connection secret of the managed resource.
