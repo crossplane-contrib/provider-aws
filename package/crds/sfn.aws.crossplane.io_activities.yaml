@@ -73,6 +73,35 @@ spec:
               forProvider:
                 description: ActivityParameters defines the desired state of Activity
                 properties:
+                  encryptionConfiguration:
+                    description: Settings to configure server-side encryption.
+                    properties:
+                      kmsDataKeyReusePeriodSeconds:
+                        description: |-
+                          Maximum duration that Step Functions will reuse data keys. When the period
+                          expires, Step Functions will call GenerateDataKey. Only applies to customer
+                          managed keys. (when Type is CUSTOMER_MANAGED_KMS_KEY)
+                          Should be between 60 seconds (1 minute) and 900 seconds (15 minutes).
+                          Default is 300 seconds (5 minutes).
+                        format: int64
+                        type: integer
+                      kmsKeyID:
+                        description: |-
+                          An alias, alias ARN, key ID, or key ARN of a symmetric encryption KMS key
+                          to encrypt data. To specify a KMS key in a different Amazon Web Services
+                          account, you must use the key ARN or alias ARN.
+                          Only needed if Type is CUSTOMER_MANAGED_KMS_KEY.
+                        type: string
+                      type:
+                        description: |-
+                          Encryption type.
+                          Valide values are AWS_OWNED_KEY and CUSTOMER_MANAGED_KMS_KEY
+
+                          Type is a required field
+                        type: string
+                    required:
+                    - type
+                    type: object
                   name:
                     description: |-
                       The name of the activity to create. This name must be unique for your Amazon

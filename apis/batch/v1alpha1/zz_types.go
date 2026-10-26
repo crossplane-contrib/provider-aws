@@ -314,6 +314,8 @@ type EKSAttemptContainerDetail struct {
 
 // +kubebuilder:skipversion
 type EKSAttemptDetail struct {
+	EKSClusterARN *string `json:"eksClusterARN,omitempty"`
+
 	NodeName *string `json:"nodeName,omitempty"`
 
 	PodName *string `json:"podName,omitempty"`
@@ -468,6 +470,11 @@ type FairsharePolicy struct {
 // +kubebuilder:skipversion
 type FargatePlatformConfiguration struct {
 	PlatformVersion *string `json:"platformVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type FrontOfQueueJobSummary struct {
+	JobARN *string `json:"jobARN,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -94,6 +94,8 @@ type CapacityProviderStrategyItem struct {
 type ClusterConfiguration struct {
 	// The details of the execute command configuration.
 	ExecuteCommandConfiguration *ExecuteCommandConfiguration `json:"executeCommandConfiguration,omitempty"`
+	// The managed storage configuration for the cluster.
+	ManagedStorageConfiguration *ManagedStorageConfiguration `json:"managedStorageConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -126,7 +128,7 @@ type Cluster_SDK struct {
 	ClusterARN *string `json:"clusterARN,omitempty"`
 
 	ClusterName *string `json:"clusterName,omitempty"`
-	// The execute command configuration for the cluster.
+	// The execute command and managed storage configuration for the cluster.
 	Configuration *ClusterConfiguration `json:"configuration,omitempty"`
 
 	DefaultCapacityProviderStrategy []*CapacityProviderStrategyItem `json:"defaultCapacityProviderStrategy,omitempty"`
@@ -308,12 +310,14 @@ type ContainerDefinition struct {
 	//
 	// The following are notes about container health check support:
 	//
-	//    * When the Amazon ECS agent cannot connect to the Amazon ECS service,
-	//    the service reports the container as UNHEALTHY.
-	//
-	//    * The health check statuses are the "last heard from" response from the
-	//    Amazon ECS agent. There are no assumptions made about the status of the
-	//    container health checks.
+	//    * If the Amazon ECS container agent becomes disconnected from the Amazon
+	//    ECS service, this won't cause a container to transition to an UNHEALTHY
+	//    status. This is by design, to ensure that containers remain running during
+	//    agent restarts or temporary unavailability. The health check status is
+	//    the "last heard from" response from the Amazon ECS agent, so if the container
+	//    was considered HEALTHY prior to the disconnect, that status will remain
+	//    until the agent reconnects and another health check occurs. There are
+	//    no assumptions made about the status of the container health checks.
 	//
 	//    * Container health checks require version 1.17.0 or greater of the Amazon
 	//    ECS container agent. For more information, see Updating the Amazon ECS
@@ -487,6 +491,8 @@ type Deployment struct {
 	DesiredCount *int64 `json:"desiredCount,omitempty"`
 
 	FailedTasks *int64 `json:"failedTasks,omitempty"`
+	// The amount of ephemeral storage to allocate for the deployment.
+	FargateEphemeralStorage *DeploymentEphemeralStorage `json:"fargateEphemeralStorage,omitempty"`
 
 	ID *string `json:"id,omitempty"`
 
@@ -584,6 +590,11 @@ type DeploymentConfiguration struct {
 // +kubebuilder:skipversion
 type DeploymentController struct {
 	Type *string `json:"type_,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DeploymentEphemeralStorage struct {
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -835,6 +846,13 @@ type ManagedAgentStateChange struct {
 }
 
 // +kubebuilder:skipversion
+type ManagedStorageConfiguration struct {
+	FargateEphemeralStorageKMSKeyID *string `json:"fargateEphemeralStorageKMSKeyID,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type MountPoint struct {
 	ContainerPath *string `json:"containerPath,omitempty"`
 
@@ -1039,7 +1057,7 @@ type ServiceConnectService struct {
 	// If idleTimeout is set to a time that is less than perRequestTimeout, the
 	// connection will close when the idleTimeout is reached and not the perRequestTimeout.
 	Timeout *TimeoutConfiguration `json:"timeout,omitempty"`
-	// An object that represents the configuration for Service Connect TLS.
+	// The key that encrypts and decrypts your resources for Service Connect TLS.
 	TLS *ServiceConnectTLSConfiguration `json:"tls,omitempty"`
 }
 
@@ -1057,8 +1075,7 @@ type ServiceConnectTLSCertificateAuthority struct {
 
 // +kubebuilder:skipversion
 type ServiceConnectTLSConfiguration struct {
-	// An object that represents the Amazon Web Services Private Certificate Authority
-	// certificate.
+	// The certificate root authority that secures your service.
 	IssuerCertificateAuthority *ServiceConnectTLSCertificateAuthority `json:"issuerCertificateAuthority,omitempty"`
 
 	KMSKey *string `json:"kmsKey,omitempty"`
@@ -1370,6 +1387,13 @@ type TaskDefinition_SDK struct {
 }
 
 // +kubebuilder:skipversion
+type TaskEphemeralStorage struct {
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	SizeInGiB *int64 `json:"sizeInGiB,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type TaskManagedEBSVolumeConfiguration struct {
 	Encrypted *bool `json:"encrypted,omitempty"`
 
@@ -1432,6 +1456,8 @@ type TaskSet struct {
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
 	ExternalID *string `json:"externalID,omitempty"`
+	// The amount of ephemeral storage to allocate for the deployment.
+	FargateEphemeralStorage *DeploymentEphemeralStorage `json:"fargateEphemeralStorage,omitempty"`
 
 	ID *string `json:"id,omitempty"`
 

@@ -256,6 +256,8 @@ type MutualAuthenticationAttributes struct {
 	Mode *string `json:"mode,omitempty"`
 
 	TrustStoreARN *string `json:"trustStoreARN,omitempty"`
+
+	TrustStoreAssociationStatus *string `json:"trustStoreAssociationStatus,omitempty"`
 }
 
 // +kubebuilder:skipversion

@@ -268,9 +268,9 @@ type DBInstanceParameters struct {
 	// Amazon Aurora PostgreSQL
 	//
 	// The name of the database to create when the primary DB instance of the Aurora
-	// PostgreSQL DB cluster is created. If this parameter isn't specified for an
-	// Aurora PostgreSQL DB cluster, a database named postgres is created in the
-	// DB cluster.
+	// PostgreSQL DB cluster is created. A database named postgres is always created.
+	// If this parameter is specified, an additional database with this name is
+	// created.
 	//
 	// Constraints:
 	//
@@ -360,9 +360,9 @@ type DBInstanceParameters struct {
 	//
 	// RDS for PostgreSQL
 	//
-	// The name of the database to create when the DB instance is created. If this
-	// parameter isn't specified, a database named postgres is created in the DB
-	// instance.
+	// The name of the database to create when the DB instance is created. A database
+	// named postgres is always created. If this parameter is specified, an additional
+	// database with this name is created.
 	//
 	// Constraints:
 	//
@@ -645,11 +645,20 @@ type DBInstanceParameters struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The license model information for this DB instance.
 	//
+	// License models for RDS for Db2 require additional configuration. The Bring
+	// Your Own License (BYOL) model requires a custom parameter group. The Db2
+	// license through Amazon Web Services Marketplace model requires an Amazon
+	// Web Services Marketplace subscription. For more information, see RDS for
+	// Db2 licensing options (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/db2-licensing.html)
+	// in the Amazon RDS User Guide.
+	//
+	// The default for RDS for Db2 is bring-your-own-license.
+	//
 	// This setting doesn't apply to Amazon Aurora or RDS Custom DB instances.
 	//
 	// Valid Values:
 	//
-	//    * RDS for Db2 - bring-your-own-license
+	//    * RDS for Db2 - bring-your-own-license | marketplace-license
 	//
 	//    * RDS for MariaDB - general-public-license
 	//
@@ -907,12 +916,13 @@ type DBInstanceParameters struct {
 	PromotionTier *int64 `json:"promotionTier,omitempty"`
 	// Specifies whether the DB instance is publicly accessible.
 	//
-	// When the DB instance is publicly accessible, its Domain Name System (DNS)
-	// endpoint resolves to the private IP address from within the DB instance's
-	// virtual private cloud (VPC). It resolves to the public IP address from outside
-	// of the DB instance's VPC. Access to the DB instance is ultimately controlled
-	// by the security group it uses. That public access is not permitted if the
-	// security group assigned to the DB instance doesn't permit it.
+	// When the DB instance is publicly accessible and you connect from outside
+	// of the DB instance's virtual private cloud (VPC), its Domain Name System
+	// (DNS) endpoint resolves to the public IP address. When you connect from within
+	// the same VPC as the DB instance, the endpoint resolves to the private IP
+	// address. Access to the DB instance is ultimately controlled by the security
+	// group it uses. That public access is not permitted if the security group
+	// assigned to the DB instance doesn't permit it.
 	//
 	// When the DB instance isn't publicly accessible, it is an internal DB instance
 	// with a DNS name that resolves to a private IP address.

@@ -87,6 +87,13 @@ const (
 	LifecyclePolicyPreviewStatus_FAILED      LifecyclePolicyPreviewStatus = "FAILED"
 )
 
+type RCTAppliedFor string
+
+const (
+	RCTAppliedFor_REPLICATION        RCTAppliedFor = "REPLICATION"
+	RCTAppliedFor_PULL_THROUGH_CACHE RCTAppliedFor = "PULL_THROUGH_CACHE"
+)
+
 type ReplicationStatus string
 
 const (

@@ -442,7 +442,7 @@ spec:
                         description: |-
                           The metadata options for the instance. For more information, see Instance
                           metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
-                          in the Amazon Elastic Compute Cloud User Guide.
+                          in the Amazon EC2 User Guide.
                         properties:
                           httpEndpoint:
                             type: string
@@ -474,7 +474,7 @@ spec:
                                 A security group connection tracking specification request that enables you
                                 to set the idle timeout for connection tracking on an Elastic network interface.
                                 For more information, see Connection tracking timeouts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-connection-tracking.html#connection-tracking-timeouts)
-                                in the Amazon Elastic Compute Cloud User Guide.
+                                in the Amazon EC2 User Guide.
                               properties:
                                 tcpEstablishedTimeout:
                                   format: int64
@@ -803,7 +803,7 @@ spec:
                       If true, and if a Systems Manager parameter is specified for ImageId, the
                       AMI ID is displayed in the response for imageID. For more information, see
                       Use a Systems Manager parameter instead of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
-                      in the Amazon Elastic Compute Cloud User Guide.
+                      in the Amazon EC2 User Guide.
 
                       Default: false
                     type: boolean
@@ -1371,7 +1371,7 @@ spec:
                             description: |-
                               The metadata options for the instance. For more information, see Instance
                               metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
-                              in the Amazon Elastic Compute Cloud User Guide.
+                              in the Amazon EC2 User Guide.
                             properties:
                               httpEndpoint:
                                 type: string
@@ -1405,7 +1405,7 @@ spec:
                                     A security group connection tracking specification that enables you to set
                                     the idle timeout for connection tracking on an Elastic network interface.
                                     For more information, see Connection tracking timeouts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-connection-tracking.html#connection-tracking-timeouts)
-                                    in the Amazon Elastic Compute Cloud User Guide.
+                                    in the Amazon EC2 User Guide.
                                   properties:
                                     tcpEstablishedTimeout:
                                       format: int64

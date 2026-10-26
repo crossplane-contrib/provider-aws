@@ -101,7 +101,7 @@ type ClusterPendingModifiedValues struct {
 	AllocatedStorage *int64 `json:"allocatedStorage,omitempty"`
 
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
-	// Returns the details of the DB instance’s server certificate.
+	// The details of the DB instance’s server certificate.
 	//
 	// For more information, see Using SSL/TLS to encrypt a connection to a DB instance
 	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
@@ -386,7 +386,7 @@ type DBCluster_SDK struct {
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 
 	Capacity *int64 `json:"capacity,omitempty"`
-	// Returns the details of the DB instance’s server certificate.
+	// The details of the DB instance’s server certificate.
 	//
 	// For more information, see Using SSL/TLS to encrypt a connection to a DB instance
 	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)
@@ -717,7 +717,7 @@ type DBInstance_SDK struct {
 	BackupTarget *string `json:"backupTarget,omitempty"`
 
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
-	// Returns the details of the DB instance’s server certificate.
+	// The details of the DB instance’s server certificate.
 	//
 	// For more information, see Using SSL/TLS to encrypt a connection to a DB instance
 	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html)

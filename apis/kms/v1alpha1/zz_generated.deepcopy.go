@@ -750,6 +750,17 @@ func (in *KeyMetadata) DeepCopyInto(out *KeyMetadata) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.KeyAgreementAlgorithms != nil {
+		in, out := &in.KeyAgreementAlgorithms, &out.KeyAgreementAlgorithms
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
+	}
 	if in.KeyID != nil {
 		in, out := &in.KeyID, &out.KeyID
 		*out = new(string)
@@ -884,6 +895,17 @@ func (in *KeyObservation) DeepCopyInto(out *KeyObservation) {
 		in, out := &in.ExpirationModel, &out.ExpirationModel
 		*out = new(string)
 		**out = **in
+	}
+	if in.KeyAgreementAlgorithms != nil {
+		in, out := &in.KeyAgreementAlgorithms, &out.KeyAgreementAlgorithms
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
 	}
 	if in.KeyID != nil {
 		in, out := &in.KeyID, &out.KeyID

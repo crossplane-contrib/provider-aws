@@ -553,6 +553,56 @@ func (mr *MockKMSAPIMockRecorder) DeleteImportedKeyMaterialWithContext(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteImportedKeyMaterialWithContext", reflect.TypeOf((*MockKMSAPI)(nil).DeleteImportedKeyMaterialWithContext), varargs...)
 }
 
+// DeriveSharedSecret mocks base method.
+func (m *MockKMSAPI) DeriveSharedSecret(arg0 *kms.DeriveSharedSecretInput) (*kms.DeriveSharedSecretOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeriveSharedSecret", arg0)
+	ret0, _ := ret[0].(*kms.DeriveSharedSecretOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeriveSharedSecret indicates an expected call of DeriveSharedSecret.
+func (mr *MockKMSAPIMockRecorder) DeriveSharedSecret(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeriveSharedSecret", reflect.TypeOf((*MockKMSAPI)(nil).DeriveSharedSecret), arg0)
+}
+
+// DeriveSharedSecretRequest mocks base method.
+func (m *MockKMSAPI) DeriveSharedSecretRequest(arg0 *kms.DeriveSharedSecretInput) (*request.Request, *kms.DeriveSharedSecretOutput) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeriveSharedSecretRequest", arg0)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*kms.DeriveSharedSecretOutput)
+	return ret0, ret1
+}
+
+// DeriveSharedSecretRequest indicates an expected call of DeriveSharedSecretRequest.
+func (mr *MockKMSAPIMockRecorder) DeriveSharedSecretRequest(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeriveSharedSecretRequest", reflect.TypeOf((*MockKMSAPI)(nil).DeriveSharedSecretRequest), arg0)
+}
+
+// DeriveSharedSecretWithContext mocks base method.
+func (m *MockKMSAPI) DeriveSharedSecretWithContext(arg0 context.Context, arg1 *kms.DeriveSharedSecretInput, arg2 ...request.Option) (*kms.DeriveSharedSecretOutput, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeriveSharedSecretWithContext", varargs...)
+	ret0, _ := ret[0].(*kms.DeriveSharedSecretOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeriveSharedSecretWithContext indicates an expected call of DeriveSharedSecretWithContext.
+func (mr *MockKMSAPIMockRecorder) DeriveSharedSecretWithContext(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeriveSharedSecretWithContext", reflect.TypeOf((*MockKMSAPI)(nil).DeriveSharedSecretWithContext), varargs...)
+}
+
 // DescribeCustomKeyStores mocks base method.
 func (m *MockKMSAPI) DescribeCustomKeyStores(arg0 *kms.DescribeCustomKeyStoresInput) (*kms.DescribeCustomKeyStoresOutput, error) {
 	m.ctrl.T.Helper()

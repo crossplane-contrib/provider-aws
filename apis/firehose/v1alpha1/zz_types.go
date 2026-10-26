@@ -242,6 +242,11 @@ type BufferingHints struct {
 }
 
 // +kubebuilder:skipversion
+type CatalogConfiguration struct {
+	CatalogARN *string `json:"catalogARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CloudWatchLoggingOptions struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -360,6 +365,10 @@ type DestinationDescription struct {
 	ExtendedS3DestinationDescription *ExtendedS3DestinationDescription `json:"extendedS3DestinationDescription,omitempty"`
 	// Describes the HTTP endpoint destination.
 	HTTPEndpointDestinationDescription *HTTPEndpointDestinationDescription `json:"httpEndpointDestinationDescription,omitempty"`
+	// Describes a destination in Apache Iceberg Tables.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	IcebergDestinationDescription *IcebergDestinationDescription `json:"icebergDestinationDescription,omitempty"`
 	// Describes a destination in Amazon Redshift.
 	RedshiftDestinationDescription *RedshiftDestinationDescription `json:"redshiftDestinationDescription,omitempty"`
 	// Describes a destination in Amazon S3.
@@ -368,6 +377,17 @@ type DestinationDescription struct {
 	SnowflakeDestinationDescription *SnowflakeDestinationDescription `json:"snowflakeDestinationDescription,omitempty"`
 	// Describes a destination in Splunk.
 	SplunkDestinationDescription *SplunkDestinationDescription `json:"splunkDestinationDescription,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DestinationTableConfiguration struct {
+	DestinationDatabaseName *string `json:"destinationDatabaseName,omitempty"`
+
+	DestinationTableName *string `json:"destinationTableName,omitempty"`
+
+	S3ErrorOutputPrefix *string `json:"s3ErrorOutputPrefix,omitempty"`
+
+	UniqueKeys []*string `json:"uniqueKeys,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -700,6 +720,8 @@ type HTTPEndpointDestinationConfiguration struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes the configuration of a destination in Amazon S3.
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -728,6 +750,8 @@ type HTTPEndpointDestinationDescription struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -755,6 +779,8 @@ type HTTPEndpointDestinationUpdate struct {
 	RoleARN *string `json:"roleARN,omitempty"`
 
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -772,6 +798,96 @@ type HTTPEndpointRetryOptions struct {
 // +kubebuilder:skipversion
 type HiveJSONSerDe struct {
 	TimestampFormats []*string `json:"timestampFormats,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IcebergDestinationConfiguration struct {
+	// Describes hints for the buffering to perform before delivering data to the
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
+	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the containers where the destination Apache Iceberg Tables are
+	// persisted.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	CatalogConfiguration *CatalogConfiguration `json:"catalogConfiguration,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	DestinationTableConfigurationList []*DestinationTableConfiguration `json:"destinationTableConfigurationList,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// The retry behavior in case Firehose is unable to deliver data to an Amazon
+	// S3 prefix.
+	RetryOptions *RetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes the configuration of a destination in Amazon S3.
+	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IcebergDestinationDescription struct {
+	// Describes hints for the buffering to perform before delivering data to the
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
+	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the containers where the destination Apache Iceberg Tables are
+	// persisted.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	CatalogConfiguration *CatalogConfiguration `json:"catalogConfiguration,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	DestinationTableConfigurationList []*DestinationTableConfiguration `json:"destinationTableConfigurationList,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// The retry behavior in case Firehose is unable to deliver data to an Amazon
+	// S3 prefix.
+	RetryOptions *RetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes a destination in Amazon S3.
+	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IcebergDestinationUpdate struct {
+	// Describes hints for the buffering to perform before delivering data to the
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
+	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the containers where the destination Apache Iceberg Tables are
+	// persisted.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	CatalogConfiguration *CatalogConfiguration `json:"catalogConfiguration,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	DestinationTableConfigurationList []*DestinationTableConfiguration `json:"destinationTableConfigurationList,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// The retry behavior in case Firehose is unable to deliver data to an Amazon
+	// S3 prefix.
+	RetryOptions *RetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes the configuration of a destination in Amazon S3.
+	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -812,6 +928,8 @@ type MSKSourceConfiguration struct {
 
 	MSKClusterARN *string `json:"mSKClusterARN,omitempty"`
 
+	ReadFromTimestamp *metav1.Time `json:"readFromTimestamp,omitempty"`
+
 	TopicName *string `json:"topicName,omitempty"`
 }
 
@@ -823,6 +941,8 @@ type MSKSourceDescription struct {
 	DeliveryStartTimestamp *metav1.Time `json:"deliveryStartTimestamp,omitempty"`
 
 	MSKClusterARN *string `json:"mSKClusterARN,omitempty"`
+
+	ReadFromTimestamp *metav1.Time `json:"readFromTimestamp,omitempty"`
 
 	TopicName *string `json:"topicName,omitempty"`
 }
@@ -927,6 +1047,8 @@ type RedshiftDestinationConfiguration struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes the configuration of a destination in Amazon S3.
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 
 	Username *string `json:"username,omitempty"`
 }
@@ -952,6 +1074,8 @@ type RedshiftDestinationDescription struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 
 	Username *string `json:"username,omitempty"`
 }
@@ -975,6 +1099,8 @@ type RedshiftDestinationUpdate struct {
 	RoleARN *string `json:"roleARN,omitempty"`
 
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 
 	Username *string `json:"username,omitempty"`
 }
@@ -1074,18 +1200,37 @@ type SchemaConfiguration struct {
 }
 
 // +kubebuilder:skipversion
+type SecretsManagerConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	SecretARN *string `json:"secretARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Serializer struct {
 	// A serializer to use for converting data to the ORC format before storing
 	// it in Amazon S3. For more information, see Apache ORC (https://orc.apache.org/docs/).
 	OrcSerDe *OrcSerDe `json:"orcSerDe,omitempty"`
 	// A serializer to use for converting data to the Parquet format before storing
-	// it in Amazon S3. For more information, see Apache Parquet (https://parquet.apache.org/documentation/latest/).
+	// it in Amazon S3. For more information, see Apache Parquet (https://parquet.apache.org/docs/).
 	ParquetSerDe *ParquetSerDe `json:"parquetSerDe,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeBufferingHints struct {
+	IntervalInSeconds *int64 `json:"intervalInSeconds,omitempty"`
+
+	SizeInMBs *int64 `json:"sizeInMBs,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type SnowflakeDestinationConfiguration struct {
 	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the buffering to perform before delivering data to the Snowflake
+	// destination. If you do not specify any value, Firehose uses the default values.
+	BufferingHints *SnowflakeBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
@@ -1126,6 +1271,8 @@ type SnowflakeDestinationConfiguration struct {
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
 
 	Schema *string `json:"schema,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 	// Optionally configure a Snowflake role. Otherwise the default user role will
 	// be used.
 	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
@@ -1140,6 +1287,9 @@ type SnowflakeDestinationConfiguration struct {
 // +kubebuilder:skipversion
 type SnowflakeDestinationDescription struct {
 	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the buffering to perform before delivering data to the Snowflake
+	// destination. If you do not specify any value, Firehose uses the default values.
+	BufferingHints *SnowflakeBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
@@ -1176,6 +1326,8 @@ type SnowflakeDestinationDescription struct {
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
 
 	Schema *string `json:"schema,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 	// Optionally configure a Snowflake role. Otherwise the default user role will
 	// be used.
 	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
@@ -1190,6 +1342,9 @@ type SnowflakeDestinationDescription struct {
 // +kubebuilder:skipversion
 type SnowflakeDestinationUpdate struct {
 	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the buffering to perform before delivering data to the Snowflake
+	// destination. If you do not specify any value, Firehose uses the default values.
+	BufferingHints *SnowflakeBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
@@ -1228,6 +1383,8 @@ type SnowflakeDestinationUpdate struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 
 	Schema *string `json:"schema,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 	// Optionally configure a Snowflake role. Otherwise the default user role will
 	// be used.
 	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
@@ -1295,6 +1452,8 @@ type SplunkDestinationConfiguration struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes the configuration of a destination in Amazon S3.
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1321,6 +1480,8 @@ type SplunkDestinationDescription struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1345,6 +1506,8 @@ type SplunkDestinationUpdate struct {
 	RetryOptions *SplunkRetryOptions `json:"retryOptions,omitempty"`
 
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion

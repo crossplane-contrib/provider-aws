@@ -39,6 +39,13 @@ type AddonParameters struct {
 	// The set of configuration values for the add-on that's created. The values
 	// that you provide are validated against the schema returned by DescribeAddonConfiguration.
 	ConfigurationValues *string `json:"configurationValues,omitempty"`
+	// An array of Pod Identity Assocations to be created. Each EKS Pod Identity
+	// association maps a Kubernetes service account to an IAM Role.
+	//
+	// For more information, see Attach an IAM Role to an Amazon EKS add-on using
+	// Pod Identity (https://docs.aws.amazon.com/eks/latest/userguide/add-ons-iam.html)
+	// in the EKS User Guide.
+	PodIdentityAssociations []*AddonPodIdentityAssociations `json:"podIdentityAssociations,omitempty"`
 	// How to resolve field value conflicts for an Amazon EKS add-on. Conflicts
 	// are handled based on the value you choose:
 	//

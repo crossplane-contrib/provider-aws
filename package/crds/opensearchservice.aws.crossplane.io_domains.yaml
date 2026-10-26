@@ -73,6 +73,19 @@ spec:
               forProvider:
                 description: DomainParameters defines the desired state of Domain
                 properties:
+                  aIMLOptions:
+                    description: Options for all machine learning features for the
+                      specified domain.
+                    properties:
+                      naturalLanguageQueryGenerationOptions:
+                        description: |-
+                          Container for parameters required to enable the natural language query generation
+                          feature.
+                        properties:
+                          desiredState:
+                            type: string
+                        type: object
+                    type: object
                   accessPolicies:
                     description: |-
                       Identity and Access Management (IAM) policy document specifying the access
@@ -117,6 +130,20 @@ spec:
                         type: boolean
                       internalUserDatabaseEnabled:
                         type: boolean
+                      jwtOptions:
+                        description: |-
+                          The JWT authentication and authorization configuration for an Amazon OpenSearch
+                          Service domain.
+                        properties:
+                          enabled:
+                            type: boolean
+                          publicKey:
+                            type: string
+                          rolesKey:
+                            type: string
+                          subjectKey:
+                            type: string
+                        type: object
                       masterUserOptions:
                         description: Credentials for the master user for a domain.
                         properties:
@@ -831,6 +858,21 @@ spec:
               atProvider:
                 description: DomainObservation defines the observed state of Domain
                 properties:
+                  aIMLOptions:
+                    description: Container for parameters required to enable all machine
+                      learning features.
+                    properties:
+                      naturalLanguageQueryGenerationOptions:
+                        description: |-
+                          Container for parameters representing the state of the natural language query
+                          generation feature on the specified domain.
+                        properties:
+                          currentState:
+                            type: string
+                          desiredState:
+                            type: string
+                        type: object
+                    type: object
                   accessPolicies:
                     description: |-
                       Identity and Access Management (IAM) policy document specifying the access
@@ -854,6 +896,19 @@ spec:
                         type: boolean
                       internalUserDatabaseEnabled:
                         type: boolean
+                      jwtOptions:
+                        description: Describes the JWT options configured for the
+                          domain.
+                        properties:
+                          enabled:
+                            type: boolean
+                          publicKey:
+                            type: string
+                          rolesKey:
+                            type: string
+                          subjectKey:
+                            type: string
+                        type: object
                       sAMLOptions:
                         description: Describes the SAML application configured for
                           the domain.
@@ -1005,7 +1060,7 @@ spec:
                         type: string
                     type: object
                   domainEndpointV2HostedZoneID:
-                    description: The DualStack Hosted Zone Id for the domain.
+                    description: The dual stack hosted zone ID for the domain.
                     type: string
                   domainID:
                     description: Unique identifier for the domain.

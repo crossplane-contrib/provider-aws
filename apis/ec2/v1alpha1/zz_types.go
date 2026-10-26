@@ -947,6 +947,8 @@ type CreditSpecificationRequest struct {
 type CustomerGateway struct {
 	BGPASN *string `json:"bgpASN,omitempty"`
 
+	BGPASNExtended *string `json:"bgpASNExtended,omitempty"`
+
 	CertificateARN *string `json:"certificateARN,omitempty"`
 
 	CustomerGatewayID *string `json:"customerGatewayID,omitempty"`
@@ -2038,6 +2040,8 @@ type IPAMDiscoveredPublicAddress struct {
 
 // +kubebuilder:skipversion
 type IPAMDiscoveredResourceCIDR struct {
+	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
+
 	ResourceCIDR *string `json:"resourceCIDR,omitempty"`
 
 	ResourceID *string `json:"resourceID,omitempty"`
@@ -2054,6 +2058,19 @@ type IPAMDiscoveredResourceCIDR struct {
 // +kubebuilder:skipversion
 type IPAMDiscoveryFailureReason struct {
 	Message *string `json:"message,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IPAMExternalResourceVerificationToken struct {
+	IPAMRegion *string `json:"ipamRegion,omitempty"`
+
+	NotAfter *metav1.Time `json:"notAfter,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
+
+	TokenName *string `json:"tokenName,omitempty"`
+
+	TokenValue *string `json:"tokenValue,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2141,6 +2158,8 @@ type IPAMPublicAddressTag struct {
 
 // +kubebuilder:skipversion
 type IPAMResourceCIDR struct {
+	AvailabilityZoneID *string `json:"availabilityZoneID,omitempty"`
+
 	ResourceCIDR *string `json:"resourceCIDR,omitempty"`
 
 	ResourceID *string `json:"resourceID,omitempty"`
@@ -2626,7 +2645,7 @@ type InstanceNetworkInterfaceSpecification struct {
 	// A security group connection tracking specification request that enables you
 	// to set the idle timeout for connection tracking on an Elastic network interface.
 	// For more information, see Connection tracking timeouts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-connection-tracking.html#connection-tracking-timeouts)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	ConnectionTrackingSpecification *ConnectionTrackingSpecificationRequest `json:"connectionTrackingSpecification,omitempty"`
 
 	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
@@ -3208,7 +3227,7 @@ type LaunchTemplateInstanceNetworkInterfaceSpecification struct {
 	// A security group connection tracking specification that enables you to set
 	// the idle timeout for connection tracking on an Elastic network interface.
 	// For more information, see Connection tracking timeouts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-connection-tracking.html#connection-tracking-timeouts)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	ConnectionTrackingSpecification *ConnectionTrackingSpecification `json:"connectionTrackingSpecification,omitempty"`
 
 	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
@@ -3269,7 +3288,7 @@ type LaunchTemplateInstanceNetworkInterfaceSpecificationRequest struct {
 	// A security group connection tracking specification request that enables you
 	// to set the idle timeout for connection tracking on an Elastic network interface.
 	// For more information, see Connection tracking timeouts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-connection-tracking.html#connection-tracking-timeouts)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	ConnectionTrackingSpecification *ConnectionTrackingSpecificationRequest `json:"connectionTrackingSpecification,omitempty"`
 
 	DeleteOnTermination *bool `json:"deleteOnTermination,omitempty"`
@@ -4644,7 +4663,7 @@ type RequestLaunchTemplateData struct {
 	MaintenanceOptions *LaunchTemplateInstanceMaintenanceOptionsRequest `json:"maintenanceOptions,omitempty"`
 	// The metadata options for the instance. For more information, see Instance
 	// metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	MetadataOptions *LaunchTemplateInstanceMetadataOptionsRequest `json:"metadataOptions,omitempty"`
 	// Describes the monitoring for the instance.
 	Monitoring *LaunchTemplatesMonitoringRequest `json:"monitoring,omitempty"`
@@ -4906,7 +4925,7 @@ type ResponseLaunchTemplateData struct {
 	MaintenanceOptions *LaunchTemplateInstanceMaintenanceOptions `json:"maintenanceOptions,omitempty"`
 	// The metadata options for the instance. For more information, see Instance
 	// metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	MetadataOptions *LaunchTemplateInstanceMetadataOptions `json:"metadataOptions,omitempty"`
 	// Describes the monitoring for the instance.
 	Monitoring *LaunchTemplatesMonitoring `json:"monitoring,omitempty"`
@@ -5950,6 +5969,8 @@ type TrafficMirrorFilterRule struct {
 	RuleNumber *int64 `json:"ruleNumber,omitempty"`
 
 	SourceCIDRBlock *string `json:"sourceCIDRBlock,omitempty"`
+
+	Tags []*Tag `json:"tags,omitempty"`
 
 	TrafficMirrorFilterID *string `json:"trafficMirrorFilterID,omitempty"`
 

@@ -172,6 +172,31 @@ type AuditContext struct {
 }
 
 // +kubebuilder:skipversion
+type AuthenticationConfiguration struct {
+	AuthenticationType *string `json:"authenticationType,omitempty"`
+	// A structure containing properties for OAuth2 authentication.
+	OAuth2Properties *OAuth2Properties `json:"oAuth2Properties,omitempty"`
+
+	SecretARN *string `json:"secretARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AuthenticationConfigurationInput struct {
+	AuthenticationType *string `json:"authenticationType,omitempty"`
+	// A structure containing properties for OAuth2 in the CreateConnection request.
+	OAuth2Properties *OAuth2PropertiesInput `json:"oAuth2Properties,omitempty"`
+
+	SecretARN *string `json:"secretARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AuthorizationCodeProperties struct {
+	AuthorizationCode *string `json:"authorizationCode,omitempty"`
+
+	RedirectURI *string `json:"redirectURI,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type BasicCatalogTarget struct {
 	Database *string `json:"database,omitempty"`
 
@@ -614,7 +639,20 @@ type Condition struct {
 }
 
 // +kubebuilder:skipversion
+type ConditionExpression struct {
+	Condition *string `json:"condition,omitempty"`
+
+	TargetColumn *string `json:"targetColumn,omitempty"`
+
+	Value *string `json:"value,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ConnectionInput struct {
+	// A structure containing the authentication configuration in the CreateConnection
+	// request.
+	AuthenticationConfiguration *AuthenticationConfigurationInput `json:"authenticationConfiguration,omitempty"`
+
 	ConnectionProperties map[string]*string `json:"connectionProperties,omitempty"`
 
 	ConnectionType *string `json:"connectionType,omitempty"`
@@ -624,8 +662,10 @@ type ConnectionInput struct {
 	MatchCriteria []*string `json:"matchCriteria,omitempty"`
 
 	Name *string `json:"name,omitempty"`
-	// Specifies the physical requirements for a connection.
+	// The OAuth client app in GetConnection response.
 	PhysicalConnectionRequirements *PhysicalConnectionRequirements `json:"physicalConnectionRequirements,omitempty"`
+
+	ValidateCredentials *bool `json:"validateCredentials,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -637,6 +677,9 @@ type ConnectionPasswordEncryption struct {
 
 // +kubebuilder:skipversion
 type Connection_SDK struct {
+	// A structure containing the authentication configuration.
+	AuthenticationConfiguration *AuthenticationConfiguration `json:"authenticationConfiguration,omitempty"`
+
 	ConnectionProperties map[string]*string `json:"connectionProperties,omitempty"`
 
 	ConnectionType *string `json:"connectionType,omitempty"`
@@ -645,6 +688,8 @@ type Connection_SDK struct {
 
 	Description *string `json:"description,omitempty"`
 
+	LastConnectionValidationTime *metav1.Time `json:"lastConnectionValidationTime,omitempty"`
+
 	LastUpdatedBy *string `json:"lastUpdatedBy,omitempty"`
 
 	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
@@ -652,8 +697,12 @@ type Connection_SDK struct {
 	MatchCriteria []*string `json:"matchCriteria,omitempty"`
 
 	Name *string `json:"name,omitempty"`
-	// Specifies the physical requirements for a connection.
+	// The OAuth client app in GetConnection response.
 	PhysicalConnectionRequirements *PhysicalConnectionRequirements `json:"physicalConnectionRequirements,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	StatusReason *string `json:"statusReason,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -1643,6 +1692,8 @@ type JobRun struct {
 
 	ID *string `json:"id,omitempty"`
 
+	JobMode *string `json:"jobMode,omitempty"`
+
 	JobName *string `json:"jobName,omitempty"`
 
 	JobRunState *string `json:"jobRunState,omitempty"`
@@ -1651,6 +1702,8 @@ type JobRun struct {
 
 	LogGroupName *string `json:"logGroupName,omitempty"`
 
+	MaintenanceWindow *string `json:"maintenanceWindow,omitempty"`
+
 	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
 	// Specifies configuration properties of a notification.
 	NotificationProperty *NotificationProperty `json:"notificationProperty,omitempty"`
@@ -1658,6 +1711,8 @@ type JobRun struct {
 	NumberOfWorkers *int64 `json:"numberOfWorkers,omitempty"`
 
 	PreviousRunID *string `json:"previousRunID,omitempty"`
+
+	ProfileName *string `json:"profileName,omitempty"`
 
 	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
 
@@ -1690,7 +1745,11 @@ type JobUpdate struct {
 
 	GlueVersion *string `json:"glueVersion,omitempty"`
 
+	JobMode *string `json:"jobMode,omitempty"`
+
 	LogURI *string `json:"logURI,omitempty"`
+
+	MaintenanceWindow *string `json:"maintenanceWindow,omitempty"`
 
 	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
 
@@ -1736,9 +1795,13 @@ type Job_SDK struct {
 
 	GlueVersion *string `json:"glueVersion,omitempty"`
 
+	JobMode *string `json:"jobMode,omitempty"`
+
 	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
 
 	LogURI *string `json:"logURI,omitempty"`
+
+	MaintenanceWindow *string `json:"maintenanceWindow,omitempty"`
 
 	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
 
@@ -1751,6 +1814,8 @@ type Job_SDK struct {
 	NotificationProperty *NotificationProperty `json:"notificationProperty,omitempty"`
 
 	NumberOfWorkers *int64 `json:"numberOfWorkers,omitempty"`
+
+	ProfileName *string `json:"profileName,omitempty"`
 
 	Role *string `json:"role,omitempty"`
 
@@ -2056,6 +2121,40 @@ type NullValueField struct {
 }
 
 // +kubebuilder:skipversion
+type OAuth2ClientApplication struct {
+	AWSManagedClientApplicationReference *string `json:"awsManagedClientApplicationReference,omitempty"`
+
+	UserManagedClientApplicationClientID *string `json:"userManagedClientApplicationClientID,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OAuth2Properties struct {
+	// The OAuth2 client app used for the connection.
+	OAuth2ClientApplication *OAuth2ClientApplication `json:"oAuth2ClientApplication,omitempty"`
+
+	OAuth2GrantType *string `json:"oAuth2GrantType,omitempty"`
+
+	TokenURL *string `json:"tokenURL,omitempty"`
+
+	TokenURLParametersMap map[string]*string `json:"tokenURLParametersMap,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type OAuth2PropertiesInput struct {
+	// The set of properties required for the the OAuth2 AUTHORIZATION_CODE grant
+	// type workflow.
+	AuthorizationCodeProperties *AuthorizationCodeProperties `json:"authorizationCodeProperties,omitempty"`
+	// The OAuth2 client app used for the connection.
+	OAuth2ClientApplication *OAuth2ClientApplication `json:"oAuth2ClientApplication,omitempty"`
+
+	OAuth2GrantType *string `json:"oAuth2GrantType,omitempty"`
+
+	TokenURL *string `json:"tokenURL,omitempty"`
+
+	TokenURLParametersMap map[string]*string `json:"tokenURLParametersMap,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Option struct {
 	Description *string `json:"description,omitempty"`
 
@@ -2213,6 +2312,15 @@ type Recipe struct {
 	Name *string `json:"name,omitempty"`
 	// A reference to a Glue DataBrew recipe.
 	RecipeReference *RecipeReference `json:"recipeReference,omitempty"`
+
+	RecipeSteps []*RecipeStep `json:"recipeSteps,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecipeAction struct {
+	Operation *string `json:"operation,omitempty"`
+
+	Parameters map[string]*string `json:"parameters,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2220,6 +2328,14 @@ type RecipeReference struct {
 	RecipeARN *string `json:"recipeARN,omitempty"`
 
 	RecipeVersion *string `json:"recipeVersion,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RecipeStep struct {
+	// Actions defined in the Glue Studio data preparation recipe node.
+	Action *RecipeAction `json:"action,omitempty"`
+
+	ConditionExpressions []*ConditionExpression `json:"conditionExpressions,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -2701,6 +2817,8 @@ type Session struct {
 
 	NumberOfWorkers *int64 `json:"numberOfWorkers,omitempty"`
 
+	ProfileName *string `json:"profileName,omitempty"`
+
 	SecurityConfiguration *string `json:"securityConfiguration,omitempty"`
 
 	WorkerType *string `json:"workerType,omitempty"`
@@ -3173,6 +3291,17 @@ type UpsertRedshiftTargetOptions struct {
 }
 
 // +kubebuilder:skipversion
+type UsageProfileDefinition struct {
+	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type UserDefinedFunction struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
@@ -3202,8 +3331,20 @@ type ViewDefinition struct {
 }
 
 // +kubebuilder:skipversion
+type ViewDefinitionInput struct {
+	IsProtected *bool `json:"isProtected,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ViewRepresentation struct {
 	IsStale *bool `json:"isStale,omitempty"`
+
+	ValidationConnection *string `json:"validationConnection,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ViewRepresentationInput struct {
+	ValidationConnection *string `json:"validationConnection,omitempty"`
 }
 
 // +kubebuilder:skipversion
