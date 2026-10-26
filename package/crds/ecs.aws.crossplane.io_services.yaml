@@ -944,13 +944,12 @@ spec:
                                   type: integer
                               type: object
                             tls:
-                              description: An object that represents the configuration
-                                for Service Connect TLS.
+                              description: The key that encrypts and decrypts your
+                                resources for Service Connect TLS.
                               properties:
                                 issuerCertificateAuthority:
-                                  description: |-
-                                    An object that represents the Amazon Web Services Private Certificate Authority
-                                    certificate.
+                                  description: The certificate root authority that
+                                    secures your service.
                                   properties:
                                     awsPcaAuthorityARN:
                                       type: string
@@ -1377,6 +1376,13 @@ spec:
                         failedTasks:
                           format: int64
                           type: integer
+                        fargateEphemeralStorage:
+                          description: The amount of ephemeral storage to allocate
+                            for the deployment.
+                          properties:
+                            kmsKeyID:
+                              type: string
+                          type: object
                         id:
                           type: string
                         launchType:
@@ -1523,13 +1529,12 @@ spec:
                                         type: integer
                                     type: object
                                   tls:
-                                    description: An object that represents the configuration
-                                      for Service Connect TLS.
+                                    description: The key that encrypts and decrypts
+                                      your resources for Service Connect TLS.
                                     properties:
                                       issuerCertificateAuthority:
-                                        description: |-
-                                          An object that represents the Amazon Web Services Private Certificate Authority
-                                          certificate.
+                                        description: The certificate root authority
+                                          that secures your service.
                                         properties:
                                           awsPcaAuthorityARN:
                                             type: string
@@ -1754,6 +1759,13 @@ spec:
                           type: string
                         externalID:
                           type: string
+                        fargateEphemeralStorage:
+                          description: The amount of ephemeral storage to allocate
+                            for the deployment.
+                          properties:
+                            kmsKeyID:
+                              type: string
+                          type: object
                         id:
                           type: string
                         launchType:

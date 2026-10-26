@@ -586,6 +586,8 @@ spec:
                         type: string
                       trustStoreARN:
                         type: string
+                      trustStoreAssociationStatus:
+                        type: string
                     type: object
                   port:
                     description: |-

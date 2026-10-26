@@ -311,6 +311,11 @@ type ConsumerGroupReplicationUpdate struct {
 }
 
 // +kubebuilder:skipversion
+type ControllerNodeInfo struct {
+	Endpoints []*string `json:"endpoints,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type EBSStorageInfo struct {
 	// Contains information about provisioned throughput for EBS storage volumes
 	// attached to kafka broker nodes.

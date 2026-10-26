@@ -92,6 +92,13 @@ const (
 	ConnectionMode_VPC_ENDPOINT ConnectionMode = "VPC_ENDPOINT"
 )
 
+type DataSourceStatus string
+
+const (
+	DataSourceStatus_ACTIVE   DataSourceStatus = "ACTIVE"
+	DataSourceStatus_DISABLED DataSourceStatus = "DISABLED"
+)
+
 type DeploymentStatus string
 
 const (
@@ -224,6 +231,25 @@ type MasterNodeStatus string
 const (
 	MasterNodeStatus_Available   MasterNodeStatus = "Available"
 	MasterNodeStatus_UnAvailable MasterNodeStatus = "UnAvailable"
+)
+
+type NATuralLanguageQueryGenerationCurrentState string
+
+const (
+	NATuralLanguageQueryGenerationCurrentState_NOT_ENABLED         NATuralLanguageQueryGenerationCurrentState = "NOT_ENABLED"
+	NATuralLanguageQueryGenerationCurrentState_ENABLE_COMPLETE     NATuralLanguageQueryGenerationCurrentState = "ENABLE_COMPLETE"
+	NATuralLanguageQueryGenerationCurrentState_ENABLE_IN_PROGRESS  NATuralLanguageQueryGenerationCurrentState = "ENABLE_IN_PROGRESS"
+	NATuralLanguageQueryGenerationCurrentState_ENABLE_FAILED       NATuralLanguageQueryGenerationCurrentState = "ENABLE_FAILED"
+	NATuralLanguageQueryGenerationCurrentState_DISABLE_COMPLETE    NATuralLanguageQueryGenerationCurrentState = "DISABLE_COMPLETE"
+	NATuralLanguageQueryGenerationCurrentState_DISABLE_IN_PROGRESS NATuralLanguageQueryGenerationCurrentState = "DISABLE_IN_PROGRESS"
+	NATuralLanguageQueryGenerationCurrentState_DISABLE_FAILED      NATuralLanguageQueryGenerationCurrentState = "DISABLE_FAILED"
+)
+
+type NATuralLanguageQueryGenerationDesiredState string
+
+const (
+	NATuralLanguageQueryGenerationDesiredState_ENABLED  NATuralLanguageQueryGenerationDesiredState = "ENABLED"
+	NATuralLanguageQueryGenerationDesiredState_DISABLED NATuralLanguageQueryGenerationDesiredState = "DISABLED"
 )
 
 type NodeStatus string

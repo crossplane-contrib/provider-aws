@@ -28,6 +28,27 @@ var (
 )
 
 // +kubebuilder:skipversion
+type AIMLOptionsInput struct {
+	// Container for parameters required to enable the natural language query generation
+	// feature.
+	NATuralLanguageQueryGenerationOptions *NATuralLanguageQueryGenerationOptionsInput `json:"naturalLanguageQueryGenerationOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AIMLOptionsOutput struct {
+	// Container for parameters representing the state of the natural language query
+	// generation feature on the specified domain.
+	NATuralLanguageQueryGenerationOptions *NATuralLanguageQueryGenerationOptionsOutput `json:"naturalLanguageQueryGenerationOptions,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AIMLOptionsStatus struct {
+	// Container for parameters representing the state of machine learning features
+	// on the specified domain.
+	Options *AIMLOptionsOutput `json:"options,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type AWSDomainInformation struct {
 	// The name of an OpenSearch Service domain. Domain names are unique across
 	// the domains owned by an account within an Amazon Web Services Region.
@@ -66,6 +87,8 @@ type AdvancedSecurityOptions struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	InternalUserDatabaseEnabled *bool `json:"internalUserDatabaseEnabled,omitempty"`
+	// Describes the JWT options configured for the domain.
+	JWTOptions *JWTOptionsOutput `json:"jwtOptions,omitempty"`
 	// Describes the SAML application configured for the domain.
 	SAMLOptions *SAMLOptionsOutput `json:"sAMLOptions,omitempty"`
 }
@@ -77,6 +100,9 @@ type AdvancedSecurityOptionsInput struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	InternalUserDatabaseEnabled *bool `json:"internalUserDatabaseEnabled,omitempty"`
+	// The JWT authentication and authorization configuration for an Amazon OpenSearch
+	// Service domain.
+	JWTOptions *JWTOptionsInput `json:"jwtOptions,omitempty"`
 	// Credentials for the master user for a domain.
 	MasterUserOptions *MasterUserOptions `json:"masterUserOptions,omitempty"`
 	// The SAML authentication configuration for an Amazon OpenSearch Service domain.
@@ -319,6 +345,9 @@ type DomainPackageDetails struct {
 
 // +kubebuilder:skipversion
 type DomainStatus_SDK struct {
+	// Container for parameters representing the state of machine learning features
+	// on the specified domain.
+	AIMLOptions *AIMLOptionsOutput `json:"aIMLOptions,omitempty"`
 	// The Amazon Resource Name (ARN) of the domain. See Identifiers for IAM Entities
 	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/index.html) in Using Amazon
 	// Web Services Identity and Access Management for more information.
@@ -502,6 +531,28 @@ type InstanceTypeDetails struct {
 }
 
 // +kubebuilder:skipversion
+type JWTOptionsInput struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	PublicKey *string `json:"publicKey,omitempty"`
+
+	RolesKey *string `json:"rolesKey,omitempty"`
+
+	SubjectKey *string `json:"subjectKey,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type JWTOptionsOutput struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	PublicKey *string `json:"publicKey,omitempty"`
+
+	RolesKey *string `json:"rolesKey,omitempty"`
+
+	SubjectKey *string `json:"subjectKey,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type LogPublishingOption struct {
 	// ARN of the Cloudwatch log group to publish logs to.
 	CloudWatchLogsLogGroupARN *string `json:"cloudWatchLogsLogGroupARN,omitempty"`
@@ -535,6 +586,18 @@ type ModifyingProperties struct {
 	PendingValue *string `json:"pendingValue,omitempty"`
 
 	ValueType *string `json:"valueType,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type NATuralLanguageQueryGenerationOptionsInput struct {
+	DesiredState *string `json:"desiredState,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type NATuralLanguageQueryGenerationOptionsOutput struct {
+	CurrentState *string `json:"currentState,omitempty"`
+
+	DesiredState *string `json:"desiredState,omitempty"`
 }
 
 // +kubebuilder:skipversion

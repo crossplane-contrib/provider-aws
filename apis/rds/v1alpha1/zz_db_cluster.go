@@ -137,15 +137,13 @@ type DBClusterParameters struct {
 	//
 	//    * Must match the name of an existing DB subnet group.
 	//
-	//    * Must not be default.
-	//
 	// Example: mydbsubnetgroup
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
 	// Reserved for future use.
 	DBSystemID *string `json:"dbSystemID,omitempty"`
-	// The name for your database of up to 64 alphanumeric characters. If you don't
-	// provide a name, Amazon RDS doesn't create a database in the DB cluster you
-	// are creating.
+	// The name for your database of up to 64 alphanumeric characters. A database
+	// named postgres is always created. If this parameter is specified, an additional
+	// database with this name is created.
 	//
 	// Valid for Cluster Type: Aurora DB clusters and Multi-AZ DB clusters
 	DatabaseName *string `json:"databaseName,omitempty"`
@@ -575,12 +573,13 @@ type DBClusterParameters struct {
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
 	// Specifies whether the DB cluster is publicly accessible.
 	//
-	// When the DB cluster is publicly accessible, its Domain Name System (DNS)
-	// endpoint resolves to the private IP address from within the DB cluster's
-	// virtual private cloud (VPC). It resolves to the public IP address from outside
-	// of the DB cluster's VPC. Access to the DB cluster is ultimately controlled
-	// by the security group it uses. That public access isn't permitted if the
-	// security group assigned to the DB cluster doesn't permit it.
+	// When the DB cluster is publicly accessible and you connect from outside of
+	// the DB cluster's virtual private cloud (VPC), its Domain Name System (DNS)
+	// endpoint resolves to the public IP address. When you connect from within
+	// the same VPC as the DB cluster, the endpoint resolves to the private IP address.
+	// Access to the DB cluster is ultimately controlled by the security group it
+	// uses. That public access isn't permitted if the security group assigned to
+	// the DB cluster doesn't permit it.
 	//
 	// When the DB cluster isn't publicly accessible, it is an internal DB cluster
 	// with a DNS name that resolves to a private IP address.

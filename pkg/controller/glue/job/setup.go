@@ -141,6 +141,7 @@ func lateInitialize(spec *svcapitypes.JobParameters, resp *svcsdk.GetJobOutput) 
 	spec.ExecutionProperty.MaxConcurrentRuns = pointer.LateInitialize(spec.ExecutionProperty.MaxConcurrentRuns, resp.Job.ExecutionProperty.MaxConcurrentRuns)
 
 	spec.GlueVersion = pointer.LateInitialize(spec.GlueVersion, resp.Job.GlueVersion)
+	spec.JobMode = pointer.LateInitialize(spec.JobMode, resp.Job.JobMode)
 	spec.MaxRetries = pointer.LateInitialize(spec.MaxRetries, resp.Job.MaxRetries)
 	spec.Timeout = pointer.LateInitialize(spec.Timeout, resp.Job.Timeout)
 
@@ -196,7 +197,7 @@ func preUpdate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.UpdateJobInpu
 		}
 	}
 
-	if cr.Spec.ForProvider.Connections != nil {
+	if len(cr.Spec.ForProvider.Connections) > 0 {
 		obj.JobUpdate.Connections = &svcsdk.ConnectionsList{
 			Connections: cr.Spec.ForProvider.Connections}
 	}
@@ -243,7 +244,7 @@ func preCreate(_ context.Context, cr *svcapitypes.Job, obj *svcsdk.CreateJobInpu
 	obj.Role = pointer.ToOrNilIfZeroValue(cr.Spec.ForProvider.Role)
 	obj.SecurityConfiguration = cr.Spec.ForProvider.SecurityConfiguration
 
-	if cr.Spec.ForProvider.Connections != nil {
+	if len(cr.Spec.ForProvider.Connections) > 0 {
 		obj.Connections = &svcsdk.ConnectionsList{
 			Connections: cr.Spec.ForProvider.Connections}
 	}

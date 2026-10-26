@@ -57,6 +57,10 @@ type DeliveryStreamParameters struct {
 	// Enables configuring Kinesis Firehose to deliver data to any HTTP endpoint
 	// destination. You can specify only one destination.
 	HTTPEndpointDestinationConfiguration *HTTPEndpointDestinationConfiguration `json:"httpEndpointDestinationConfiguration,omitempty"`
+	// Configure Apache Iceberg Tables destination.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	IcebergDestinationConfiguration *IcebergDestinationConfiguration `json:"icebergDestinationConfiguration,omitempty"`
 	// When a Kinesis data stream is used as the source for the delivery stream,
 	// a KinesisStreamSourceConfiguration containing the Kinesis data stream Amazon
 	// Resource Name (ARN) and the role ARN for the source stream.

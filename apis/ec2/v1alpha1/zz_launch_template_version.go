@@ -35,7 +35,7 @@ type LaunchTemplateVersionParameters struct {
 	// If true, and if a Systems Manager parameter is specified for ImageId, the
 	// AMI ID is displayed in the response for imageID. For more information, see
 	// Use a Systems Manager parameter instead of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	//
 	// Default: false
 	ResolveAlias *bool `json:"resolveAlias,omitempty"`

@@ -70,6 +70,11 @@ resources:
         from:
           operation: DescribeDomain
           path: DomainStatus.AccessPolicies
+      AIMLOptions:
+        is_read_only: true
+        from:
+          operation: DescribeDomain
+          path: DomainStatus.AIMLOptions
     exceptions:
       errors:
         404:

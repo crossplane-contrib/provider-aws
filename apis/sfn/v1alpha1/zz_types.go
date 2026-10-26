@@ -47,6 +47,15 @@ type CloudWatchLogsLogGroup struct {
 }
 
 // +kubebuilder:skipversion
+type EncryptionConfiguration struct {
+	KMSDataKeyReusePeriodSeconds *int64 `json:"kmsDataKeyReusePeriodSeconds,omitempty"`
+
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type ExecutionListItem struct {
 	ExecutionARN *string `json:"executionARN,omitempty"`
 

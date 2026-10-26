@@ -174,6 +174,13 @@ const (
 	TargetTypeEnum_alb      TargetTypeEnum = "alb"
 )
 
+type TrustStoreAssociationStatusEnum string
+
+const (
+	TrustStoreAssociationStatusEnum_active  TrustStoreAssociationStatusEnum = "active"
+	TrustStoreAssociationStatusEnum_removed TrustStoreAssociationStatusEnum = "removed"
+)
+
 type TrustStoreStatus string
 
 const (

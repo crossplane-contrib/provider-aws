@@ -323,6 +323,9 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Listener) (manage
 			if elem.MutualAuthentication.TrustStoreArn != nil {
 				f5.TrustStoreARN = elem.MutualAuthentication.TrustStoreArn
 			}
+			if elem.MutualAuthentication.TrustStoreAssociationStatus != nil {
+				f5.TrustStoreAssociationStatus = elem.MutualAuthentication.TrustStoreAssociationStatus
+			}
 			cr.Spec.ForProvider.MutualAuthentication = f5
 		} else {
 			cr.Spec.ForProvider.MutualAuthentication = nil

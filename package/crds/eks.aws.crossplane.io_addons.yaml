@@ -169,6 +169,22 @@ spec:
                       The set of configuration values for the add-on that's created. The values
                       that you provide are validated against the schema returned by DescribeAddonConfiguration.
                     type: string
+                  podIdentityAssociations:
+                    description: |-
+                      An array of Pod Identity Assocations to be created. Each EKS Pod Identity
+                      association maps a Kubernetes service account to an IAM Role.
+
+                      For more information, see Attach an IAM Role to an Amazon EKS add-on using
+                      Pod Identity (https://docs.aws.amazon.com/eks/latest/userguide/add-ons-iam.html)
+                      in the EKS User Guide.
+                    items:
+                      properties:
+                        roleARN:
+                          type: string
+                        serviceAccount:
+                          type: string
+                      type: object
+                    type: array
                   region:
                     description: Region is which region the Addon will be created.
                     type: string

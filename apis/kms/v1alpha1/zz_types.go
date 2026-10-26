@@ -129,6 +129,8 @@ type KeyMetadata struct {
 
 	ExpirationModel *string `json:"expirationModel,omitempty"`
 
+	KeyAgreementAlgorithms []*string `json:"keyAgreementAlgorithms,omitempty"`
+
 	KeyID *string `json:"keyID,omitempty"`
 
 	KeyManager *string `json:"keyManager,omitempty"`

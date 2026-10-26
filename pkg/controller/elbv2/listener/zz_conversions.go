@@ -252,6 +252,9 @@ func GenerateListener(resp *svcsdk.DescribeListenersOutput) *svcapitypes.Listene
 			if elem.MutualAuthentication.TrustStoreArn != nil {
 				f5.TrustStoreARN = elem.MutualAuthentication.TrustStoreArn
 			}
+			if elem.MutualAuthentication.TrustStoreAssociationStatus != nil {
+				f5.TrustStoreAssociationStatus = elem.MutualAuthentication.TrustStoreAssociationStatus
+			}
 			cr.Spec.ForProvider.MutualAuthentication = f5
 		} else {
 			cr.Spec.ForProvider.MutualAuthentication = nil
@@ -304,6 +307,9 @@ func GenerateCreateListenerInput(cr *svcapitypes.Listener) *svcsdk.CreateListene
 		}
 		if cr.Spec.ForProvider.MutualAuthentication.TrustStoreARN != nil {
 			f1.SetTrustStoreArn(*cr.Spec.ForProvider.MutualAuthentication.TrustStoreARN)
+		}
+		if cr.Spec.ForProvider.MutualAuthentication.TrustStoreAssociationStatus != nil {
+			f1.SetTrustStoreAssociationStatus(*cr.Spec.ForProvider.MutualAuthentication.TrustStoreAssociationStatus)
 		}
 		res.SetMutualAuthentication(f1)
 	}
@@ -534,6 +540,9 @@ func GenerateModifyListenerInput(cr *svcapitypes.Listener) *svcsdk.ModifyListene
 		}
 		if cr.Spec.ForProvider.MutualAuthentication.TrustStoreARN != nil {
 			f4.SetTrustStoreArn(*cr.Spec.ForProvider.MutualAuthentication.TrustStoreARN)
+		}
+		if cr.Spec.ForProvider.MutualAuthentication.TrustStoreAssociationStatus != nil {
+			f4.SetTrustStoreAssociationStatus(*cr.Spec.ForProvider.MutualAuthentication.TrustStoreAssociationStatus)
 		}
 		res.SetMutualAuthentication(f4)
 	}

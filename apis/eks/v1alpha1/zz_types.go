@@ -112,12 +112,28 @@ type AddonIssue struct {
 }
 
 // +kubebuilder:skipversion
+type AddonPodIdentityAssociations struct {
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	ServiceAccount *string `json:"serviceAccount,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AddonPodIdentityConfiguration struct {
+	RecommendedManagedPolicies []*string `json:"recommendedManagedPolicies,omitempty"`
+
+	ServiceAccount *string `json:"serviceAccount,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type AddonVersionInfo struct {
 	AddonVersion *string `json:"addonVersion,omitempty"`
 
 	Architecture []*string `json:"architecture,omitempty"`
 
 	RequiresConfiguration *bool `json:"requiresConfiguration,omitempty"`
+
+	RequiresIAMPermissions *bool `json:"requiresIAMPermissions,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -316,6 +332,13 @@ type ErrorDetail struct {
 }
 
 // +kubebuilder:skipversion
+type FargateProfileIssue struct {
+	Message *string `json:"message,omitempty"`
+
+	ResourceIDs []*string `json:"resourceIDs,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type FargateProfileSelector struct {
 	Namespace *string `json:"namespace,omitempty"`
 }
@@ -506,6 +529,8 @@ type PodIdentityAssociation struct {
 
 	Namespace *string `json:"namespace,omitempty"`
 
+	OwnerARN *string `json:"ownerARN,omitempty"`
+
 	RoleARN *string `json:"roleARN,omitempty"`
 
 	ServiceAccount *string `json:"serviceAccount,omitempty"`
@@ -546,6 +571,8 @@ type PodIdentityAssociationSummary struct {
 	ClusterName *string `json:"clusterName,omitempty"`
 
 	Namespace *string `json:"namespace,omitempty"`
+
+	OwnerARN *string `json:"ownerARN,omitempty"`
 
 	ServiceAccount *string `json:"serviceAccount,omitempty"`
 }

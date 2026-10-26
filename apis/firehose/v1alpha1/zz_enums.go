@@ -153,6 +153,13 @@ const (
 	HTTPEndpointS3BackupMode_AllData        HTTPEndpointS3BackupMode = "AllData"
 )
 
+type IcebergS3BackupMode string
+
+const (
+	IcebergS3BackupMode_FailedDataOnly IcebergS3BackupMode = "FailedDataOnly"
+	IcebergS3BackupMode_AllData        IcebergS3BackupMode = "AllData"
+)
+
 type KeyType string
 
 const (

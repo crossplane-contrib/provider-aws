@@ -101,6 +101,13 @@ func postObserve(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.D
 func preCreate(_ context.Context, cr *svcapitypes.StateMachine, obj *svcsdk.CreateStateMachineInput) error {
 	obj.Type = aws.String(string(cr.Spec.ForProvider.Type))
 	obj.RoleArn = cr.Spec.ForProvider.RoleARN
+	if cr.Spec.ForProvider.EncryptionConfiguration != nil {
+		obj.EncryptionConfiguration = &svcsdk.EncryptionConfiguration{
+			KmsDataKeyReusePeriodSeconds: cr.Spec.ForProvider.EncryptionConfiguration.KMSDataKeyReusePeriodSeconds,
+			KmsKeyId:                     cr.Spec.ForProvider.EncryptionConfiguration.KMSKeyID,
+			Type:                         aws.String(cr.Spec.ForProvider.EncryptionConfiguration.Type),
+		}
+	}
 	return nil
 }
 

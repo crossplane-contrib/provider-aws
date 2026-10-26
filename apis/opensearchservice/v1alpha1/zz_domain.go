@@ -29,6 +29,8 @@ type DomainParameters struct {
 	// Region is which region the Domain will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// Options for all machine learning features for the specified domain.
+	AIMLOptions *AIMLOptionsInput `json:"aIMLOptions,omitempty"`
 	// Identity and Access Management (IAM) policy document specifying the access
 	// policies for the new domain.
 	AccessPolicies *string `json:"accessPolicies,omitempty"`
@@ -108,6 +110,8 @@ type DomainSpec struct {
 
 // DomainObservation defines the observed state of Domain
 type DomainObservation struct {
+	// Container for parameters required to enable all machine learning features.
+	AIMLOptions *AIMLOptionsOutput `json:"aIMLOptions,omitempty"`
 	// The Amazon Resource Name (ARN) of the domain. For more information, see IAM
 	// identifiers (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html)
 	// in the AWS Identity and Access Management User Guide.
@@ -138,7 +142,7 @@ type DomainObservation struct {
 	// Additional options for the domain endpoint, such as whether to require HTTPS
 	// for all traffic.
 	DomainEndpointOptions *DomainEndpointOptions `json:"domainEndpointOptions,omitempty"`
-	// The DualStack Hosted Zone Id for the domain.
+	// The dual stack hosted zone ID for the domain.
 	DomainEndpointV2HostedZoneID *string `json:"domainEndpointV2HostedZoneID,omitempty"`
 	// Unique identifier for the domain.
 	DomainID *string `json:"domainID,omitempty"`

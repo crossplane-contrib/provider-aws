@@ -19,13 +19,19 @@ package v1alpha1
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // CustomActivityParameters includes custom additional fields for ActivityParameters.
-type CustomActivityParameters struct{}
+type CustomActivityParameters struct {
+	// Settings to configure server-side encryption.
+	EncryptionConfiguration *CustomEncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
+}
 
 // CustomActivityObservation includes the custom status fields of Activity.
 type CustomActivityObservation struct{}
 
 // CustomStateMachineParameters includes custom additional fields for StateMachineParameters.
 type CustomStateMachineParameters struct {
+	// Settings to configure server-side encryption.
+	EncryptionConfiguration *CustomEncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
+
 	// RoleARN is the ARN for the IAMRole.
 	// It has to be given directly or resolved using RoleARNRef or RoleARNSelector.
 	// +immutable
@@ -52,3 +58,25 @@ type CustomStateMachineParameters struct {
 
 // CustomStateMachineObservation includes the custom status fields of StateMachine.
 type CustomStateMachineObservation struct{}
+
+type CustomEncryptionConfiguration struct {
+	// Maximum duration that Step Functions will reuse data keys. When the period
+	// expires, Step Functions will call GenerateDataKey. Only applies to customer
+	// managed keys. (when Type is CUSTOMER_MANAGED_KMS_KEY)
+	// Should be between 60 seconds (1 minute) and 900 seconds (15 minutes).
+	// Default is 300 seconds (5 minutes).
+	KMSDataKeyReusePeriodSeconds *int64 `json:"kmsDataKeyReusePeriodSeconds,omitempty"`
+
+	// An alias, alias ARN, key ID, or key ARN of a symmetric encryption KMS key
+	// to encrypt data. To specify a KMS key in a different Amazon Web Services
+	// account, you must use the key ARN or alias ARN.
+	// Only needed if Type is CUSTOMER_MANAGED_KMS_KEY.
+	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+
+	// Encryption type.
+	// Valide values are AWS_OWNED_KEY and CUSTOMER_MANAGED_KMS_KEY
+	//
+	// Type is a required field
+	// +kubebuilder:validation:Required
+	Type string `json:"type"`
+}

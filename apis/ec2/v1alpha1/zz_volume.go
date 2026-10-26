@@ -56,7 +56,7 @@ type VolumeParameters struct {
 	//    * io2: 100 - 256,000 IOPS
 	//
 	// For io2 volumes, you can achieve up to 256,000 IOPS on instances built on
-	// the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
+	// the Nitro System (https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-nitro-instances.html).
 	// On other instances, you can achieve performance up to 32,000 IOPS.
 	//
 	// This parameter is required for io1 and io2 volumes. The default for gp3 volumes
@@ -65,12 +65,17 @@ type VolumeParameters struct {
 	IOPS *int64 `json:"iops,omitempty"`
 	// Indicates whether to enable Amazon EBS Multi-Attach. If you enable Multi-Attach,
 	// you can attach the volume to up to 16 Instances built on the Nitro System
-	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances)
+	// (https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-nitro-instances.html)
 	// in the same Availability Zone. This parameter is supported with io1 and io2
 	// volumes only. For more information, see Amazon EBS Multi-Attach (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volumes-multi.html)
 	// in the Amazon EBS User Guide.
 	MultiAttachEnabled *bool `json:"multiAttachEnabled,omitempty"`
-	// The Amazon Resource Name (ARN) of the Outpost.
+	// The Amazon Resource Name (ARN) of the Outpost on which to create the volume.
+	//
+	// If you intend to use a volume with an instance running on an outpost, then
+	// you must create the volume on the same outpost as the instance. You can't
+	// use a volume created in an Amazon Web Services Region with an instance on
+	// an Amazon Web Services outpost, or the other way around.
 	OutpostARN *string `json:"outpostARN,omitempty"`
 	// The size of the volume, in GiBs. You must specify either a snapshot ID or
 	// a volume size. If you specify a snapshot, the default is the snapshot size.
@@ -143,8 +148,8 @@ type VolumeObservation struct {
 	//
 	// Indicates whether the volume was created using fast snapshot restore.
 	FastRestored *bool `json:"fastRestored,omitempty"`
-	// The Amazon Resource Name (ARN) of the Key Management Service (KMS) KMS key
-	// that was used to protect the volume encryption key for the volume.
+	// The Amazon Resource Name (ARN) of the KMS key that was used to protect the
+	// volume encryption key for the volume.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	//
 	// This parameter is not returned by CreateVolume.

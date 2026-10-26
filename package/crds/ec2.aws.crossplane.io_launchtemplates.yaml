@@ -441,7 +441,7 @@ spec:
                         description: |-
                           The metadata options for the instance. For more information, see Instance
                           metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
-                          in the Amazon Elastic Compute Cloud User Guide.
+                          in the Amazon EC2 User Guide.
                         properties:
                           httpEndpoint:
                             type: string
@@ -473,7 +473,7 @@ spec:
                                 A security group connection tracking specification request that enables you
                                 to set the idle timeout for connection tracking on an Elastic network interface.
                                 For more information, see Connection tracking timeouts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-connection-tracking.html#connection-tracking-timeouts)
-                                in the Amazon Elastic Compute Cloud User Guide.
+                                in the Amazon EC2 User Guide.
                               properties:
                                 tcpEstablishedTimeout:
                                   format: int64
