@@ -83,11 +83,11 @@ spec:
                       Indicates whether the volume should be encrypted. The effect of setting the
                       encryption state to true depends on the volume origin (new or from a snapshot),
                       starting encryption state, ownership, and whether encryption by default is
-                      enabled. For more information, see Encryption by default (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default)
-                      in the Amazon Elastic Compute Cloud User Guide.
+                      enabled. For more information, see Encryption by default (https://docs.aws.amazon.com/ebs/latest/userguide/work-with-ebs-encr.html#encryption-by-default)
+                      in the Amazon EBS User Guide.
 
                       Encrypted Amazon EBS volumes must be attached to instances that support Amazon
-                      EBS encryption. For more information, see Supported instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances).
+                      EBS encryption. For more information, see Supported instance types (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-encryption-requirements.html#ebs-encryption_supported_instances).
                     type: boolean
                   iops:
                     description: |-
@@ -98,15 +98,15 @@ spec:
 
                       The following are the supported values for each volume type:
 
-                         * gp3: 3,000-16,000 IOPS
+                         * gp3: 3,000 - 16,000 IOPS
 
-                         * io1: 100-64,000 IOPS
+                         * io1: 100 - 64,000 IOPS
 
-                         * io2: 100-64,000 IOPS
+                         * io2: 100 - 256,000 IOPS
 
-                      io1 and io2 volumes support up to 64,000 IOPS only on Instances built on
-                      the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
-                      Other instance families support performance up to 32,000 IOPS.
+                      For io2 volumes, you can achieve up to 256,000 IOPS on instances built on
+                      the Nitro System (https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-nitro-instances.html).
+                      On other instances, you can achieve performance up to 32,000 IOPS.
 
                       This parameter is required for io1 and io2 volumes. The default for gp3 volumes
                       is 3,000 IOPS. This parameter is not supported for gp2, st1, sc1, or standard
@@ -214,13 +214,19 @@ spec:
                     description: |-
                       Indicates whether to enable Amazon EBS Multi-Attach. If you enable Multi-Attach,
                       you can attach the volume to up to 16 Instances built on the Nitro System
-                      (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances)
+                      (https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-nitro-instances.html)
                       in the same Availability Zone. This parameter is supported with io1 and io2
-                      volumes only. For more information, see Amazon EBS Multi-Attach (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volumes-multi.html)
-                      in the Amazon Elastic Compute Cloud User Guide.
+                      volumes only. For more information, see Amazon EBS Multi-Attach (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volumes-multi.html)
+                      in the Amazon EBS User Guide.
                     type: boolean
                   outpostARN:
-                    description: The Amazon Resource Name (ARN) of the Outpost.
+                    description: |-
+                      The Amazon Resource Name (ARN) of the Outpost on which to create the volume.
+
+                      If you intend to use a volume with an instance running on an outpost, then
+                      you must create the volume on the same outpost as the instance. You can't
+                      use a volume created in an Amazon Web Services Region with an instance on
+                      an Amazon Web Services outpost, or the other way around.
                     type: string
                   region:
                     description: Region is which region the Volume will be created.
@@ -234,13 +240,15 @@ spec:
 
                       The following are the supported volumes sizes for each volume type:
 
-                         * gp2 and gp3: 1-16,384
+                         * gp2 and gp3: 1 - 16,384 GiB
 
-                         * io1 and io2: 4-16,384
+                         * io1: 4 - 16,384 GiB
 
-                         * st1 and sc1: 125-16,384
+                         * io2: 4 - 65,536 GiB
 
-                         * standard: 1-1,024
+                         * st1 and sc1: 125 - 16,384 GiB
+
+                         * standard: 1 - 1024 GiB
                     format: int64
                     type: integer
                   snapshotID:
@@ -296,8 +304,8 @@ spec:
                       Throughput Optimized HDD (st1) and Cold HDD (sc1) volumes can't be used as
                       boot volumes.
 
-                      For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
-                      in the Amazon Elastic Compute Cloud User Guide.
+                      For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volume-types.html)
+                      in the Amazon EBS User Guide.
 
                       Default: gp2
                     type: string
@@ -479,9 +487,14 @@ spec:
                 description: VolumeObservation defines the observed state of Volume
                 properties:
                   attachments:
-                    description: Information about the volume attachments.
+                    description: |-
+                      This parameter is not returned by CreateVolume.
+
+                      Information about the volume attachments.
                     items:
                       properties:
+                        associatedResource:
+                          type: string
                         attachTime:
                           format: date-time
                           type: string
@@ -490,6 +503,8 @@ spec:
                         device:
                           type: string
                         instanceID:
+                          type: string
+                        instanceOwningService:
                           type: string
                         state:
                           type: string
@@ -502,16 +517,21 @@ spec:
                     format: date-time
                     type: string
                   fastRestored:
-                    description: Indicates whether the volume was created using fast
-                      snapshot restore.
+                    description: |-
+                      This parameter is not returned by CreateVolume.
+
+                      Indicates whether the volume was created using fast snapshot restore.
                     type: boolean
                   kmsKeyID:
                     description: |-
-                      The Amazon Resource Name (ARN) of the Key Management Service (KMS) KMS key
-                      that was used to protect the volume encryption key for the volume.
+                      The Amazon Resource Name (ARN) of the KMS key that was used to protect the
+                      volume encryption key for the volume.
                     type: string
                   sseType:
-                    description: Reserved for future use.
+                    description: |-
+                      This parameter is not returned by CreateVolume.
+
+                      Reserved for future use.
                     type: string
                   state:
                     description: The volume state.

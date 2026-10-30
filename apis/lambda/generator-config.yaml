@@ -4,6 +4,12 @@ resources:
     - name: v1beta1
       served: true
       storage: true
+    fields:
+      LoggingConfig:
+        is_read_only: true
+        from:
+          operation: GetFunction
+          path: Configuration.LoggingConfig
 ignore:
   field_paths:
     - CreateFunctionInput.FunctionName

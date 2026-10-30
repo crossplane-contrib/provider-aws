@@ -139,6 +139,8 @@ type ClusterInfo struct {
 	CurrentBrokerSoftwareInfo *BrokerSoftwareInfo `json:"currentBrokerSoftwareInfo,omitempty"`
 
 	CurrentVersion *string `json:"currentVersion,omitempty"`
+	// A type of an action required from the customer.
+	CustomerActionStatus *string `json:"customerActionStatus,omitempty"`
 	// Includes encryption-related information, such as the AWS KMS key used for
 	// encrypting data at rest and whether you want MSK to encrypt your data in
 	// transit.
@@ -306,6 +308,11 @@ type ConsumerGroupReplicationUpdate struct {
 	DetectAndCopyNewConsumerGroups *bool `json:"detectAndCopyNewConsumerGroups,omitempty"`
 
 	SynchroniseConsumerGroupOffsets *bool `json:"synchroniseConsumerGroupOffsets,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ControllerNodeInfo struct {
+	Endpoints []*string `json:"endpoints,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -481,6 +488,8 @@ type Provisioned struct {
 	ClientAuthentication *ClientAuthentication `json:"clientAuthentication,omitempty"`
 	// Information about the current software installed on the cluster.
 	CurrentBrokerSoftwareInfo *BrokerSoftwareInfo `json:"currentBrokerSoftwareInfo,omitempty"`
+	// A type of an action required from the customer.
+	CustomerActionStatus *string `json:"customerActionStatus,omitempty"`
 	// Includes encryption-related information, such as the AWS KMS key used for
 	// encrypting data at rest and whether you want MSK to encrypt your data in
 	// transit.

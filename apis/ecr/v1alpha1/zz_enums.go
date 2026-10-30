@@ -52,6 +52,9 @@ const (
 	ImageFailureCode_MissingDigestAndTag           ImageFailureCode = "MissingDigestAndTag"
 	ImageFailureCode_ImageReferencedByManifestList ImageFailureCode = "ImageReferencedByManifestList"
 	ImageFailureCode_KmsError                      ImageFailureCode = "KmsError"
+	ImageFailureCode_UpstreamAccessDenied          ImageFailureCode = "UpstreamAccessDenied"
+	ImageFailureCode_UpstreamTooManyRequests       ImageFailureCode = "UpstreamTooManyRequests"
+	ImageFailureCode_UpstreamUnavailable           ImageFailureCode = "UpstreamUnavailable"
 )
 
 type ImageTagMutability string
@@ -82,6 +85,13 @@ const (
 	LifecyclePolicyPreviewStatus_COMPLETE    LifecyclePolicyPreviewStatus = "COMPLETE"
 	LifecyclePolicyPreviewStatus_EXPIRED     LifecyclePolicyPreviewStatus = "EXPIRED"
 	LifecyclePolicyPreviewStatus_FAILED      LifecyclePolicyPreviewStatus = "FAILED"
+)
+
+type RCTAppliedFor string
+
+const (
+	RCTAppliedFor_REPLICATION        RCTAppliedFor = "REPLICATION"
+	RCTAppliedFor_PULL_THROUGH_CACHE RCTAppliedFor = "PULL_THROUGH_CACHE"
 )
 
 type ReplicationStatus string
@@ -144,4 +154,16 @@ const (
 	TagStatus_TAGGED   TagStatus = "TAGGED"
 	TagStatus_UNTAGGED TagStatus = "UNTAGGED"
 	TagStatus_ANY      TagStatus = "ANY"
+)
+
+type UpstreamRegistry string
+
+const (
+	UpstreamRegistry_ecr_public                UpstreamRegistry = "ecr-public"
+	UpstreamRegistry_quay                      UpstreamRegistry = "quay"
+	UpstreamRegistry_k8s                       UpstreamRegistry = "k8s"
+	UpstreamRegistry_docker_hub                UpstreamRegistry = "docker-hub"
+	UpstreamRegistry_github_container_registry UpstreamRegistry = "github-container-registry"
+	UpstreamRegistry_azure_container_registry  UpstreamRegistry = "azure-container-registry"
+	UpstreamRegistry_gitlab_container_registry UpstreamRegistry = "gitlab-container-registry"
 )

@@ -30,20 +30,29 @@ var (
 // +kubebuilder:skipversion
 type AlertManagerDefinitionDescription struct {
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
-	// The alert manager definition data.
+	// The base-64 encoded blob that is alert manager definition.
+	//
+	// For details about the alert manager definition, see AlertManagedDefinitionData
+	// (https://docs.aws.amazon.com/prometheus/latest/APIReference/yaml-AlertManagerDefinitionData.html).
 	Data []byte `json:"data,omitempty"`
 
 	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
-	// Represents the status of a definition.
+	// The status of the alert manager.
 	Status *AlertManagerDefinitionStatus_SDK `json:"status,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type AlertManagerDefinitionStatus_SDK struct {
-	// State of an alert manager definition.
+	// State of an AlertManagerDefinition.
 	StatusCode *string `json:"statusCode,omitempty"`
 
 	StatusReason *string `json:"statusReason,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type AmpConfiguration struct {
+	// An ARN identifying a Workspace.
+	WorkspaceARN *string `json:"workspaceARN,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -70,9 +79,9 @@ type RuleGroupsNamespaceDescription struct {
 	Data []byte `json:"data,omitempty"`
 
 	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
-	// The namespace name that the rule group belong to.
+	// The name of the namespace that the rule group belong to.
 	Name *string `json:"name,omitempty"`
-	// Represents the status of a namespace.
+	// The status information about a rule groups namespace.
 	Status *RuleGroupsNamespaceStatus_SDK `json:"status,omitempty"`
 	// The list of tags assigned to the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
@@ -94,10 +103,28 @@ type RuleGroupsNamespaceSummary struct {
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
 	ModifiedAt *metav1.Time `json:"modifiedAt,omitempty"`
-	// The namespace name that the rule group belong to.
+	// The name of the namespace that the rule group belong to.
 	Name *string `json:"name,omitempty"`
-	// Represents the status of a namespace.
+	// The status information about a rule groups namespace.
 	Status *RuleGroupsNamespaceStatus_SDK `json:"status,omitempty"`
+	// The list of tags assigned to the resource.
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ScraperDescription struct {
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	LastModifiedAt *metav1.Time `json:"lastModifiedAt,omitempty"`
+	// The list of tags assigned to the resource.
+	Tags map[string]*string `json:"tags,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type ScraperSummary struct {
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+
+	LastModifiedAt *metav1.Time `json:"lastModifiedAt,omitempty"`
 	// The list of tags assigned to the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
 }
@@ -117,9 +144,11 @@ type WorkspaceDescription struct {
 	ARN *string `json:"arn,omitempty"`
 
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
+	// A KMS Key ARN.
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 
 	PrometheusEndpoint *string `json:"prometheusEndpoint,omitempty"`
-	// Represents the status of a workspace.
+	// The status of the workspace.
 	Status *WorkspaceStatus_SDK `json:"status,omitempty"`
 	// The list of tags assigned to the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
@@ -141,7 +170,9 @@ type WorkspaceSummary struct {
 	ARN *string `json:"arn,omitempty"`
 
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
-	// Represents the status of a workspace.
+	// A KMS Key ARN.
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
+	// The status of the workspace.
 	Status *WorkspaceStatus_SDK `json:"status,omitempty"`
 	// The list of tags assigned to the resource.
 	Tags map[string]*string `json:"tags,omitempty"`

@@ -47,8 +47,8 @@ type AmazonOpenSearchServerlessDestinationConfiguration struct {
 	IndexName *string `json:"indexName,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to the Serverless offering for Amazon OpenSearch Service.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to the Serverless offering for Amazon OpenSearch Service.
 	RetryOptions *AmazonOpenSearchServerlessRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -74,8 +74,8 @@ type AmazonOpenSearchServerlessDestinationDescription struct {
 	IndexName *string `json:"indexName,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to the Serverless offering for Amazon OpenSearch Service.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to the Serverless offering for Amazon OpenSearch Service.
 	RetryOptions *AmazonOpenSearchServerlessRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -100,8 +100,8 @@ type AmazonOpenSearchServerlessDestinationUpdate struct {
 	IndexName *string `json:"indexName,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to the Serverless offering for Amazon OpenSearch Service.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to the Serverless offering for Amazon OpenSearch Service.
 	RetryOptions *AmazonOpenSearchServerlessRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -129,8 +129,8 @@ type AmazonopensearchserviceDestinationConfiguration struct {
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
 	// Indicates the method for setting up document ID. The supported methods are
-	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
-	// document ID.
+	// Firehose generated document ID and OpenSearch Service generated document
+	// ID.
 	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
@@ -140,8 +140,8 @@ type AmazonopensearchserviceDestinationConfiguration struct {
 	IndexRotationPeriod *string `json:"indexRotationPeriod,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon OpenSearch Service.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon OpenSearch Service.
 	RetryOptions *AmazonopensearchserviceRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -166,8 +166,8 @@ type AmazonopensearchserviceDestinationDescription struct {
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
 	// Indicates the method for setting up document ID. The supported methods are
-	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
-	// document ID.
+	// Firehose generated document ID and OpenSearch Service generated document
+	// ID.
 	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
@@ -177,8 +177,8 @@ type AmazonopensearchserviceDestinationDescription struct {
 	IndexRotationPeriod *string `json:"indexRotationPeriod,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon OpenSearch Service.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon OpenSearch Service.
 	RetryOptions *AmazonopensearchserviceRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -202,8 +202,8 @@ type AmazonopensearchserviceDestinationUpdate struct {
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
 	// Indicates the method for setting up document ID. The supported methods are
-	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
-	// document ID.
+	// Firehose generated document ID and OpenSearch Service generated document
+	// ID.
 	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
@@ -213,8 +213,8 @@ type AmazonopensearchserviceDestinationUpdate struct {
 	IndexRotationPeriod *string `json:"indexRotationPeriod,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon OpenSearch Service.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon OpenSearch Service.
 	RetryOptions *AmazonopensearchserviceRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -242,6 +242,11 @@ type BufferingHints struct {
 }
 
 // +kubebuilder:skipversion
+type CatalogConfiguration struct {
+	CatalogARN *string `json:"catalogARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type CloudWatchLoggingOptions struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -265,13 +270,13 @@ type DataFormatConversionConfiguration struct {
 	// Specifies the deserializer you want to use to convert the format of the input
 	// data. This parameter is required if Enabled is set to true.
 	InputFormatConfiguration *InputFormatConfiguration `json:"inputFormatConfiguration,omitempty"`
-	// Specifies the serializer that you want Kinesis Data Firehose to use to convert
-	// the format of your data before it writes it to Amazon S3. This parameter
-	// is required if Enabled is set to true.
+	// Specifies the serializer that you want Firehose to use to convert the format
+	// of your data before it writes it to Amazon S3. This parameter is required
+	// if Enabled is set to true.
 	OutputFormatConfiguration *OutputFormatConfiguration `json:"outputFormatConfiguration,omitempty"`
-	// Specifies the schema to which you want Kinesis Data Firehose to configure
-	// your data before it writes it to Amazon S3. This parameter is required if
-	// Enabled is set to true.
+	// Specifies the schema to which you want Firehose to configure your data before
+	// it writes it to Amazon S3. This parameter is required if Enabled is set to
+	// true.
 	SchemaConfiguration *SchemaConfiguration `json:"schemaConfiguration,omitempty"`
 }
 
@@ -301,8 +306,8 @@ type DeliveryStreamDescription struct {
 	HasMoreDestinations *bool `json:"hasMoreDestinations,omitempty"`
 
 	LastUpdateTimestamp *metav1.Time `json:"lastUpdateTimestamp,omitempty"`
-	// Details about a Kinesis data stream used as the source for a Kinesis Data
-	// Firehose delivery stream.
+	// Details about a Kinesis data stream used as the source for a Firehose delivery
+	// stream.
 	Source *SourceDescription `json:"source,omitempty"`
 
 	VersionID *string `json:"versionID,omitempty"`
@@ -331,17 +336,17 @@ type DeliveryStreamEncryptionConfigurationInput struct {
 
 // +kubebuilder:skipversion
 type Deserializer struct {
-	// The native Hive / HCatalog JsonSerDe. Used by Kinesis Data Firehose for deserializing
+	// The native Hive / HCatalog JsonSerDe. Used by Firehose for deserializing
 	// data, which means converting it from the JSON format in preparation for serializing
 	// it to the Parquet or ORC format. This is one of two deserializers you can
 	// choose, depending on which one offers the functionality you need. The other
 	// option is the OpenX SerDe.
 	HiveJSONSerDe *HiveJSONSerDe `json:"hiveJSONSerDe,omitempty"`
-	// The OpenX SerDe. Used by Kinesis Data Firehose for deserializing data, which
-	// means converting it from the JSON format in preparation for serializing it
-	// to the Parquet or ORC format. This is one of two deserializers you can choose,
-	// depending on which one offers the functionality you need. The other option
-	// is the native Hive / HCatalog JsonSerDe.
+	// The OpenX SerDe. Used by Firehose for deserializing data, which means converting
+	// it from the JSON format in preparation for serializing it to the Parquet
+	// or ORC format. This is one of two deserializers you can choose, depending
+	// on which one offers the functionality you need. The other option is the native
+	// Hive / HCatalog JsonSerDe.
 	OpenXJSONSerDe *OpenXJSONSerDe `json:"openXJSONSerDe,omitempty"`
 }
 
@@ -360,12 +365,29 @@ type DestinationDescription struct {
 	ExtendedS3DestinationDescription *ExtendedS3DestinationDescription `json:"extendedS3DestinationDescription,omitempty"`
 	// Describes the HTTP endpoint destination.
 	HTTPEndpointDestinationDescription *HTTPEndpointDestinationDescription `json:"httpEndpointDestinationDescription,omitempty"`
+	// Describes a destination in Apache Iceberg Tables.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	IcebergDestinationDescription *IcebergDestinationDescription `json:"icebergDestinationDescription,omitempty"`
 	// Describes a destination in Amazon Redshift.
 	RedshiftDestinationDescription *RedshiftDestinationDescription `json:"redshiftDestinationDescription,omitempty"`
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+	// Optional Snowflake destination description
+	SnowflakeDestinationDescription *SnowflakeDestinationDescription `json:"snowflakeDestinationDescription,omitempty"`
 	// Describes a destination in Splunk.
 	SplunkDestinationDescription *SplunkDestinationDescription `json:"splunkDestinationDescription,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type DestinationTableConfiguration struct {
+	DestinationDatabaseName *string `json:"destinationDatabaseName,omitempty"`
+
+	DestinationTableName *string `json:"destinationTableName,omitempty"`
+
+	S3ErrorOutputPrefix *string `json:"s3ErrorOutputPrefix,omitempty"`
+
+	UniqueKeys []*string `json:"uniqueKeys,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -376,8 +398,8 @@ type DocumentIDOptions struct {
 // +kubebuilder:skipversion
 type DynamicPartitioningConfiguration struct {
 	Enabled *bool `json:"enabled,omitempty"`
-	// The retry behavior in case Kinesis Data Firehose is unable to deliver data
-	// to an Amazon S3 prefix.
+	// The retry behavior in case Firehose is unable to deliver data to an Amazon
+	// S3 prefix.
 	RetryOptions *RetryOptions `json:"retryOptions,omitempty"`
 }
 
@@ -398,8 +420,8 @@ type ElasticsearchDestinationConfiguration struct {
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
 	// Indicates the method for setting up document ID. The supported methods are
-	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
-	// document ID.
+	// Firehose generated document ID and OpenSearch Service generated document
+	// ID.
 	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
@@ -409,8 +431,8 @@ type ElasticsearchDestinationConfiguration struct {
 	IndexRotationPeriod *string `json:"indexRotationPeriod,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon ES.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon ES.
 	RetryOptions *ElasticsearchRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -435,8 +457,8 @@ type ElasticsearchDestinationDescription struct {
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
 	// Indicates the method for setting up document ID. The supported methods are
-	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
-	// document ID.
+	// Firehose generated document ID and OpenSearch Service generated document
+	// ID.
 	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
@@ -446,8 +468,8 @@ type ElasticsearchDestinationDescription struct {
 	IndexRotationPeriod *string `json:"indexRotationPeriod,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon ES.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon ES.
 	RetryOptions *ElasticsearchRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -471,8 +493,8 @@ type ElasticsearchDestinationUpdate struct {
 
 	ClusterEndpoint *string `json:"clusterEndpoint,omitempty"`
 	// Indicates the method for setting up document ID. The supported methods are
-	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
-	// document ID.
+	// Firehose generated document ID and OpenSearch Service generated document
+	// ID.
 	DocumentIDOptions *DocumentIDOptions `json:"documentIDOptions,omitempty"`
 
 	DomainARN *string `json:"domainARN,omitempty"`
@@ -482,8 +504,8 @@ type ElasticsearchDestinationUpdate struct {
 	IndexRotationPeriod *string `json:"indexRotationPeriod,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon ES.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon ES.
 	RetryOptions *ElasticsearchRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -508,22 +530,23 @@ type EncryptionConfiguration struct {
 type ExtendedS3DestinationConfiguration struct {
 	BucketARN *string `json:"bucketARN,omitempty"`
 	// Describes hints for the buffering to perform before delivering data to the
-	// destination. These options are treated as hints, and therefore Kinesis Data
-	// Firehose might choose to use different values when it is optimal. The SizeInMBs
-	// and IntervalInSeconds parameters are optional. However, if specify a value
-	// for one of them, you must also provide a value for the other.
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	CompressionFormat *string `json:"compressionFormat,omitempty"`
-	// Specifies that you want Kinesis Data Firehose to convert data from the JSON
-	// format to the Parquet or ORC format before writing it to Amazon S3. Kinesis
-	// Data Firehose uses the serializer and deserializer that you specify, in addition
-	// to the column information from the Amazon Web Services Glue table, to deserialize
-	// your input data from JSON and then serialize it to the Parquet or ORC format.
-	// For more information, see Kinesis Data Firehose Record Format Conversion
-	// (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
+
+	CustomTimeZone *string `json:"customTimeZone,omitempty"`
+	// Specifies that you want Firehose to convert data from the JSON format to
+	// the Parquet or ORC format before writing it to Amazon S3. Firehose uses the
+	// serializer and deserializer that you specify, in addition to the column information
+	// from the Amazon Web Services Glue table, to deserialize your input data from
+	// JSON and then serialize it to the Parquet or ORC format. For more information,
+	// see Firehose Record Format Conversion (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
 	DataFormatConversionConfiguration *DataFormatConversionConfiguration `json:"dataFormatConversionConfiguration,omitempty"`
 	// The configuration of the dynamic partitioning mechanism that creates smaller
 	// data sets from the streaming data by partitioning it based on partition keys.
@@ -533,6 +556,8 @@ type ExtendedS3DestinationConfiguration struct {
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	ErrorOutputPrefix *string `json:"errorOutputPrefix,omitempty"`
+
+	FileExtension *string `json:"fileExtension,omitempty"`
 
 	Prefix *string `json:"prefix,omitempty"`
 	// Describes a data processing configuration.
@@ -549,22 +574,23 @@ type ExtendedS3DestinationConfiguration struct {
 type ExtendedS3DestinationDescription struct {
 	BucketARN *string `json:"bucketARN,omitempty"`
 	// Describes hints for the buffering to perform before delivering data to the
-	// destination. These options are treated as hints, and therefore Kinesis Data
-	// Firehose might choose to use different values when it is optimal. The SizeInMBs
-	// and IntervalInSeconds parameters are optional. However, if specify a value
-	// for one of them, you must also provide a value for the other.
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	CompressionFormat *string `json:"compressionFormat,omitempty"`
-	// Specifies that you want Kinesis Data Firehose to convert data from the JSON
-	// format to the Parquet or ORC format before writing it to Amazon S3. Kinesis
-	// Data Firehose uses the serializer and deserializer that you specify, in addition
-	// to the column information from the Amazon Web Services Glue table, to deserialize
-	// your input data from JSON and then serialize it to the Parquet or ORC format.
-	// For more information, see Kinesis Data Firehose Record Format Conversion
-	// (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
+
+	CustomTimeZone *string `json:"customTimeZone,omitempty"`
+	// Specifies that you want Firehose to convert data from the JSON format to
+	// the Parquet or ORC format before writing it to Amazon S3. Firehose uses the
+	// serializer and deserializer that you specify, in addition to the column information
+	// from the Amazon Web Services Glue table, to deserialize your input data from
+	// JSON and then serialize it to the Parquet or ORC format. For more information,
+	// see Firehose Record Format Conversion (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
 	DataFormatConversionConfiguration *DataFormatConversionConfiguration `json:"dataFormatConversionConfiguration,omitempty"`
 	// The configuration of the dynamic partitioning mechanism that creates smaller
 	// data sets from the streaming data by partitioning it based on partition keys.
@@ -574,6 +600,8 @@ type ExtendedS3DestinationDescription struct {
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	ErrorOutputPrefix *string `json:"errorOutputPrefix,omitempty"`
+
+	FileExtension *string `json:"fileExtension,omitempty"`
 
 	Prefix *string `json:"prefix,omitempty"`
 	// Describes a data processing configuration.
@@ -590,22 +618,23 @@ type ExtendedS3DestinationDescription struct {
 type ExtendedS3DestinationUpdate struct {
 	BucketARN *string `json:"bucketARN,omitempty"`
 	// Describes hints for the buffering to perform before delivering data to the
-	// destination. These options are treated as hints, and therefore Kinesis Data
-	// Firehose might choose to use different values when it is optimal. The SizeInMBs
-	// and IntervalInSeconds parameters are optional. However, if specify a value
-	// for one of them, you must also provide a value for the other.
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
 	CompressionFormat *string `json:"compressionFormat,omitempty"`
-	// Specifies that you want Kinesis Data Firehose to convert data from the JSON
-	// format to the Parquet or ORC format before writing it to Amazon S3. Kinesis
-	// Data Firehose uses the serializer and deserializer that you specify, in addition
-	// to the column information from the Amazon Web Services Glue table, to deserialize
-	// your input data from JSON and then serialize it to the Parquet or ORC format.
-	// For more information, see Kinesis Data Firehose Record Format Conversion
-	// (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
+
+	CustomTimeZone *string `json:"customTimeZone,omitempty"`
+	// Specifies that you want Firehose to convert data from the JSON format to
+	// the Parquet or ORC format before writing it to Amazon S3. Firehose uses the
+	// serializer and deserializer that you specify, in addition to the column information
+	// from the Amazon Web Services Glue table, to deserialize your input data from
+	// JSON and then serialize it to the Parquet or ORC format. For more information,
+	// see Firehose Record Format Conversion (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
 	DataFormatConversionConfiguration *DataFormatConversionConfiguration `json:"dataFormatConversionConfiguration,omitempty"`
 	// The configuration of the dynamic partitioning mechanism that creates smaller
 	// data sets from the streaming data by partitioning it based on partition keys.
@@ -615,6 +644,8 @@ type ExtendedS3DestinationUpdate struct {
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	ErrorOutputPrefix *string `json:"errorOutputPrefix,omitempty"`
+
+	FileExtension *string `json:"fileExtension,omitempty"`
 
 	Prefix *string `json:"prefix,omitempty"`
 	// Describes a data processing configuration.
@@ -665,10 +696,10 @@ type HTTPEndpointDescription struct {
 // +kubebuilder:skipversion
 type HTTPEndpointDestinationConfiguration struct {
 	// Describes the buffering options that can be applied before data is delivered
-	// to the HTTP endpoint destination. Kinesis Data Firehose treats these options
-	// as hints, and it might choose to use more optimal values. The SizeInMBs and
-	// IntervalInSeconds parameters are optional. However, if specify a value for
-	// one of them, you must also provide a value for the other.
+	// to the HTTP endpoint destination. Firehose treats these options as hints,
+	// and it might choose to use more optimal values. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *HTTPEndpointBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
@@ -679,9 +710,9 @@ type HTTPEndpointDestinationConfiguration struct {
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
 	// The configuration of the HTTP endpoint request.
 	RequestConfiguration *HTTPEndpointRequestConfiguration `json:"requestConfiguration,omitempty"`
-	// Describes the retry behavior in case Kinesis Data Firehose is unable to deliver
-	// data to the specified HTTP endpoint destination, or if it doesn't receive
-	// a valid acknowledgment of receipt from the specified HTTP endpoint destination.
+	// Describes the retry behavior in case Firehose is unable to deliver data to
+	// the specified HTTP endpoint destination, or if it doesn't receive a valid
+	// acknowledgment of receipt from the specified HTTP endpoint destination.
 	RetryOptions *HTTPEndpointRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -689,15 +720,17 @@ type HTTPEndpointDestinationConfiguration struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes the configuration of a destination in Amazon S3.
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type HTTPEndpointDestinationDescription struct {
 	// Describes the buffering options that can be applied before data is delivered
-	// to the HTTP endpoint destination. Kinesis Data Firehose treats these options
-	// as hints, and it might choose to use more optimal values. The SizeInMBs and
-	// IntervalInSeconds parameters are optional. However, if specify a value for
-	// one of them, you must also provide a value for the other.
+	// to the HTTP endpoint destination. Firehose treats these options as hints,
+	// and it might choose to use more optimal values. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *HTTPEndpointBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
@@ -707,9 +740,9 @@ type HTTPEndpointDestinationDescription struct {
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
 	// The configuration of the HTTP endpoint request.
 	RequestConfiguration *HTTPEndpointRequestConfiguration `json:"requestConfiguration,omitempty"`
-	// Describes the retry behavior in case Kinesis Data Firehose is unable to deliver
-	// data to the specified HTTP endpoint destination, or if it doesn't receive
-	// a valid acknowledgment of receipt from the specified HTTP endpoint destination.
+	// Describes the retry behavior in case Firehose is unable to deliver data to
+	// the specified HTTP endpoint destination, or if it doesn't receive a valid
+	// acknowledgment of receipt from the specified HTTP endpoint destination.
 	RetryOptions *HTTPEndpointRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -717,15 +750,17 @@ type HTTPEndpointDestinationDescription struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type HTTPEndpointDestinationUpdate struct {
 	// Describes the buffering options that can be applied before data is delivered
-	// to the HTTP endpoint destination. Kinesis Data Firehose treats these options
-	// as hints, and it might choose to use more optimal values. The SizeInMBs and
-	// IntervalInSeconds parameters are optional. However, if specify a value for
-	// one of them, you must also provide a value for the other.
+	// to the HTTP endpoint destination. Firehose treats these options as hints,
+	// and it might choose to use more optimal values. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *HTTPEndpointBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
@@ -736,14 +771,16 @@ type HTTPEndpointDestinationUpdate struct {
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
 	// The configuration of the HTTP endpoint request.
 	RequestConfiguration *HTTPEndpointRequestConfiguration `json:"requestConfiguration,omitempty"`
-	// Describes the retry behavior in case Kinesis Data Firehose is unable to deliver
-	// data to the specified HTTP endpoint destination, or if it doesn't receive
-	// a valid acknowledgment of receipt from the specified HTTP endpoint destination.
+	// Describes the retry behavior in case Firehose is unable to deliver data to
+	// the specified HTTP endpoint destination, or if it doesn't receive a valid
+	// acknowledgment of receipt from the specified HTTP endpoint destination.
 	RetryOptions *HTTPEndpointRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
 
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
@@ -764,11 +801,101 @@ type HiveJSONSerDe struct {
 }
 
 // +kubebuilder:skipversion
+type IcebergDestinationConfiguration struct {
+	// Describes hints for the buffering to perform before delivering data to the
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
+	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the containers where the destination Apache Iceberg Tables are
+	// persisted.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	CatalogConfiguration *CatalogConfiguration `json:"catalogConfiguration,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	DestinationTableConfigurationList []*DestinationTableConfiguration `json:"destinationTableConfigurationList,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// The retry behavior in case Firehose is unable to deliver data to an Amazon
+	// S3 prefix.
+	RetryOptions *RetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes the configuration of a destination in Amazon S3.
+	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IcebergDestinationDescription struct {
+	// Describes hints for the buffering to perform before delivering data to the
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
+	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the containers where the destination Apache Iceberg Tables are
+	// persisted.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	CatalogConfiguration *CatalogConfiguration `json:"catalogConfiguration,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	DestinationTableConfigurationList []*DestinationTableConfiguration `json:"destinationTableConfigurationList,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// The retry behavior in case Firehose is unable to deliver data to an Amazon
+	// S3 prefix.
+	RetryOptions *RetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes a destination in Amazon S3.
+	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type IcebergDestinationUpdate struct {
+	// Describes hints for the buffering to perform before delivering data to the
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
+	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the containers where the destination Apache Iceberg Tables are
+	// persisted.
+	//
+	// Amazon Data Firehose is in preview release and is subject to change.
+	CatalogConfiguration *CatalogConfiguration `json:"catalogConfiguration,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	DestinationTableConfigurationList []*DestinationTableConfiguration `json:"destinationTableConfigurationList,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// The retry behavior in case Firehose is unable to deliver data to an Amazon
+	// S3 prefix.
+	RetryOptions *RetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes the configuration of a destination in Amazon S3.
+	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type InputFormatConfiguration struct {
-	// The deserializer you want Kinesis Data Firehose to use for converting the
-	// input data from JSON. Kinesis Data Firehose then serializes the data to its
-	// final format using the Serializer. Kinesis Data Firehose supports two types
-	// of deserializers: the Apache Hive JSON SerDe (https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-JSON)
+	// The deserializer you want Firehose to use for converting the input data from
+	// JSON. Firehose then serializes the data to its final format using the Serializer.
+	// Firehose supports two types of deserializers: the Apache Hive JSON SerDe
+	// (https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-JSON)
 	// and the OpenX JSON SerDe (https://github.com/rcongiu/Hive-JSON-Serde).
 	Deserializer *Deserializer `json:"deserializer,omitempty"`
 }
@@ -801,6 +928,8 @@ type MSKSourceConfiguration struct {
 
 	MSKClusterARN *string `json:"mSKClusterARN,omitempty"`
 
+	ReadFromTimestamp *metav1.Time `json:"readFromTimestamp,omitempty"`
+
 	TopicName *string `json:"topicName,omitempty"`
 }
 
@@ -812,6 +941,8 @@ type MSKSourceDescription struct {
 	DeliveryStartTimestamp *metav1.Time `json:"deliveryStartTimestamp,omitempty"`
 
 	MSKClusterARN *string `json:"mSKClusterARN,omitempty"`
+
+	ReadFromTimestamp *metav1.Time `json:"readFromTimestamp,omitempty"`
 
 	TopicName *string `json:"topicName,omitempty"`
 }
@@ -850,9 +981,9 @@ type OrcSerDe struct {
 
 // +kubebuilder:skipversion
 type OutputFormatConfiguration struct {
-	// The serializer that you want Kinesis Data Firehose to use to convert data
-	// to the target format before writing it to Amazon S3. Kinesis Data Firehose
-	// supports two types of serializers: the ORC SerDe (https://hive.apache.org/javadocs/r1.2.2/api/org/apache/hadoop/hive/ql/io/orc/OrcSerde.html)
+	// The serializer that you want Firehose to use to convert data to the target
+	// format before writing it to Amazon S3. Firehose supports two types of serializers:
+	// the ORC SerDe (https://hive.apache.org/javadocs/r1.2.2/api/org/apache/hadoop/hive/ql/io/orc/OrcSerde.html)
 	// and the Parquet SerDe (https://hive.apache.org/javadocs/r1.2.2/api/org/apache/hadoop/hive/ql/io/parquet/serde/ParquetHiveSerDe.html).
 	Serializer *Serializer `json:"serializer,omitempty"`
 }
@@ -905,8 +1036,8 @@ type RedshiftDestinationConfiguration struct {
 	Password *string `json:"password,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon Redshift.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon Redshift.
 	RetryOptions *RedshiftRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -916,6 +1047,8 @@ type RedshiftDestinationConfiguration struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes the configuration of a destination in Amazon S3.
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 
 	Username *string `json:"username,omitempty"`
 }
@@ -930,8 +1063,8 @@ type RedshiftDestinationDescription struct {
 	CopyCommand *CopyCommand `json:"copyCommand,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon Redshift.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon Redshift.
 	RetryOptions *RedshiftRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
@@ -941,6 +1074,8 @@ type RedshiftDestinationDescription struct {
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 
 	Username *string `json:"username,omitempty"`
 }
@@ -957,13 +1092,15 @@ type RedshiftDestinationUpdate struct {
 	Password *string `json:"password,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Amazon Redshift.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Amazon Redshift.
 	RetryOptions *RedshiftRetryOptions `json:"retryOptions,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
 
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 
 	Username *string `json:"username,omitempty"`
 }
@@ -982,10 +1119,10 @@ type RetryOptions struct {
 type S3DestinationConfiguration struct {
 	BucketARN *string `json:"bucketARN,omitempty"`
 	// Describes hints for the buffering to perform before delivering data to the
-	// destination. These options are treated as hints, and therefore Kinesis Data
-	// Firehose might choose to use different values when it is optimal. The SizeInMBs
-	// and IntervalInSeconds parameters are optional. However, if specify a value
-	// for one of them, you must also provide a value for the other.
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
@@ -1005,10 +1142,10 @@ type S3DestinationConfiguration struct {
 type S3DestinationDescription struct {
 	BucketARN *string `json:"bucketARN,omitempty"`
 	// Describes hints for the buffering to perform before delivering data to the
-	// destination. These options are treated as hints, and therefore Kinesis Data
-	// Firehose might choose to use different values when it is optimal. The SizeInMBs
-	// and IntervalInSeconds parameters are optional. However, if specify a value
-	// for one of them, you must also provide a value for the other.
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
@@ -1028,10 +1165,10 @@ type S3DestinationDescription struct {
 type S3DestinationUpdate struct {
 	BucketARN *string `json:"bucketARN,omitempty"`
 	// Describes hints for the buffering to perform before delivering data to the
-	// destination. These options are treated as hints, and therefore Kinesis Data
-	// Firehose might choose to use different values when it is optimal. The SizeInMBs
-	// and IntervalInSeconds parameters are optional. However, if specify a value
-	// for one of them, you must also provide a value for the other.
+	// destination. These options are treated as hints, and therefore Firehose might
+	// choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+	// parameters are optional. However, if specify a value for one of them, you
+	// must also provide a value for the other.
 	BufferingHints *BufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
@@ -1063,27 +1200,239 @@ type SchemaConfiguration struct {
 }
 
 // +kubebuilder:skipversion
+type SecretsManagerConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	SecretARN *string `json:"secretARN,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type Serializer struct {
 	// A serializer to use for converting data to the ORC format before storing
 	// it in Amazon S3. For more information, see Apache ORC (https://orc.apache.org/docs/).
 	OrcSerDe *OrcSerDe `json:"orcSerDe,omitempty"`
 	// A serializer to use for converting data to the Parquet format before storing
-	// it in Amazon S3. For more information, see Apache Parquet (https://parquet.apache.org/documentation/latest/).
+	// it in Amazon S3. For more information, see Apache Parquet (https://parquet.apache.org/docs/).
 	ParquetSerDe *ParquetSerDe `json:"parquetSerDe,omitempty"`
 }
 
 // +kubebuilder:skipversion
+type SnowflakeBufferingHints struct {
+	IntervalInSeconds *int64 `json:"intervalInSeconds,omitempty"`
+
+	SizeInMBs *int64 `json:"sizeInMBs,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeDestinationConfiguration struct {
+	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the buffering to perform before delivering data to the Snowflake
+	// destination. If you do not specify any value, Firehose uses the default values.
+	BufferingHints *SnowflakeBufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	ContentColumnName *string `json:"contentColumnName,omitempty"`
+
+	DataLoadingOption *string `json:"dataLoadingOption,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	KeyPassphrase *string `json:"keyPassphrase,omitempty"`
+
+	MetaDataColumnName *string `json:"metaDataColumnName,omitempty"`
+
+	PrivateKey *string `json:"privateKey,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// Specify how long Firehose retries sending data to the New Relic HTTP endpoint.
+	// After sending data, Firehose first waits for an acknowledgment from the HTTP
+	// endpoint. If an error occurs or the acknowledgment doesn’t arrive within
+	// the acknowledgment timeout period, Firehose starts the retry duration counter.
+	// It keeps retrying until the retry duration expires. After that, Firehose
+	// considers it a data delivery failure and backs up the data to your Amazon
+	// S3 bucket. Every time that Firehose sends data to the HTTP endpoint (either
+	// the initial attempt or a retry), it restarts the acknowledgement timeout
+	// counter and waits for an acknowledgement from the HTTP endpoint. Even if
+	// the retry duration expires, Firehose still waits for the acknowledgment until
+	// it receives it or the acknowledgement timeout period is reached. If the acknowledgment
+	// times out, Firehose determines whether there's time left in the retry counter.
+	// If there is time left, it retries again and repeats the logic until it receives
+	// an acknowledgment or determines that the retry time has expired. If you don't
+	// want Firehose to retry sending data, set this value to 0.
+	RetryOptions *SnowflakeRetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes the configuration of a destination in Amazon S3.
+	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+
+	Schema *string `json:"schema,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
+	// Optionally configure a Snowflake role. Otherwise the default user role will
+	// be used.
+	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
+	// Configure a Snowflake VPC
+	SnowflakeVPCConfiguration *SnowflakeVPCConfiguration `json:"snowflakeVPCConfiguration,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+
+	User *string `json:"user,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeDestinationDescription struct {
+	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the buffering to perform before delivering data to the Snowflake
+	// destination. If you do not specify any value, Firehose uses the default values.
+	BufferingHints *SnowflakeBufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	ContentColumnName *string `json:"contentColumnName,omitempty"`
+
+	DataLoadingOption *string `json:"dataLoadingOption,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	MetaDataColumnName *string `json:"metaDataColumnName,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// Specify how long Firehose retries sending data to the New Relic HTTP endpoint.
+	// After sending data, Firehose first waits for an acknowledgment from the HTTP
+	// endpoint. If an error occurs or the acknowledgment doesn’t arrive within
+	// the acknowledgment timeout period, Firehose starts the retry duration counter.
+	// It keeps retrying until the retry duration expires. After that, Firehose
+	// considers it a data delivery failure and backs up the data to your Amazon
+	// S3 bucket. Every time that Firehose sends data to the HTTP endpoint (either
+	// the initial attempt or a retry), it restarts the acknowledgement timeout
+	// counter and waits for an acknowledgement from the HTTP endpoint. Even if
+	// the retry duration expires, Firehose still waits for the acknowledgment until
+	// it receives it or the acknowledgement timeout period is reached. If the acknowledgment
+	// times out, Firehose determines whether there's time left in the retry counter.
+	// If there is time left, it retries again and repeats the logic until it receives
+	// an acknowledgment or determines that the retry time has expired. If you don't
+	// want Firehose to retry sending data, set this value to 0.
+	RetryOptions *SnowflakeRetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// Describes a destination in Amazon S3.
+	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+
+	Schema *string `json:"schema,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
+	// Optionally configure a Snowflake role. Otherwise the default user role will
+	// be used.
+	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
+	// Configure a Snowflake VPC
+	SnowflakeVPCConfiguration *SnowflakeVPCConfiguration `json:"snowflakeVPCConfiguration,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+
+	User *string `json:"user,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeDestinationUpdate struct {
+	AccountURL *string `json:"accountURL,omitempty"`
+	// Describes the buffering to perform before delivering data to the Snowflake
+	// destination. If you do not specify any value, Firehose uses the default values.
+	BufferingHints *SnowflakeBufferingHints `json:"bufferingHints,omitempty"`
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
+
+	ContentColumnName *string `json:"contentColumnName,omitempty"`
+
+	DataLoadingOption *string `json:"dataLoadingOption,omitempty"`
+
+	Database *string `json:"database,omitempty"`
+
+	KeyPassphrase *string `json:"keyPassphrase,omitempty"`
+
+	MetaDataColumnName *string `json:"metaDataColumnName,omitempty"`
+
+	PrivateKey *string `json:"privateKey,omitempty"`
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
+	// Specify how long Firehose retries sending data to the New Relic HTTP endpoint.
+	// After sending data, Firehose first waits for an acknowledgment from the HTTP
+	// endpoint. If an error occurs or the acknowledgment doesn’t arrive within
+	// the acknowledgment timeout period, Firehose starts the retry duration counter.
+	// It keeps retrying until the retry duration expires. After that, Firehose
+	// considers it a data delivery failure and backs up the data to your Amazon
+	// S3 bucket. Every time that Firehose sends data to the HTTP endpoint (either
+	// the initial attempt or a retry), it restarts the acknowledgement timeout
+	// counter and waits for an acknowledgement from the HTTP endpoint. Even if
+	// the retry duration expires, Firehose still waits for the acknowledgment until
+	// it receives it or the acknowledgement timeout period is reached. If the acknowledgment
+	// times out, Firehose determines whether there's time left in the retry counter.
+	// If there is time left, it retries again and repeats the logic until it receives
+	// an acknowledgment or determines that the retry time has expired. If you don't
+	// want Firehose to retry sending data, set this value to 0.
+	RetryOptions *SnowflakeRetryOptions `json:"retryOptions,omitempty"`
+
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+
+	Schema *string `json:"schema,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
+	// Optionally configure a Snowflake role. Otherwise the default user role will
+	// be used.
+	SnowflakeRoleConfiguration *SnowflakeRoleConfiguration `json:"snowflakeRoleConfiguration,omitempty"`
+
+	Table *string `json:"table,omitempty"`
+
+	User *string `json:"user,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeRetryOptions struct {
+	DurationInSeconds *int64 `json:"durationInSeconds,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeRoleConfiguration struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	SnowflakeRole *string `json:"snowflakeRole,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type SnowflakeVPCConfiguration struct {
+	PrivateLinkVPCeID *string `json:"privateLinkVPCeID,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SourceDescription struct {
-	// Details about a Kinesis data stream used as the source for a Kinesis Data
-	// Firehose delivery stream.
+	// Details about a Kinesis data stream used as the source for a Firehose delivery
+	// stream.
 	KinesisStreamSourceDescription *KinesisStreamSourceDescription `json:"kinesisStreamSourceDescription,omitempty"`
-	// Details about the Amazon MSK cluster used as the source for a Kinesis Data
-	// Firehose delivery stream.
+	// Details about the Amazon MSK cluster used as the source for a Firehose delivery
+	// stream.
 	MSKSourceDescription *MSKSourceDescription `json:"mSKSourceDescription,omitempty"`
 }
 
 // +kubebuilder:skipversion
+type SplunkBufferingHints struct {
+	IntervalInSeconds *int64 `json:"intervalInSeconds,omitempty"`
+
+	SizeInMBs *int64 `json:"sizeInMBs,omitempty"`
+}
+
+// +kubebuilder:skipversion
 type SplunkDestinationConfiguration struct {
+	// The buffering options. If no value is specified, the default values for Splunk
+	// are used.
+	BufferingHints *SplunkBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
@@ -1096,17 +1445,22 @@ type SplunkDestinationConfiguration struct {
 	HECToken *string `json:"hECToken,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Splunk, or if it doesn't receive an acknowledgment from Splunk.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Splunk, or if it doesn't receive an acknowledgment from Splunk.
 	RetryOptions *SplunkRetryOptions `json:"retryOptions,omitempty"`
 
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes the configuration of a destination in Amazon S3.
 	S3Configuration *S3DestinationConfiguration `json:"s3Configuration,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type SplunkDestinationDescription struct {
+	// The buffering options. If no value is specified, the default values for Splunk
+	// are used.
+	BufferingHints *SplunkBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
@@ -1119,17 +1473,22 @@ type SplunkDestinationDescription struct {
 	HECToken *string `json:"hECToken,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Splunk, or if it doesn't receive an acknowledgment from Splunk.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Splunk, or if it doesn't receive an acknowledgment from Splunk.
 	RetryOptions *SplunkRetryOptions `json:"retryOptions,omitempty"`
 
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `json:"s3DestinationDescription,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion
 type SplunkDestinationUpdate struct {
+	// The buffering options. If no value is specified, the default values for Splunk
+	// are used.
+	BufferingHints *SplunkBufferingHints `json:"bufferingHints,omitempty"`
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `json:"cloudWatchLoggingOptions,omitempty"`
 
@@ -1142,11 +1501,13 @@ type SplunkDestinationUpdate struct {
 	HECToken *string `json:"hECToken,omitempty"`
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `json:"processingConfiguration,omitempty"`
-	// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-	// documents to Splunk, or if it doesn't receive an acknowledgment from Splunk.
+	// Configures retry behavior in case Firehose is unable to deliver documents
+	// to Splunk, or if it doesn't receive an acknowledgment from Splunk.
 	RetryOptions *SplunkRetryOptions `json:"retryOptions,omitempty"`
 
 	S3BackupMode *string `json:"s3BackupMode,omitempty"`
+	// The structure that defines how Firehose accesses the secret.
+	SecretsManagerConfiguration *SecretsManagerConfiguration `json:"secretsManagerConfiguration,omitempty"`
 }
 
 // +kubebuilder:skipversion

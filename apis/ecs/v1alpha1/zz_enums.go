@@ -164,6 +164,12 @@ const (
 	DeviceCgroupPermission_mknod DeviceCgroupPermission = "mknod"
 )
 
+type EBSResourceType string
+
+const (
+	EBSResourceType_volume EBSResourceType = "volume"
+)
+
 type EFSAuthorizationConfigIAM string
 
 const (
@@ -255,6 +261,13 @@ type ManagedAgentName string
 
 const (
 	ManagedAgentName_ExecuteCommandAgent ManagedAgentName = "ExecuteCommandAgent"
+)
+
+type ManagedDraining string
+
+const (
+	ManagedDraining_ENABLED  ManagedDraining = "ENABLED"
+	ManagedDraining_DISABLED ManagedDraining = "DISABLED"
 )
 
 type ManagedScalingStatus string
@@ -379,6 +392,14 @@ const (
 	SettingName_fargateFIPSMode                 SettingName = "fargateFIPSMode"
 	SettingName_tagResourceAuthorization        SettingName = "tagResourceAuthorization"
 	SettingName_fargateTaskRetirementWaitPeriod SettingName = "fargateTaskRetirementWaitPeriod"
+	SettingName_guardDutyActivate               SettingName = "guardDutyActivate"
+)
+
+type SettingType string
+
+const (
+	SettingType_user        SettingType = "user"
+	SettingType_aws_managed SettingType = "aws_managed"
 )
 
 type SortOrder string
@@ -433,6 +454,14 @@ type TaskField string
 
 const (
 	TaskField_TAGS TaskField = "TAGS"
+)
+
+type TaskFilesystemType string
+
+const (
+	TaskFilesystemType_ext3 TaskFilesystemType = "ext3"
+	TaskFilesystemType_ext4 TaskFilesystemType = "ext4"
+	TaskFilesystemType_xfs  TaskFilesystemType = "xfs"
 )
 
 type TaskSetField string

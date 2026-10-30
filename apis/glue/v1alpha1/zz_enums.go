@@ -22,6 +22,7 @@ type AdditionalOptionKeys string
 
 const (
 	AdditionalOptionKeys_performanceTuning_caching AdditionalOptionKeys = "performanceTuning.caching"
+	AdditionalOptionKeys_observations_scope        AdditionalOptionKeys = "observations.scope"
 )
 
 type AggFunction string
@@ -42,6 +43,14 @@ const (
 	AggFunction_sumDistinct   AggFunction = "sumDistinct"
 	AggFunction_var_samp      AggFunction = "var_samp"
 	AggFunction_var_pop       AggFunction = "var_pop"
+)
+
+type AuthenticationType string
+
+const (
+	AuthenticationType_BASIC  AuthenticationType = "BASIC"
+	AuthenticationType_OAUTH2 AuthenticationType = "OAUTH2"
+	AuthenticationType_CUSTOM AuthenticationType = "CUSTOM"
 )
 
 type BackfillErrorCode string
@@ -75,8 +84,9 @@ const (
 type CatalogEncryptionMode string
 
 const (
-	CatalogEncryptionMode_DISABLED CatalogEncryptionMode = "DISABLED"
-	CatalogEncryptionMode_SSE_KMS  CatalogEncryptionMode = "SSE-KMS"
+	CatalogEncryptionMode_DISABLED                  CatalogEncryptionMode = "DISABLED"
+	CatalogEncryptionMode_SSE_KMS                   CatalogEncryptionMode = "SSE-KMS"
+	CatalogEncryptionMode_SSE_KMS_WITH_SERVICE_ROLE CatalogEncryptionMode = "SSE-KMS-WITH-SERVICE-ROLE"
 )
 
 type CloudWatchEncryptionMode string
@@ -84,6 +94,16 @@ type CloudWatchEncryptionMode string
 const (
 	CloudWatchEncryptionMode_DISABLED CloudWatchEncryptionMode = "DISABLED"
 	CloudWatchEncryptionMode_SSE_KMS  CloudWatchEncryptionMode = "SSE-KMS"
+)
+
+type ColumnStatisticsState string
+
+const (
+	ColumnStatisticsState_STARTING  ColumnStatisticsState = "STARTING"
+	ColumnStatisticsState_RUNNING   ColumnStatisticsState = "RUNNING"
+	ColumnStatisticsState_SUCCEEDED ColumnStatisticsState = "SUCCEEDED"
+	ColumnStatisticsState_FAILED    ColumnStatisticsState = "FAILED"
+	ColumnStatisticsState_STOPPED   ColumnStatisticsState = "STOPPED"
 )
 
 type ColumnStatisticsType string
@@ -162,6 +182,9 @@ const (
 	ConnectionPropertyKey_CONNECTOR_TYPE                           ConnectionPropertyKey = "CONNECTOR_TYPE"
 	ConnectionPropertyKey_CONNECTOR_CLASS_NAME                     ConnectionPropertyKey = "CONNECTOR_CLASS_NAME"
 	ConnectionPropertyKey_KAFKA_SASL_MECHANISM                     ConnectionPropertyKey = "KAFKA_SASL_MECHANISM"
+	ConnectionPropertyKey_KAFKA_SASL_PLAIN_USERNAME                ConnectionPropertyKey = "KAFKA_SASL_PLAIN_USERNAME"
+	ConnectionPropertyKey_KAFKA_SASL_PLAIN_PASSWORD                ConnectionPropertyKey = "KAFKA_SASL_PLAIN_PASSWORD"
+	ConnectionPropertyKey_ENCRYPTED_KAFKA_SASL_PLAIN_PASSWORD      ConnectionPropertyKey = "ENCRYPTED_KAFKA_SASL_PLAIN_PASSWORD"
 	ConnectionPropertyKey_KAFKA_SASL_SCRAM_USERNAME                ConnectionPropertyKey = "KAFKA_SASL_SCRAM_USERNAME"
 	ConnectionPropertyKey_KAFKA_SASL_SCRAM_PASSWORD                ConnectionPropertyKey = "KAFKA_SASL_SCRAM_PASSWORD"
 	ConnectionPropertyKey_KAFKA_SASL_SCRAM_SECRETS_ARN             ConnectionPropertyKey = "KAFKA_SASL_SCRAM_SECRETS_ARN"
@@ -170,6 +193,15 @@ const (
 	ConnectionPropertyKey_KAFKA_SASL_GSSAPI_KRB5_CONF              ConnectionPropertyKey = "KAFKA_SASL_GSSAPI_KRB5_CONF"
 	ConnectionPropertyKey_KAFKA_SASL_GSSAPI_SERVICE                ConnectionPropertyKey = "KAFKA_SASL_GSSAPI_SERVICE"
 	ConnectionPropertyKey_KAFKA_SASL_GSSAPI_PRINCIPAL              ConnectionPropertyKey = "KAFKA_SASL_GSSAPI_PRINCIPAL"
+	ConnectionPropertyKey_ROLE_ARN                                 ConnectionPropertyKey = "ROLE_ARN"
+)
+
+type ConnectionStatus_SDK string
+
+const (
+	ConnectionStatus_SDK_READY       ConnectionStatus_SDK = "READY"
+	ConnectionStatus_SDK_IN_PROGRESS ConnectionStatus_SDK = "IN_PROGRESS"
+	ConnectionStatus_SDK_FAILED      ConnectionStatus_SDK = "FAILED"
 )
 
 type ConnectionType string
@@ -182,6 +214,7 @@ const (
 	ConnectionType_NETWORK     ConnectionType = "NETWORK"
 	ConnectionType_MARKETPLACE ConnectionType = "MARKETPLACE"
 	ConnectionType_CUSTOM      ConnectionType = "CUSTOM"
+	ConnectionType_SALESFORCE  ConnectionType = "SALESFORCE"
 )
 
 type CrawlState string
@@ -235,6 +268,13 @@ const (
 	CsvSerdeOption_None            CsvSerdeOption = "None"
 )
 
+type DQCompositeRuleEvaluationMethod string
+
+const (
+	DQCompositeRuleEvaluationMethod_COLUMN DQCompositeRuleEvaluationMethod = "COLUMN"
+	DQCompositeRuleEvaluationMethod_ROW    DQCompositeRuleEvaluationMethod = "ROW"
+)
+
 type DQStopJobOnFailureTiming string
 
 const (
@@ -263,6 +303,12 @@ const (
 	DataQualityRuleResultStatus_PASS  DataQualityRuleResultStatus = "PASS"
 	DataQualityRuleResultStatus_FAIL  DataQualityRuleResultStatus = "FAIL"
 	DataQualityRuleResultStatus_ERROR DataQualityRuleResultStatus = "ERROR"
+)
+
+type DatabaseAttributes string
+
+const (
+	DatabaseAttributes_NAME DatabaseAttributes = "NAME"
 )
 
 type DeleteBehavior string
@@ -305,10 +351,15 @@ const (
 type FederationSourceErrorCode string
 
 const (
+	FederationSourceErrorCode_AccessDeniedException          FederationSourceErrorCode = "AccessDeniedException"
+	FederationSourceErrorCode_EntityNotFoundException        FederationSourceErrorCode = "EntityNotFoundException"
+	FederationSourceErrorCode_InvalidCredentialsException    FederationSourceErrorCode = "InvalidCredentialsException"
+	FederationSourceErrorCode_InvalidInputException          FederationSourceErrorCode = "InvalidInputException"
 	FederationSourceErrorCode_InvalidResponseException       FederationSourceErrorCode = "InvalidResponseException"
 	FederationSourceErrorCode_OperationTimeoutException      FederationSourceErrorCode = "OperationTimeoutException"
 	FederationSourceErrorCode_OperationNotSupportedException FederationSourceErrorCode = "OperationNotSupportedException"
 	FederationSourceErrorCode_InternalServiceException       FederationSourceErrorCode = "InternalServiceException"
+	FederationSourceErrorCode_PartialFailureException        FederationSourceErrorCode = "PartialFailureException"
 	FederationSourceErrorCode_ThrottlingException            FederationSourceErrorCode = "ThrottlingException"
 )
 
@@ -451,6 +502,14 @@ const (
 	JobBookmarksEncryptionMode_CSE_KMS  JobBookmarksEncryptionMode = "CSE-KMS"
 )
 
+type JobMode string
+
+const (
+	JobMode_SCRIPT   JobMode = "SCRIPT"
+	JobMode_VISUAL   JobMode = "VISUAL"
+	JobMode_NOTEBOOK JobMode = "NOTEBOOK"
+)
+
 type JobRunState string
 
 const (
@@ -463,6 +522,7 @@ const (
 	JobRunState_TIMEOUT   JobRunState = "TIMEOUT"
 	JobRunState_ERROR     JobRunState = "ERROR"
 	JobRunState_WAITING   JobRunState = "WAITING"
+	JobRunState_EXPIRED   JobRunState = "EXPIRED"
 )
 
 type JoinType string
@@ -523,6 +583,14 @@ const (
 	NodeType_CRAWLER NodeType = "CRAWLER"
 	NodeType_JOB     NodeType = "JOB"
 	NodeType_TRIGGER NodeType = "TRIGGER"
+)
+
+type OAuth2GrantType string
+
+const (
+	OAuth2GrantType_AUTHORIZATION_CODE OAuth2GrantType = "AUTHORIZATION_CODE"
+	OAuth2GrantType_CLIENT_CREDENTIALS OAuth2GrantType = "CLIENT_CREDENTIALS"
+	OAuth2GrantType_JWT_BEARER         OAuth2GrantType = "JWT_BEARER"
 )
 
 type ParamType string
@@ -868,6 +936,23 @@ type UpdateCatalogBehavior string
 const (
 	UpdateCatalogBehavior_UPDATE_IN_DATABASE UpdateCatalogBehavior = "UPDATE_IN_DATABASE"
 	UpdateCatalogBehavior_LOG                UpdateCatalogBehavior = "LOG"
+)
+
+type ViewDialect string
+
+const (
+	ViewDialect_REDSHIFT ViewDialect = "REDSHIFT"
+	ViewDialect_ATHENA   ViewDialect = "ATHENA"
+	ViewDialect_SPARK    ViewDialect = "SPARK"
+)
+
+type ViewUpdateAction string
+
+const (
+	ViewUpdateAction_ADD            ViewUpdateAction = "ADD"
+	ViewUpdateAction_REPLACE        ViewUpdateAction = "REPLACE"
+	ViewUpdateAction_ADD_OR_REPLACE ViewUpdateAction = "ADD_OR_REPLACE"
+	ViewUpdateAction_DROP           ViewUpdateAction = "DROP"
 )
 
 type WorkerType string

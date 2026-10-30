@@ -51,6 +51,28 @@ type GlobalClusterParameters struct {
 	//    * Can't be specified if SourceDBClusterIdentifier is specified. In this
 	//    case, Amazon Aurora uses the engine of the source DB cluster.
 	Engine *string `json:"engine,omitempty"`
+	// The life cycle type for this global database cluster.
+	//
+	// By default, this value is set to open-source-rds-extended-support, which
+	// enrolls your global cluster into Amazon RDS Extended Support. At the end
+	// of standard support, you can avoid charges for Extended Support by setting
+	// the value to open-source-rds-extended-support-disabled. In this case, creating
+	// the global cluster will fail if the DB major version is past its end of standard
+	// support date.
+	//
+	// This setting only applies to Aurora PostgreSQL-based global databases.
+	//
+	// You can use this setting to enroll your global cluster into Amazon RDS Extended
+	// Support. With RDS Extended Support, you can run the selected major engine
+	// version on your global cluster past the end of standard support for that
+	// engine version. For more information, see Using Amazon RDS Extended Support
+	// (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/extended-support.html)
+	// in the Amazon Aurora User Guide.
+	//
+	// Valid Values: open-source-rds-extended-support | open-source-rds-extended-support-disabled
+	//
+	// Default: open-source-rds-extended-support
+	EngineLifecycleSupport *string `json:"engineLifecycleSupport,omitempty"`
 	// The engine version to use for this global database cluster.
 	//
 	// Constraints:

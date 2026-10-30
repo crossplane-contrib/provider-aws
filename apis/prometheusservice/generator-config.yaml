@@ -3,6 +3,7 @@ sdk_names:
 ignore:
   resource_names:
     - LoggingConfiguration
+    - Scraper
   field_paths:
     - CreateWorkspaceInput.ClientToken
     - CreateRuleGroupsNamespaceInput.ClientToken

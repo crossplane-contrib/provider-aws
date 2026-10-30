@@ -169,7 +169,7 @@ spec:
                   schema:
                     description: |-
                       The schema for the model. For application/json models, this should be JSON
-                      schema draft 4 model.
+                      schema draft 4 model. The maximum size of the model is 400 KB.
                     type: string
                 required:
                 - contentType

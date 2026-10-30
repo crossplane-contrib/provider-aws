@@ -35,15 +35,21 @@ type LaunchTemplateVersionParameters struct {
 	// If true, and if a Systems Manager parameter is specified for ImageId, the
 	// AMI ID is displayed in the response for imageID. For more information, see
 	// Use a Systems Manager parameter instead of an AMI ID (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html#use-an-ssm-parameter-instead-of-an-ami-id)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide.
 	//
 	// Default: false
 	ResolveAlias *bool `json:"resolveAlias,omitempty"`
-	// The version number of the launch template version on which to base the new
-	// version. The new version inherits the same launch parameters as the source
-	// version, except for parameters that you specify in LaunchTemplateData. Snapshots
+	// The version of the launch template on which to base the new version. Snapshots
 	// applied to the block device mapping are ignored when creating a new version
 	// unless they are explicitly included.
+	//
+	// If you specify this parameter, the new version inherits the launch parameters
+	// from the source version. If you specify additional launch parameters for
+	// the new version, they overwrite any corresponding launch parameters inherited
+	// from the source version.
+	//
+	// If you omit this parameter, the new version contains only the launch parameters
+	// that you specify for the new version.
 	SourceVersion *string `json:"sourceVersion,omitempty"`
 	// A description for the version of the launch template.
 	VersionDescription                    *string `json:"versionDescription,omitempty"`

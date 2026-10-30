@@ -15,6 +15,7 @@ ignore:
     - Session
     - CustomEntityType
     - DataQualityRuleset
+    - UsageProfile
   field_paths:
     - CreateJobInput.Name
     - CreateJobInput.Role

@@ -18,6 +18,9 @@ package addon
 
 import (
 	"context"
+	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	awseks "github.com/aws/aws-sdk-go/service/eks"
@@ -44,10 +47,12 @@ import (
 )
 
 const (
-	errNotEKSCluster    = "managed resource is not an EKS cluster custom resource"
-	errKubeUpdateFailed = "cannot update EKS cluster custom resource"
-	errTagResource      = "cannot tag resource"
-	errUntagResource    = "cannot untag resource"
+	errNotEKSCluster                  = "managed resource is not an EKS cluster custom resource"
+	errKubeUpdateFailed               = "cannot update EKS cluster custom resource"
+	errTagResource                    = "cannot tag resource"
+	errUntagResource                  = "cannot untag resource"
+	errDescribePodIdentityAssociation = "failed to describe Pod Identity Association"
+	errEmptyPodIdentityAssociation    = "describe Pod Identity Association returned an unexpected empty result"
 )
 
 // SetupAddon adds a controller that reconciles Clusters.
@@ -93,9 +98,9 @@ func setupHooks(e *external) {
 	e.preObserve = preObserve
 	e.postObserve = postObserve
 	e.lateInitialize = lateInitialize
-	h := &hooks{client: e.client, kube: e.kube}
+	h := &hooks{client: e.client, kube: e.kube, cache: &cache{}}
 	e.isUpToDate = h.isUpToDate
-	e.preUpdate = preUpdate
+	e.preUpdate = h.preUpdate
 	e.postUpdate = h.postUpdate
 	e.preCreate = preCreate
 	e.postCreate = postCreate
@@ -105,6 +110,12 @@ func setupHooks(e *external) {
 type hooks struct {
 	client eksiface.EKSAPI
 	kube   client.Client
+
+	cache *cache
+}
+
+type cache struct {
+	removePIAs bool
 }
 
 func preObserve(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.DescribeAddonInput) error {
@@ -141,11 +152,20 @@ func lateInitialize(spec *eksv1alpha1.AddonParameters, resp *awseks.DescribeAddo
 	return nil
 }
 
-func (h *hooks) isUpToDate(_ context.Context, cr *eksv1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, string, error) {
+func (h *hooks) isUpToDate(ctx context.Context, cr *eksv1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, string, error) {
 	switch {
 	case resp.Addon == nil,
 		cr.Spec.ForProvider.AddonVersion != nil && pointer.StringValue(cr.Spec.ForProvider.AddonVersion) != pointer.StringValue(resp.Addon.AddonVersion),
 		cr.Spec.ForProvider.ServiceAccountRoleARN != nil && pointer.StringValue(cr.Spec.ForProvider.ServiceAccountRoleARN) != pointer.StringValue(resp.Addon.ServiceAccountRoleArn):
+		return false, "", nil
+	}
+
+	// PodIdentityAssociations
+	piasUpToDate, piasUpToDateErr := h.isUpToDatePodIdentityAssociations(ctx, cr, resp)
+	if piasUpToDateErr != nil {
+		return false, "", piasUpToDateErr
+	}
+	if !piasUpToDate {
 		return false, "", nil
 	}
 
@@ -160,6 +180,57 @@ func (h *hooks) isUpToDate(_ context.Context, cr *eksv1alpha1.Addon, resp *awsek
 
 	add, remove := tags.DiffTagsMapPtr(cr.Spec.ForProvider.Tags, resp.Addon.Tags)
 	return len(add) == 0 && len(remove) == 0, "", nil
+}
+
+func (h *hooks) isUpToDatePodIdentityAssociations(ctx context.Context, cr *eksv1alpha1.Addon, resp *awseks.DescribeAddonOutput) (bool, error) { //nolint:gocyclo
+	if len(cr.Spec.ForProvider.PodIdentityAssociations) != len(resp.Addon.PodIdentityAssociations) {
+		if len(cr.Spec.ForProvider.PodIdentityAssociations) == 0 {
+			// Edge Case for update request
+			h.cache.removePIAs = true
+		}
+		return false, nil
+	}
+	// From the Addon we only get the ARNs of the PodIdentityAssociations.
+	// To be able to compare/match them with the user provided roleArn and namespace,
+	// we need to Describe the PodIdentityAssociations individually.
+	// Copied/inspired from Terraform: https://github.com/hashicorp/terraform-provider-aws/blob/62fba4b53b0a584b4f30cc73284d5315974289af/internal/service/eks/addon.go#L461
+	describedPIAs := []*eksv1alpha1.AddonPodIdentityAssociations{}
+	for _, observedPIAArn := range resp.Addon.PodIdentityAssociations {
+		// schema "arn:aws:eks:<region>:<account-id>:podidentityassociation/<cluster-name>/a-andother17characs"
+		parts := strings.Split(aws.StringValue(observedPIAArn), "/")
+		if len(parts) != 3 {
+			return false, fmt.Errorf(`unable to extract Pod Identity Association ID from observed ARN %s`, *observedPIAArn)
+		}
+		associationID := parts[2]
+		pia, err := h.client.DescribePodIdentityAssociationWithContext(ctx, &awseks.DescribePodIdentityAssociationInput{
+			AssociationId: &associationID,
+			ClusterName:   cr.Spec.ForProvider.ClusterName,
+		})
+		if err != nil {
+			return false, errors.Wrap(err, errDescribePodIdentityAssociation)
+		}
+		if pia == nil || pia.Association == nil {
+			return false, errors.New(errEmptyPodIdentityAssociation + "; id: " + associationID)
+		}
+		describedPIAs = append(describedPIAs, &eksv1alpha1.AddonPodIdentityAssociations{
+			RoleARN:        pia.Association.RoleArn,
+			ServiceAccount: pia.Association.ServiceAccount,
+		})
+		found := slices.ContainsFunc(cr.Spec.ForProvider.PodIdentityAssociations, func(a *eksv1alpha1.AddonPodIdentityAssociations) bool {
+			return a != nil &&
+				pointerValueEqual(a.RoleARN, pia.Association.RoleArn) &&
+				pointerValueEqual(a.ServiceAccount, pia.Association.ServiceAccount)
+		})
+		if !found {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func pointerValueEqual[T comparable](a, b *T) bool {
+	return a == b || (a != nil && b != nil && *a == *b)
 }
 
 func isUpToDateConfigurationValues(cr *eksv1alpha1.Addon, obj *awseks.DescribeAddonOutput) (bool, string, error) {
@@ -199,8 +270,14 @@ func convertConfigurationValuesToObj(configurationValues string) (map[string]int
 	return objConfigurationValues, err
 }
 
-func preUpdate(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.UpdateAddonInput) error {
+func (h *hooks) preUpdate(_ context.Context, cr *eksv1alpha1.Addon, obj *awseks.UpdateAddonInput) error {
 	obj.ClusterName = cr.Spec.ForProvider.ClusterName
+
+	// Need to set empty array [] in next update-call,
+	// if we want to remove all PodIdentityAssociations
+	if h.cache.removePIAs {
+		obj.PodIdentityAssociations = []*awseks.AddonPodIdentityAssociations{}
+	}
 	return nil
 }
 

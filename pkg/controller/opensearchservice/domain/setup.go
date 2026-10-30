@@ -160,15 +160,17 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 	}
 
 	o := svcapitypes.DomainObservation{
-		ARN:               obj.ARN,
-		AccessPolicies:    obj.AccessPolicies,
-		Created:           obj.Created,
-		Deleted:           obj.Deleted,
-		DomainID:          obj.DomainId,
-		Endpoint:          obj.Endpoint,
-		EngineVersion:     obj.EngineVersion,
-		Processing:        obj.Processing,
-		UpgradeProcessing: obj.UpgradeProcessing,
+		ARN:                          obj.ARN,
+		AccessPolicies:               obj.AccessPolicies,
+		Created:                      obj.Created,
+		Deleted:                      obj.Deleted,
+		DomainID:                     obj.DomainId,
+		DomainEndpointV2HostedZoneID: obj.DomainEndpointV2HostedZoneId,
+		DomainProcessingStatus:       obj.DomainProcessingStatus,
+		Endpoint:                     obj.Endpoint,
+		EngineVersion:                obj.EngineVersion,
+		Processing:                   obj.Processing,
+		UpgradeProcessing:            obj.UpgradeProcessing,
 	}
 
 	if obj.AdvancedOptions != nil {
@@ -180,6 +182,74 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 		o.AdvancedOptions = f1
 	}
 
+	if obj.AdvancedSecurityOptions != nil {
+		f4 := &svcapitypes.AdvancedSecurityOptions{}
+		if obj.AdvancedSecurityOptions.AnonymousAuthEnabled != nil {
+			f4.AnonymousAuthEnabled = obj.AdvancedSecurityOptions.AnonymousAuthEnabled
+		}
+		if obj.AdvancedSecurityOptions.Enabled != nil {
+			f4.Enabled = obj.AdvancedSecurityOptions.Enabled
+		}
+		if obj.AdvancedSecurityOptions.InternalUserDatabaseEnabled != nil {
+			f4.InternalUserDatabaseEnabled = obj.AdvancedSecurityOptions.InternalUserDatabaseEnabled
+		}
+		if obj.AdvancedSecurityOptions.JWTOptions != nil {
+			f4f4 := &svcapitypes.JWTOptionsOutput{}
+			if obj.AdvancedSecurityOptions.JWTOptions.Enabled != nil {
+				f4f4.Enabled = obj.AdvancedSecurityOptions.JWTOptions.Enabled
+			}
+			if obj.AdvancedSecurityOptions.JWTOptions.PublicKey != nil {
+				f4f4.PublicKey = obj.AdvancedSecurityOptions.JWTOptions.PublicKey
+			}
+			if obj.AdvancedSecurityOptions.JWTOptions.RolesKey != nil {
+				f4f4.RolesKey = obj.AdvancedSecurityOptions.JWTOptions.RolesKey
+			}
+			if obj.AdvancedSecurityOptions.JWTOptions.SubjectKey != nil {
+				f4f4.SubjectKey = obj.AdvancedSecurityOptions.JWTOptions.SubjectKey
+			}
+			f4.JWTOptions = f4f4
+		}
+		if obj.AdvancedSecurityOptions.SAMLOptions != nil {
+			f4f5 := &svcapitypes.SAMLOptionsOutput{}
+			if obj.AdvancedSecurityOptions.SAMLOptions.Enabled != nil {
+				f4f5.Enabled = obj.AdvancedSecurityOptions.SAMLOptions.Enabled
+			}
+			if obj.AdvancedSecurityOptions.SAMLOptions.Idp != nil {
+				f4f5f1 := &svcapitypes.SAMLIDp{}
+				if obj.AdvancedSecurityOptions.SAMLOptions.Idp.EntityId != nil {
+					f4f5f1.EntityID = obj.AdvancedSecurityOptions.SAMLOptions.Idp.EntityId
+				}
+				if obj.AdvancedSecurityOptions.SAMLOptions.Idp.MetadataContent != nil {
+					f4f5f1.MetadataContent = obj.AdvancedSecurityOptions.SAMLOptions.Idp.MetadataContent
+				}
+				f4f5.IDp = f4f5f1
+			}
+			if obj.AdvancedSecurityOptions.SAMLOptions.RolesKey != nil {
+				f4f5.RolesKey = obj.AdvancedSecurityOptions.SAMLOptions.RolesKey
+			}
+			if obj.AdvancedSecurityOptions.SAMLOptions.SessionTimeoutMinutes != nil {
+				f4f5.SessionTimeoutMinutes = obj.AdvancedSecurityOptions.SAMLOptions.SessionTimeoutMinutes
+			}
+			if obj.AdvancedSecurityOptions.SAMLOptions.SubjectKey != nil {
+				f4f5.SubjectKey = obj.AdvancedSecurityOptions.SAMLOptions.SubjectKey
+			}
+			f4.SAMLOptions = f4f5
+		}
+		o.AdvancedSecurityOptions = f4
+	}
+
+	if obj.AIMLOptions != nil {
+		f0 := &svcapitypes.AIMLOptionsOutput{}
+		if obj.AIMLOptions.NaturalLanguageQueryGenerationOptions != nil {
+			f0f0 := &svcapitypes.NATuralLanguageQueryGenerationOptionsOutput{}
+			if obj.AIMLOptions.NaturalLanguageQueryGenerationOptions.DesiredState != nil {
+				f0f0.DesiredState = obj.AIMLOptions.NaturalLanguageQueryGenerationOptions.DesiredState
+			}
+			f0.NATuralLanguageQueryGenerationOptions = f0f0
+		}
+		o.AIMLOptions = f0
+	}
+
 	if obj.ChangeProgressDetails != nil {
 		f2 := &svcapitypes.ChangeProgressDetails{}
 		if obj.ChangeProgressDetails.ChangeId != nil {
@@ -187,6 +257,18 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 		}
 		if obj.ChangeProgressDetails.Message != nil {
 			f2.Message = obj.ChangeProgressDetails.Message
+		}
+		if obj.ChangeProgressDetails.ConfigChangeStatus != nil {
+			f2.ConfigChangeStatus = obj.ChangeProgressDetails.ConfigChangeStatus
+		}
+		if obj.ChangeProgressDetails.InitiatedBy != nil {
+			f2.InitiatedBy = obj.ChangeProgressDetails.InitiatedBy
+		}
+		if obj.ChangeProgressDetails.LastUpdatedTime != nil {
+			f2.LastUpdatedTime = &metav1.Time{Time: *obj.ChangeProgressDetails.LastUpdatedTime}
+		}
+		if obj.ChangeProgressDetails.StartTime != nil {
+			f2.StartTime = &metav1.Time{Time: *obj.ChangeProgressDetails.StartTime}
 		}
 		o.ChangeProgressDetails = f2
 	}
@@ -297,6 +379,27 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 		o.EncryptionAtRestOptions = f7
 	}
 
+	if obj.ModifyingProperties != nil {
+		f23 := []*svcapitypes.ModifyingProperties{}
+		for _, f23iter := range obj.ModifyingProperties {
+			f23elem := &svcapitypes.ModifyingProperties{}
+			if f23iter.ActiveValue != nil {
+				f23elem.ActiveValue = f23iter.ActiveValue
+			}
+			if f23iter.Name != nil {
+				f23elem.Name = f23iter.Name
+			}
+			if f23iter.PendingValue != nil {
+				f23elem.PendingValue = f23iter.PendingValue
+			}
+			if f23iter.ValueType != nil {
+				f23elem.ValueType = f23iter.ValueType
+			}
+			f23 = append(f23, f23elem)
+		}
+		o.ModifyingProperties = f23
+	}
+
 	if obj.NodeToNodeEncryptionOptions != nil {
 		f8 := &svcapitypes.NodeToNodeEncryptionOptions{}
 		if obj.NodeToNodeEncryptionOptions.Enabled != nil {
@@ -365,9 +468,13 @@ func GenerateObservation(obj *svcsdk.DomainStatus) svcapitypes.DomainObservation
 func isUpToDate(_ context.Context, obj *svcapitypes.Domain, out *svcsdk.DescribeDomainOutput) (bool, string, error) {
 
 	switch {
+	case aws.BoolValue(out.DomainStatus.Processing) || aws.BoolValue(out.DomainStatus.UpgradeProcessing):
+		// consider up-to-date while still processing/upgrading to avoid constantly sending update calls
+		return true, "", nil
 	case aws.StringValue(obj.Spec.ForProvider.AccessPolicies) != aws.StringValue(out.DomainStatus.AccessPolicies),
 		!isMapUpToDate(obj.Spec.ForProvider.AdvancedOptions, out.DomainStatus.AdvancedOptions, []string{"override_main_response_version"}),
 		!isAdvancedSecurityOptionsUpToDate(obj.Spec.ForProvider.AdvancedSecurityOptions, out.DomainStatus.AdvancedSecurityOptions),
+		!isAIMLOptionsUpToDate(obj.Spec.ForProvider.AIMLOptions, out.DomainStatus.AIMLOptions),
 		!isAutoTuneOptionsUpToDate(obj.Spec.ForProvider.AutoTuneOptions, out.DomainStatus.AutoTuneOptions),
 		!isClusterConfigUpToDate(obj.Spec.ForProvider.ClusterConfig, out.DomainStatus.ClusterConfig),
 		!isCognitoOptionsUpToDate(obj.Spec.ForProvider.CognitoOptions, out.DomainStatus.CognitoOptions),
@@ -419,6 +526,41 @@ func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomai
 			}
 			if resp.DomainStatus.AdvancedSecurityOptions.InternalUserDatabaseEnabled != nil && cr.AdvancedSecurityOptions.InternalUserDatabaseEnabled == nil {
 				cr.AdvancedSecurityOptions.InternalUserDatabaseEnabled = resp.DomainStatus.AdvancedSecurityOptions.InternalUserDatabaseEnabled
+			}
+			if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions != nil {
+				if cr.AdvancedSecurityOptions.JWTOptions != nil {
+					if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.Enabled != nil &&
+						cr.AdvancedSecurityOptions.JWTOptions.Enabled == nil {
+						cr.AdvancedSecurityOptions.JWTOptions.Enabled = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.Enabled
+					}
+					if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.PublicKey != nil &&
+						cr.AdvancedSecurityOptions.JWTOptions.PublicKey == nil {
+						cr.AdvancedSecurityOptions.JWTOptions.PublicKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.PublicKey
+					}
+					if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.RolesKey != nil &&
+						cr.AdvancedSecurityOptions.JWTOptions.RolesKey == nil {
+						cr.AdvancedSecurityOptions.JWTOptions.RolesKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.RolesKey
+					}
+					if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.SubjectKey != nil &&
+						cr.AdvancedSecurityOptions.JWTOptions.SubjectKey == nil {
+						cr.AdvancedSecurityOptions.JWTOptions.SubjectKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.SubjectKey
+					}
+				} else {
+					f4f4 := &svcapitypes.JWTOptionsInput{}
+					if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.Enabled != nil {
+						f4f4.Enabled = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.Enabled
+					}
+					if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.PublicKey != nil {
+						f4f4.PublicKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.PublicKey
+					}
+					if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.RolesKey != nil {
+						f4f4.RolesKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.RolesKey
+					}
+					if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.SubjectKey != nil {
+						f4f4.SubjectKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.SubjectKey
+					}
+					cr.AdvancedSecurityOptions.JWTOptions = f4f4
+				}
 			}
 			if resp.DomainStatus.AdvancedSecurityOptions.SAMLOptions != nil {
 				if cr.AdvancedSecurityOptions.SAMLOptions != nil {
@@ -491,6 +633,22 @@ func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomai
 			if resp.DomainStatus.AdvancedSecurityOptions.InternalUserDatabaseEnabled != nil {
 				f3.InternalUserDatabaseEnabled = resp.DomainStatus.AdvancedSecurityOptions.InternalUserDatabaseEnabled
 			}
+			if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions != nil {
+				f4f4 := &svcapitypes.JWTOptionsInput{}
+				if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.Enabled != nil {
+					f4f4.Enabled = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.Enabled
+				}
+				if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.PublicKey != nil {
+					f4f4.PublicKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.PublicKey
+				}
+				if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.RolesKey != nil {
+					f4f4.RolesKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.RolesKey
+				}
+				if resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.SubjectKey != nil {
+					f4f4.SubjectKey = resp.DomainStatus.AdvancedSecurityOptions.JWTOptions.SubjectKey
+				}
+				cr.AdvancedSecurityOptions.JWTOptions = f4f4
+			}
 			if resp.DomainStatus.AdvancedSecurityOptions.SAMLOptions != nil {
 				f3f4 := &svcapitypes.SAMLOptionsInput{}
 				if resp.DomainStatus.AdvancedSecurityOptions.SAMLOptions.Enabled != nil {
@@ -520,6 +678,35 @@ func lateInitialize(cr *svcapitypes.DomainParameters, resp *svcsdk.DescribeDomai
 			cr.AdvancedSecurityOptions = f3
 		}
 	}
+	if resp.DomainStatus.AIMLOptions != nil {
+		if cr.AIMLOptions != nil {
+			if resp.DomainStatus.AIMLOptions.NaturalLanguageQueryGenerationOptions != nil {
+				if cr.AIMLOptions.NATuralLanguageQueryGenerationOptions != nil {
+					if resp.DomainStatus.AIMLOptions.NaturalLanguageQueryGenerationOptions.DesiredState != nil &&
+						cr.AIMLOptions.NATuralLanguageQueryGenerationOptions.DesiredState == nil {
+						cr.AIMLOptions.NATuralLanguageQueryGenerationOptions.DesiredState = resp.DomainStatus.AIMLOptions.NaturalLanguageQueryGenerationOptions.DesiredState
+					}
+				} else {
+					f0f0 := &svcapitypes.NATuralLanguageQueryGenerationOptionsInput{}
+					if resp.DomainStatus.AIMLOptions.NaturalLanguageQueryGenerationOptions.DesiredState != nil {
+						f0f0.DesiredState = resp.DomainStatus.AIMLOptions.NaturalLanguageQueryGenerationOptions.DesiredState
+					}
+					cr.AIMLOptions.NATuralLanguageQueryGenerationOptions = f0f0
+				}
+			}
+		} else {
+			f0 := &svcapitypes.AIMLOptionsInput{}
+			if resp.DomainStatus.AIMLOptions.NaturalLanguageQueryGenerationOptions != nil {
+				f0f0 := &svcapitypes.NATuralLanguageQueryGenerationOptionsInput{}
+				if resp.DomainStatus.AIMLOptions.NaturalLanguageQueryGenerationOptions.DesiredState != nil {
+					f0f0.DesiredState = resp.DomainStatus.AIMLOptions.NaturalLanguageQueryGenerationOptions.DesiredState
+				}
+				f0.NATuralLanguageQueryGenerationOptions = f0f0
+			}
+			cr.AIMLOptions = f0
+		}
+	}
+
 	if resp.DomainStatus.AutoTuneOptions != nil && cr.AutoTuneOptions == nil {
 		f4 := &svcapitypes.AutoTuneOptionsInput{}
 		cr.AutoTuneOptions = f4
@@ -839,6 +1026,11 @@ func (e *updateDomain) update(ctx context.Context, cr *svcapitypes.Domain) (mana
 		input.AdvancedSecurityOptions = generateAdvancedSecurityOptionsInput(cr.Spec.ForProvider.AdvancedSecurityOptions)
 	}
 
+	if !isAIMLOptionsUpToDate(cr.Spec.ForProvider.AIMLOptions, obj.DomainStatus.AIMLOptions) {
+		needDomainConfigUpdate = true
+		input.AIMLOptions = generateAIMLOptions(cr.Spec.ForProvider.AIMLOptions)
+	}
+
 	if !isClusterConfigUpToDate(cr.Spec.ForProvider.ClusterConfig, obj.DomainStatus.ClusterConfig) {
 		needDomainConfigUpdate = true
 		input.ClusterConfig = generateClusterConfig(cr.Spec.ForProvider.ClusterConfig)
@@ -951,6 +1143,27 @@ func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptio
 		if aws.BoolValue(wanted.InternalUserDatabaseEnabled) != aws.BoolValue(current.InternalUserDatabaseEnabled) {
 			return false
 		}
+		if wanted.JWTOptions != nil {
+			if current.JWTOptions == nil {
+				return false
+			}
+			if aws.BoolValue(wanted.JWTOptions.Enabled) != aws.BoolValue(current.JWTOptions.Enabled) {
+				return false
+			}
+			// AWS returns a sanitized string variant of the provided public key
+			// Therefore we normalize both before comparing them.
+			if normalizePEM(aws.StringValue(wanted.JWTOptions.PublicKey)) != normalizePEM(aws.StringValue(current.JWTOptions.PublicKey)) {
+				return false
+			}
+			if aws.StringValue(wanted.JWTOptions.RolesKey) != aws.StringValue(current.JWTOptions.RolesKey) {
+				return false
+			}
+			if aws.StringValue(wanted.JWTOptions.SubjectKey) != aws.StringValue(current.JWTOptions.SubjectKey) {
+				return false
+			}
+		} else if current.JWTOptions != nil {
+			return false
+		}
 		if wanted.SAMLOptions != nil {
 			if current.SAMLOptions == nil {
 				return false
@@ -983,6 +1196,33 @@ func isAdvancedSecurityOptionsUpToDate(wanted *svcapitypes.AdvancedSecurityOptio
 
 		} else if current.SAMLOptions != nil {
 			return false
+		}
+	} else if current != nil {
+		return false
+	}
+	return true
+}
+
+var replacerToNormalizePEM = strings.NewReplacer(
+	" ", "",
+	"\n", "",
+	"\r", "",
+	"\t", "",
+)
+
+func normalizePEM(s string) string {
+	return replacerToNormalizePEM.Replace(s)
+}
+
+func isAIMLOptionsUpToDate(wanted *svcapitypes.AIMLOptionsInput, current *svcsdk.AIMLOptionsOutput_) bool {
+	if wanted != nil {
+		if current == nil {
+			return false
+		}
+		if wanted.NATuralLanguageQueryGenerationOptions != nil {
+			if aws.StringValue(wanted.NATuralLanguageQueryGenerationOptions.DesiredState) != aws.StringValue(current.NaturalLanguageQueryGenerationOptions.DesiredState) {
+				return false
+			}
 		}
 	} else if current != nil {
 		return false
@@ -1130,6 +1370,15 @@ func generateAdvancedSecurityOptionsInput(wanted *svcapitypes.AdvancedSecurityOp
 			}
 		}
 
+		if wanted.JWTOptions != nil {
+			output.JWTOptions = &svcsdk.JWTOptionsInput_{
+				Enabled:    wanted.JWTOptions.Enabled,
+				PublicKey:  wanted.JWTOptions.PublicKey,
+				RolesKey:   wanted.JWTOptions.RolesKey,
+				SubjectKey: wanted.JWTOptions.SubjectKey,
+			}
+		}
+
 		if wanted.SAMLOptions != nil {
 			output.SAMLOptions = &svcsdk.SAMLOptionsInput_{
 				Enabled:               wanted.SAMLOptions.Enabled,
@@ -1274,14 +1523,19 @@ func isEncryptionAtRestUpToDate(wanted *svcapitypes.CustomEncryptionAtRestOption
 		if aws.BoolValue(wanted.Enabled) != aws.BoolValue(current.Enabled) {
 			return false
 		}
-		spriltedKey := strings.Split(aws.StringValue(current.KmsKeyId), "/")
-		currentShortKeyID := ""
-		if len(spriltedKey) > 0 {
-			currentShortKeyID = spriltedKey[len(spriltedKey)-1]
-		}
 
-		if aws.StringValue(wanted.KMSKeyID) != currentShortKeyID {
-			return false
+		// if user does not provide a KMSKeyID, AWS uses default OpenSearch Key (alias aws/es)
+		// in that case we do not check (no lateinit to allow ref/selector)
+		if wanted.KMSKeyID != nil {
+			spriltedKey := strings.Split(aws.StringValue(current.KmsKeyId), "/")
+			currentShortKeyID := ""
+			if len(spriltedKey) > 0 {
+				currentShortKeyID = spriltedKey[len(spriltedKey)-1]
+			}
+
+			if aws.StringValue(wanted.KMSKeyID) != currentShortKeyID {
+				return false
+			}
 		}
 
 	} else if current != nil {
@@ -1289,6 +1543,20 @@ func isEncryptionAtRestUpToDate(wanted *svcapitypes.CustomEncryptionAtRestOption
 	}
 
 	return true
+}
+
+func generateAIMLOptions(wanted *svcapitypes.AIMLOptionsInput) *svcsdk.AIMLOptionsInput_ {
+	if wanted != nil {
+		output := &svcsdk.AIMLOptionsInput_{}
+
+		if wanted.NATuralLanguageQueryGenerationOptions != nil {
+			output.NaturalLanguageQueryGenerationOptions = &svcsdk.NaturalLanguageQueryGenerationOptionsInput_{
+				DesiredState: wanted.NATuralLanguageQueryGenerationOptions.DesiredState,
+			}
+		}
+		return output
+	}
+	return nil
 }
 
 func generateClusterConfig(wanted *svcapitypes.ClusterConfig) *svcsdk.ClusterConfig {

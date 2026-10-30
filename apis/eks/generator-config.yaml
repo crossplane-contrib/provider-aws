@@ -4,6 +4,8 @@ ignore:
     - Cluster
     - FargateProfile
     - EksAnywhereSubscription
+    - AccessEntry
+    - PodIdentityAssociation
   shape_names:
     - Nodegroup
     - Cluster
@@ -18,3 +20,4 @@ ignore:
     - CreateAddonInput.ClientRequestToken
     - UpdateAddonInput.ClientRequestToken
     - DeleteAddonInput.ClientRequestToken
+    - Addon.PodIdentityAssociations # conflicting name with equivalent input parameter having different structs/types 

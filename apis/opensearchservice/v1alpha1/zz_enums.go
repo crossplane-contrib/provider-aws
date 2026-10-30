@@ -72,11 +72,31 @@ const (
 	AutoTuneType_SCHEDULED_ACTION AutoTuneType = "SCHEDULED_ACTION"
 )
 
+type ConfigChangeStatus string
+
+const (
+	ConfigChangeStatus_Pending          ConfigChangeStatus = "Pending"
+	ConfigChangeStatus_Initializing     ConfigChangeStatus = "Initializing"
+	ConfigChangeStatus_Validating       ConfigChangeStatus = "Validating"
+	ConfigChangeStatus_ValidationFailed ConfigChangeStatus = "ValidationFailed"
+	ConfigChangeStatus_ApplyingChanges  ConfigChangeStatus = "ApplyingChanges"
+	ConfigChangeStatus_Completed        ConfigChangeStatus = "Completed"
+	ConfigChangeStatus_PendingUserInput ConfigChangeStatus = "PendingUserInput"
+	ConfigChangeStatus_Cancelled        ConfigChangeStatus = "Cancelled"
+)
+
 type ConnectionMode string
 
 const (
 	ConnectionMode_DIRECT       ConnectionMode = "DIRECT"
 	ConnectionMode_VPC_ENDPOINT ConnectionMode = "VPC_ENDPOINT"
+)
+
+type DataSourceStatus string
+
+const (
+	DataSourceStatus_ACTIVE   DataSourceStatus = "ACTIVE"
+	DataSourceStatus_DISABLED DataSourceStatus = "DISABLED"
 )
 
 type DeploymentStatus string
@@ -116,6 +136,18 @@ const (
 	DomainPackageStatus_ACTIVE              DomainPackageStatus = "ACTIVE"
 	DomainPackageStatus_DISSOCIATING        DomainPackageStatus = "DISSOCIATING"
 	DomainPackageStatus_DISSOCIATION_FAILED DomainPackageStatus = "DISSOCIATION_FAILED"
+)
+
+type DomainProcessingStatusType string
+
+const (
+	DomainProcessingStatusType_Creating                DomainProcessingStatusType = "Creating"
+	DomainProcessingStatusType_Active                  DomainProcessingStatusType = "Active"
+	DomainProcessingStatusType_Modifying               DomainProcessingStatusType = "Modifying"
+	DomainProcessingStatusType_UpgradingEngineVersion  DomainProcessingStatusType = "UpgradingEngineVersion"
+	DomainProcessingStatusType_UpdatingServiceSoftware DomainProcessingStatusType = "UpdatingServiceSoftware"
+	DomainProcessingStatusType_Isolated                DomainProcessingStatusType = "Isolated"
+	DomainProcessingStatusType_Deleting                DomainProcessingStatusType = "Deleting"
 )
 
 type DomainState string
@@ -160,6 +192,13 @@ const (
 	InboundConnectionStatusCode_DELETED            InboundConnectionStatusCode = "DELETED"
 )
 
+type InitiatedBy string
+
+const (
+	InitiatedBy_CUSTOMER InitiatedBy = "CUSTOMER"
+	InitiatedBy_SERVICE  InitiatedBy = "SERVICE"
+)
+
 type LogType string
 
 const (
@@ -192,6 +231,25 @@ type MasterNodeStatus string
 const (
 	MasterNodeStatus_Available   MasterNodeStatus = "Available"
 	MasterNodeStatus_UnAvailable MasterNodeStatus = "UnAvailable"
+)
+
+type NATuralLanguageQueryGenerationCurrentState string
+
+const (
+	NATuralLanguageQueryGenerationCurrentState_NOT_ENABLED         NATuralLanguageQueryGenerationCurrentState = "NOT_ENABLED"
+	NATuralLanguageQueryGenerationCurrentState_ENABLE_COMPLETE     NATuralLanguageQueryGenerationCurrentState = "ENABLE_COMPLETE"
+	NATuralLanguageQueryGenerationCurrentState_ENABLE_IN_PROGRESS  NATuralLanguageQueryGenerationCurrentState = "ENABLE_IN_PROGRESS"
+	NATuralLanguageQueryGenerationCurrentState_ENABLE_FAILED       NATuralLanguageQueryGenerationCurrentState = "ENABLE_FAILED"
+	NATuralLanguageQueryGenerationCurrentState_DISABLE_COMPLETE    NATuralLanguageQueryGenerationCurrentState = "DISABLE_COMPLETE"
+	NATuralLanguageQueryGenerationCurrentState_DISABLE_IN_PROGRESS NATuralLanguageQueryGenerationCurrentState = "DISABLE_IN_PROGRESS"
+	NATuralLanguageQueryGenerationCurrentState_DISABLE_FAILED      NATuralLanguageQueryGenerationCurrentState = "DISABLE_FAILED"
+)
+
+type NATuralLanguageQueryGenerationDesiredState string
+
+const (
+	NATuralLanguageQueryGenerationDesiredState_ENABLED  NATuralLanguageQueryGenerationDesiredState = "ENABLED"
+	NATuralLanguageQueryGenerationDesiredState_DISABLED NATuralLanguageQueryGenerationDesiredState = "DISABLED"
 )
 
 type NodeStatus string
@@ -247,6 +305,14 @@ const (
 	OpenSearchPartitionInstanceType_t3_large_search          OpenSearchPartitionInstanceType = "t3.large.search"
 	OpenSearchPartitionInstanceType_t3_xlarge_search         OpenSearchPartitionInstanceType = "t3.xlarge.search"
 	OpenSearchPartitionInstanceType_t3_2xlarge_search        OpenSearchPartitionInstanceType = "t3.2xlarge.search"
+	OpenSearchPartitionInstanceType_or1_medium_search        OpenSearchPartitionInstanceType = "or1.medium.search"
+	OpenSearchPartitionInstanceType_or1_large_search         OpenSearchPartitionInstanceType = "or1.large.search"
+	OpenSearchPartitionInstanceType_or1_xlarge_search        OpenSearchPartitionInstanceType = "or1.xlarge.search"
+	OpenSearchPartitionInstanceType_or1_2xlarge_search       OpenSearchPartitionInstanceType = "or1.2xlarge.search"
+	OpenSearchPartitionInstanceType_or1_4xlarge_search       OpenSearchPartitionInstanceType = "or1.4xlarge.search"
+	OpenSearchPartitionInstanceType_or1_8xlarge_search       OpenSearchPartitionInstanceType = "or1.8xlarge.search"
+	OpenSearchPartitionInstanceType_or1_12xlarge_search      OpenSearchPartitionInstanceType = "or1.12xlarge.search"
+	OpenSearchPartitionInstanceType_or1_16xlarge_search      OpenSearchPartitionInstanceType = "or1.16xlarge.search"
 	OpenSearchPartitionInstanceType_ultrawarm1_medium_search OpenSearchPartitionInstanceType = "ultrawarm1.medium.search"
 	OpenSearchPartitionInstanceType_ultrawarm1_large_search  OpenSearchPartitionInstanceType = "ultrawarm1.large.search"
 	OpenSearchPartitionInstanceType_ultrawarm1_xlarge_search OpenSearchPartitionInstanceType = "ultrawarm1.xlarge.search"
@@ -377,6 +443,13 @@ const (
 	PrincipalType_AWS_SERVICE PrincipalType = "AWS_SERVICE"
 )
 
+type PropertyValueType string
+
+const (
+	PropertyValueType_PLAIN_TEXT       PropertyValueType = "PLAIN_TEXT"
+	PropertyValueType_STRINGIFIED_JSON PropertyValueType = "STRINGIFIED_JSON"
+)
+
 type ReservedInstancePaymentOption string
 
 const (
@@ -432,8 +505,9 @@ const (
 type TLSSecurityPolicy string
 
 const (
-	TLSSecurityPolicy_Policy_Min_TLS_1_0_2019_07 TLSSecurityPolicy = "Policy-Min-TLS-1-0-2019-07"
-	TLSSecurityPolicy_Policy_Min_TLS_1_2_2019_07 TLSSecurityPolicy = "Policy-Min-TLS-1-2-2019-07"
+	TLSSecurityPolicy_Policy_Min_TLS_1_0_2019_07     TLSSecurityPolicy = "Policy-Min-TLS-1-0-2019-07"
+	TLSSecurityPolicy_Policy_Min_TLS_1_2_2019_07     TLSSecurityPolicy = "Policy-Min-TLS-1-2-2019-07"
+	TLSSecurityPolicy_Policy_Min_TLS_1_2_PFS_2023_10 TLSSecurityPolicy = "Policy-Min-TLS-1-2-PFS-2023-10"
 )
 
 type TimeUnit string

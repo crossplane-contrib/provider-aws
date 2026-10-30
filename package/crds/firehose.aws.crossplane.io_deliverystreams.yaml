@@ -130,8 +130,8 @@ spec:
                         type: object
                       retryOptions:
                         description: |-
-                          Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-                          documents to the Serverless offering for Amazon OpenSearch Service.
+                          Configures retry behavior in case Firehose is unable to deliver documents
+                          to the Serverless offering for Amazon OpenSearch Service.
                         properties:
                           durationInSeconds:
                             format: int64
@@ -150,10 +150,10 @@ spec:
                           bufferingHints:
                             description: |-
                               Describes hints for the buffering to perform before delivering data to the
-                              destination. These options are treated as hints, and therefore Kinesis Data
-                              Firehose might choose to use different values when it is optimal. The SizeInMBs
-                              and IntervalInSeconds parameters are optional. However, if specify a value
-                              for one of them, you must also provide a value for the other.
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
                             properties:
                               intervalInSeconds:
                                 format: int64
@@ -245,8 +245,8 @@ spec:
                       documentIDOptions:
                         description: |-
                           Indicates the method for setting up document ID. The supported methods are
-                          Kinesis Data Firehose generated document ID and OpenSearch Service generated
-                          document ID.
+                          Firehose generated document ID and OpenSearch Service generated document
+                          ID.
                         properties:
                           defaultDocumentIDFormat:
                             type: string
@@ -281,8 +281,8 @@ spec:
                         type: object
                       retryOptions:
                         description: |-
-                          Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-                          documents to Amazon OpenSearch Service.
+                          Configures retry behavior in case Firehose is unable to deliver documents
+                          to Amazon OpenSearch Service.
                         properties:
                           durationInSeconds:
                             format: int64
@@ -301,10 +301,10 @@ spec:
                           bufferingHints:
                             description: |-
                               Describes hints for the buffering to perform before delivering data to the
-                              destination. These options are treated as hints, and therefore Kinesis Data
-                              Firehose might choose to use different values when it is optimal. The SizeInMBs
-                              and IntervalInSeconds parameters are optional. However, if specify a value
-                              for one of them, you must also provide a value for the other.
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
                             properties:
                               intervalInSeconds:
                                 format: int64
@@ -424,8 +424,8 @@ spec:
                       documentIDOptions:
                         description: |-
                           Indicates the method for setting up document ID. The supported methods are
-                          Kinesis Data Firehose generated document ID and OpenSearch Service generated
-                          document ID.
+                          Firehose generated document ID and OpenSearch Service generated document
+                          ID.
                         properties:
                           defaultDocumentIDFormat:
                             type: string
@@ -460,8 +460,8 @@ spec:
                         type: object
                       retryOptions:
                         description: |-
-                          Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-                          documents to Amazon ES.
+                          Configures retry behavior in case Firehose is unable to deliver documents
+                          to Amazon ES.
                         properties:
                           durationInSeconds:
                             format: int64
@@ -480,10 +480,10 @@ spec:
                           bufferingHints:
                             description: |-
                               Describes hints for the buffering to perform before delivering data to the
-                              destination. These options are treated as hints, and therefore Kinesis Data
-                              Firehose might choose to use different values when it is optimal. The SizeInMBs
-                              and IntervalInSeconds parameters are optional. However, if specify a value
-                              for one of them, you must also provide a value for the other.
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
                             properties:
                               intervalInSeconds:
                                 format: int64
@@ -554,10 +554,10 @@ spec:
                       bufferingHints:
                         description: |-
                           Describes hints for the buffering to perform before delivering data to the
-                          destination. These options are treated as hints, and therefore Kinesis Data
-                          Firehose might choose to use different values when it is optimal. The SizeInMBs
-                          and IntervalInSeconds parameters are optional. However, if specify a value
-                          for one of them, you must also provide a value for the other.
+                          destination. These options are treated as hints, and therefore Firehose might
+                          choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                          parameters are optional. However, if specify a value for one of them, you
+                          must also provide a value for the other.
                         properties:
                           intervalInSeconds:
                             format: int64
@@ -579,15 +579,16 @@ spec:
                         type: object
                       compressionFormat:
                         type: string
+                      customTimeZone:
+                        type: string
                       dataFormatConversionConfiguration:
                         description: |-
-                          Specifies that you want Kinesis Data Firehose to convert data from the JSON
-                          format to the Parquet or ORC format before writing it to Amazon S3. Kinesis
-                          Data Firehose uses the serializer and deserializer that you specify, in addition
-                          to the column information from the Amazon Web Services Glue table, to deserialize
-                          your input data from JSON and then serialize it to the Parquet or ORC format.
-                          For more information, see Kinesis Data Firehose Record Format Conversion
-                          (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
+                          Specifies that you want Firehose to convert data from the JSON format to
+                          the Parquet or ORC format before writing it to Amazon S3. Firehose uses the
+                          serializer and deserializer that you specify, in addition to the column information
+                          from the Amazon Web Services Glue table, to deserialize your input data from
+                          JSON and then serialize it to the Parquet or ORC format. For more information,
+                          see Firehose Record Format Conversion (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
                         properties:
                           enabled:
                             type: boolean
@@ -598,15 +599,15 @@ spec:
                             properties:
                               deserializer:
                                 description: |-
-                                  The deserializer you want Kinesis Data Firehose to use for converting the
-                                  input data from JSON. Kinesis Data Firehose then serializes the data to its
-                                  final format using the Serializer. Kinesis Data Firehose supports two types
-                                  of deserializers: the Apache Hive JSON SerDe (https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-JSON)
+                                  The deserializer you want Firehose to use for converting the input data from
+                                  JSON. Firehose then serializes the data to its final format using the Serializer.
+                                  Firehose supports two types of deserializers: the Apache Hive JSON SerDe
+                                  (https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL#LanguageManualDDL-JSON)
                                   and the OpenX JSON SerDe (https://github.com/rcongiu/Hive-JSON-Serde).
                                 properties:
                                   hiveJSONSerDe:
                                     description: |-
-                                      The native Hive / HCatalog JsonSerDe. Used by Kinesis Data Firehose for deserializing
+                                      The native Hive / HCatalog JsonSerDe. Used by Firehose for deserializing
                                       data, which means converting it from the JSON format in preparation for serializing
                                       it to the Parquet or ORC format. This is one of two deserializers you can
                                       choose, depending on which one offers the functionality you need. The other
@@ -619,11 +620,11 @@ spec:
                                     type: object
                                   openXJSONSerDe:
                                     description: |-
-                                      The OpenX SerDe. Used by Kinesis Data Firehose for deserializing data, which
-                                      means converting it from the JSON format in preparation for serializing it
-                                      to the Parquet or ORC format. This is one of two deserializers you can choose,
-                                      depending on which one offers the functionality you need. The other option
-                                      is the native Hive / HCatalog JsonSerDe.
+                                      The OpenX SerDe. Used by Firehose for deserializing data, which means converting
+                                      it from the JSON format in preparation for serializing it to the Parquet
+                                      or ORC format. This is one of two deserializers you can choose, depending
+                                      on which one offers the functionality you need. The other option is the native
+                                      Hive / HCatalog JsonSerDe.
                                     properties:
                                       caseInsensitive:
                                         type: boolean
@@ -638,15 +639,15 @@ spec:
                             type: object
                           outputFormatConfiguration:
                             description: |-
-                              Specifies the serializer that you want Kinesis Data Firehose to use to convert
-                              the format of your data before it writes it to Amazon S3. This parameter
-                              is required if Enabled is set to true.
+                              Specifies the serializer that you want Firehose to use to convert the format
+                              of your data before it writes it to Amazon S3. This parameter is required
+                              if Enabled is set to true.
                             properties:
                               serializer:
                                 description: |-
-                                  The serializer that you want Kinesis Data Firehose to use to convert data
-                                  to the target format before writing it to Amazon S3. Kinesis Data Firehose
-                                  supports two types of serializers: the ORC SerDe (https://hive.apache.org/javadocs/r1.2.2/api/org/apache/hadoop/hive/ql/io/orc/OrcSerde.html)
+                                  The serializer that you want Firehose to use to convert data to the target
+                                  format before writing it to Amazon S3. Firehose supports two types of serializers:
+                                  the ORC SerDe (https://hive.apache.org/javadocs/r1.2.2/api/org/apache/hadoop/hive/ql/io/orc/OrcSerde.html)
                                   and the Parquet SerDe (https://hive.apache.org/javadocs/r1.2.2/api/org/apache/hadoop/hive/ql/io/parquet/serde/ParquetHiveSerDe.html).
                                 properties:
                                   orcSerDe:
@@ -683,7 +684,7 @@ spec:
                                   parquetSerDe:
                                     description: |-
                                       A serializer to use for converting data to the Parquet format before storing
-                                      it in Amazon S3. For more information, see Apache Parquet (https://parquet.apache.org/documentation/latest/).
+                                      it in Amazon S3. For more information, see Apache Parquet (https://parquet.apache.org/docs/).
                                     properties:
                                       blockSizeBytes:
                                         format: int64
@@ -705,9 +706,9 @@ spec:
                             type: object
                           schemaConfiguration:
                             description: |-
-                              Specifies the schema to which you want Kinesis Data Firehose to configure
-                              your data before it writes it to Amazon S3. This parameter is required if
-                              Enabled is set to true.
+                              Specifies the schema to which you want Firehose to configure your data before
+                              it writes it to Amazon S3. This parameter is required if Enabled is set to
+                              true.
                             properties:
                               catalogID:
                                 type: string
@@ -733,8 +734,8 @@ spec:
                             type: boolean
                           retryOptions:
                             description: |-
-                              The retry behavior in case Kinesis Data Firehose is unable to deliver data
-                              to an Amazon S3 prefix.
+                              The retry behavior in case Firehose is unable to deliver data to an Amazon
+                              S3 prefix.
                             properties:
                               durationInSeconds:
                                 format: int64
@@ -756,6 +757,8 @@ spec:
                             type: string
                         type: object
                       errorOutputPrefix:
+                        type: string
+                      fileExtension:
                         type: string
                       prefix:
                         type: string
@@ -792,10 +795,10 @@ spec:
                           bufferingHints:
                             description: |-
                               Describes hints for the buffering to perform before delivering data to the
-                              destination. These options are treated as hints, and therefore Kinesis Data
-                              Firehose might choose to use different values when it is optimal. The SizeInMBs
-                              and IntervalInSeconds parameters are optional. However, if specify a value
-                              for one of them, you must also provide a value for the other.
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
                             properties:
                               intervalInSeconds:
                                 format: int64
@@ -849,10 +852,10 @@ spec:
                       bufferingHints:
                         description: |-
                           Describes the buffering options that can be applied before data is delivered
-                          to the HTTP endpoint destination. Kinesis Data Firehose treats these options
-                          as hints, and it might choose to use more optimal values. The SizeInMBs and
-                          IntervalInSeconds parameters are optional. However, if specify a value for
-                          one of them, you must also provide a value for the other.
+                          to the HTTP endpoint destination. Firehose treats these options as hints,
+                          and it might choose to use more optimal values. The SizeInMBs and IntervalInSeconds
+                          parameters are optional. However, if specify a value for one of them, you
+                          must also provide a value for the other.
                         properties:
                           intervalInSeconds:
                             format: int64
@@ -923,9 +926,9 @@ spec:
                         type: object
                       retryOptions:
                         description: |-
-                          Describes the retry behavior in case Kinesis Data Firehose is unable to deliver
-                          data to the specified HTTP endpoint destination, or if it doesn't receive
-                          a valid acknowledgment of receipt from the specified HTTP endpoint destination.
+                          Describes the retry behavior in case Firehose is unable to deliver data to
+                          the specified HTTP endpoint destination, or if it doesn't receive a valid
+                          acknowledgment of receipt from the specified HTTP endpoint destination.
                         properties:
                           durationInSeconds:
                             format: int64
@@ -944,10 +947,169 @@ spec:
                           bufferingHints:
                             description: |-
                               Describes hints for the buffering to perform before delivering data to the
-                              destination. These options are treated as hints, and therefore Kinesis Data
-                              Firehose might choose to use different values when it is optimal. The SizeInMBs
-                              and IntervalInSeconds parameters are optional. However, if specify a value
-                              for one of them, you must also provide a value for the other.
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      secretsManagerConfiguration:
+                        description: The structure that defines how Firehose accesses
+                          the secret.
+                        properties:
+                          enabled:
+                            type: boolean
+                          roleARN:
+                            type: string
+                          secretARN:
+                            type: string
+                        type: object
+                    type: object
+                  icebergDestinationConfiguration:
+                    description: |-
+                      Configure Apache Iceberg Tables destination.
+
+                      Amazon Data Firehose is in preview release and is subject to change.
+                    properties:
+                      bufferingHints:
+                        description: |-
+                          Describes hints for the buffering to perform before delivering data to the
+                          destination. These options are treated as hints, and therefore Firehose might
+                          choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                          parameters are optional. However, if specify a value for one of them, you
+                          must also provide a value for the other.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
+                      catalogConfiguration:
+                        description: |-
+                          Describes the containers where the destination Apache Iceberg Tables are
+                          persisted.
+
+                          Amazon Data Firehose is in preview release and is subject to change.
+                        properties:
+                          catalogARN:
+                            type: string
+                        type: object
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      destinationTableConfigurationList:
+                        items:
+                          properties:
+                            destinationDatabaseName:
+                              type: string
+                            destinationTableName:
+                              type: string
+                            s3ErrorOutputPrefix:
+                              type: string
+                            uniqueKeys:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        type: array
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      retryOptions:
+                        description: |-
+                          The retry behavior in case Firehose is unable to deliver data to an Amazon
+                          S3 prefix.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: |-
+                              Describes hints for the buffering to perform before delivering data to the
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
                             properties:
                               intervalInSeconds:
                                 format: int64
@@ -1091,6 +1253,9 @@ spec:
                         type: object
                       mSKClusterARN:
                         type: string
+                      readFromTimestamp:
+                        format: date-time
+                        type: string
                       topicName:
                         type: string
                     type: object
@@ -1147,8 +1312,8 @@ spec:
                         type: object
                       retryOptions:
                         description: |-
-                          Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-                          documents to Amazon Redshift.
+                          Configures retry behavior in case Firehose is unable to deliver documents
+                          to Amazon Redshift.
                         properties:
                           durationInSeconds:
                             format: int64
@@ -1165,10 +1330,10 @@ spec:
                           bufferingHints:
                             description: |-
                               Describes hints for the buffering to perform before delivering data to the
-                              destination. These options are treated as hints, and therefore Kinesis Data
-                              Firehose might choose to use different values when it is optimal. The SizeInMBs
-                              and IntervalInSeconds parameters are optional. However, if specify a value
-                              for one of them, you must also provide a value for the other.
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
                             properties:
                               intervalInSeconds:
                                 format: int64
@@ -1222,10 +1387,10 @@ spec:
                           bufferingHints:
                             description: |-
                               Describes hints for the buffering to perform before delivering data to the
-                              destination. These options are treated as hints, and therefore Kinesis Data
-                              Firehose might choose to use different values when it is optimal. The SizeInMBs
-                              and IntervalInSeconds parameters are optional. However, if specify a value
-                              for one of them, you must also provide a value for the other.
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
                             properties:
                               intervalInSeconds:
                                 format: int64
@@ -1268,6 +1433,17 @@ spec:
                           roleARN:
                             type: string
                         type: object
+                      secretsManagerConfiguration:
+                        description: The structure that defines how Firehose accesses
+                          the secret.
+                        properties:
+                          enabled:
+                            type: boolean
+                          roleARN:
+                            type: string
+                          secretARN:
+                            type: string
+                        type: object
                       username:
                         type: string
                     type: object
@@ -1284,10 +1460,10 @@ spec:
                       bufferingHints:
                         description: |-
                           Describes hints for the buffering to perform before delivering data to the
-                          destination. These options are treated as hints, and therefore Kinesis Data
-                          Firehose might choose to use different values when it is optimal. The SizeInMBs
-                          and IntervalInSeconds parameters are optional. However, if specify a value
-                          for one of them, you must also provide a value for the other.
+                          destination. These options are treated as hints, and therefore Firehose might
+                          choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                          parameters are optional. However, if specify a value for one of them, you
+                          must also provide a value for the other.
                         properties:
                           intervalInSeconds:
                             format: int64
@@ -1330,10 +1506,199 @@ spec:
                       roleARN:
                         type: string
                     type: object
+                  snowflakeDestinationConfiguration:
+                    description: Configure Snowflake destination
+                    properties:
+                      accountURL:
+                        type: string
+                      bufferingHints:
+                        description: |-
+                          Describes the buffering to perform before delivering data to the Snowflake
+                          destination. If you do not specify any value, Firehose uses the default values.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
+                      cloudWatchLoggingOptions:
+                        description: Describes the Amazon CloudWatch logging options
+                          for your delivery stream.
+                        properties:
+                          enabled:
+                            type: boolean
+                          logGroupName:
+                            type: string
+                          logStreamName:
+                            type: string
+                        type: object
+                      contentColumnName:
+                        type: string
+                      dataLoadingOption:
+                        type: string
+                      database:
+                        type: string
+                      keyPassphrase:
+                        type: string
+                      metaDataColumnName:
+                        type: string
+                      privateKey:
+                        type: string
+                      processingConfiguration:
+                        description: Describes a data processing configuration.
+                        properties:
+                          enabled:
+                            type: boolean
+                          processors:
+                            items:
+                              properties:
+                                parameters:
+                                  items:
+                                    properties:
+                                      parameterName:
+                                        type: string
+                                      parameterValue:
+                                        type: string
+                                    type: object
+                                  type: array
+                                type_:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      retryOptions:
+                        description: |-
+                          Specify how long Firehose retries sending data to the New Relic HTTP endpoint.
+                          After sending data, Firehose first waits for an acknowledgment from the HTTP
+                          endpoint. If an error occurs or the acknowledgment doesn’t arrive within
+                          the acknowledgment timeout period, Firehose starts the retry duration counter.
+                          It keeps retrying until the retry duration expires. After that, Firehose
+                          considers it a data delivery failure and backs up the data to your Amazon
+                          S3 bucket. Every time that Firehose sends data to the HTTP endpoint (either
+                          the initial attempt or a retry), it restarts the acknowledgement timeout
+                          counter and waits for an acknowledgement from the HTTP endpoint. Even if
+                          the retry duration expires, Firehose still waits for the acknowledgment until
+                          it receives it or the acknowledgement timeout period is reached. If the acknowledgment
+                          times out, Firehose determines whether there's time left in the retry counter.
+                          If there is time left, it retries again and repeats the logic until it receives
+                          an acknowledgment or determines that the retry time has expired. If you don't
+                          want Firehose to retry sending data, set this value to 0.
+                        properties:
+                          durationInSeconds:
+                            format: int64
+                            type: integer
+                        type: object
+                      roleARN:
+                        type: string
+                      s3BackupMode:
+                        type: string
+                      s3Configuration:
+                        description: Describes the configuration of a destination
+                          in Amazon S3.
+                        properties:
+                          bucketARN:
+                            type: string
+                          bufferingHints:
+                            description: |-
+                              Describes hints for the buffering to perform before delivering data to the
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
+                            properties:
+                              intervalInSeconds:
+                                format: int64
+                                type: integer
+                              sizeInMBs:
+                                format: int64
+                                type: integer
+                            type: object
+                          cloudWatchLoggingOptions:
+                            description: Describes the Amazon CloudWatch logging options
+                              for your delivery stream.
+                            properties:
+                              enabled:
+                                type: boolean
+                              logGroupName:
+                                type: string
+                              logStreamName:
+                                type: string
+                            type: object
+                          compressionFormat:
+                            type: string
+                          encryptionConfiguration:
+                            description: Describes the encryption for a destination
+                              in Amazon S3.
+                            properties:
+                              kmsEncryptionConfig:
+                                description: Describes an encryption key for a destination
+                                  in Amazon S3.
+                                properties:
+                                  awsKMSKeyARN:
+                                    type: string
+                                type: object
+                              noEncryptionConfig:
+                                type: string
+                            type: object
+                          errorOutputPrefix:
+                            type: string
+                          prefix:
+                            type: string
+                          roleARN:
+                            type: string
+                        type: object
+                      schema:
+                        type: string
+                      secretsManagerConfiguration:
+                        description: The structure that defines how Firehose accesses
+                          the secret.
+                        properties:
+                          enabled:
+                            type: boolean
+                          roleARN:
+                            type: string
+                          secretARN:
+                            type: string
+                        type: object
+                      snowflakeRoleConfiguration:
+                        description: |-
+                          Optionally configure a Snowflake role. Otherwise the default user role will
+                          be used.
+                        properties:
+                          enabled:
+                            type: boolean
+                          snowflakeRole:
+                            type: string
+                        type: object
+                      snowflakeVPCConfiguration:
+                        description: Configure a Snowflake VPC
+                        properties:
+                          privateLinkVPCeID:
+                            type: string
+                        type: object
+                      table:
+                        type: string
+                      user:
+                        type: string
+                    type: object
                   splunkDestinationConfiguration:
                     description: The destination in Splunk. You can specify only one
                       destination.
                     properties:
+                      bufferingHints:
+                        description: |-
+                          The buffering options. If no value is specified, the default values for Splunk
+                          are used.
+                        properties:
+                          intervalInSeconds:
+                            format: int64
+                            type: integer
+                          sizeInMBs:
+                            format: int64
+                            type: integer
+                        type: object
                       cloudWatchLoggingOptions:
                         description: Describes the Amazon CloudWatch logging options
                           for your delivery stream.
@@ -1378,8 +1743,8 @@ spec:
                         type: object
                       retryOptions:
                         description: |-
-                          Configures retry behavior in case Kinesis Data Firehose is unable to deliver
-                          documents to Splunk, or if it doesn't receive an acknowledgment from Splunk.
+                          Configures retry behavior in case Firehose is unable to deliver documents
+                          to Splunk, or if it doesn't receive an acknowledgment from Splunk.
                         properties:
                           durationInSeconds:
                             format: int64
@@ -1396,10 +1761,10 @@ spec:
                           bufferingHints:
                             description: |-
                               Describes hints for the buffering to perform before delivering data to the
-                              destination. These options are treated as hints, and therefore Kinesis Data
-                              Firehose might choose to use different values when it is optimal. The SizeInMBs
-                              and IntervalInSeconds parameters are optional. However, if specify a value
-                              for one of them, you must also provide a value for the other.
+                              destination. These options are treated as hints, and therefore Firehose might
+                              choose to use different values when it is optimal. The SizeInMBs and IntervalInSeconds
+                              parameters are optional. However, if specify a value for one of them, you
+                              must also provide a value for the other.
                             properties:
                               intervalInSeconds:
                                 format: int64
@@ -1442,6 +1807,17 @@ spec:
                           roleARN:
                             type: string
                         type: object
+                      secretsManagerConfiguration:
+                        description: The structure that defines how Firehose accesses
+                          the secret.
+                        properties:
+                          enabled:
+                            type: boolean
+                          roleARN:
+                            type: string
+                          secretARN:
+                            type: string
+                        type: object
                     type: object
                   tags:
                     description: |-
@@ -1453,6 +1829,20 @@ spec:
                       in the Amazon Web Services Billing and Cost Management User Guide.
 
                       You can specify up to 50 tags when creating a delivery stream.
+
+                      If you specify tags in the CreateDeliveryStream action, Amazon Data Firehose
+                      performs an additional authorization on the firehose:TagDeliveryStream action
+                      to verify if users have permissions to create tags. If you do not provide
+                      this permission, requests to create new Firehose delivery streams with IAM
+                      resource tags will fail with an AccessDeniedException such as following.
+
+                      AccessDeniedException
+
+                      User: arn:aws:sts::x:assumed-role/x/x is not authorized to perform: firehose:TagDeliveryStream
+                      on resource: arn:aws:firehose:us-east-1:x:deliverystream/x with an explicit
+                      deny in an identity-based policy.
+
+                      For an example IAM policy, see Tag example. (https://docs.aws.amazon.com/firehose/latest/APIReference/API_CreateDeliveryStream.html#API_CreateDeliveryStream_Examples)
                     items:
                       properties:
                         key:

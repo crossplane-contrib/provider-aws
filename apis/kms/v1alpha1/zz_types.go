@@ -129,6 +129,8 @@ type KeyMetadata struct {
 
 	ExpirationModel *string `json:"expirationModel,omitempty"`
 
+	KeyAgreementAlgorithms []*string `json:"keyAgreementAlgorithms,omitempty"`
+
 	KeyID *string `json:"keyID,omitempty"`
 
 	KeyManager *string `json:"keyManager,omitempty"`
@@ -184,6 +186,13 @@ type MultiRegionKey struct {
 	ARN *string `json:"arn,omitempty"`
 
 	Region *string `json:"region,omitempty"`
+}
+
+// +kubebuilder:skipversion
+type RotationsListEntry struct {
+	KeyID *string `json:"keyID,omitempty"`
+
+	RotationDate *metav1.Time `json:"rotationDate,omitempty"`
 }
 
 // +kubebuilder:skipversion

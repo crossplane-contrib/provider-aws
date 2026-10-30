@@ -3,8 +3,10 @@ ignore:
     - LogStream
     - ExportTask
     - Delivery
+    - LogAnomalyDetector
   field_paths:
     - CreateLogGroupInput.KmsKeyId
+    - DescribeLogGroupsInput.LogGroupClass # RetentionInDays was no longer in response when described with LogGroupClass
     - PutResourcePolicyInput.PolicyName
     - DeleteResourcePolicyInput.PolicyName
 operations:
@@ -38,6 +40,11 @@ resources:
         from:
           operation: DescribeLogGroups
           path: LogGroups.KmsKeyId
+      LogGroupClass:
+        is_read_only: true
+        from:
+          operation: DescribeLogGroups
+          path: LogGroups.LogGroupClass
       LogGroupName:
         is_read_only: true
         from:

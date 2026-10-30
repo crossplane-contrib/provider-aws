@@ -147,8 +147,10 @@ spec:
                     type: string
                   enableCloudwatchLogsExports:
                     description: |-
-                      The list of log types that need to be enabled for exporting to CloudWatch
-                      Logs.
+                      A list of the log types that this DB cluster should export to CloudWatch
+                      Logs. Valid log types are: audit (to publish audit logs) and slowquery (to
+                      publish slow-query logs). See Publishing Neptune logs to Amazon CloudWatch
+                      logs (https://docs.aws.amazon.com/neptune/latest/userguide/cloudwatch-logs.html).
                     items:
                       type: string
                     type: array
@@ -298,6 +300,22 @@ spec:
                   storageEncrypted:
                     description: Specifies whether the DB cluster is encrypted.
                     type: boolean
+                  storageType:
+                    description: |-
+                      The storage type to associate with the DB cluster.
+
+                      Valid Values:
+
+                         * standard | iopt1
+
+                      Default:
+
+                         * standard
+
+                      When you create a Neptune cluster with the storage type set to iopt1, the
+                      storage type is returned in the response. The storage type isn't returned
+                      when you set it to standard.
+                    type: string
                   tags:
                     description: The tags to assign to the new DB cluster.
                     items:
@@ -589,8 +607,10 @@ spec:
                     type: string
                   enabledCloudwatchLogsExports:
                     description: |-
-                      A list of log types that this DB cluster is configured to export to CloudWatch
-                      Logs.
+                      A list of the log types that this DB cluster is configured to export to CloudWatch
+                      Logs. Valid log types are: audit (to publish audit logs to CloudWatch) and
+                      slowquery (to publish slow-query logs to CloudWatch). See Publishing Neptune
+                      logs to Amazon CloudWatch logs (https://docs.aws.amazon.com/neptune/latest/userguide/cloudwatch-logs.html).
                     items:
                       type: string
                     type: array
@@ -601,6 +621,11 @@ spec:
                   hostedZoneID:
                     description: Specifies the ID that Amazon Route 53 assigns when
                       you create a hosted zone.
+                    type: string
+                  iOOptimizedNextAllowedModificationTime:
+                    description: The next time you can modify the DB cluster to use
+                      the iopt1 storage type.
+                    format: date-time
                     type: string
                   iamDatabaseAuthenticationEnabled:
                     description: |-
@@ -641,6 +666,9 @@ spec:
                         description: |-
                           A list of the log types whose configuration is still pending. In other words,
                           these log types are in the process of being activated or deactivated.
+
+                          Valid log types are: audit (to publish audit logs) and slowquery (to publish
+                          slow-query logs). See Publishing Neptune logs to Amazon CloudWatch logs (https://docs.aws.amazon.com/neptune/latest/userguide/cloudwatch-logs.html).
                         properties:
                           logTypesToDisable:
                             items:
@@ -651,6 +679,8 @@ spec:
                               type: string
                             type: array
                         type: object
+                      storageType:
+                        type: string
                     type: object
                   percentProgress:
                     description: Specifies the progress of the operation as a percentage.

@@ -59,3 +59,24 @@ func generateAPISSHPublicKeys(obj []*svcsdk.SshPublicKey) []svcapitypes.SSHPubli
 	}
 	return res
 }
+
+func generateHomeDirectoryMappings(current []*svcapitypes.CustomHomeDirectoryMapEntry) []*svcsdk.HomeDirectoryMapEntry {
+	if current == nil {
+		return nil
+	}
+	f1 := []*svcsdk.HomeDirectoryMapEntry{}
+	for _, f1iter := range current {
+		f1elem := &svcsdk.HomeDirectoryMapEntry{}
+		if f1iter.Entry != nil {
+			f1elem.SetEntry(*f1iter.Entry)
+		}
+		if f1iter.Target != nil {
+			f1elem.SetTarget(*f1iter.Target)
+		}
+		if f1iter.Type != nil {
+			f1elem.SetType(*f1iter.Type)
+		}
+		f1 = append(f1, f1elem)
+	}
+	return f1
+}

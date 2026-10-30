@@ -1539,6 +1539,33 @@ spec:
                                 recipeVersion:
                                   type: string
                               type: object
+                            recipeSteps:
+                              items:
+                                properties:
+                                  action:
+                                    description: Actions defined in the Glue Studio
+                                      data preparation recipe node.
+                                    properties:
+                                      operation:
+                                        type: string
+                                      parameters:
+                                        additionalProperties:
+                                          type: string
+                                        type: object
+                                    type: object
+                                  conditionExpressions:
+                                    items:
+                                      properties:
+                                        condition:
+                                          type: string
+                                        targetColumn:
+                                          type: string
+                                        value:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
                           type: object
                         redshiftSource:
                           description: Specifies an Amazon Redshift data store.
@@ -2784,8 +2811,31 @@ spec:
 
                       Jobs that are created without specifying a Glue version default to Glue 0.9.
                     type: string
+                  jobMode:
+                    description: |-
+                      A mode that describes how a job was created. Valid values are:
+
+                         * SCRIPT - The job was created using the Glue Studio script editor.
+
+                         * VISUAL - The job was created using the Glue Studio visual editor.
+
+                         * NOTEBOOK - The job was created using an interactive sessions notebook.
+
+                      When the JobMode field is missing or null, SCRIPT is assigned as the default
+                      value.
+                    type: string
                   logURI:
                     description: This field is reserved for future use.
+                    type: string
+                  maintenanceWindow:
+                    description: |-
+                      This field specifies a day of the week and hour for a maintenance window
+                      for streaming jobs. Glue periodically performs maintenance activities. During
+                      these maintenance windows, Glue will need to restart your streaming jobs.
+
+                      Glue will restart the job within 3 hours of the specified maintenance window.
+                      For instance, if you set up the maintenance window for Monday at 10:00AM
+                      GMT, your jobs will be restarted between 10:00AM GMT to 1:00PM GMT.
                     type: string
                   maxCapacity:
                     description: |-
@@ -3040,7 +3090,12 @@ spec:
                     description: |-
                       The job timeout in minutes. This is the maximum time that a job run can consume
                       resources before it is terminated and enters TIMEOUT status. The default
-                      is 2,880 minutes (48 hours).
+                      is 2,880 minutes (48 hours) for batch jobs.
+
+                      Streaming jobs must have timeout values less than 7 days or 10080 minutes.
+                      When the value is left blank, the job will be restarted after 7 days based
+                      if you have not setup a maintenance window. If you have setup maintenance
+                      window, it will be restarted during the maintenance window after 7 days.
                     format: int64
                     type: integer
                   workerType:

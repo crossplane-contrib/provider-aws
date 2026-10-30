@@ -188,6 +188,15 @@ func GenerateUpdateAcceleratorInput(cr *svcapitypes.Accelerator) *svcsdk.UpdateA
 	if cr.Spec.ForProvider.IPAddressType != nil {
 		res.SetIpAddressType(*cr.Spec.ForProvider.IPAddressType)
 	}
+	if cr.Spec.ForProvider.IPAddresses != nil {
+		f3 := []*string{}
+		for _, f3iter := range cr.Spec.ForProvider.IPAddresses {
+			var f3elem string
+			f3elem = *f3iter
+			f3 = append(f3, &f3elem)
+		}
+		res.SetIpAddresses(f3)
+	}
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}

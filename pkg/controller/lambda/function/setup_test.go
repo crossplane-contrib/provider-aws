@@ -526,6 +526,101 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 	}
 }
 
+func TestIsUpToDateLoggingConfig(t *testing.T) {
+	type want struct {
+		result bool
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"NilSourceNoUpdate": {
+			args: args{
+				cr: function(withSpec(v1beta1.FunctionParameters{})),
+				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
+					LoggingConfig: &svcsdk.LoggingConfig{LogGroup: aws.String("/aws/log-group")}}},
+			},
+			want: want{
+				result: true,
+				err:    nil,
+			},
+		},
+		"NilSourceNilAwsNoUpdate": {
+			args: args{
+				cr:  function(withSpec(v1beta1.FunctionParameters{})),
+				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{}},
+			},
+			want: want{
+				result: true,
+				err:    nil,
+			},
+		},
+		"NilAwsWithUpdate": {
+			args: args{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					LoggingConfig: &v1beta1.LoggingConfig{LogGroup: aws.String("/my/log-group")}})),
+				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{}},
+			},
+			want: want{
+				result: false,
+				err:    nil,
+			},
+		},
+		"NeedsUpdate": {
+			args: args{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					LoggingConfig: &v1beta1.LoggingConfig{LogGroup: aws.String("/my/log-group")}})),
+				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
+					LoggingConfig: &svcsdk.LoggingConfig{LogGroup: aws.String("/aws/log-group")}}},
+			},
+			want: want{
+				result: false,
+				err:    nil,
+			},
+		},
+		"NoUpdateNeeded": {
+			args: args{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					LoggingConfig: &v1beta1.LoggingConfig{LogGroup: aws.String("/my/log-group")}})),
+				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
+					LoggingConfig: &svcsdk.LoggingConfig{LogGroup: aws.String("/my/log-group")}}},
+			},
+			want: want{
+				result: true,
+				err:    nil,
+			},
+		},
+		"DefaultLogFormatAcceptedNoUpdateNeeded": {
+			args: args{
+				cr: function(withSpec(v1beta1.FunctionParameters{
+					LoggingConfig: &v1beta1.LoggingConfig{LogGroup: aws.String("/my/log-group")}})),
+				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
+					LoggingConfig: &svcsdk.LoggingConfig{
+						LogGroup:  aws.String("/my/log-group"),
+						LogFormat: aws.String("Text"),
+					}}},
+			},
+			want: want{
+				result: true,
+				err:    nil,
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			// Act
+			result := isUpToDateLoggingConfig(tc.args.cr, tc.args.obj)
+
+			// Assert
+			if diff := cmp.Diff(tc.want.result, result, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestGenerateUpdateFunctionCodeInput(t *testing.T) {
 	type args struct {
 		cr *v1beta1.Function
@@ -592,11 +687,14 @@ func TestGenerateUpdateFunctionConfigurationInput(t *testing.T) {
 					},
 					FileSystemConfigs: []*v1beta1.FileSystemConfig{{ARN: aws.String("arn1")}},
 					Handler:           aws.String("test_handler"),
-					KMSKeyARN:         aws.String("test_kms"),
-					MemorySize:        aws.Int64(128),
-					Runtime:           aws.String("test_runtime"),
-					Timeout:           aws.Int64(128),
-					TracingConfig:     &v1beta1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)},
+					LoggingConfig: &v1beta1.LoggingConfig{
+						LogGroup: aws.String("/my/log-group"),
+					},
+					KMSKeyARN:     aws.String("test_kms"),
+					MemorySize:    aws.Int64(128),
+					Runtime:       aws.String("test_runtime"),
+					Timeout:       aws.Int64(128),
+					TracingConfig: &v1beta1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)},
 					CustomFunctionParameters: v1beta1.CustomFunctionParameters{
 						Role: aws.String("test_role"),
 						CustomFunctionVPCConfigParameters: &v1beta1.CustomFunctionVPCConfigParameters{
@@ -615,12 +713,15 @@ func TestGenerateUpdateFunctionConfigurationInput(t *testing.T) {
 					FileSystemConfigs: []*svcsdk.FileSystemConfig{{Arn: aws.String("arn1")}},
 					FunctionName:      aws.String("test-function-name"),
 					Handler:           aws.String("test_handler"),
-					KMSKeyArn:         aws.String("test_kms"),
-					MemorySize:        aws.Int64(128),
-					Role:              aws.String("test_role"),
-					Runtime:           aws.String("test_runtime"),
-					Timeout:           aws.Int64(128),
-					TracingConfig:     &svcsdk.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)},
+					LoggingConfig: &svcsdk.LoggingConfig{
+						LogGroup: aws.String("/my/log-group"),
+					},
+					KMSKeyArn:     aws.String("test_kms"),
+					MemorySize:    aws.Int64(128),
+					Role:          aws.String("test_role"),
+					Runtime:       aws.String("test_runtime"),
+					Timeout:       aws.Int64(128),
+					TracingConfig: &svcsdk.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)},
 					VpcConfig: &svcsdk.VpcConfig{
 						SecurityGroupIds: []*string{aws.String("id1")},
 						SubnetIds:        []*string{},

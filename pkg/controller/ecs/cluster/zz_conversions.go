@@ -137,6 +137,16 @@ func GenerateCluster(resp *svcsdk.DescribeClustersOutput) *svcapitypes.Cluster {
 				}
 				f6.ExecuteCommandConfiguration = f6f0
 			}
+			if elem.Configuration.ManagedStorageConfiguration != nil {
+				f6f1 := &svcapitypes.ManagedStorageConfiguration{}
+				if elem.Configuration.ManagedStorageConfiguration.FargateEphemeralStorageKmsKeyId != nil {
+					f6f1.FargateEphemeralStorageKMSKeyID = elem.Configuration.ManagedStorageConfiguration.FargateEphemeralStorageKmsKeyId
+				}
+				if elem.Configuration.ManagedStorageConfiguration.KmsKeyId != nil {
+					f6f1.KMSKeyID = elem.Configuration.ManagedStorageConfiguration.KmsKeyId
+				}
+				f6.ManagedStorageConfiguration = f6f1
+			}
 			cr.Spec.ForProvider.Configuration = f6
 		} else {
 			cr.Spec.ForProvider.Configuration = nil
@@ -294,6 +304,16 @@ func GenerateCreateClusterInput(cr *svcapitypes.Cluster) *svcsdk.CreateClusterIn
 			}
 			f2.SetExecuteCommandConfiguration(f2f0)
 		}
+		if cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration != nil {
+			f2f1 := &svcsdk.ManagedStorageConfiguration{}
+			if cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration.FargateEphemeralStorageKMSKeyID != nil {
+				f2f1.SetFargateEphemeralStorageKmsKeyId(*cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration.FargateEphemeralStorageKMSKeyID)
+			}
+			if cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration.KMSKeyID != nil {
+				f2f1.SetKmsKeyId(*cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration.KMSKeyID)
+			}
+			f2.SetManagedStorageConfiguration(f2f1)
+		}
 		res.SetConfiguration(f2)
 	}
 	if cr.Spec.ForProvider.DefaultCapacityProviderStrategy != nil {
@@ -386,6 +406,16 @@ func GenerateUpdateClusterInput(cr *svcapitypes.Cluster) *svcsdk.UpdateClusterIn
 				f1f0.SetLogging(*cr.Spec.ForProvider.Configuration.ExecuteCommandConfiguration.Logging)
 			}
 			f1.SetExecuteCommandConfiguration(f1f0)
+		}
+		if cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration != nil {
+			f1f1 := &svcsdk.ManagedStorageConfiguration{}
+			if cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration.FargateEphemeralStorageKMSKeyID != nil {
+				f1f1.SetFargateEphemeralStorageKmsKeyId(*cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration.FargateEphemeralStorageKMSKeyID)
+			}
+			if cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration.KMSKeyID != nil {
+				f1f1.SetKmsKeyId(*cr.Spec.ForProvider.Configuration.ManagedStorageConfiguration.KMSKeyID)
+			}
+			f1.SetManagedStorageConfiguration(f1f1)
 		}
 		res.SetConfiguration(f1)
 	}
