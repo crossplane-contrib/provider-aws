@@ -2070,6 +2070,47 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 					}
 					f1valf41.RecipeReference = f1valf41f2
 				}
+				if f1valiter.Recipe.RecipeSteps != nil {
+					f1valf41f3 := []*svcapitypes.RecipeStep{}
+					for _, f1valf41f3iter := range f1valiter.Recipe.RecipeSteps {
+						f1valf41f3elem := &svcapitypes.RecipeStep{}
+						if f1valf41f3iter.Action != nil {
+							f1valf41f3elemf0 := &svcapitypes.RecipeAction{}
+							if f1valf41f3iter.Action.Operation != nil {
+								f1valf41f3elemf0.Operation = f1valf41f3iter.Action.Operation
+							}
+							if f1valf41f3iter.Action.Parameters != nil {
+								f1valf41f3elemf0f1 := map[string]*string{}
+								for f1valf41f3elemf0f1key, f1valf41f3elemf0f1valiter := range f1valf41f3iter.Action.Parameters {
+									var f1valf41f3elemf0f1val string
+									f1valf41f3elemf0f1val = *f1valf41f3elemf0f1valiter
+									f1valf41f3elemf0f1[f1valf41f3elemf0f1key] = &f1valf41f3elemf0f1val
+								}
+								f1valf41f3elemf0.Parameters = f1valf41f3elemf0f1
+							}
+							f1valf41f3elem.Action = f1valf41f3elemf0
+						}
+						if f1valf41f3iter.ConditionExpressions != nil {
+							f1valf41f3elemf1 := []*svcapitypes.ConditionExpression{}
+							for _, f1valf41f3elemf1iter := range f1valf41f3iter.ConditionExpressions {
+								f1valf41f3elemf1elem := &svcapitypes.ConditionExpression{}
+								if f1valf41f3elemf1iter.Condition != nil {
+									f1valf41f3elemf1elem.Condition = f1valf41f3elemf1iter.Condition
+								}
+								if f1valf41f3elemf1iter.TargetColumn != nil {
+									f1valf41f3elemf1elem.TargetColumn = f1valf41f3elemf1iter.TargetColumn
+								}
+								if f1valf41f3elemf1iter.Value != nil {
+									f1valf41f3elemf1elem.Value = f1valf41f3elemf1iter.Value
+								}
+								f1valf41f3elemf1 = append(f1valf41f3elemf1, f1valf41f3elemf1elem)
+							}
+							f1valf41f3elem.ConditionExpressions = f1valf41f3elemf1
+						}
+						f1valf41f3 = append(f1valf41f3, f1valf41f3elem)
+					}
+					f1valf41.RecipeSteps = f1valf41f3
+				}
 				f1val.Recipe = f1valf41
 			}
 			if f1valiter.RedshiftSource != nil {
@@ -3712,6 +3753,11 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 	} else {
 		cr.Spec.ForProvider.GlueVersion = nil
 	}
+	if resp.Job.JobMode != nil {
+		cr.Spec.ForProvider.JobMode = resp.Job.JobMode
+	} else {
+		cr.Spec.ForProvider.JobMode = nil
+	}
 	if resp.Job.LastModifiedOn != nil {
 		cr.Status.AtProvider.LastModifiedOn = &metav1.Time{*resp.Job.LastModifiedOn}
 	} else {
@@ -3721,6 +3767,11 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 		cr.Spec.ForProvider.LogURI = resp.Job.LogUri
 	} else {
 		cr.Spec.ForProvider.LogURI = nil
+	}
+	if resp.Job.MaintenanceWindow != nil {
+		cr.Spec.ForProvider.MaintenanceWindow = resp.Job.MaintenanceWindow
+	} else {
+		cr.Spec.ForProvider.MaintenanceWindow = nil
 	}
 	if resp.Job.MaxCapacity != nil {
 		cr.Spec.ForProvider.MaxCapacity = resp.Job.MaxCapacity
@@ -3738,22 +3789,22 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 		cr.Status.AtProvider.Name = nil
 	}
 	if resp.Job.NonOverridableArguments != nil {
-		f15 := map[string]*string{}
-		for f15key, f15valiter := range resp.Job.NonOverridableArguments {
-			var f15val string
-			f15val = *f15valiter
-			f15[f15key] = &f15val
+		f17 := map[string]*string{}
+		for f17key, f17valiter := range resp.Job.NonOverridableArguments {
+			var f17val string
+			f17val = *f17valiter
+			f17[f17key] = &f17val
 		}
-		cr.Spec.ForProvider.NonOverridableArguments = f15
+		cr.Spec.ForProvider.NonOverridableArguments = f17
 	} else {
 		cr.Spec.ForProvider.NonOverridableArguments = nil
 	}
 	if resp.Job.NotificationProperty != nil {
-		f16 := &svcapitypes.NotificationProperty{}
+		f18 := &svcapitypes.NotificationProperty{}
 		if resp.Job.NotificationProperty.NotifyDelayAfter != nil {
-			f16.NotifyDelayAfter = resp.Job.NotificationProperty.NotifyDelayAfter
+			f18.NotifyDelayAfter = resp.Job.NotificationProperty.NotifyDelayAfter
 		}
-		cr.Spec.ForProvider.NotificationProperty = f16
+		cr.Spec.ForProvider.NotificationProperty = f18
 	} else {
 		cr.Spec.ForProvider.NotificationProperty = nil
 	}
@@ -3763,32 +3814,32 @@ func GenerateJob(resp *svcsdk.GetJobOutput) *svcapitypes.Job {
 		cr.Spec.ForProvider.NumberOfWorkers = nil
 	}
 	if resp.Job.SourceControlDetails != nil {
-		f20 := &svcapitypes.SourceControlDetails{}
+		f23 := &svcapitypes.SourceControlDetails{}
 		if resp.Job.SourceControlDetails.AuthStrategy != nil {
-			f20.AuthStrategy = resp.Job.SourceControlDetails.AuthStrategy
+			f23.AuthStrategy = resp.Job.SourceControlDetails.AuthStrategy
 		}
 		if resp.Job.SourceControlDetails.AuthToken != nil {
-			f20.AuthToken = resp.Job.SourceControlDetails.AuthToken
+			f23.AuthToken = resp.Job.SourceControlDetails.AuthToken
 		}
 		if resp.Job.SourceControlDetails.Branch != nil {
-			f20.Branch = resp.Job.SourceControlDetails.Branch
+			f23.Branch = resp.Job.SourceControlDetails.Branch
 		}
 		if resp.Job.SourceControlDetails.Folder != nil {
-			f20.Folder = resp.Job.SourceControlDetails.Folder
+			f23.Folder = resp.Job.SourceControlDetails.Folder
 		}
 		if resp.Job.SourceControlDetails.LastCommitId != nil {
-			f20.LastCommitID = resp.Job.SourceControlDetails.LastCommitId
+			f23.LastCommitID = resp.Job.SourceControlDetails.LastCommitId
 		}
 		if resp.Job.SourceControlDetails.Owner != nil {
-			f20.Owner = resp.Job.SourceControlDetails.Owner
+			f23.Owner = resp.Job.SourceControlDetails.Owner
 		}
 		if resp.Job.SourceControlDetails.Provider != nil {
-			f20.Provider = resp.Job.SourceControlDetails.Provider
+			f23.Provider = resp.Job.SourceControlDetails.Provider
 		}
 		if resp.Job.SourceControlDetails.Repository != nil {
-			f20.Repository = resp.Job.SourceControlDetails.Repository
+			f23.Repository = resp.Job.SourceControlDetails.Repository
 		}
-		cr.Spec.ForProvider.SourceControlDetails = f20
+		cr.Spec.ForProvider.SourceControlDetails = f23
 	} else {
 		cr.Spec.ForProvider.SourceControlDetails = nil
 	}
@@ -5837,6 +5888,47 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 					}
 					f1valf41.SetRecipeReference(f1valf41f2)
 				}
+				if f1valiter.Recipe.RecipeSteps != nil {
+					f1valf41f3 := []*svcsdk.RecipeStep{}
+					for _, f1valf41f3iter := range f1valiter.Recipe.RecipeSteps {
+						f1valf41f3elem := &svcsdk.RecipeStep{}
+						if f1valf41f3iter.Action != nil {
+							f1valf41f3elemf0 := &svcsdk.RecipeAction{}
+							if f1valf41f3iter.Action.Operation != nil {
+								f1valf41f3elemf0.SetOperation(*f1valf41f3iter.Action.Operation)
+							}
+							if f1valf41f3iter.Action.Parameters != nil {
+								f1valf41f3elemf0f1 := map[string]*string{}
+								for f1valf41f3elemf0f1key, f1valf41f3elemf0f1valiter := range f1valf41f3iter.Action.Parameters {
+									var f1valf41f3elemf0f1val string
+									f1valf41f3elemf0f1val = *f1valf41f3elemf0f1valiter
+									f1valf41f3elemf0f1[f1valf41f3elemf0f1key] = &f1valf41f3elemf0f1val
+								}
+								f1valf41f3elemf0.SetParameters(f1valf41f3elemf0f1)
+							}
+							f1valf41f3elem.SetAction(f1valf41f3elemf0)
+						}
+						if f1valf41f3iter.ConditionExpressions != nil {
+							f1valf41f3elemf1 := []*svcsdk.ConditionExpression{}
+							for _, f1valf41f3elemf1iter := range f1valf41f3iter.ConditionExpressions {
+								f1valf41f3elemf1elem := &svcsdk.ConditionExpression{}
+								if f1valf41f3elemf1iter.Condition != nil {
+									f1valf41f3elemf1elem.SetCondition(*f1valf41f3elemf1iter.Condition)
+								}
+								if f1valf41f3elemf1iter.TargetColumn != nil {
+									f1valf41f3elemf1elem.SetTargetColumn(*f1valf41f3elemf1iter.TargetColumn)
+								}
+								if f1valf41f3elemf1iter.Value != nil {
+									f1valf41f3elemf1elem.SetValue(*f1valf41f3elemf1iter.Value)
+								}
+								f1valf41f3elemf1 = append(f1valf41f3elemf1, f1valf41f3elemf1elem)
+							}
+							f1valf41f3elem.SetConditionExpressions(f1valf41f3elemf1)
+						}
+						f1valf41f3 = append(f1valf41f3, f1valf41f3elem)
+					}
+					f1valf41.SetRecipeSteps(f1valf41f3)
+				}
 				f1val.SetRecipe(f1valf41)
 			}
 			if f1valiter.RedshiftSource != nil {
@@ -7460,8 +7552,14 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 	if cr.Spec.ForProvider.GlueVersion != nil {
 		res.SetGlueVersion(*cr.Spec.ForProvider.GlueVersion)
 	}
+	if cr.Spec.ForProvider.JobMode != nil {
+		res.SetJobMode(*cr.Spec.ForProvider.JobMode)
+	}
 	if cr.Spec.ForProvider.LogURI != nil {
 		res.SetLogUri(*cr.Spec.ForProvider.LogURI)
+	}
+	if cr.Spec.ForProvider.MaintenanceWindow != nil {
+		res.SetMaintenanceWindow(*cr.Spec.ForProvider.MaintenanceWindow)
 	}
 	if cr.Spec.ForProvider.MaxCapacity != nil {
 		res.SetMaxCapacity(*cr.Spec.ForProvider.MaxCapacity)
@@ -7470,60 +7568,60 @@ func GenerateCreateJobInput(cr *svcapitypes.Job) *svcsdk.CreateJobInput {
 		res.SetMaxRetries(*cr.Spec.ForProvider.MaxRetries)
 	}
 	if cr.Spec.ForProvider.NonOverridableArguments != nil {
-		f11 := map[string]*string{}
-		for f11key, f11valiter := range cr.Spec.ForProvider.NonOverridableArguments {
-			var f11val string
-			f11val = *f11valiter
-			f11[f11key] = &f11val
+		f13 := map[string]*string{}
+		for f13key, f13valiter := range cr.Spec.ForProvider.NonOverridableArguments {
+			var f13val string
+			f13val = *f13valiter
+			f13[f13key] = &f13val
 		}
-		res.SetNonOverridableArguments(f11)
+		res.SetNonOverridableArguments(f13)
 	}
 	if cr.Spec.ForProvider.NotificationProperty != nil {
-		f12 := &svcsdk.NotificationProperty{}
+		f14 := &svcsdk.NotificationProperty{}
 		if cr.Spec.ForProvider.NotificationProperty.NotifyDelayAfter != nil {
-			f12.SetNotifyDelayAfter(*cr.Spec.ForProvider.NotificationProperty.NotifyDelayAfter)
+			f14.SetNotifyDelayAfter(*cr.Spec.ForProvider.NotificationProperty.NotifyDelayAfter)
 		}
-		res.SetNotificationProperty(f12)
+		res.SetNotificationProperty(f14)
 	}
 	if cr.Spec.ForProvider.NumberOfWorkers != nil {
 		res.SetNumberOfWorkers(*cr.Spec.ForProvider.NumberOfWorkers)
 	}
 	if cr.Spec.ForProvider.SourceControlDetails != nil {
-		f14 := &svcsdk.SourceControlDetails{}
+		f16 := &svcsdk.SourceControlDetails{}
 		if cr.Spec.ForProvider.SourceControlDetails.AuthStrategy != nil {
-			f14.SetAuthStrategy(*cr.Spec.ForProvider.SourceControlDetails.AuthStrategy)
+			f16.SetAuthStrategy(*cr.Spec.ForProvider.SourceControlDetails.AuthStrategy)
 		}
 		if cr.Spec.ForProvider.SourceControlDetails.AuthToken != nil {
-			f14.SetAuthToken(*cr.Spec.ForProvider.SourceControlDetails.AuthToken)
+			f16.SetAuthToken(*cr.Spec.ForProvider.SourceControlDetails.AuthToken)
 		}
 		if cr.Spec.ForProvider.SourceControlDetails.Branch != nil {
-			f14.SetBranch(*cr.Spec.ForProvider.SourceControlDetails.Branch)
+			f16.SetBranch(*cr.Spec.ForProvider.SourceControlDetails.Branch)
 		}
 		if cr.Spec.ForProvider.SourceControlDetails.Folder != nil {
-			f14.SetFolder(*cr.Spec.ForProvider.SourceControlDetails.Folder)
+			f16.SetFolder(*cr.Spec.ForProvider.SourceControlDetails.Folder)
 		}
 		if cr.Spec.ForProvider.SourceControlDetails.LastCommitID != nil {
-			f14.SetLastCommitId(*cr.Spec.ForProvider.SourceControlDetails.LastCommitID)
+			f16.SetLastCommitId(*cr.Spec.ForProvider.SourceControlDetails.LastCommitID)
 		}
 		if cr.Spec.ForProvider.SourceControlDetails.Owner != nil {
-			f14.SetOwner(*cr.Spec.ForProvider.SourceControlDetails.Owner)
+			f16.SetOwner(*cr.Spec.ForProvider.SourceControlDetails.Owner)
 		}
 		if cr.Spec.ForProvider.SourceControlDetails.Provider != nil {
-			f14.SetProvider(*cr.Spec.ForProvider.SourceControlDetails.Provider)
+			f16.SetProvider(*cr.Spec.ForProvider.SourceControlDetails.Provider)
 		}
 		if cr.Spec.ForProvider.SourceControlDetails.Repository != nil {
-			f14.SetRepository(*cr.Spec.ForProvider.SourceControlDetails.Repository)
+			f16.SetRepository(*cr.Spec.ForProvider.SourceControlDetails.Repository)
 		}
-		res.SetSourceControlDetails(f14)
+		res.SetSourceControlDetails(f16)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f15 := map[string]*string{}
-		for f15key, f15valiter := range cr.Spec.ForProvider.Tags {
-			var f15val string
-			f15val = *f15valiter
-			f15[f15key] = &f15val
+		f17 := map[string]*string{}
+		for f17key, f17valiter := range cr.Spec.ForProvider.Tags {
+			var f17val string
+			f17val = *f17valiter
+			f17[f17key] = &f17val
 		}
-		res.SetTags(f15)
+		res.SetTags(f17)
 	}
 	if cr.Spec.ForProvider.Timeout != nil {
 		res.SetTimeout(*cr.Spec.ForProvider.Timeout)

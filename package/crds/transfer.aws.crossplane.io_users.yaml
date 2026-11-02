@@ -105,10 +105,25 @@ spec:
 
                       [ { "Entry": "/", "Target": "/bucket_name/home/mydirectory" } ]
                     items:
+                      description: |-
+                        CustomHomeDirectoryMapEntry replaces HomeDirectoryMapEntry because it contains a
+                        json tag "type_" that does not follow the convention.
                       properties:
                         entry:
+                          description: Represents an entry for HomeDirectoryMappings.
                           type: string
                         target:
+                          description: Represents the map target that is used in a
+                            HomeDirectoryMapEntry.
+                          type: string
+                        type:
+                          description: |-
+                            Specifies the type of mapping. Set the type to FILE if you want the mapping
+                            to point to a file, or DIRECTORY for the directory to point to a directory.
+
+                            By default, home directory mappings have a Type of DIRECTORY when you create
+                            a Transfer Family server. You would need to explicitly set Type to FILE if
+                            you want a mapping to have a file target.
                           type: string
                       type: object
                     type: array

@@ -118,6 +118,9 @@ func GenerateResolverRule(resp *svcsdk.GetResolverRuleOutput) *svcapitypes.Resol
 			if f13iter.Port != nil {
 				f13elem.Port = f13iter.Port
 			}
+			if f13iter.Protocol != nil {
+				f13elem.Protocol = f13iter.Protocol
+			}
 			f13 = append(f13, f13elem)
 		}
 		cr.Spec.ForProvider.TargetIPs = f13
@@ -170,6 +173,9 @@ func GenerateCreateResolverRuleInput(cr *svcapitypes.ResolverRule) *svcsdk.Creat
 			}
 			if f5iter.Port != nil {
 				f5elem.SetPort(*f5iter.Port)
+			}
+			if f5iter.Protocol != nil {
+				f5elem.SetProtocol(*f5iter.Protocol)
 			}
 			f5 = append(f5, f5elem)
 		}

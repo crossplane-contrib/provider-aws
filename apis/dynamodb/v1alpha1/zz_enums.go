@@ -18,6 +18,13 @@ limitations under the License.
 
 package v1alpha1
 
+type ApproximateCreationDateTimePrecision string
+
+const (
+	ApproximateCreationDateTimePrecision_MILLISECOND ApproximateCreationDateTimePrecision = "MILLISECOND"
+	ApproximateCreationDateTimePrecision_MICROSECOND ApproximateCreationDateTimePrecision = "MICROSECOND"
+)
+
 type AttributeAction string
 
 const (
@@ -131,6 +138,7 @@ const (
 	DestinationStatus_DISABLING     DestinationStatus = "DISABLING"
 	DestinationStatus_DISABLED      DestinationStatus = "DISABLED"
 	DestinationStatus_ENABLE_FAILED DestinationStatus = "ENABLE_FAILED"
+	DestinationStatus_UPDATING      DestinationStatus = "UPDATING"
 )
 
 type ExportFormat string

@@ -188,7 +188,8 @@ spec:
                       createAuthChallenge:
                         type: string
                       customEmailSender:
-                        description: A custom email sender Lambda configuration type.
+                        description: The properties of a custom email sender Lambda
+                          trigger.
                         properties:
                           lambdaARN:
                             type: string
@@ -198,7 +199,8 @@ spec:
                       customMessage:
                         type: string
                       customSMSSender:
-                        description: A custom SMS sender Lambda configuration type.
+                        description: The properties of a custom SMS sender Lambda
+                          trigger.
                         properties:
                           lambdaARN:
                             type: string
@@ -219,6 +221,15 @@ spec:
                         type: string
                       preTokenGeneration:
                         type: string
+                      preTokenGenerationConfig:
+                        description: The properties of a pre token generation Lambda
+                          trigger.
+                        properties:
+                          lambdaARN:
+                            type: string
+                          lambdaVersion:
+                            type: string
+                        type: object
                       userMigration:
                         type: string
                       verifyAuthChallengeResponse:
@@ -577,8 +588,9 @@ spec:
                     type: string
                   creationDate:
                     description: |-
-                      The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-                      format, when the item was created.
+                      The date and time when the item was created. Amazon Cognito returns this
+                      timestamp in UNIX epoch time format. Your SDK might render the output in
+                      a human-readable format like ISO 8601 or a Java Date object.
                     format: date-time
                     type: string
                   customDomain:
@@ -608,8 +620,9 @@ spec:
                     type: string
                   lastModifiedDate:
                     description: |-
-                      The date and time, in ISO 8601 (https://www.iso.org/iso-8601-date-and-time-format.html)
-                      format, when the item was modified.
+                      The date and time when the item was modified. Amazon Cognito returns this
+                      timestamp in UNIX epoch time format. Your SDK might render the output in
+                      a human-readable format like ISO 8601 or a Java Date object.
                     format: date-time
                     type: string
                   name:
@@ -680,7 +693,7 @@ spec:
                       see Moving out of the SMS sandbox (https://docs.aws.amazon.com/sns/latest/dg/sns-sms-sandbox-moving-to-production.html).
                     type: string
                   status:
-                    description: The status of a user pool.
+                    description: This parameter is no longer used.
                     type: string
                 type: object
               conditions:

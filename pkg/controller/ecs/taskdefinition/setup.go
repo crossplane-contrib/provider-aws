@@ -130,6 +130,9 @@ func GenerateVolumes(cr *svcapitypes.TaskDefinition) []*svcsdk.Volume { //nolint
 
 	for _, volumesiter := range cr.Spec.ForProvider.Volumes {
 		volumeselem := &svcsdk.Volume{}
+		if volumesiter.ConfiguredAtLaunch != nil {
+			volumeselem.SetConfiguredAtLaunch(*volumesiter.ConfiguredAtLaunch)
+		}
 		if volumesiter.DockerVolumeConfiguration != nil {
 			volumeselemf0 := &svcsdk.DockerVolumeConfiguration{}
 			if volumesiter.DockerVolumeConfiguration.Autoprovision != nil {

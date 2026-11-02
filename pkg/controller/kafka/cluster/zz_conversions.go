@@ -206,25 +206,25 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 		cr.Spec.ForProvider.ClusterName = nil
 	}
 	if resp.ClusterInfo.EncryptionInfo != nil {
-		f8 := &svcapitypes.EncryptionInfo{}
+		f9 := &svcapitypes.EncryptionInfo{}
 		if resp.ClusterInfo.EncryptionInfo.EncryptionAtRest != nil {
-			f8f0 := &svcapitypes.EncryptionAtRest{}
+			f9f0 := &svcapitypes.EncryptionAtRest{}
 			if resp.ClusterInfo.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyId != nil {
-				f8f0.DataVolumeKMSKeyID = resp.ClusterInfo.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyId
+				f9f0.DataVolumeKMSKeyID = resp.ClusterInfo.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyId
 			}
-			f8.EncryptionAtRest = f8f0
+			f9.EncryptionAtRest = f9f0
 		}
 		if resp.ClusterInfo.EncryptionInfo.EncryptionInTransit != nil {
-			f8f1 := &svcapitypes.EncryptionInTransit{}
+			f9f1 := &svcapitypes.EncryptionInTransit{}
 			if resp.ClusterInfo.EncryptionInfo.EncryptionInTransit.ClientBroker != nil {
-				f8f1.ClientBroker = resp.ClusterInfo.EncryptionInfo.EncryptionInTransit.ClientBroker
+				f9f1.ClientBroker = resp.ClusterInfo.EncryptionInfo.EncryptionInTransit.ClientBroker
 			}
 			if resp.ClusterInfo.EncryptionInfo.EncryptionInTransit.InCluster != nil {
-				f8f1.InCluster = resp.ClusterInfo.EncryptionInfo.EncryptionInTransit.InCluster
+				f9f1.InCluster = resp.ClusterInfo.EncryptionInfo.EncryptionInTransit.InCluster
 			}
-			f8.EncryptionInTransit = f8f1
+			f9.EncryptionInTransit = f9f1
 		}
-		cr.Spec.ForProvider.EncryptionInfo = f8
+		cr.Spec.ForProvider.EncryptionInfo = f9
 	} else {
 		cr.Spec.ForProvider.EncryptionInfo = nil
 	}
@@ -234,45 +234,45 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 		cr.Spec.ForProvider.EnhancedMonitoring = nil
 	}
 	if resp.ClusterInfo.LoggingInfo != nil {
-		f10 := &svcapitypes.LoggingInfo{}
+		f11 := &svcapitypes.LoggingInfo{}
 		if resp.ClusterInfo.LoggingInfo.BrokerLogs != nil {
-			f10f0 := &svcapitypes.BrokerLogs{}
+			f11f0 := &svcapitypes.BrokerLogs{}
 			if resp.ClusterInfo.LoggingInfo.BrokerLogs.CloudWatchLogs != nil {
-				f10f0f0 := &svcapitypes.CloudWatchLogs{}
+				f11f0f0 := &svcapitypes.CloudWatchLogs{}
 				if resp.ClusterInfo.LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled != nil {
-					f10f0f0.Enabled = resp.ClusterInfo.LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled
+					f11f0f0.Enabled = resp.ClusterInfo.LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled
 				}
 				if resp.ClusterInfo.LoggingInfo.BrokerLogs.CloudWatchLogs.LogGroup != nil {
-					f10f0f0.LogGroup = resp.ClusterInfo.LoggingInfo.BrokerLogs.CloudWatchLogs.LogGroup
+					f11f0f0.LogGroup = resp.ClusterInfo.LoggingInfo.BrokerLogs.CloudWatchLogs.LogGroup
 				}
-				f10f0.CloudWatchLogs = f10f0f0
+				f11f0.CloudWatchLogs = f11f0f0
 			}
 			if resp.ClusterInfo.LoggingInfo.BrokerLogs.Firehose != nil {
-				f10f0f1 := &svcapitypes.Firehose{}
+				f11f0f1 := &svcapitypes.Firehose{}
 				if resp.ClusterInfo.LoggingInfo.BrokerLogs.Firehose.DeliveryStream != nil {
-					f10f0f1.DeliveryStream = resp.ClusterInfo.LoggingInfo.BrokerLogs.Firehose.DeliveryStream
+					f11f0f1.DeliveryStream = resp.ClusterInfo.LoggingInfo.BrokerLogs.Firehose.DeliveryStream
 				}
 				if resp.ClusterInfo.LoggingInfo.BrokerLogs.Firehose.Enabled != nil {
-					f10f0f1.Enabled = resp.ClusterInfo.LoggingInfo.BrokerLogs.Firehose.Enabled
+					f11f0f1.Enabled = resp.ClusterInfo.LoggingInfo.BrokerLogs.Firehose.Enabled
 				}
-				f10f0.Firehose = f10f0f1
+				f11f0.Firehose = f11f0f1
 			}
 			if resp.ClusterInfo.LoggingInfo.BrokerLogs.S3 != nil {
-				f10f0f2 := &svcapitypes.S3{}
+				f11f0f2 := &svcapitypes.S3{}
 				if resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Bucket != nil {
-					f10f0f2.Bucket = resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Bucket
+					f11f0f2.Bucket = resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Bucket
 				}
 				if resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Enabled != nil {
-					f10f0f2.Enabled = resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Enabled
+					f11f0f2.Enabled = resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Enabled
 				}
 				if resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Prefix != nil {
-					f10f0f2.Prefix = resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Prefix
+					f11f0f2.Prefix = resp.ClusterInfo.LoggingInfo.BrokerLogs.S3.Prefix
 				}
-				f10f0.S3 = f10f0f2
+				f11f0.S3 = f11f0f2
 			}
-			f10.BrokerLogs = f10f0
+			f11.BrokerLogs = f11f0
 		}
-		cr.Spec.ForProvider.LoggingInfo = f10
+		cr.Spec.ForProvider.LoggingInfo = f11
 	} else {
 		cr.Spec.ForProvider.LoggingInfo = nil
 	}
@@ -282,26 +282,26 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 		cr.Spec.ForProvider.NumberOfBrokerNodes = nil
 	}
 	if resp.ClusterInfo.OpenMonitoring != nil {
-		f12 := &svcapitypes.OpenMonitoringInfo{}
+		f13 := &svcapitypes.OpenMonitoringInfo{}
 		if resp.ClusterInfo.OpenMonitoring.Prometheus != nil {
-			f12f0 := &svcapitypes.PrometheusInfo{}
+			f13f0 := &svcapitypes.PrometheusInfo{}
 			if resp.ClusterInfo.OpenMonitoring.Prometheus.JmxExporter != nil {
-				f12f0f0 := &svcapitypes.JmxExporterInfo{}
+				f13f0f0 := &svcapitypes.JmxExporterInfo{}
 				if resp.ClusterInfo.OpenMonitoring.Prometheus.JmxExporter.EnabledInBroker != nil {
-					f12f0f0.EnabledInBroker = resp.ClusterInfo.OpenMonitoring.Prometheus.JmxExporter.EnabledInBroker
+					f13f0f0.EnabledInBroker = resp.ClusterInfo.OpenMonitoring.Prometheus.JmxExporter.EnabledInBroker
 				}
-				f12f0.JmxExporter = f12f0f0
+				f13f0.JmxExporter = f13f0f0
 			}
 			if resp.ClusterInfo.OpenMonitoring.Prometheus.NodeExporter != nil {
-				f12f0f1 := &svcapitypes.NodeExporterInfo{}
+				f13f0f1 := &svcapitypes.NodeExporterInfo{}
 				if resp.ClusterInfo.OpenMonitoring.Prometheus.NodeExporter.EnabledInBroker != nil {
-					f12f0f1.EnabledInBroker = resp.ClusterInfo.OpenMonitoring.Prometheus.NodeExporter.EnabledInBroker
+					f13f0f1.EnabledInBroker = resp.ClusterInfo.OpenMonitoring.Prometheus.NodeExporter.EnabledInBroker
 				}
-				f12f0.NodeExporter = f12f0f1
+				f13f0.NodeExporter = f13f0f1
 			}
-			f12.Prometheus = f12f0
+			f13.Prometheus = f13f0
 		}
-		cr.Spec.ForProvider.OpenMonitoring = f12
+		cr.Spec.ForProvider.OpenMonitoring = f13
 	} else {
 		cr.Spec.ForProvider.OpenMonitoring = nil
 	}
@@ -316,13 +316,13 @@ func GenerateCluster(resp *svcsdk.DescribeClusterOutput) *svcapitypes.Cluster {
 		cr.Spec.ForProvider.StorageMode = nil
 	}
 	if resp.ClusterInfo.Tags != nil {
-		f16 := map[string]*string{}
-		for f16key, f16valiter := range resp.ClusterInfo.Tags {
-			var f16val string
-			f16val = *f16valiter
-			f16[f16key] = &f16val
+		f17 := map[string]*string{}
+		for f17key, f17valiter := range resp.ClusterInfo.Tags {
+			var f17val string
+			f17val = *f17valiter
+			f17[f17key] = &f17val
 		}
-		cr.Spec.ForProvider.Tags = f16
+		cr.Spec.ForProvider.Tags = f17
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}

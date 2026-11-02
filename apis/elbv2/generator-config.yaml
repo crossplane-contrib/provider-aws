@@ -1,6 +1,8 @@
 sdk_names:
   model_name: elasticloadbalancingv2
 ignore:
+  resource_names:
+    - TrustStore
   field_paths:
     - CreateListenerInput.LoadBalancerArn
     - CreateListenerInput.DefaultActions

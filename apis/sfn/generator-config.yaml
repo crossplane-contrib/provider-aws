@@ -2,8 +2,10 @@ ignore:
   resource_names:
     - StateMachineAlias
   field_paths:
+    - CreateActivityInput.EncryptionConfiguration # has child with jsontag type_ in SDK
     - CreateStateMachineInput.RoleArn
     - CreateStateMachineInput.Type # its jsontag is type_ in SDK and we don't want that.
+    - CreateStateMachineInput.EncryptionConfiguration # has child with jsontag type_ in SDK
 resources:
   StateMachine:
     exceptions:

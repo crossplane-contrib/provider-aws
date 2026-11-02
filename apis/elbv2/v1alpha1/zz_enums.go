@@ -28,6 +28,13 @@ const (
 	ActionTypeEnum_fixed_response       ActionTypeEnum = "fixed-response"
 )
 
+type AnomalyResultEnum string
+
+const (
+	AnomalyResultEnum_anomalous AnomalyResultEnum = "anomalous"
+	AnomalyResultEnum_normal    AnomalyResultEnum = "normal"
+)
+
 type AuthenticateCognitoActionConditionalBehaviorEnum string
 
 const (
@@ -44,6 +51,13 @@ const (
 	AuthenticateOIDCActionConditionalBehaviorEnum_authenticate AuthenticateOIDCActionConditionalBehaviorEnum = "authenticate"
 )
 
+type DescribeTargetHealthInputIncludeEnum string
+
+const (
+	DescribeTargetHealthInputIncludeEnum_AnomalyDetection DescribeTargetHealthInputIncludeEnum = "AnomalyDetection"
+	DescribeTargetHealthInputIncludeEnum_All              DescribeTargetHealthInputIncludeEnum = "All"
+)
+
 type EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum string
 
 const (
@@ -54,8 +68,9 @@ const (
 type IPAddressType string
 
 const (
-	IPAddressType_ipv4      IPAddressType = "ipv4"
-	IPAddressType_dualstack IPAddressType = "dualstack"
+	IPAddressType_ipv4                          IPAddressType = "ipv4"
+	IPAddressType_dualstack                     IPAddressType = "dualstack"
+	IPAddressType_dualstack_without_public_ipv4 IPAddressType = "dualstack-without-public-ipv4"
 )
 
 type LoadBalancerSchemeEnum string
@@ -82,6 +97,13 @@ const (
 	LoadBalancerTypeEnum_gateway     LoadBalancerTypeEnum = "gateway"
 )
 
+type MitigationInEffectEnum string
+
+const (
+	MitigationInEffectEnum_yes MitigationInEffectEnum = "yes"
+	MitigationInEffectEnum_no  MitigationInEffectEnum = "no"
+)
+
 type ProtocolEnum string
 
 const (
@@ -99,6 +121,12 @@ type RedirectActionStatusCodeEnum string
 const (
 	RedirectActionStatusCodeEnum_HTTP_301 RedirectActionStatusCodeEnum = "HTTP_301"
 	RedirectActionStatusCodeEnum_HTTP_302 RedirectActionStatusCodeEnum = "HTTP_302"
+)
+
+type RevocationType string
+
+const (
+	RevocationType_CRL RevocationType = "CRL"
 )
 
 type TargetGroupIPAddressTypeEnum string
@@ -128,12 +156,13 @@ const (
 type TargetHealthStateEnum string
 
 const (
-	TargetHealthStateEnum_initial     TargetHealthStateEnum = "initial"
-	TargetHealthStateEnum_healthy     TargetHealthStateEnum = "healthy"
-	TargetHealthStateEnum_unhealthy   TargetHealthStateEnum = "unhealthy"
-	TargetHealthStateEnum_unused      TargetHealthStateEnum = "unused"
-	TargetHealthStateEnum_draining    TargetHealthStateEnum = "draining"
-	TargetHealthStateEnum_unavailable TargetHealthStateEnum = "unavailable"
+	TargetHealthStateEnum_initial            TargetHealthStateEnum = "initial"
+	TargetHealthStateEnum_healthy            TargetHealthStateEnum = "healthy"
+	TargetHealthStateEnum_unhealthy          TargetHealthStateEnum = "unhealthy"
+	TargetHealthStateEnum_unhealthy_draining TargetHealthStateEnum = "unhealthy.draining"
+	TargetHealthStateEnum_unused             TargetHealthStateEnum = "unused"
+	TargetHealthStateEnum_draining           TargetHealthStateEnum = "draining"
+	TargetHealthStateEnum_unavailable        TargetHealthStateEnum = "unavailable"
 )
 
 type TargetTypeEnum string
@@ -143,4 +172,18 @@ const (
 	TargetTypeEnum_ip       TargetTypeEnum = "ip"
 	TargetTypeEnum_lambda   TargetTypeEnum = "lambda"
 	TargetTypeEnum_alb      TargetTypeEnum = "alb"
+)
+
+type TrustStoreAssociationStatusEnum string
+
+const (
+	TrustStoreAssociationStatusEnum_active  TrustStoreAssociationStatusEnum = "active"
+	TrustStoreAssociationStatusEnum_removed TrustStoreAssociationStatusEnum = "removed"
+)
+
+type TrustStoreStatus string
+
+const (
+	TrustStoreStatus_ACTIVE   TrustStoreStatus = "ACTIVE"
+	TrustStoreStatus_CREATING TrustStoreStatus = "CREATING"
 )

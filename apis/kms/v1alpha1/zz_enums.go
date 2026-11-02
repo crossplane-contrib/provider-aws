@@ -26,6 +26,7 @@ const (
 	AlgorithmSpec_RSAES_OAEP_SHA_256       AlgorithmSpec = "RSAES_OAEP_SHA_256"
 	AlgorithmSpec_RSA_AES_KEY_WRAP_SHA_1   AlgorithmSpec = "RSA_AES_KEY_WRAP_SHA_1"
 	AlgorithmSpec_RSA_AES_KEY_WRAP_SHA_256 AlgorithmSpec = "RSA_AES_KEY_WRAP_SHA_256"
+	AlgorithmSpec_SM2PKE                   AlgorithmSpec = "SM2PKE"
 )
 
 type ConnectionErrorCodeType string
@@ -141,6 +142,13 @@ const (
 	GrantOperation_GenerateDataKeyPairWithoutPlaintext GrantOperation = "GenerateDataKeyPairWithoutPlaintext"
 	GrantOperation_GenerateMac                         GrantOperation = "GenerateMac"
 	GrantOperation_VerifyMac                           GrantOperation = "VerifyMac"
+	GrantOperation_DeriveSharedSecret                  GrantOperation = "DeriveSharedSecret"
+)
+
+type KeyAgreementAlgorithmSpec string
+
+const (
+	KeyAgreementAlgorithmSpec_ECDH KeyAgreementAlgorithmSpec = "ECDH"
 )
 
 type KeyEncryptionMechanism string
@@ -193,6 +201,7 @@ const (
 	KeyUsageType_SIGN_VERIFY         KeyUsageType = "SIGN_VERIFY"
 	KeyUsageType_ENCRYPT_DECRYPT     KeyUsageType = "ENCRYPT_DECRYPT"
 	KeyUsageType_GENERATE_VERIFY_MAC KeyUsageType = "GENERATE_VERIFY_MAC"
+	KeyUsageType_KEY_AGREEMENT       KeyUsageType = "KEY_AGREEMENT"
 )
 
 type MacAlgorithmSpec string
@@ -227,6 +236,13 @@ const (
 	OriginType_EXTERNAL_KEY_STORE OriginType = "EXTERNAL_KEY_STORE"
 )
 
+type RotationType string
+
+const (
+	RotationType_AUTOMATIC RotationType = "AUTOMATIC"
+	RotationType_ON_DEMAND RotationType = "ON_DEMAND"
+)
+
 type SigningAlgorithmSpec string
 
 const (
@@ -248,6 +264,7 @@ const (
 	WrappingKeySpec_RSA_2048 WrappingKeySpec = "RSA_2048"
 	WrappingKeySpec_RSA_3072 WrappingKeySpec = "RSA_3072"
 	WrappingKeySpec_RSA_4096 WrappingKeySpec = "RSA_4096"
+	WrappingKeySpec_SM2      WrappingKeySpec = "SM2"
 )
 
 type XksProxyConnectivityType string

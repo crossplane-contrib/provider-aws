@@ -78,6 +78,35 @@ spec:
                       The Amazon States Language definition of the state machine. See Amazon States
                       Language (https://docs.aws.amazon.com/step-functions/latest/dg/concepts-amazon-states-language.html).
                     type: string
+                  encryptionConfiguration:
+                    description: Settings to configure server-side encryption.
+                    properties:
+                      kmsDataKeyReusePeriodSeconds:
+                        description: |-
+                          Maximum duration that Step Functions will reuse data keys. When the period
+                          expires, Step Functions will call GenerateDataKey. Only applies to customer
+                          managed keys. (when Type is CUSTOMER_MANAGED_KMS_KEY)
+                          Should be between 60 seconds (1 minute) and 900 seconds (15 minutes).
+                          Default is 300 seconds (5 minutes).
+                        format: int64
+                        type: integer
+                      kmsKeyID:
+                        description: |-
+                          An alias, alias ARN, key ID, or key ARN of a symmetric encryption KMS key
+                          to encrypt data. To specify a KMS key in a different Amazon Web Services
+                          account, you must use the key ARN or alias ARN.
+                          Only needed if Type is CUSTOMER_MANAGED_KMS_KEY.
+                        type: string
+                      type:
+                        description: |-
+                          Encryption type.
+                          Valide values are AWS_OWNED_KEY and CUSTOMER_MANAGED_KMS_KEY
+
+                          Type is a required field
+                        type: string
+                    required:
+                    - type
+                    type: object
                   loggingConfiguration:
                     description: |-
                       Defines what execution history events are logged and where they are logged.

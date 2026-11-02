@@ -59,6 +59,7 @@ ignore:
     - IpamResourceDiscovery
     - IpamScope
     - IpamPool
+    - IpamExternalResourceVerificationToken
     - NetworkInsightsAccessScope
     - PublicIpv4Pool
     - CoipCidr

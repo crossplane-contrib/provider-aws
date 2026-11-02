@@ -339,6 +339,9 @@ spec:
                             items:
                               type: string
                             type: array
+                          maxSpotPriceAsPercentageOfOptimalOnDemandPrice:
+                            format: int64
+                            type: integer
                           memoryGiBPerVCPU:
                             description: The minimum and maximum amount of memory
                               per vCPU, in GiB.
@@ -438,7 +441,7 @@ spec:
                         description: |-
                           The metadata options for the instance. For more information, see Instance
                           metadata and user data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html)
-                          in the Amazon Elastic Compute Cloud User Guide.
+                          in the Amazon EC2 User Guide.
                         properties:
                           httpEndpoint:
                             type: string
@@ -465,6 +468,23 @@ spec:
                               type: boolean
                             associatePublicIPAddress:
                               type: boolean
+                            connectionTrackingSpecification:
+                              description: |-
+                                A security group connection tracking specification request that enables you
+                                to set the idle timeout for connection tracking on an Elastic network interface.
+                                For more information, see Connection tracking timeouts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-connection-tracking.html#connection-tracking-timeouts)
+                                in the Amazon EC2 User Guide.
+                              properties:
+                                tcpEstablishedTimeout:
+                                  format: int64
+                                  type: integer
+                                udpStreamTimeout:
+                                  format: int64
+                                  type: integer
+                                udpTimeout:
+                                  format: int64
+                                  type: integer
+                              type: object
                             deleteOnTermination:
                               type: boolean
                             description:

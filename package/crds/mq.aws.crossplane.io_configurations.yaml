@@ -96,7 +96,6 @@ spec:
                     type: object
                 required:
                 - engineType
-                - engineVersion
                 - name
                 - region
                 type: object

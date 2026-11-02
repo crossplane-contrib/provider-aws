@@ -112,23 +112,28 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.Workspace) (manag
 	} else {
 		cr.Status.AtProvider.ARN = nil
 	}
+	if resp.KmsKeyArn != nil {
+		cr.Spec.ForProvider.KMSKeyARN = resp.KmsKeyArn
+	} else {
+		cr.Spec.ForProvider.KMSKeyARN = nil
+	}
 	if resp.Status != nil {
-		f1 := &svcapitypes.WorkspaceStatus_SDK{}
+		f2 := &svcapitypes.WorkspaceStatus_SDK{}
 		if resp.Status.StatusCode != nil {
-			f1.StatusCode = resp.Status.StatusCode
+			f2.StatusCode = resp.Status.StatusCode
 		}
-		cr.Status.AtProvider.Status = f1
+		cr.Status.AtProvider.Status = f2
 	} else {
 		cr.Status.AtProvider.Status = nil
 	}
 	if resp.Tags != nil {
-		f2 := map[string]*string{}
-		for f2key, f2valiter := range resp.Tags {
-			var f2val string
-			f2val = *f2valiter
-			f2[f2key] = &f2val
+		f3 := map[string]*string{}
+		for f3key, f3valiter := range resp.Tags {
+			var f3val string
+			f3val = *f3valiter
+			f3[f3key] = &f3val
 		}
-		cr.Spec.ForProvider.Tags = f2
+		cr.Spec.ForProvider.Tags = f3
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}

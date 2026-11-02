@@ -162,19 +162,30 @@ func (e *external) Create(ctx context.Context, cr *svcapitypes.ResolverEndpoint)
 	} else {
 		cr.Spec.ForProvider.PreferredInstanceType = nil
 	}
+	if resp.ResolverEndpoint.Protocols != nil {
+		f11 := []*string{}
+		for _, f11iter := range resp.ResolverEndpoint.Protocols {
+			var f11elem string
+			f11elem = *f11iter
+			f11 = append(f11, &f11elem)
+		}
+		cr.Spec.ForProvider.Protocols = f11
+	} else {
+		cr.Spec.ForProvider.Protocols = nil
+	}
 	if resp.ResolverEndpoint.ResolverEndpointType != nil {
 		cr.Spec.ForProvider.ResolverEndpointType = resp.ResolverEndpoint.ResolverEndpointType
 	} else {
 		cr.Spec.ForProvider.ResolverEndpointType = nil
 	}
 	if resp.ResolverEndpoint.SecurityGroupIds != nil {
-		f12 := []*string{}
-		for _, f12iter := range resp.ResolverEndpoint.SecurityGroupIds {
-			var f12elem string
-			f12elem = *f12iter
-			f12 = append(f12, &f12elem)
+		f13 := []*string{}
+		for _, f13iter := range resp.ResolverEndpoint.SecurityGroupIds {
+			var f13elem string
+			f13elem = *f13iter
+			f13 = append(f13, &f13elem)
 		}
-		cr.Status.AtProvider.SecurityGroupIDs = f12
+		cr.Status.AtProvider.SecurityGroupIDs = f13
 	} else {
 		cr.Status.AtProvider.SecurityGroupIDs = nil
 	}

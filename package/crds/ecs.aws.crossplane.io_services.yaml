@@ -298,8 +298,8 @@ spec:
 
                       Fargate Spot infrastructure is available for use but a capacity provider
                       strategy must be used. For more information, see Fargate capacity providers
-                      (https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-capacity-providers.html)
-                      in the Amazon ECS User Guide for Fargate.
+                      (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/fargate-capacity-providers.html)
+                      in the Amazon ECS Developer Guide.
 
                       The EC2 launch type runs your tasks on Amazon EC2 instances registered to
                       your cluster.
@@ -779,6 +779,10 @@ spec:
                       use the TagResource (https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_TagResource.html)
                       API action.
 
+                      You must set this to a value other than NONE when you use Cost Explorer.
+                      For more information, see Amazon ECS usage reports (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/usage-reports.html)
+                      in the Amazon Elastic Container Service Developer Guide.
+
                       The default is NONE.
                     type: string
                   region:
@@ -925,6 +929,36 @@ spec:
                               type: integer
                             portName:
                               type: string
+                            timeout:
+                              description: |-
+                                An object that represents the timeout configurations for Service Connect.
+
+                                If idleTimeout is set to a time that is less than perRequestTimeout, the
+                                connection will close when the idleTimeout is reached and not the perRequestTimeout.
+                              properties:
+                                idleTimeoutSeconds:
+                                  format: int64
+                                  type: integer
+                                perRequestTimeoutSeconds:
+                                  format: int64
+                                  type: integer
+                              type: object
+                            tls:
+                              description: The key that encrypts and decrypts your
+                                resources for Service Connect TLS.
+                              properties:
+                                issuerCertificateAuthority:
+                                  description: The certificate root authority that
+                                    secures your service.
+                                  properties:
+                                    awsPcaAuthorityARN:
+                                      type: string
+                                  type: object
+                                kmsKey:
+                                  type: string
+                                roleARN:
+                                  type: string
+                              type: object
                           type: object
                         type: array
                     type: object
@@ -1068,6 +1102,66 @@ spec:
                             type: string
                         type: object
                     type: object
+                  volumeConfigurations:
+                    description: |-
+                      The configuration for a volume specified in the task definition as a volume
+                      that is configured at launch time. Currently, the only supported volume type
+                      is an Amazon EBS volume.
+                    items:
+                      properties:
+                        managedEBSVolume:
+                          description: |-
+                            The configuration for the Amazon EBS volume that Amazon ECS creates and manages
+                            on your behalf. These settings are used to create each Amazon EBS volume,
+                            with one volume created for each task in the service.
+
+                            Many of these parameters map 1:1 with the Amazon EBS CreateVolume API request
+                            parameters.
+                          properties:
+                            encrypted:
+                              type: boolean
+                            filesystemType:
+                              type: string
+                            iops:
+                              format: int64
+                              type: integer
+                            kmsKeyID:
+                              type: string
+                            roleARN:
+                              type: string
+                            sizeInGiB:
+                              format: int64
+                              type: integer
+                            snapshotID:
+                              type: string
+                            tagSpecifications:
+                              items:
+                                properties:
+                                  propagateTags:
+                                    type: string
+                                  resourceType:
+                                    type: string
+                                  tags:
+                                    items:
+                                      properties:
+                                        key:
+                                          type: string
+                                        value:
+                                          type: string
+                                      type: object
+                                    type: array
+                                type: object
+                              type: array
+                            throughput:
+                              format: int64
+                              type: integer
+                            volumeType:
+                              type: string
+                          type: object
+                        name:
+                          type: string
+                      type: object
+                    type: array
                 required:
                 - region
                 type: object
@@ -1282,6 +1376,13 @@ spec:
                         failedTasks:
                           format: int64
                           type: integer
+                        fargateEphemeralStorage:
+                          description: The amount of ephemeral storage to allocate
+                            for the deployment.
+                          properties:
+                            kmsKeyID:
+                              type: string
+                          type: object
                         id:
                           type: string
                         launchType:
@@ -1290,8 +1391,9 @@ spec:
                           description: The network configuration for a task or service.
                           properties:
                             awsVPCConfiguration:
-                              description: An object representing the networking details
-                                for a task or service.
+                              description: |-
+                                An object representing the networking details for a task or service. For
+                                example awsvpcConfiguration={subnets=["subnet-12344321"],securityGroups=["sg-12344321"]}
                               properties:
                                 assignPublicIP:
                                   type: string
@@ -1412,6 +1514,36 @@ spec:
                                     type: integer
                                   portName:
                                     type: string
+                                  timeout:
+                                    description: |-
+                                      An object that represents the timeout configurations for Service Connect.
+
+                                      If idleTimeout is set to a time that is less than perRequestTimeout, the
+                                      connection will close when the idleTimeout is reached and not the perRequestTimeout.
+                                    properties:
+                                      idleTimeoutSeconds:
+                                        format: int64
+                                        type: integer
+                                      perRequestTimeoutSeconds:
+                                        format: int64
+                                        type: integer
+                                    type: object
+                                  tls:
+                                    description: The key that encrypts and decrypts
+                                      your resources for Service Connect TLS.
+                                    properties:
+                                      issuerCertificateAuthority:
+                                        description: The certificate root authority
+                                          that secures your service.
+                                        properties:
+                                          awsPcaAuthorityARN:
+                                            type: string
+                                        type: object
+                                      kmsKey:
+                                        type: string
+                                      roleARN:
+                                        type: string
+                                    type: object
                                 type: object
                               type: array
                           type: object
@@ -1431,6 +1563,62 @@ spec:
                         updatedAt:
                           format: date-time
                           type: string
+                        volumeConfigurations:
+                          items:
+                            properties:
+                              managedEBSVolume:
+                                description: |-
+                                  The configuration for the Amazon EBS volume that Amazon ECS creates and manages
+                                  on your behalf. These settings are used to create each Amazon EBS volume,
+                                  with one volume created for each task in the service.
+
+                                  Many of these parameters map 1:1 with the Amazon EBS CreateVolume API request
+                                  parameters.
+                                properties:
+                                  encrypted:
+                                    type: boolean
+                                  filesystemType:
+                                    type: string
+                                  iops:
+                                    format: int64
+                                    type: integer
+                                  kmsKeyID:
+                                    type: string
+                                  roleARN:
+                                    type: string
+                                  sizeInGiB:
+                                    format: int64
+                                    type: integer
+                                  snapshotID:
+                                    type: string
+                                  tagSpecifications:
+                                    items:
+                                      properties:
+                                        propagateTags:
+                                          type: string
+                                        resourceType:
+                                          type: string
+                                        tags:
+                                          items:
+                                            properties:
+                                              key:
+                                                type: string
+                                              value:
+                                                type: string
+                                            type: object
+                                          type: array
+                                      type: object
+                                    type: array
+                                  throughput:
+                                    format: int64
+                                    type: integer
+                                  volumeType:
+                                    type: string
+                                type: object
+                              name:
+                                type: string
+                            type: object
+                          type: array
                       type: object
                     type: array
                   events:
@@ -1472,8 +1660,9 @@ spec:
                       own elastic network interface by using the awsvpc networking mode.
                     properties:
                       awsVPCConfiguration:
-                        description: An object representing the networking details
-                          for a task or service.
+                        description: |-
+                          An object representing the networking details for a task or service. For
+                          example awsvpcConfiguration={subnets=["subnet-12344321"],securityGroups=["sg-12344321"]}
                         properties:
                           assignPublicIP:
                             type: string
@@ -1570,6 +1759,13 @@ spec:
                           type: string
                         externalID:
                           type: string
+                        fargateEphemeralStorage:
+                          description: The amount of ephemeral storage to allocate
+                            for the deployment.
+                          properties:
+                            kmsKeyID:
+                              type: string
+                          type: object
                         id:
                           type: string
                         launchType:
@@ -1592,8 +1788,9 @@ spec:
                           description: The network configuration for a task or service.
                           properties:
                             awsVPCConfiguration:
-                              description: An object representing the networking details
-                                for a task or service.
+                              description: |-
+                                An object representing the networking details for a task or service. For
+                                example awsvpcConfiguration={subnets=["subnet-12344321"],securityGroups=["sg-12344321"]}
                               properties:
                                 assignPublicIP:
                                   type: string

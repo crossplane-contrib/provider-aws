@@ -54,28 +54,33 @@ func GenerateWorkspace(resp *svcsdk.DescribeWorkspaceOutput) *svcapitypes.Worksp
 	} else {
 		cr.Status.AtProvider.ARN = nil
 	}
+	if resp.Workspace.KmsKeyArn != nil {
+		cr.Spec.ForProvider.KMSKeyARN = resp.Workspace.KmsKeyArn
+	} else {
+		cr.Spec.ForProvider.KMSKeyARN = nil
+	}
 	if resp.Workspace.PrometheusEndpoint != nil {
 		cr.Status.AtProvider.PrometheusEndpoint = resp.Workspace.PrometheusEndpoint
 	} else {
 		cr.Status.AtProvider.PrometheusEndpoint = nil
 	}
 	if resp.Workspace.Status != nil {
-		f4 := &svcapitypes.WorkspaceStatus_SDK{}
+		f5 := &svcapitypes.WorkspaceStatus_SDK{}
 		if resp.Workspace.Status.StatusCode != nil {
-			f4.StatusCode = resp.Workspace.Status.StatusCode
+			f5.StatusCode = resp.Workspace.Status.StatusCode
 		}
-		cr.Status.AtProvider.Status = f4
+		cr.Status.AtProvider.Status = f5
 	} else {
 		cr.Status.AtProvider.Status = nil
 	}
 	if resp.Workspace.Tags != nil {
-		f5 := map[string]*string{}
-		for f5key, f5valiter := range resp.Workspace.Tags {
-			var f5val string
-			f5val = *f5valiter
-			f5[f5key] = &f5val
+		f6 := map[string]*string{}
+		for f6key, f6valiter := range resp.Workspace.Tags {
+			var f6val string
+			f6val = *f6valiter
+			f6[f6key] = &f6val
 		}
-		cr.Spec.ForProvider.Tags = f5
+		cr.Spec.ForProvider.Tags = f6
 	} else {
 		cr.Spec.ForProvider.Tags = nil
 	}
@@ -95,14 +100,17 @@ func GenerateCreateWorkspaceInput(cr *svcapitypes.Workspace) *svcsdk.CreateWorks
 	if cr.Spec.ForProvider.Alias != nil {
 		res.SetAlias(*cr.Spec.ForProvider.Alias)
 	}
+	if cr.Spec.ForProvider.KMSKeyARN != nil {
+		res.SetKmsKeyArn(*cr.Spec.ForProvider.KMSKeyARN)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f1 := map[string]*string{}
-		for f1key, f1valiter := range cr.Spec.ForProvider.Tags {
-			var f1val string
-			f1val = *f1valiter
-			f1[f1key] = &f1val
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.Tags {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
 		}
-		res.SetTags(f1)
+		res.SetTags(f2)
 	}
 
 	return res

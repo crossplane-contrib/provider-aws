@@ -36,11 +36,11 @@ type VolumeParameters struct {
 	// Indicates whether the volume should be encrypted. The effect of setting the
 	// encryption state to true depends on the volume origin (new or from a snapshot),
 	// starting encryption state, ownership, and whether encryption by default is
-	// enabled. For more information, see Encryption by default (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encryption-by-default)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// enabled. For more information, see Encryption by default (https://docs.aws.amazon.com/ebs/latest/userguide/work-with-ebs-encr.html#encryption-by-default)
+	// in the Amazon EBS User Guide.
 	//
 	// Encrypted Amazon EBS volumes must be attached to instances that support Amazon
-	// EBS encryption. For more information, see Supported instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances).
+	// EBS encryption. For more information, see Supported instance types (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-encryption-requirements.html#ebs-encryption_supported_instances).
 	Encrypted *bool `json:"encrypted,omitempty"`
 	// The number of I/O operations per second (IOPS). For gp3, io1, and io2 volumes,
 	// this represents the number of IOPS that are provisioned for the volume. For
@@ -49,15 +49,15 @@ type VolumeParameters struct {
 	//
 	// The following are the supported values for each volume type:
 	//
-	//    * gp3: 3,000-16,000 IOPS
+	//    * gp3: 3,000 - 16,000 IOPS
 	//
-	//    * io1: 100-64,000 IOPS
+	//    * io1: 100 - 64,000 IOPS
 	//
-	//    * io2: 100-64,000 IOPS
+	//    * io2: 100 - 256,000 IOPS
 	//
-	// io1 and io2 volumes support up to 64,000 IOPS only on Instances built on
-	// the Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
-	// Other instance families support performance up to 32,000 IOPS.
+	// For io2 volumes, you can achieve up to 256,000 IOPS on instances built on
+	// the Nitro System (https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-nitro-instances.html).
+	// On other instances, you can achieve performance up to 32,000 IOPS.
 	//
 	// This parameter is required for io1 and io2 volumes. The default for gp3 volumes
 	// is 3,000 IOPS. This parameter is not supported for gp2, st1, sc1, or standard
@@ -65,12 +65,17 @@ type VolumeParameters struct {
 	IOPS *int64 `json:"iops,omitempty"`
 	// Indicates whether to enable Amazon EBS Multi-Attach. If you enable Multi-Attach,
 	// you can attach the volume to up to 16 Instances built on the Nitro System
-	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances)
+	// (https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-nitro-instances.html)
 	// in the same Availability Zone. This parameter is supported with io1 and io2
-	// volumes only. For more information, see Amazon EBS Multi-Attach (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volumes-multi.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// volumes only. For more information, see Amazon EBS Multi-Attach (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volumes-multi.html)
+	// in the Amazon EBS User Guide.
 	MultiAttachEnabled *bool `json:"multiAttachEnabled,omitempty"`
-	// The Amazon Resource Name (ARN) of the Outpost.
+	// The Amazon Resource Name (ARN) of the Outpost on which to create the volume.
+	//
+	// If you intend to use a volume with an instance running on an outpost, then
+	// you must create the volume on the same outpost as the instance. You can't
+	// use a volume created in an Amazon Web Services Region with an instance on
+	// an Amazon Web Services outpost, or the other way around.
 	OutpostARN *string `json:"outpostARN,omitempty"`
 	// The size of the volume, in GiBs. You must specify either a snapshot ID or
 	// a volume size. If you specify a snapshot, the default is the snapshot size.
@@ -79,13 +84,15 @@ type VolumeParameters struct {
 	//
 	// The following are the supported volumes sizes for each volume type:
 	//
-	//    * gp2 and gp3: 1-16,384
+	//    * gp2 and gp3: 1 - 16,384 GiB
 	//
-	//    * io1 and io2: 4-16,384
+	//    * io1: 4 - 16,384 GiB
 	//
-	//    * st1 and sc1: 125-16,384
+	//    * io2: 4 - 65,536 GiB
 	//
-	//    * standard: 1-1,024
+	//    * st1 and sc1: 125 - 16,384 GiB
+	//
+	//    * standard: 1 - 1024 GiB
 	Size *int64 `json:"size,omitempty"`
 	// The snapshot from which to create the volume. You must specify either a snapshot
 	// ID or a volume size.
@@ -113,8 +120,8 @@ type VolumeParameters struct {
 	// Throughput Optimized HDD (st1) and Cold HDD (sc1) volumes can't be used as
 	// boot volumes.
 	//
-	// For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volume-types.html)
+	// in the Amazon EBS User Guide.
 	//
 	// Default: gp2
 	VolumeType             *string `json:"volumeType,omitempty"`
@@ -129,15 +136,24 @@ type VolumeSpec struct {
 
 // VolumeObservation defines the observed state of Volume
 type VolumeObservation struct {
+	//
+	// This parameter is not returned by CreateVolume.
+	//
 	// Information about the volume attachments.
 	Attachments []*VolumeAttachment `json:"attachments,omitempty"`
 	// The time stamp when volume creation was initiated.
 	CreateTime *metav1.Time `json:"createTime,omitempty"`
+	//
+	// This parameter is not returned by CreateVolume.
+	//
 	// Indicates whether the volume was created using fast snapshot restore.
 	FastRestored *bool `json:"fastRestored,omitempty"`
-	// The Amazon Resource Name (ARN) of the Key Management Service (KMS) KMS key
-	// that was used to protect the volume encryption key for the volume.
+	// The Amazon Resource Name (ARN) of the KMS key that was used to protect the
+	// volume encryption key for the volume.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+	//
+	// This parameter is not returned by CreateVolume.
+	//
 	// Reserved for future use.
 	SSEType *string `json:"sseType,omitempty"`
 	// The volume state.

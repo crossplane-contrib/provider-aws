@@ -43,6 +43,7 @@ func SetupActivity(mgr ctrl.Manager, o controller.Options) error {
 		func(e *external) {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
+			e.preCreate = preCreate
 			e.postCreate = postCreate
 			e.preDelete = preDelete
 		},
@@ -90,6 +91,17 @@ func postObserve(_ context.Context, cr *svcapitypes.Activity, _ *svcsdk.Describe
 	}
 	cr.SetConditions(xpv1.Available())
 	return obs, err
+}
+
+func preCreate(_ context.Context, cr *svcapitypes.Activity, obj *svcsdk.CreateActivityInput) error {
+	if cr.Spec.ForProvider.EncryptionConfiguration != nil {
+		obj.EncryptionConfiguration = &svcsdk.EncryptionConfiguration{
+			KmsDataKeyReusePeriodSeconds: cr.Spec.ForProvider.EncryptionConfiguration.KMSDataKeyReusePeriodSeconds,
+			KmsKeyId:                     cr.Spec.ForProvider.EncryptionConfiguration.KMSKeyID,
+			Type:                         aws.String(cr.Spec.ForProvider.EncryptionConfiguration.Type),
+		}
+	}
+	return nil
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.Activity, resp *svcsdk.CreateActivityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
