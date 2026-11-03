@@ -27,7 +27,6 @@ import (
 	"k8s.io/utils/ptr"
 
 	"github.com/crossplane-contrib/provider-aws/apis/sns/v1beta1"
-	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	policyutils "github.com/crossplane-contrib/provider-aws/pkg/utils/policy"
 )
 
@@ -97,19 +96,36 @@ func GenerateCreateTopicInput(p *v1beta1.TopicParameters) *sns.CreateTopicInput 
 	return input
 }
 
-// LateInitializeTopicAttr fills the empty fields in *v1beta1.TopicParameters with the
-// values seen in sns.Topic.
-func LateInitializeTopicAttr(in *v1beta1.TopicParameters, attrs map[string]string) {
-	in.DisplayName = pointer.LateInitialize(in.DisplayName, aws.String(attrs[string(TopicDisplayName)]))
-	in.DeliveryPolicy = pointer.LateInitialize(in.DeliveryPolicy, aws.String(attrs[string(TopicDeliveryPolicy)]))
-	in.KMSMasterKeyID = pointer.LateInitialize(in.KMSMasterKeyID, aws.String(attrs[string(TopicKmsMasterKeyID)]))
-	in.Policy = pointer.LateInitialize(in.Policy, aws.String(attrs[string(TopicPolicy)]))
+// LateInitializeTopicAttr fills unset fields in *v1beta1.TopicParameters with
+// server-side defaults returned by GetTopicAttributes. Only non-empty attribute
+// values are copied; writing an empty-string pointer would mark the resource as
+// late-initialized on every reconcile even when the attribute is unset in AWS
+// (missing map keys return "" in Go). Returns true when any field was changed.
+func LateInitializeTopicAttr(in *v1beta1.TopicParameters, attrs map[string]string) bool {
+	modified := false
+	modified = lateInitStringAttr(attrs[string(TopicDisplayName)], &in.DisplayName) || modified
+	modified = lateInitStringAttr(attrs[string(TopicDeliveryPolicy)], &in.DeliveryPolicy) || modified
+	modified = lateInitStringAttr(attrs[string(TopicKmsMasterKeyID)], &in.KMSMasterKeyID) || modified
+	modified = lateInitStringAttr(attrs[string(TopicPolicy)], &in.Policy) || modified
 
-	in.FifoTopic = nil
-	fifoTopic, err := strconv.ParseBool(attrs[string(TopicFifoTopic)])
-	if err == nil && fifoTopic {
-		in.FifoTopic = pointer.LateInitialize(in.FifoTopic, aws.Bool(fifoTopic))
+	// FifoTopic is immutable; only late-initialize when AWS confirms it is true.
+	if in.FifoTopic == nil {
+		if fifoTopic, err := strconv.ParseBool(attrs[string(TopicFifoTopic)]); err == nil && fifoTopic {
+			in.FifoTopic = aws.Bool(true)
+			modified = true
+		}
 	}
+	return modified
+}
+
+// lateInitStringAttr copies awsVal into *field when the AWS value is non-empty
+// and the field has not yet been set. Returns true when the field was updated.
+func lateInitStringAttr(awsVal string, field **string) bool {
+	if awsVal != "" && *field == nil {
+		*field = aws.String(awsVal)
+		return true
+	}
+	return false
 }
 
 // GetChangedAttributes will return the changed attributes for a topic in AWS side.
