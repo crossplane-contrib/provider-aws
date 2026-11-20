@@ -35,6 +35,7 @@ import (
 var (
 	ngName                   = "my-cool-ng"
 	amiType                  = "cool-ami"
+	customAMIType            = "CUSTOM"
 	diskSize                 = int32(20)
 	otherSize                = int32(100)
 	size                     = int32(2)
@@ -237,6 +238,7 @@ func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
 			wantInput: &eks.UpdateNodegroupVersionInput{
 				ClusterName:   &clusterName,
 				NodegroupName: &ngName,
+				Version:       &version,
 			}},
 		"VersionChanged": {
 			args: args{
@@ -279,6 +281,7 @@ func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
 			wantInput: &eks.UpdateNodegroupVersionInput{
 				ClusterName:    &clusterName,
 				NodegroupName:  &ngName,
+				Version:        &version,
 				ReleaseVersion: &otherReleaseVersion,
 			},
 		},
@@ -297,6 +300,42 @@ func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
 				n: &ekstypes.Nodegroup{
 					ClusterName:    &clusterName,
 					NodegroupName:  &ngName,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+						Version: &ltVersion,
+					},
+				},
+			},
+			wantUpdate: true,
+			wantInput: &eks.UpdateNodegroupVersionInput{
+				ClusterName:   &clusterName,
+				NodegroupName: &ngName,
+				Version:       &version,
+				LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
+					Name:    &ltName,
+					Version: &otherLtVersion,
+				},
+			},
+		},
+		"LaunchTemplateVersionChangedWithCustomAMI": {
+			// A custom AMI is defined by the launch template, so EKS rejects the update if a version is set.
+			args: args{
+				name: ngName,
+				p: &manualv1alpha1.NodeGroupParameters{
+					ClusterName:    clusterName,
+					AMIType:        &customAMIType,
+					Version:        &version,
+					ReleaseVersion: &releaseVersion,
+					LaunchTemplate: &manualv1alpha1.LaunchTemplateSpecification{
+						Name:    &ltName,
+						Version: &otherLtVersion,
+					},
+				},
+				n: &ekstypes.Nodegroup{
+					ClusterName:    &clusterName,
+					NodegroupName:  &ngName,
+					AmiType:        ekstypes.AMITypesCustom,
 					Version:        &version,
 					ReleaseVersion: &releaseVersion,
 					LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
@@ -344,6 +383,7 @@ func TestGenerateUpdateNodeGroupVersionInput(t *testing.T) {
 			wantInput: &eks.UpdateNodegroupVersionInput{
 				ClusterName:   &clusterName,
 				NodegroupName: &ngName,
+				Version:       &version,
 				LaunchTemplate: &ekstypes.LaunchTemplateSpecification{
 					Id:      &ltID,
 					Version: &otherLtVersion,
