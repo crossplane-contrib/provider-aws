@@ -106,9 +106,11 @@ func GenerateUpdateNodeGroupVersionInput(name string, p *manualv1alpha1.NodeGrou
 		ClusterName:   &p.ClusterName,
 	}
 	if !notNilAndEquals(p.AMIType, "CUSTOM") {
+		// Always set the version, otherwise EKS defaults to the version of the
+		// cluster's control plane
+		i.Version = p.Version
 		if !reflect.DeepEqual(p.Version, ng.Version) {
 			u = true
-			i.Version = p.Version
 		}
 		if !reflect.DeepEqual(p.ReleaseVersion, ng.ReleaseVersion) {
 			u = true
