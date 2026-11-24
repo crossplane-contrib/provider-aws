@@ -16,7 +16,11 @@ limitations under the License.
 
 package tags
 
-import "k8s.io/utils/ptr"
+import (
+	"strings"
+
+	"k8s.io/utils/ptr"
+)
 
 // DiffTags returns tags that should be added or removed.
 func DiffTags(local, remote map[string]string) (add map[string]string, remove []string) {
@@ -56,4 +60,31 @@ func DiffTagsMapPtr(spec map[string]*string, current map[string]*string) (map[st
 		addMap[k] = v
 	}
 	return addMap, removeTags
+}
+
+// ShouldIgnore returns true if key matches any supplied rule. A rule may be:
+//   - exact key match (e.g. "c7n:policy")
+//   - prefix* glob where * is only allowed as the last character (e.g. "c7n:*" or "prefix*")
+//
+// No other wildcard forms are supported.
+func ShouldIgnore(key string, rules []string) bool { // intentionally simple, no regex
+	for _, r := range rules {
+		if r == "" { // skip empty
+			continue
+		}
+		if strings.HasSuffix(r, "*") {
+			prefix := strings.TrimSuffix(r, "*")
+			if prefix == "" { // guard against blanket "*" wildcard
+				continue
+			}
+			if strings.HasPrefix(key, prefix) {
+				return true
+			}
+			continue
+		}
+		if key == r { // exact
+			return true
+		}
+	}
+	return false
 }

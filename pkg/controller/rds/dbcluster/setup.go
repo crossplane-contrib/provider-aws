@@ -36,6 +36,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/jsonpatch"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
+	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 // error constants
@@ -794,7 +795,7 @@ func (s *shared) isUpToDate(ctx context.Context, cr *svcapitypes.DBCluster, out 
 	if out.DBClusters[0].TagList != nil {
 		for _, tag := range out.DBClusters[0].TagList {
 			cr.Status.AtProvider.ObservedTags = append(cr.Status.AtProvider.ObservedTags, &svcapitypes.Tag{Key: tag.Key, Value: tag.Value})
-			if utils.ShouldIgnore(pointer.StringValue(tag.Key), ignore) {
+			if tagutils.ShouldIgnore(pointer.StringValue(tag.Key), ignore) {
 				continue
 			}
 			observedTags = append(observedTags, &svcsdk.Tag{Key: tag.Key, Value: tag.Value})

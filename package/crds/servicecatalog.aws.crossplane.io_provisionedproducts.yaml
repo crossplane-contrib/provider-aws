@@ -171,6 +171,24 @@ spec:
                           type: string
                       type: object
                     type: array
+                  tagsIgnore:
+                    description: |-
+                      TagsIgnore contains rules for tags that are never sent to AWS on update
+                      (e.g. tags that cannot be changed after provisioning). A rule key supports
+                      exact match (e.g. "created-by") or a prefix glob with a trailing * (e.g. "mdp:*").
+                    items:
+                      description: |-
+                        TagIgnoreRule defines a single rule for ignoring a tag during diffing.
+                        The Key may be an exact tag key or a prefix pattern that ends with *.
+                      properties:
+                        key:
+                          description: Key of the ignore rule. Supports exact key
+                            match or prefix* glob.
+                          type: string
+                      required:
+                      - key
+                      type: object
+                    type: array
                 required:
                 - region
                 type: object
