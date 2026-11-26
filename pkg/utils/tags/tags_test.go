@@ -183,3 +183,27 @@ func TestDiffTagsMapPtr(t *testing.T) {
 		})
 	}
 }
+
+func TestShouldIgnore(t *testing.T) {
+	cases := map[string]struct {
+		key   string
+		rules []string
+		want  bool
+	}{
+		"NoRules":          {key: "env", rules: nil, want: false},
+		"ExactMatch":       {key: "c7n:policy", rules: []string{"c7n:policy"}, want: true},
+		"ExactNoMatch":     {key: "c7n:policy2", rules: []string{"c7n:policy"}, want: false},
+		"PrefixMatch":      {key: "c7n:policy", rules: []string{"c7n:*"}, want: true},
+		"PrefixNoMatch":    {key: "env", rules: []string{"c7n:*"}, want: false},
+		"BareWildcardSkip": {key: "env", rules: []string{"*"}, want: false},
+		"EmptyRuleSkip":    {key: "", rules: []string{""}, want: false},
+		"AnyRuleMatches":   {key: "created-by", rules: []string{"c7n:*", "created-by"}, want: true},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			if got := ShouldIgnore(tc.key, tc.rules); got != tc.want {
+				t.Errorf("ShouldIgnore(%q, %v) = %v, want %v", tc.key, tc.rules, got, tc.want)
+			}
+		})
+	}
+}

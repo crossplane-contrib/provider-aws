@@ -47,6 +47,7 @@ import (
 	"github.com/crossplane-contrib/provider-aws/pkg/features"
 	"github.com/crossplane-contrib/provider-aws/pkg/utils/pointer"
 	custommanaged "github.com/crossplane-contrib/provider-aws/pkg/utils/reconciler/managed"
+	tagutils "github.com/crossplane-contrib/provider-aws/pkg/utils/tags"
 )
 
 const (
@@ -60,8 +61,11 @@ const (
 	errCouldNotGetProvisionedProductOutputs = "could not get provisioned product outputs"
 	errCouldNotGetCFParameters              = "could not get cloudformation stack parameters"
 	errCouldNotDescribeRecord               = "could not describe record"
+	errCouldNotDescribeRecordForTags        = "could not describe record for tag comparison"
 	errCouldNotLookupProduct                = "could not lookup product"
 	errAwsAPICodeInvalidParametersException = "Last Successful Provisioning Record doesn't exist."
+	errDescribeRecordNilOutput              = "DescribeRecord returned nil output"
+	errDescribeRecordNilDetail              = "DescribeRecord returned nil RecordDetail"
 )
 
 type custom struct {
@@ -141,6 +145,23 @@ func preCreate(_ context.Context, ds *svcapitypes.ProvisionedProduct, input *svc
 func (c *custom) preUpdate(_ context.Context, ds *svcapitypes.ProvisionedProduct, input *svcsdk.UpdateProvisionedProductInput) error {
 	input.UpdateToken = aws.String(genIdempotencyToken())
 	input.ProvisionedProductName = aws.String(meta.GetExternalName(ds))
+
+	if len(ds.Spec.ForProvider.TagsIgnore) > 0 {
+		rules := buildIgnoreRules(ds.Spec.ForProvider.TagsIgnore)
+		var filtered []*svcsdk.Tag
+		for _, t := range input.Tags {
+			if !tagutils.ShouldIgnore(pointer.StringValue(t.Key), rules) {
+				filtered = append(filtered, t)
+			}
+		}
+		if len(filtered) == 0 {
+			// aws-sdk-go v1 serializes a non-nil empty slice as "Tags":[], which CloudFormation
+			// interprets as "remove all tags"; nil omits the field and leaves tags untouched
+			input.Tags = nil
+		} else {
+			input.Tags = filtered
+		}
+	}
 	return nil
 }
 
@@ -186,6 +207,15 @@ func (c *custom) isUpToDate(_ context.Context, ds *svcapitypes.ProvisionedProduc
 	if productOrArtifactIsChanged || provisioningParamsAreChanged {
 		return false, fmt.Sprintf("%s; %s", artifactDiff, paramsDiff), nil
 	}
+
+	tagsChanged, tagsDiff, err := c.tagsAreChanged(ds, resp)
+	if err != nil {
+		return false, "", errors.Wrap(err, errCouldNotDescribeRecordForTags)
+	}
+	if tagsChanged {
+		return false, tagsDiff, nil
+	}
+
 	return true, "", nil
 }
 
@@ -368,6 +398,75 @@ func (c *custom) getArtifactID(ds *svcapitypes.ProvisionedProduct) (string, erro
 		}
 	}
 	return "", errors.Wrap(errors.New("artifact not found"), errCouldNotLookupProduct)
+}
+
+// pickRecordID returns the record ID to use for tag comparison.
+// TAINTED products use LastSuccessfulProvisioningRecordId (same as terraform-provider-aws).
+func pickRecordID(detail *svcsdk.ProvisionedProductDetail) *string {
+	if ptr.Deref(detail.Status, "") == string(svcapitypes.ProvisionedProductStatus_SDK_TAINTED) {
+		return detail.LastSuccessfulProvisioningRecordId
+	}
+	return detail.LastProvisioningRecordId
+}
+
+func buildRecordTagMap(tags []*svcsdk.RecordTag) map[string]string {
+	m := make(map[string]string, len(tags))
+	for _, t := range tags {
+		m[pointer.StringValue(t.Key)] = pointer.StringValue(t.Value)
+	}
+	return m
+}
+
+func buildIgnoreRules(rules []svcapitypes.TagIgnoreRule) []string {
+	keys := make([]string, len(rules))
+	for i, r := range rules {
+		keys[i] = r.Key
+	}
+	return keys
+}
+
+func (c *custom) tagsAreChanged(ds *svcapitypes.ProvisionedProduct, resp *svcsdk.DescribeProvisionedProductOutput) (bool, string, error) { //nolint:gocyclo
+	// nil spec tags means tags are not managed by this resource; skip comparison
+	if ds.Spec.ForProvider.Tags == nil {
+		return false, "", nil
+	}
+
+	recordID := pickRecordID(resp.ProvisionedProductDetail)
+	if recordID == nil || *recordID == "" {
+		// No usable record ID (e.g. TAINTED with no LastSuccessfulProvisioningRecordId); skip tag check.
+		return false, "", nil
+	}
+	describeOut, err := c.client.DescribeRecord(&svcsdk.DescribeRecordInput{Id: recordID})
+	if err != nil {
+		return false, "", err
+	}
+	if describeOut == nil {
+		return false, "", errors.New(errDescribeRecordNilOutput)
+	}
+	if describeOut.RecordDetail == nil {
+		return false, "", errors.New(errDescribeRecordNilDetail)
+	}
+
+	rules := buildIgnoreRules(ds.Spec.ForProvider.TagsIgnore)
+	awsTags := buildRecordTagMap(describeOut.RecordDetail.RecordTags)
+
+	// subset check: desired tags (minus ignored) must all be present and matching in AWS
+	// shortcut: removing a tag from spec does not trigger an update, upgrade to full set comparison once we know which tags AWS adds itself.
+	var missing []string
+	for _, t := range ds.Spec.ForProvider.Tags {
+		key := pointer.StringValue(t.Key)
+		if tagutils.ShouldIgnore(key, rules) {
+			continue
+		}
+		awsVal, ok := awsTags[key]
+		if !ok || awsVal != pointer.StringValue(t.Value) {
+			missing = append(missing, key)
+		}
+	}
+	if len(missing) > 0 {
+		return true, fmt.Sprintf("Tags are changed: %v", missing), nil
+	}
+	return false, "", nil
 }
 
 func (c *custom) getProductID(productName *string) (string, error) {

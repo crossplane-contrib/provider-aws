@@ -18,6 +18,7 @@ package provisionedproduct
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -28,6 +29,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
+	pkgerrors "github.com/pkg/errors"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane-contrib/provider-aws/apis/servicecatalog/v1alpha1"
@@ -791,6 +794,559 @@ func TestPostObserve(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			test.EquateConditions()
+		})
+	}
+}
+
+func TestPreUpdate(t *testing.T) {
+	type want struct {
+		tags    []*svcsdk.Tag
+		tagsNil bool
+	}
+	cases := map[string]struct {
+		tagsIgnore []v1alpha1.TagIgnoreRule
+		inputTags  []*svcsdk.Tag
+		want       want
+	}{
+		"NoRules_TagsUnchanged": {
+			tagsIgnore: nil,
+			inputTags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+				{Key: pointer.ToOrNilIfZeroValue("owner"), Value: pointer.ToOrNilIfZeroValue("team")},
+			},
+			want: want{tags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+				{Key: pointer.ToOrNilIfZeroValue("owner"), Value: pointer.ToOrNilIfZeroValue("team")},
+			}},
+		},
+		"ExactKeyRule_DropsMatchingTag": {
+			tagsIgnore: []v1alpha1.TagIgnoreRule{{Key: "created-by"}},
+			inputTags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("created-by"), Value: pointer.ToOrNilIfZeroValue("admin")},
+				{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+			},
+			want: want{tags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+			}},
+		},
+		"PrefixGlobRule_DropsMatchingTags": {
+			tagsIgnore: []v1alpha1.TagIgnoreRule{{Key: "mdp:*"}},
+			inputTags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("mdp:owner"), Value: pointer.ToOrNilIfZeroValue("team")},
+				{Key: pointer.ToOrNilIfZeroValue("mdp:env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+				{Key: pointer.ToOrNilIfZeroValue("other"), Value: pointer.ToOrNilIfZeroValue("val")},
+			},
+			want: want{tags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("other"), Value: pointer.ToOrNilIfZeroValue("val")},
+			}},
+		},
+		"AllTagsFiltered_InputTagsNil": {
+			tagsIgnore: []v1alpha1.TagIgnoreRule{{Key: "created-by"}},
+			inputTags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("created-by"), Value: pointer.ToOrNilIfZeroValue("admin")},
+			},
+			want: want{tagsNil: true},
+		},
+		"BareStarRule_NothingFiltered": {
+			tagsIgnore: []v1alpha1.TagIgnoreRule{{Key: "*"}},
+			inputTags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+			},
+			want: want{tags: []*svcsdk.Tag{
+				{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+			}},
+		},
+		// nil input.Tags with no rules must remain nil (untouched)
+		"NoRules_NilInputTags_Unchanged": {
+			tagsIgnore: nil,
+			inputTags:  nil,
+			want:       want{tagsNil: true},
+		},
+		"Rules_NilInputTags_StaysNil": {
+			tagsIgnore: []v1alpha1.TagIgnoreRule{{Key: "created-by"}},
+			inputTags:  nil,
+			want:       want{tagsNil: true},
+		},
+		// spec tags: [] generates a non-nil empty slice; with rules it must be omitted, not sent as "Tags":[]
+		"Rules_EmptyInputTags_BecomesNil": {
+			tagsIgnore: []v1alpha1.TagIgnoreRule{{Key: "created-by"}},
+			inputTags:  []*svcsdk.Tag{},
+			want:       want{tagsNil: true},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &custom{client: &fake.MockCustomServiceCatalogClient{}}
+			ds := provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+				CustomProvisionedProductParameters: v1alpha1.CustomProvisionedProductParameters{
+					TagsIgnore: tc.tagsIgnore,
+				},
+			}))
+			input := &svcsdk.UpdateProvisionedProductInput{Tags: tc.inputTags}
+			err := c.preUpdate(context.TODO(), ds, input)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tc.want.tagsNil {
+				if input.Tags != nil {
+					t.Errorf("expected input.Tags == nil, got %v", input.Tags)
+				}
+				return
+			}
+			if diff := cmp.Diff(tc.want.tags, input.Tags); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsUpToDate_Tags(t *testing.T) {
+	type want struct {
+		result bool
+		err    error
+	}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SpecTagsNil_UpToDate_NoDescribeRecord": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					// Tags: nil — not managed
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                     pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                 pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					// MockDescribeRecord intentionally nil — must not be called
+				},
+				cache: cache{},
+			},
+			want: want{result: true, err: nil},
+		},
+		"SpecTagMissingInRecordTags_NotUpToDate": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						return &svcsdk.DescribeRecordOutput{RecordDetail: &svcsdk.RecordDetail{
+							RecordTags: []*svcsdk.RecordTag{},
+						}}, nil
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: false, err: nil},
+		},
+		"SpecTagDifferentValue_NotUpToDate": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						return &svcsdk.DescribeRecordOutput{RecordDetail: &svcsdk.RecordDetail{
+							RecordTags: []*svcsdk.RecordTag{
+								{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("staging")},
+							},
+						}}, nil
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: false, err: nil},
+		},
+		"SpecTagsSubsetOfAWSTags_UpToDate": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						return &svcsdk.DescribeRecordOutput{RecordDetail: &svcsdk.RecordDetail{
+							RecordTags: []*svcsdk.RecordTag{
+								{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+								{Key: pointer.ToOrNilIfZeroValue("aws:cloudformation:stack-name"), Value: pointer.ToOrNilIfZeroValue("sc-stack")},
+							},
+						}}, nil
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: true, err: nil},
+		},
+		"MissingTagMatchesIgnoreRule_UpToDate": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("created-by"), Value: pointer.ToOrNilIfZeroValue("admin")},
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+					CustomProvisionedProductParameters: v1alpha1.CustomProvisionedProductParameters{
+						TagsIgnore: []v1alpha1.TagIgnoreRule{{Key: "created-by"}},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						// "created-by" is absent in AWS but ignored; "env" matches
+						return &svcsdk.DescribeRecordOutput{RecordDetail: &svcsdk.RecordDetail{
+							RecordTags: []*svcsdk.RecordTag{
+								{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+							},
+						}}, nil
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: true, err: nil},
+		},
+		"TaintedStatus_UsesLastSuccessfulRecordId": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                                 pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:             pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                             pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_TAINTED)),
+					LastProvisioningRecordId:           pointer.ToOrNilIfZeroValue("rec-failed"),
+					LastSuccessfulProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-success"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						if pointer.StringValue(describeRecordInput.Id) != "rec-success" {
+							t.Errorf("expected LastSuccessfulProvisioningRecordId, got %s", pointer.StringValue(describeRecordInput.Id))
+						}
+						return &svcsdk.DescribeRecordOutput{RecordDetail: &svcsdk.RecordDetail{
+							RecordTags: []*svcsdk.RecordTag{
+								{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+							},
+						}}, nil
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: true, err: nil},
+		},
+		"DescribeRecordError_ReturnsError": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						return nil, errors.New("describe record failed")
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: false, err: pkgerrors.Wrap(errors.New("describe record failed"), errCouldNotDescribeRecordForTags)},
+		},
+		// UNDER_CHANGE early-return must skip the tag check entirely; DescribeRecord must not be called.
+		"UnderChange_EarlyReturn_SkipsTagCheck": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                     pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                 pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_UNDER_CHANGE)),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					// MockDescribeRecord intentionally nil — must not be called
+				},
+				cache: cache{},
+			},
+			want: want{result: true, err: nil},
+		},
+		// TAINTED with nil LastSuccessfulProvisioningRecordId: no usable record ID, so
+		// tag comparison is skipped entirely — DescribeRecord must NOT be called.
+		"TaintedStatus_NilLastSuccessfulRecordId_UpToDate": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                                 pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:             pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                             pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_TAINTED)),
+					LastProvisioningRecordId:           pointer.ToOrNilIfZeroValue("rec-failed"),
+					LastSuccessfulProvisioningRecordId: nil, // explicitly nil
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					// MockDescribeRecord intentionally nil — must not be called
+				},
+				cache: cache{},
+			},
+			want: want{result: true, err: nil},
+		},
+		// Empty (non-nil) slice of spec tags: not nil so DescribeRecord is called, but zero spec tags
+		// to compare → always up to date (no missing keys).
+		"EmptySliceSpecTags_UpToDate": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags:                   []*v1alpha1.Tag{}, // non-nil, zero elements
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						return &svcsdk.DescribeRecordOutput{RecordDetail: &svcsdk.RecordDetail{
+							RecordTags: []*svcsdk.RecordTag{
+								{Key: pointer.ToOrNilIfZeroValue("aws:cloudformation:stack-name"), Value: pointer.ToOrNilIfZeroValue("sc-stack")},
+							},
+						}}, nil
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: true, err: nil},
+		},
+		"DescribeRecordNilOutput_ReturnsError": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						return nil, nil // nil output, no error
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: false, err: pkgerrors.Wrap(errors.New(errDescribeRecordNilOutput), errCouldNotDescribeRecordForTags)},
+		},
+		"DescribeRecordNilRecordDetail_ReturnsError": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					MockDescribeRecord: func(describeRecordInput *svcsdk.DescribeRecordInput) (*svcsdk.DescribeRecordOutput, error) {
+						return &svcsdk.DescribeRecordOutput{RecordDetail: nil}, nil // non-nil output, nil RecordDetail
+					},
+				},
+				cache: cache{},
+			},
+			want: want{result: false, err: pkgerrors.Wrap(errors.New(errDescribeRecordNilDetail), errCouldNotDescribeRecordForTags)},
+		},
+		// non-TAINTED product whose LastProvisioningRecordId is a non-nil pointer to ""
+		// must skip DescribeRecord via the empty-string guard in pickRecordID.
+		"EmptyStringRecordId_SkipsTagCheck_UpToDate": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID),
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: ptr.To(""), // non-nil, empty string
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					// MockDescribeRecord intentionally nil — empty record ID must be skipped
+				},
+				cache: cache{},
+			},
+			want: want{result: true, err: nil},
+		},
+		// When product/artifact already differs, isUpToDate must return false immediately
+		// without reaching the tag check (DescribeRecord must not be called).
+		"ArtifactChanged_SkipsTagCheck": {
+			args: args{
+				provisionedProduct: provisionedProduct(withSpec(v1alpha1.ProvisionedProductParameters{
+					ProvisioningArtifactID: pointer.ToOrNilIfZeroValue(newProvisioningArtifactID),
+					Tags: []*v1alpha1.Tag{
+						{Key: pointer.ToOrNilIfZeroValue("env"), Value: pointer.ToOrNilIfZeroValue("prod")},
+					},
+				})),
+				describeProvisionedProductOutput: describeProvisionedProduct(withDetails(svcsdk.ProvisionedProductDetail{
+					Id:                       pointer.ToOrNilIfZeroValue("pp-fake"),
+					ProvisioningArtifactId:   pointer.ToOrNilIfZeroValue(provisioningArtifactID), // different from spec
+					Status:                   pointer.ToOrNilIfZeroValue(string(v1alpha1.ProvisionedProductStatus_SDK_AVAILABLE)),
+					LastProvisioningRecordId: pointer.ToOrNilIfZeroValue("rec-1"),
+				})),
+				customClient: &fake.MockCustomServiceCatalogClient{
+					MockGetProvisionedProductOutputs: func(getPPInput *svcsdk.GetProvisionedProductOutputsInput) (*svcsdk.GetProvisionedProductOutputsOutput, error) {
+						return &svcsdk.GetProvisionedProductOutputsOutput{}, nil
+					},
+					MockGetCloudformationStackParameters: func(provisionedProductOutputs []*svcsdk.RecordOutput) ([]cfsdkv2types.Parameter, error) {
+						return []cfsdkv2types.Parameter{}, nil
+					},
+					// MockDescribeRecord intentionally nil — must not be called when artifact differs
+				},
+				cache: cache{lastProvisioningParameters: []*v1alpha1.ProvisioningParameter{}},
+			},
+			want: want{result: false, err: nil},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			opts := []option{setupFakeExternal(tc.args.customClient, tc.args.cache)}
+			e := newExternal(tc.args.kube, tc.args.client, opts)
+			result, _, err := e.isUpToDate(context.TODO(), tc.args.provisionedProduct, tc.args.describeProvisionedProductOutput)
+			if diff := cmp.Diff(err, tc.want.err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, result); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
 		})
 	}
 }
